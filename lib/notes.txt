@@ -1,0 +1,19 @@
+create table
+  add column
+  add index
+  add constraint
+
+alter table
+  add column
+  alter column
+  drop column
+  add constraint
+  drop constraint
+  add index
+  drop index
+
+drop table
+
+add/remove extension
+
+create/drop type

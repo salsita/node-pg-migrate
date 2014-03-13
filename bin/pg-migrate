@@ -1,0 +1,157 @@
+#!/usr/bin/env node
+
+var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+var optimist = require('optimist');
+var log = require('../lib/log');
+var Migration = require('../lib/migration');
+var MigrationRunner = require('../lib/runner');
+// var config = require('../lib/config.js');
+// var index = require('../index');
+
+var pkginfo = require('pkginfo')(module, 'version');
+
+process.on('uncaughtException', function(err) {
+  log.error(err.stack);
+  process.exit(1);
+});
+
+var argv = optimist
+    .default({
+      verbose: false,
+      "force-exit": false,
+      config: process.cwd() + '/database.json',
+      'migrations-dir': process.cwd() + '/migrations' })
+    .usage('Usage: db-migrate [up|down|create] migrationName [options]')
+
+    .describe('env', 'The environment to run the migrations under (dev, test, prod).')
+    .alias('e', 'env')
+    .string('e')
+
+    .describe('migrations-dir', 'The directory containing your migration files.')
+    .alias('m', 'migrations-dir')
+    .string('m')
+
+    .describe('count', 'Max number of migrations to run.')
+    .alias('c', 'count')
+    .string('c')
+
+    .describe('dry-run', "Prints the SQL but doesn't run it.")
+    .boolean('dry-run')
+
+    .describe('force-exit', 'Forcibly exit the migration process on completion.')
+    .boolean('force-exit')
+
+    .describe('verbose', 'Verbose mode.')
+    .alias('v', 'verbose')
+    .boolean('v')
+
+    .alias('h', 'help')
+    .alias('h', '?')
+    .boolean('h')
+
+    .describe('version', 'Print version info.')
+    .alias('i', 'version')
+    .boolean('version')
+
+    .describe('config', 'Location of the database.json file.')
+    .string('config')
+
+    .argv;
+
+if (argv.version) {
+  console.log(module.exports.version);
+  process.exit(0);
+}
+
+if (argv.help || argv._.length == 0) {
+  optimist.showHelp();
+  process.exit(1);
+}
+
+global.verbose = argv.verbose;
+global.dryRun = argv['dry-run'];
+if(global.dryRun) {
+  log.info('dry run');
+}
+
+
+var MIGRATIONS_DIR = argv['migrations-dir'];
+var DATABASE_URL = process.env["DATABASE_URL"];
+var action = argv._.shift();
+
+
+if (action == 'create'){
+
+  // replaces spaces with dashes - should help fix some errors
+  var migration_name = argv._.length ? argv._.join('-') : '';
+  // forces use of dashes in names - keep thing clean
+  migration_name = migration_name.replace(/_ /g, '-');
+
+  if (!migration_name){
+    log.error("'migrationName' is required.");
+    optimist.showHelp();
+    process.exit(1);
+  }
+
+  var migration = Migration.create( migration_name, MIGRATIONS_DIR );
+  log.info(util.format('Created migration -- %s', migration.path ));
+
+} else if (action == 'up' || action == 'down'){
+  
+  var updown_arg = argv._.length ? argv._.shift() : null;
+  var num_migrations;
+  var migration_name;
+
+  if ( updown_arg != null ){
+    if ( parseInt(updown_arg) == updown_arg ){
+      num_migrations = parseInt(updown_arg);
+    } else {
+      migration_name = argv._.join('-').replace(/_ /g, '-');
+    }
+  } else {
+    if ( num_migrations === undefined ){
+      if ( action == 'up' ) num_migrations = Infinity;
+      if ( action == 'down' ) num_migrations = 1;
+    }  
+  }  
+
+  var runner = new MigrationRunner({
+    database_url: DATABASE_URL,
+    dir: MIGRATIONS_DIR,
+    direction: action,
+    count: num_migrations,
+    file: migration_name
+  });
+  
+  runner.run(function(err){
+    // finish -- show some logging about what happened?
+    if (err){
+      log.error(err, err.stack);
+      process.exit(1);
+    }
+    log.info('Migrations complete!');
+    process.exit(0);
+  });
+} else {
+  log.error('Invalid Action: Must be [up|down|create].');
+  optimist.showHelp();
+  process.exit(1);
+}
+
+
+function onComplete(migrator, originalErr) {
+  migrator.driver.close(function(err) {
+    assert.ifError(originalErr);
+    assert.ifError(err);
+    log.info('Done');
+  });
+}
+
+
+if (argv['force-exit']) {
+  log.verbose("Forcing exit");
+  process.exit(0);
+}
