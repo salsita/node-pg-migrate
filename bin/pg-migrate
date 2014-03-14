@@ -5,7 +5,6 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var optimist = require('optimist');
-var log = require('../lib/log');
 var Migration = require('../lib/migration');
 var MigrationRunner = require('../lib/runner');
 // var config = require('../lib/config.js');
@@ -14,7 +13,7 @@ var MigrationRunner = require('../lib/runner');
 var pkginfo = require('pkginfo')(module, 'version');
 
 process.on('uncaughtException', function(err) {
-  log.error(err.stack);
+  console.log(err.stack);
   process.exit(1);
 });
 
@@ -74,14 +73,14 @@ if (argv.help || argv._.length == 0) {
 global.verbose = argv.verbose;
 global.dryRun = argv['dry-run'];
 if(global.dryRun) {
-  log.info('dry run');
+  console.log('dry run');
 }
 
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
 var DATABASE_URL = process.env["DATABASE_URL"];
-var action = argv._.shift();
 
+var action = argv._.shift();
 
 if (action == 'create'){
 
@@ -91,13 +90,13 @@ if (action == 'create'){
   migration_name = migration_name.replace(/_ /g, '-');
 
   if (!migration_name){
-    log.error("'migrationName' is required.");
+    console.log("'migrationName' is required.");
     optimist.showHelp();
     process.exit(1);
   }
 
   var migration = Migration.create( migration_name, MIGRATIONS_DIR );
-  log.info(util.format('Created migration -- %s', migration.path ));
+  console.log(util.format('Created migration -- %s', migration.path ));
 
 } else if (action == 'up' || action == 'down'){
   
@@ -129,14 +128,14 @@ if (action == 'create'){
   runner.run(function(err){
     // finish -- show some logging about what happened?
     if (err){
-      log.error(err, err.stack);
+      console.log(err);
       process.exit(1);
     }
-    log.info('Migrations complete!');
+    console.log('Migrations complete!');
     process.exit(0);
   });
 } else {
-  log.error('Invalid Action: Must be [up|down|create].');
+  console.log('Invalid Action: Must be [up|down|create].');
   optimist.showHelp();
   process.exit(1);
 }
@@ -146,12 +145,12 @@ function onComplete(migrator, originalErr) {
   migrator.driver.close(function(err) {
     assert.ifError(originalErr);
     assert.ifError(err);
-    log.info('Done');
+    console.log('Done');
   });
 }
 
 
 if (argv['force-exit']) {
-  log.verbose("Forcing exit");
+  console.log("Forcing exit");
   process.exit(0);
 }
