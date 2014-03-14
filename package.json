@@ -37,6 +37,6 @@
     "pg": "~1.0.0"
   },
   "scripts": {
-    "postinstall": "./bin/pg-migrate create first-migration"
+    
   }
 }
