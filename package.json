@@ -1,5 +1,5 @@
 {
-  "name": "pg-migrate",
+  "name": "node-pg-migrate",
   "description": "Node.js database migration management for Postgresql",
   "author": "Theo Ephraim",
   "bin": "./bin/pg-migrate",
