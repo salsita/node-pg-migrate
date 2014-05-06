@@ -1,6 +1,6 @@
 # pg-migrate
 
-Node.js database migration management for postgres only.
+Node.js database migration management built exclusively for postgres.
 
 ## Installation
 
@@ -12,15 +12,15 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 You must specify your database connection url by setting the environment variable `DATABASE_URL`.
 
-Depending on your setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
+Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
 
-The following are the available commands:
+**The following are the available commands:**
 
 - `pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name. 
 - `pg-migrate up` - run all up migrations from the current state
-- `pg-migrate up [N]` - run N up migrations from the current position
+- `pg-migrate up {N}` - run N up migrations from the current position
 - `pg-migrate down` - run a single down migration
-- `pg-migrate down [N}` - run N down migrations from the current state
+- `pg-migrate down {N}` - run N down migrations from the current state
 
 ## Defining Migrations
 
@@ -38,19 +38,79 @@ exports.down = function(pgm, run){
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
 **IMPORTANT**
-Generation of the up and down block is asynchronous, but each individal operation is not. Running the migration commands doesn't actually migrate your database. They just add sql commands to a stack that is run after you call the callback. This is part of what makes this tool so easy to use and what makes it possible to infer down migrations (see below).
+Generation of the up and down block is asynchronous, but each individal operation is not. Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run after you call the callback. This is part of what makes this tool so easy to use and what makes it possible to infer down migrations (see below).
 
 ### Migration methods
 
-The `pgm` object that is passed to each up/down block has many different operations available. Each operation is simply a functions that generates sql and stores it on the current pgm object.
+The `pgm` object that is passed to each up/down block has many different operations available. Each operation is simply a functions that generates some sql and stores it in the current pgm context.
 
-#### `pgm.createExtension`
 
-this.dropExtension = wrap( ops.extensions.drop );
 
-this.createTable = wrap( ops.tables.create );
-this.dropTable = wrap( ops.tables.drop );
-this.renameTable = wrap( ops.tables.renameTable );
+
+#### :+1: `pgm.createExtension( extension )`
+
+> Install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createextension.html.html)
+
+**Arguments:**
+
+- `extension` _[string or array of strings]_ - name(s) of extensions to install
+
+**Aliases:** `addExtension`  
+**Reverse Operation:** `dropExtension`
+
+
+
+
+#### :+1: `pgm.dropExtension( extension )`
+
+> Un-install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-dropextension.html)
+
+**Arguments:**
+
+- `extension` _[string or array of strings]_ - name(s) of extensions to install
+
+
+
+
+
+#### :+1: `pgm.createTable( tablename, columns, options )`
+
+> Create a new table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createtable.html)
+
+**Arguments:**  
+
+- `tablename` _[string]_ - name for the new table
+- `columns` _[object]_ - keys are column names, values are column options
+- `options` _[object]_ - table options (optional)
+  - `inherits` _[string]_ - table to inherit from
+ 
+**Reverse Operation:** `dropTable`
+
+
+
+
+#### :+1: `pgm.dropTable( tablename )`
+
+> Drop existing table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-droptable.html)
+
+**Arguments:**  
+
+- `tablename` _[string]_ - name of the table to drop
+
+
+
+
+#### :+1: `pgm.renameTable( tablename, new_tablename )`
+
+> Rename a table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+
+**Arguments:**  
+
+- `tablename` _[string]_ - name of the table to rename
+- `new_table` _[object]_ - new name of the table
+ 
+**Reverse Operation:** `undoRenameTable` (same operation in opposite direction - should not be used manually)
+
 
 this.addColumns = wrap( ops.tables.addColumns );
 this.dropColumns = wrap( ops.tables.dropColumns );
@@ -72,11 +132,9 @@ this.dropIndex = wrap( ops.indexes.drop );
 
 this.sql = wrap( ops.other.sql );
 
-this.addExtension = this.createExtension;
 this.addColumn = this.addColumns;
 this.dropColumn = this.dropColumns;
 this.createConstraint = this.addConstraint;
 this.addType = this.createType;
 this.addIndex = this.createIndex;
-
 
