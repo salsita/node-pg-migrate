@@ -128,7 +128,7 @@ if (action == 'create'){
   runner.run(function(err){
     // finish -- show some logging about what happened?
     if (err){
-      console.log(err);
+      console.log(err.stack);
       process.exit(1);
     }
     console.log('Migrations complete!');
