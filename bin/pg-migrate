@@ -7,8 +7,6 @@ var util = require('util');
 var optimist = require('optimist');
 var Migration = require('../lib/migration');
 var MigrationRunner = require('../lib/runner');
-// var config = require('../lib/config.js');
-// var index = require('../index');
 
 var pkginfo = require('pkginfo')(module, 'version');
 
@@ -139,16 +137,6 @@ if (action == 'create'){
   optimist.showHelp();
   process.exit(1);
 }
-
-
-function onComplete(migrator, originalErr) {
-  migrator.driver.close(function(err) {
-    assert.ifError(originalErr);
-    assert.ifError(err);
-    console.log('Done');
-  });
-}
-
 
 if (argv['force-exit']) {
   console.log("Forcing exit");
