@@ -2,7 +2,9 @@
   "name": "node-pg-migrate",
   "description": "Node.js database migration management for Postgresql",
   "author": "Theo Ephraim",
-  "bin": "./bin/pg-migrate",
+  "bin": {
+    "pg-migrate": "bin/pg-migrate"
+  },
   "keywords": [
     "db",
     "database",
