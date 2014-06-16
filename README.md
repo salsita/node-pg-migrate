@@ -16,7 +16,7 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 
 **The following are the available commands:**
 
-- `pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name. 
+- `pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
 - `pg-migrate up` - run all up migrations from the current state
 - `pg-migrate up {N}` - run N up migrations from the current position
 - `pg-migrate down` - run a single down migration
@@ -38,7 +38,7 @@ exports.down = function(pgm, run){
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
 **IMPORTANT**
-Generation of the up and down block is asynchronous, but each individal operation is not. Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run after you call the callback. 
+Generation of the up and down block is asynchronous, but each individal operation is not. Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run after you call the callback.
 
 #### Automatic Down Migrations
 
@@ -49,6 +49,9 @@ If `exports.down` is not present in a migration, pg-migrate will try to automati
 ## Migration methods
 
 The `pgm` object that is passed to each up/down block has many different operations available. Each operation is simply a function that generates some sql and stores it in the current pgm context.
+
+By default, each migration will be run in a transaction. To disable transactions for a specific migration, call `pgm.noTransaction()`
+This is required for some SQL operations that cannot be run within a transaction. It should be used carefully.
 
 ### Creating & Altering Tables / Columns
 
@@ -61,7 +64,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 - `columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
 - `options` _[object]_ - table options (optional)
   - `inherits` _[string]_ - table to inherit from
- 
+
 **Reverse Operation:** `dropTable`
 
 -----------------------------------------------------
@@ -95,7 +98,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 - `tablename` _[string]_ - name of the table to alter
 - `new_columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
 
-**Aliases:** `addColumn`  
+**Aliases:** `addColumn`
 **Reverse Operation:** `dropColumns`
 
 -----------------------------------------------------
@@ -146,9 +149,9 @@ The `pgm` object that is passed to each up/down block has many different operati
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
-- `expression` _[string]_ - constraint expression (raw sql) 
+- `expression` _[string]_ - constraint expression (raw sql)
 
-**Aliases:** `createConstraint`  
+**Aliases:** `createConstraint`
 **Reverse Operation:** `dropConstraint`
 
 -----------------------------------------------------
@@ -177,7 +180,7 @@ The `pgm` object that is passed to each up/down block has many different operati
   - `concurrently` _[boolean]_ - create this index concurrently
   - `method` _[string]_ - btree | hash | gist | spgist | gin
 
-**Aliases:** `addIndex`  
+**Aliases:** `addIndex`
 **Reverse Operation:** `dropIndex`
 
 -----------------------------------------------------
@@ -204,7 +207,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 - `sql` _[string]_ - name(s) of extensions to install
 - `args` _[object]_ - (optional) key/val of arguments to replace
 
-**Aliases:** `addExtension`  
+**Aliases:** `addExtension`
 **Reverse Operation:** `dropExtension`
 
 -----------------------------------------------------
@@ -216,7 +219,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 **Arguments:**
 - `extension` _[string or array of strings]_ - name(s) of extensions to install
 
-**Aliases:** `addExtension`  
+**Aliases:** `addExtension`
 **Reverse Operation:** `dropExtension`
 
 -----------------------------------------------------
@@ -238,7 +241,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 - `type_name` _[string]_ - name of the new type
 - `values` _[array of strings]_ - possible values
 
-**Aliases:** `addType`  
+**Aliases:** `addType`
 **Reverse Operation:** `dropType`
 
 -----------------------------------------------------
@@ -254,7 +257,7 @@ The `pgm` object that is passed to each up/down block has many different operati
 
 ### Column Definitions
 
-The `createTable` and `addColumns` methods both take a `columns` argument that specifies column names and options. It is a object (key/value) where each key is the name of the column, and the value is another object that defines the options for the column. 
+The `createTable` and `addColumns` methods both take a `columns` argument that specifies column names and options. It is a object (key/value) where each key is the name of the column, and the value is another object that defines the options for the column.
 
 - `type` _[string]_ - data type (use normal postgres types)
 - `unique` _[boolean]_ - set to true to add a unique constraint on this column
@@ -266,17 +269,17 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
 
-**There are some aliases on types to make things more foolproof:**  
+**There are some aliases on types to make things more foolproof:**
 _(int, string, float, double, datetime, bool)_
 
-**There is a shorthand to pass only the type instead of an options object:**  
-`pgm.addColumns('myTable', { age: 'integer' });`  
-is equivalent to  
+**There is a shorthand to pass only the type instead of an options object:**
+`pgm.addColumns('myTable', { age: 'integer' });`
+is equivalent to
 `pgm.addColumns('myTable', { age: { type: 'integer' } });`
 
-**There is a shorthand for normal auto-increment IDs:**  
-`pgm.addColumns('myTable', { id: 'id' });`  
-is equivalent to  
+**There is a shorthand for normal auto-increment IDs:**
+`pgm.addColumns('myTable', { id: 'id' });`
+is equivalent to
 `pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });`
 
 
