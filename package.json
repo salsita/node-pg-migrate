@@ -40,5 +40,7 @@
     "rewire": "^2.1.2",
     "sinon": "^1.11.1"
   },
-  "scripts": {}
+  "scripts": {
+    "test": "mocha test"
+  }
 }
