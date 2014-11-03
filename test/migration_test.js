@@ -8,6 +8,7 @@ var migration;
 
 describe('lib/migration', function () {
   var dbMock = {};
+  var done;
 
   before(function () {
     Migration.__set__({
@@ -16,14 +17,38 @@ describe('lib/migration', function () {
     migration = new Migration( '1414549381268_names.js', actions);
   });
 
+  beforeEach(function () {
+    dbMock.query = sinon.spy();
+    done = sinon.mock();
+  });
+
   describe('self.applyUp', function () {
 
-    it('self.applyUp', function (done) {
-      dbMock.query = sinon.stub();
-      var next = sinon.stub();
-      migration.applyUp(next);
+    it('normal operations: db.query should be called', function () {
+      migration.applyUp(done);
       assert.equal(dbMock.query.calledOnce, true);
-      done();
+    });
+
+    it('--dry-run option: db.query should not be called', function () {
+      global.dryRun = true;
+      migration.applyUp(done);
+      assert.equal(dbMock.query.called, false);
+      global.dryRun = false;
+    });
+  });
+
+  describe('self.applyDown', function () {
+
+    it('normal operations: db.query should be called', function () {
+      migration.applyDown(done);
+      assert.equal(dbMock.query.calledOnce, true);
+    });
+
+    it('--dry-run option: db.query should not be called', function () {
+      global.dryRun = true;
+      migration.applyDown(done);
+      assert.equal(dbMock.query.called, false);
+      global.dryRun = false;
     });
   });
 
