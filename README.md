@@ -17,10 +17,10 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 **The following are the available commands:**
 
 - `pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
-- `pg-migrate up` - run all up migrations from the current state
-- `pg-migrate up {N}` - run N up migrations from the current position
-- `pg-migrate down` - run a single down migration
-- `pg-migrate down {N}` - run N down migrations from the current state
+- `pg-migrate up` - runs all up migrations from the current state.
+- `pg-migrate up {N}` - runs N up migrations from the current state.
+- `pg-migrate down` - runs a single down migration.
+- `pg-migrate down {N}` - runs N down migrations from the current state.
 
 ## Defining Migrations
 
