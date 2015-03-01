@@ -28,17 +28,16 @@
     "url": "https://github.com/theoephraim/node-pg-migrate.git"
   },
   "dependencies": {
+    "async": "^0.2.10",
+    "dotenv": "^0.5.1",
+    "lodash": "~2.4.1",
     "mkdirp": "~0.3.4",
     "optimist": "~0.3.7",
     "pkginfo": "~0.3.0",
-    "lodash": "~2.4.1",
-    "step": "0.0.5",
-    "async": "^0.2.10"
+    "step": "0.0.5"
   },
   "devDependencies": {
     "pg": "^3.4.1"
   },
-  "scripts": {
-
-  }
+  "scripts": {}
 }
