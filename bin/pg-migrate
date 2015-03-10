@@ -20,27 +20,21 @@ var argv = optimist
     .default({
       verbose: false,
       "force-exit": false,
-      config: process.cwd() + '/database.json',
-      'migrations-dir': process.cwd() + '/migrations' })
+      'migrations-dir': process.cwd() + '/migrations',
+      'migrations-table': 'pgmigrations',
+    })
     .usage('Usage: db-migrate [up|down|create] migrationName [options]')
 
-    .describe('env', 'The environment to run the migrations under (dev, test, prod).')
-    .alias('e', 'env')
-    .string('e')
-
-    .describe('migrations-dir', 'The directory containing your migration files.')
+    .describe('migrations-dir', 'The directory containing your migration files (default = `migrations`).')
     .alias('m', 'migrations-dir')
     .string('m')
 
-    .describe('count', 'Max number of migrations to run.')
-    .alias('c', 'count')
-    .string('c')
+    .describe('migrations-table', 'The table storing which migrations have been run (default = `pgmigrations`)')
+    .alias('t', 'migrations-table')
+    .string('t')
 
     .describe('dry-run', "Prints the SQL but doesn't run it.")
     .boolean('dry-run')
-
-    .describe('force-exit', 'Forcibly exit the migration process on completion.')
-    .boolean('force-exit')
 
     .describe('verbose', 'Verbose mode.')
     .alias('v', 'verbose')
@@ -53,9 +47,6 @@ var argv = optimist
     .describe('version', 'Print version info.')
     .alias('i', 'version')
     .boolean('version')
-
-    .describe('config', 'Location of the database.json file.')
-    .string('config')
 
     .argv;
 
@@ -71,13 +62,14 @@ if (argv.help || argv._.length == 0) {
 
 global.verbose = argv.verbose;
 global.dryRun = argv['dry-run'];
-if(global.dryRun) {
+if (global.dryRun) {
   console.log('dry run');
 }
 
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
 var DATABASE_URL = process.env["DATABASE_URL"];
+var MIGRATIONS_TABLE = argv['migrations-table'];
 
 var action = argv._.shift();
 
@@ -98,7 +90,7 @@ if (action == 'create'){
   console.log(util.format('Created migration -- %s', migration.path ));
 
 } else if (action == 'up' || action == 'down'){
-  
+
   var updown_arg = argv._.length ? argv._.shift() : null;
   var num_migrations;
   var migration_name;
@@ -113,17 +105,18 @@ if (action == 'create'){
     if ( num_migrations === undefined ){
       if ( action == 'up' ) num_migrations = Infinity;
       if ( action == 'down' ) num_migrations = 1;
-    }  
-  }  
+    }
+  }
 
   var runner = new MigrationRunner({
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
+    migrations_table: MIGRATIONS_TABLE,
     direction: action,
     count: num_migrations,
     file: migration_name
   });
-  
+
   runner.run(function(err){
     // finish -- show some logging about what happened?
     if (err){
