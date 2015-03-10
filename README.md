@@ -11,6 +11,7 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 ## Usage
 
 You must specify your database connection url by setting the environment variable `DATABASE_URL`.
+If a .env file exists, it will be loaded using [dotenv](https://github.com/motdotla/dotenv) when running the pg-migrate binary.
 
 Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
 
