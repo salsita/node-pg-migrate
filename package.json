@@ -37,11 +37,12 @@
     "step": "0.0.5"
   },
   "devDependencies": {
+    "mocha": "^2.2.1",
     "pg": "^3.4.1",
     "rewire": "^2.1.2",
     "sinon": "^1.11.1"
   },
   "scripts": {
-    "test": "mocha test"
+    "test": "./node_modules/.bin/mocha test"
   }
 }
