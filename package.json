@@ -37,7 +37,11 @@
     "step": "0.0.5"
   },
   "devDependencies": {
-    "pg": "^3.4.1"
+    "pg": "^3.4.1",
+    "rewire": "^2.1.2",
+    "sinon": "^1.11.1"
   },
-  "scripts": {}
+  "scripts": {
+    "test": "mocha test"
+  }
 }
