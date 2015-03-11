@@ -14,7 +14,7 @@ describe('lib/migration', function () {
     Migration.__set__({
       'db': dbMock
     });
-    migration = new Migration( '1414549381268_names.js', actions);
+    migration = new Migration( '1414549381268_names.js', actions, {migrations_table: 'pgmigrations'});
   });
 
   beforeEach(function () {

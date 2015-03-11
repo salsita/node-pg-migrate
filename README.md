@@ -28,22 +28,34 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 When you run `pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.up = function(pgm, run){
-  run();
+exports.up = function(pgm){
+
 }
-exports.down = function(pgm, run){
-  run();
+exports.down = function(pgm){
+
 }
 ```
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
 **IMPORTANT**
-Generation of the up and down block is asynchronous, but each individal operation is not. Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run after you call the callback.
+Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is is run.
 
 #### Automatic Down Migrations
 
 If `exports.down` is not present in a migration, pg-migrate will try to automatically infer the operations that make up the down migration by reversing the operations of the up migration. Only some operations have automatically inferrable equivalents (details below on each operation). Sometimes, migrations are destructive and cannot be rolled back. In this case, you can set `exports.down = false` to tell pg-migrate that the down migration is impossible.
+
+#### Async Migrations
+
+In some cases, you may want to perform some async operation during a migration, for example fetching some information from an external server, or inserting some data into the database. To make a migration block operate in async mode, just add another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed until `run()` is called. Here's an example:
+
+```javascript
+exports.up = function(pgm, run){
+  doSomethingAsync(function(){
+    run();
+  });
+}
+```
 
 
 
