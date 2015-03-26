@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "async": "^0.2.10",
+    "config": "^1.12.0",
     "dotenv": "^0.5.1",
     "lodash": "~2.4.1",
     "mkdirp": "~0.3.4",

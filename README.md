@@ -10,7 +10,27 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 ## Usage
 
-You must specify your database connection url by setting the environment variable `DATABASE_URL`.
+You can specify your database connection information using [node-config](https://github.com/lorenwest/node-config).
+
+```json
+// config/default.json
+{
+  "db": {
+    "user": "postgres",
+    "password": "",
+    "host": "localhost",
+    "port": 5432,
+    "name": "name"
+  }
+}
+```
+
+You could also specify your database url by setting the environment variable `DATABASE_URL`.
+
+```
+DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
+```
+
 If a .env file exists, it will be loaded using [dotenv](https://github.com/motdotla/dotenv) when running the pg-migrate binary.
 
 Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
