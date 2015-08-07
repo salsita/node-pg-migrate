@@ -28,10 +28,10 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 When you run `pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.up = function(pgm){
+exports.up = function(pgm, run){
 
 }
-exports.down = function(pgm){
+exports.down = function(pgm, run){
 
 }
 ```
@@ -39,7 +39,7 @@ exports.down = function(pgm){
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
 **IMPORTANT**
-Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is is run.
+Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is then run().
 
 #### Automatic Down Migrations
 
