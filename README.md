@@ -39,7 +39,7 @@ exports.down = function(pgm){
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
 **IMPORTANT**
-Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is is run.
+Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run.
 
 #### Automatic Down Migrations
 
