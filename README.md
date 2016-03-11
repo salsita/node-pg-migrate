@@ -278,6 +278,8 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `notNull` _[boolean]_ - set to true to make this column not null
 - `check` _[string]_ - sql for a check constraint for this column
 - `references` _[string]_ - a table name that this column is a foreign key to
+- `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
+- `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
 
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
