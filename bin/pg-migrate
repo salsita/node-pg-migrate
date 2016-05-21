@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
 require('dotenv').load({ silent: true });
+if(!process.env.DATABASE_URL) {
+  console.error('The $DATABASE_URL environment variable is not set.')
+  process.exit(1)
+}
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
