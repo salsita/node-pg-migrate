@@ -22,8 +22,13 @@ var argv = optimist
       "force-exit": false,
       'migrations-dir': process.cwd() + '/migrations',
       'migrations-table': 'pgmigrations',
+      'dotenv-database-url': 'DATABASE_URL',
     })
     .usage('Usage: db-migrate [up|down|create] migrationName [options]')
+
+    .describe('dotenv-database-url', 'The dotenv variable where is set the database_url (default = `DATABASE_URL`).')
+    .alias('d', 'dotenv-database-url')
+    .string('d')
 
     .describe('migrations-dir', 'The directory containing your migration files (default = `migrations`).')
     .alias('m', 'migrations-dir')
@@ -68,7 +73,7 @@ if (global.dryRun) {
 
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
-var DATABASE_URL = process.env["DATABASE_URL"];
+var DATABASE_URL = process.env[argv['dotenv-database-url']];
 var MIGRATIONS_TABLE = argv['migrations-table'];
 
 var action = argv._.shift();
