@@ -42,7 +42,7 @@
     "sinon": "^1.14.1"
   },
   "peerDependencies": {
-    "pg": "^4.3.0"
+    "pg": "^4.3.0 || 5.x || 6.x"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test"
