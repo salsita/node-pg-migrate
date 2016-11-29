@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-require('dotenv').load();
+require('dotenv').load({ silent: true });
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
