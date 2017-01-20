@@ -38,11 +38,12 @@
   },
   "devDependencies": {
     "mocha": "^2.2.5",
+    "pg": "^6.1.2",
     "rewire": "^2.3.3",
     "sinon": "^1.14.1"
   },
   "peerDependencies": {
-    "pg": "^4.3.0 || 5.x || 6.x"
+    "pg": ">=4.3.0 <7.0.0"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test"
