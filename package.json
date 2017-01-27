@@ -33,10 +33,11 @@
     "lodash": "~3.9.1",
     "mkdirp": "~0.5.1",
     "optimist": "~0.6.1",
-    "pkginfo": "~0.3.0",
     "step": "0.0.5"
   },
   "devDependencies": {
+    "eslint": "^3.11.1",
+    "eslint-plugin-import": "^2.2.0",
     "mocha": "^2.2.5",
     "pg": "^6.1.2",
     "rewire": "^2.3.3",
@@ -46,6 +47,8 @@
     "pg": ">=4.3.0 <7.0.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test"
+    "test": "./node_modules/.bin/mocha test",
+    "lint": "eslint -c .eslintrc . bin/pg-migrate",
+    "lintfix": "npm run lint -- --fix"
   }
 }

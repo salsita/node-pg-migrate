@@ -1,19 +1,15 @@
 #!/usr/bin/env node
 
 require('dotenv').load({ silent: true });
-if(!process.env.DATABASE_URL) {
-  console.error('The $DATABASE_URL environment variable is not set.')
-  process.exit(1)
+if (!process.env.DATABASE_URL) {
+  console.error('The $DATABASE_URL environment variable is not set.');
+  process.exit(1);
 }
-var assert = require('assert');
-var fs = require('fs');
-var path = require('path');
+
 var util = require('util');
 var optimist = require('optimist');
 var Migration = require('../lib/migration');
 var MigrationRunner = require('../lib/runner');
-
-var pkginfo = require('pkginfo')(module, 'version');
 
 process.on('uncaughtException', function(err) {
   console.log(err.stack);
@@ -21,45 +17,45 @@ process.on('uncaughtException', function(err) {
 });
 
 var argv = optimist
-    .default({
-      verbose: false,
-      "force-exit": false,
-      'migrations-dir': process.cwd() + '/migrations',
-      'migrations-table': 'pgmigrations',
-    })
-    .usage('Usage: db-migrate [up|down|create] migrationName [options]')
+  .default({
+    'verbose': false,
+    'force-exit': false,
+    'migrations-dir': process.cwd() + '/migrations',
+    'migrations-table': 'pgmigrations',
+  })
+  .usage('Usage: db-migrate [up|down|create] migrationName [options]')
 
-    .describe('migrations-dir', 'The directory containing your migration files (default = `migrations`).')
-    .alias('m', 'migrations-dir')
-    .string('m')
+  .describe('migrations-dir', 'The directory containing your migration files (default = `migrations`).')
+  .alias('m', 'migrations-dir')
+  .string('m')
 
-    .describe('migrations-table', 'The table storing which migrations have been run (default = `pgmigrations`)')
-    .alias('t', 'migrations-table')
-    .string('t')
+  .describe('migrations-table', 'The table storing which migrations have been run (default = `pgmigrations`)')
+  .alias('t', 'migrations-table')
+  .string('t')
 
-    .describe('dry-run', "Prints the SQL but doesn't run it.")
-    .boolean('dry-run')
+  .describe('dry-run', 'Prints the SQL but doesn\'t run it.')
+  .boolean('dry-run')
 
-    .describe('verbose', 'Verbose mode.')
-    .alias('v', 'verbose')
-    .boolean('v')
+  .describe('verbose', 'Verbose mode.')
+  .alias('v', 'verbose')
+  .boolean('v')
 
-    .alias('h', 'help')
-    .alias('h', '?')
-    .boolean('h')
+  .alias('h', 'help')
+  .alias('h', '?')
+  .boolean('h')
 
-    .describe('version', 'Print version info.')
-    .alias('i', 'version')
-    .boolean('version')
+  .describe('version', 'Print version info.')
+  .alias('i', 'version')
+  .boolean('version')
 
-    .argv;
+  .argv;
 
 if (argv.version) {
   console.log(module.exports.version);
   process.exit(0);
 }
 
-if (argv.help || argv._.length == 0) {
+if (argv.help || argv._.length === 0) {
   optimist.showHelp();
   process.exit(1);
 }
@@ -72,43 +68,40 @@ if (global.dryRun) {
 
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
-var DATABASE_URL = process.env["DATABASE_URL"];
+var DATABASE_URL = process.env['DATABASE_URL'];
 var MIGRATIONS_TABLE = argv['migrations-table'];
 
 var action = argv._.shift();
 
-if (action == 'create'){
-
+if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
-  var migration_name = argv._.length ? argv._.join('-') : '';
+  var new_migration_name = argv._.length ? argv._.join('-') : '';
   // forces use of dashes in names - keep thing clean
-  migration_name = migration_name.replace(/_ /g, '-');
+  new_migration_name = new_migration_name.replace(/_ /g, '-');
 
-  if (!migration_name){
-    console.log("'migrationName' is required.");
+  if (!new_migration_name) {
+    console.log('\'migrationName\' is required.');
     optimist.showHelp();
     process.exit(1);
   }
 
-  var migration = Migration.create( migration_name, MIGRATIONS_DIR );
-  console.log(util.format('Created migration -- %s', migration.path ));
-
-} else if (action == 'up' || action == 'down'){
-
+  var migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
+  console.log(util.format('Created migration -- %s', migration.path));
+} else if (action === 'up' || action === 'down') {
   var updown_arg = argv._.length ? argv._.shift() : null;
   var num_migrations;
   var migration_name;
 
-  if ( updown_arg != null ){
-    if ( parseInt(updown_arg) == updown_arg ){
+  if (updown_arg !== null) {
+    if (parseInt(updown_arg) == updown_arg) { // eslint-disable-line eqeqeq
       num_migrations = parseInt(updown_arg);
     } else {
       migration_name = argv._.join('-').replace(/_ /g, '-');
     }
   } else {
-    if ( num_migrations === undefined ){
-      if ( action == 'up' ) num_migrations = Infinity;
-      if ( action == 'down' ) num_migrations = 1;
+    if (num_migrations === undefined) {
+      if (action === 'up') num_migrations = Infinity;
+      if (action === 'down') num_migrations = 1;
     }
   }
 
@@ -118,12 +111,12 @@ if (action == 'create'){
     migrations_table: MIGRATIONS_TABLE,
     direction: action,
     count: num_migrations,
-    file: migration_name
+    file: migration_name,
   });
 
-  runner.run(function(err){
+  runner.run(function(err) {
     // finish -- show some logging about what happened?
-    if (err){
+    if (err) {
       console.log(err.stack);
       process.exit(1);
     }
@@ -137,6 +130,6 @@ if (action == 'create'){
 }
 
 if (argv['force-exit']) {
-  console.log("Forcing exit");
+  console.log('Forcing exit');
   process.exit(0);
 }
