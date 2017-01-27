@@ -23,6 +23,17 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 - `pg-migrate down` - runs a single down migration.
 - `pg-migrate down {N}` - runs N down migrations from the current state.
 
+### Configuration
+
+You can adjust defaults by passing arguments to `pg-migrate`:
+
+* `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
+* `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
+* `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
+
+See all by running `pg-migrate --help`.
+
+
 ## Defining Migrations
 
 When you run `pg-migrate create` a new migration file is created that looks like this:
