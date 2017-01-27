@@ -1,3 +1,5 @@
+.idea
 .env
+*.log
 migrations/
 node_modules/
