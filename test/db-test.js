@@ -14,11 +14,14 @@ describe('lib/db', function() {
 
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
-    client = {};
+    client = {
+      end: function() {},
+    };
     pgMock.Client = sandbox.mock().returns(client);
   });
 
   afterEach(function() {
+    db.close();
     sandbox.restore();
   });
 
@@ -30,7 +33,7 @@ describe('lib/db', function() {
       db.init('connection_string');
       assert(pgMock.Client.calledWith('connection_string'));
     });
-    it('pg.Client should be called with process.env.DATABASE_URLif no args passed', function() {
+    it('pg.Client should be called with process.env.DATABASE_URL if no args passed', function() {
       db.init();
       assert(pgMock.Client.calledWith('database_url'));
     });
