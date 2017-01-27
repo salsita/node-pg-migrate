@@ -297,8 +297,19 @@ is equivalent to
 is equivalent to
 `pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });`
 
+### Using schemas
 
+Instead of passing string as name to `pgm` functions, you can pass an object with keys `schema` and `name`. E.g.
 
+`pgm.createTable( {schema: 'my_schema', name: 'my_table_name'}, {id: 'serial'});`
+
+will generate
+
+```sql
+CREATE TABLE "my_schema"."my_table_name" (
+ "id" serial
+);
+```
 
 
 ## Explanation & Goals
