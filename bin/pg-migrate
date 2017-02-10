@@ -21,6 +21,7 @@ var argv = optimist
     'verbose': false,
     'force-exit': false,
     'migrations-dir': process.cwd() + '/migrations',
+    'migrations-schema': 'public',
     'migrations-table': 'pgmigrations',
     'database-url-var': 'DATABASE_URL',
   })
@@ -37,6 +38,10 @@ var argv = optimist
   .describe('migrations-table', 'The table storing which migrations have been run (default = `pgmigrations`)')
   .alias('t', 'migrations-table')
   .string('t')
+
+  .describe('migrations-schema', 'The schema storing table which migrations have been run (default = `public`)')
+  .alias('s', 'migrations-schema')
+  .string('s')
 
   .describe('dry-run', 'Prints the SQL but doesn\'t run it.')
   .boolean('dry-run')
@@ -74,6 +79,7 @@ if (global.dryRun) {
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
 var DATABASE_URL = process.env[argv['database-url-var']];
+var MIGRATIONS_SCHEMA = argv['migrations-schema'];
 var MIGRATIONS_TABLE = argv['migrations-table'];
 
 var action = argv._.shift();
@@ -113,6 +119,7 @@ if (action === 'create') {
   var runner = new MigrationRunner({
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
+    migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
     direction: action,
     count: num_migrations,
