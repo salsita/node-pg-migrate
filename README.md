@@ -29,6 +29,7 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 
 * `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
+* `migrations-schema` (`s`) - The schema storing table which migrations have been run (defaults to `public`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 
 See all by running `pg-migrate --help`.
