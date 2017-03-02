@@ -109,11 +109,6 @@ if (action === 'create') {
     } else {
       migration_name = argv._.join('-').replace(/_ /g, '-');
     }
-  } else {
-    if (num_migrations === undefined) {
-      if (action === 'up') num_migrations = Infinity;
-      if (action === 'down') num_migrations = 1;
-    }
   }
 
   var runner = new MigrationRunner({
