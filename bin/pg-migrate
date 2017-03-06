@@ -46,6 +46,9 @@ var argv = optimist
   .describe('dry-run', 'Prints the SQL but doesn\'t run it.')
   .boolean('dry-run')
 
+  .describe('check-order', 'Check order of migrations before running them.')
+  .boolean('check-order')
+
   .describe('verbose', 'Verbose mode.')
   .alias('v', 'verbose')
   .boolean('v')
@@ -109,11 +112,6 @@ if (action === 'create') {
     } else {
       migration_name = argv._.join('-').replace(/_ /g, '-');
     }
-  } else {
-    if (num_migrations === undefined) {
-      if (action === 'up') num_migrations = Infinity;
-      if (action === 'down') num_migrations = 1;
-    }
   }
 
   var runner = new MigrationRunner({
@@ -124,6 +122,7 @@ if (action === 'create') {
     direction: action,
     count: num_migrations,
     file: migration_name,
+    checkOrder: argv['check-order'],
   });
 
   runner.run(function(err) {

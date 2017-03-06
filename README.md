@@ -32,6 +32,8 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 * `migrations-schema` (`s`) - The schema storing table which migrations have been run (defaults to `public`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 
+* `check-order` - Check order of migrations before running them. (There should be no migration with timestamp lesser than last run migration.)
+
 See all by running `pg-migrate --help`.
 
 
