@@ -28,26 +28,26 @@
     "url": "https://github.com/theoephraim/node-pg-migrate.git"
   },
   "dependencies": {
-    "async": "^0.9.2",
-    "dotenv": "^1.1.0",
-    "lodash": "~3.9.1",
+    "async": "~2.1.0",
+    "dotenv": "~4.0.0",
+    "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
     "optimist": "~0.6.1",
-    "step": "0.0.5"
+    "step": "~1.0.0"
   },
   "devDependencies": {
-    "eslint": "^3.11.1",
+    "eslint": "^3.17.0",
     "eslint-plugin-import": "^2.2.0",
-    "mocha": "^2.2.5",
-    "pg": "^6.1.2",
-    "rewire": "^2.3.3",
-    "sinon": "^1.14.1"
+    "mocha": "^3.2.0",
+    "pg": "^6.1.0",
+    "rewire": "^2.5.0",
+    "sinon": "^1.17.0"
   },
   "peerDependencies": {
     "pg": ">=4.3.0 <7.0.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test",
+    "test": "mocha test",
     "lint": "eslint -c .eslintrc . bin/pg-migrate",
     "lintfix": "npm run lint -- --fix"
   }

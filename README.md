@@ -1,5 +1,12 @@
 # pg-migrate
 
+[![Dependency Status](https://david-dm.org/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate)
+[![devDependency Status](https://david-dm.org/theoephraim/node-pg-migrate/dev-status.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=dev)
+[![peerDependencies Status](https://david-dm.org/theoephraim/node-pg-migrate/peer-status.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=peer)
+[![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
+![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
+![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
+
 Node.js database migration management built exclusively for postgres.
 
 ## Installation
