@@ -231,11 +231,8 @@ This is required for some SQL operations that cannot be run within a transaction
 > Run raw sql -- with some optional _[very basic](http://mir.aculo.us/2011/03/09/little-helpers-a-tweet-sized-javascript-templating-engine/)_ mustache templating
 
 **Arguments:**
-- `sql` _[string]_ - name(s) of extensions to install
+- `sql` _[string]_ - SQL query to run
 - `args` _[object]_ - (optional) key/val of arguments to replace
-
-**Aliases:** `addExtension`
-**Reverse Operation:** `dropExtension`
 
 -----------------------------------------------------
 
