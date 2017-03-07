@@ -32,7 +32,7 @@
     "dotenv": "~4.0.0",
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
-    "optimist": "~0.6.1",
+    "yargs": "~7.0.0",
     "step": "~1.0.0"
   },
   "devDependencies": {
