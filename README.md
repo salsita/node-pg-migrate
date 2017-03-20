@@ -49,10 +49,10 @@ See all by running `pg-migrate --help`.
 When you run `pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.up = function(pgm){
+exports.up = function up(pgm) {
 
 }
-exports.down = function(pgm){
+exports.down = function down(pgm) {
 
 }
 ```
@@ -71,13 +71,23 @@ If `exports.down` is not present in a migration, pg-migrate will try to automati
 In some cases, you may want to perform some async operation during a migration, for example fetching some information from an external server, or inserting some data into the database. To make a migration block operate in async mode, just add another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed until `run()` is called. Here's an example:
 
 ```javascript
-exports.up = function(pgm, run){
-  doSomethingAsync(function(){
+exports.up = function up(pgm, run) {
+  doSomethingAsync(function() {
     run();
   });
 }
 ```
 
+Another way how to perform some async operation is to return [Promise](https://promisesaplus.com/) from `up` or `down` function. Example:
+
+```javascript
+exports.up = function(pgm) {
+  return new Promise(resolve => {
+    // doSomethingAsync
+    resolve();
+  });
+}
+```
 
 
 ## Migration methods
