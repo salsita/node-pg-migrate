@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import util from 'util';
-import yargs from 'yargs';
-import Migration from '../dist/migration'; // eslint-disable-line import/no-unresolved,import/extensions
-import MigrationRunner from '../dist/runner'; // eslint-disable-line import/no-unresolved,import/extensions
+const util = require('util');
+const yargs = require('yargs');
+const Migration = require('../dist/migration').default; // eslint-disable-line import/no-unresolved,import/extensions
+const migrationRunner = require('../dist/runner').default; // eslint-disable-line import/no-unresolved,import/extensions
 
 require('dotenv').load({ silent: true });
 
@@ -120,7 +120,7 @@ if (action === 'create') {
     }
   }
 
-  const runner = new MigrationRunner({
+  migrationRunner({
     dryRun: DRY_RUN,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
@@ -130,17 +130,15 @@ if (action === 'create') {
     count: num_migrations,
     file: migration_name,
     checkOrder: argv['check-order'],
-  });
-
-  runner.run((err) => {
-    // finish -- show some logging about what happened?
-    if (err) {
+  })
+    .then(() => {
+      console.log('Migrations complete!');
+      process.exit(0);
+    })
+    .catch((err) => {
       console.log(err.stack);
       process.exit(1);
-    }
-    console.log('Migrations complete!');
-    process.exit(0);
-  });
+    });
 } else {
   console.log('Invalid Action: Must be [up|down|create].');
   yargs.showHelp();
