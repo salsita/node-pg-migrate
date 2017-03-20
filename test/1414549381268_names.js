@@ -1,4 +1,4 @@
-exports.up = function(pgm, run) {
+exports.up = function up(pgm, run) {
   pgm.createTable('names', {
     id: 'id',
     name: { type: 'varchar(10)' },
@@ -6,7 +6,7 @@ exports.up = function(pgm, run) {
   run();
 };
 
-exports.down = function(pgm, run) {
+exports.down = function down(pgm, run) {
   pgm.dropTable('names');
   run();
 };

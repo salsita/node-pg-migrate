@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
+import util from 'util';
+import yargs from 'yargs';
+import Migration from '../dist/migration'; // eslint-disable-line import/no-unresolved,import/extensions
+import MigrationRunner from '../dist/runner'; // eslint-disable-line import/no-unresolved,import/extensions
+
 require('dotenv').load({ silent: true });
 
-var util = require('util');
-var yargs = require('yargs');
-var Migration = require('../lib/migration');
-var MigrationRunner = require('../lib/runner');
-
-process.on('uncaughtException', function(err) {
+process.on('uncaughtException', (err) => {
   console.log(err.stack);
   process.exit(1);
 });
 
-var argv = yargs
+const argv = yargs
   .usage('Usage: db-migrate [up|down|create] migrationName [options]')
 
   .option('d', {
@@ -24,7 +24,7 @@ var argv = yargs
 
   .option('m', {
     alias: 'migrations-dir',
-    default: process.cwd() + '/migrations',
+    default: `${process.cwd()}/migrations`,
     defaultDescription: 'migrations',
     describe: 'The directory containing your migration files',
     type: 'string',
@@ -56,13 +56,6 @@ var argv = yargs
     type: 'boolean',
   })
 
-  .option('v', {
-    alias: 'verbose',
-    default: false,
-    describe: 'Verbose mode',
-    type: 'boolean',
-  })
-
   .option('i', {
     alias: 'version',
     default: false,
@@ -83,19 +76,12 @@ if (argv.help || argv._.length === 0) {
   process.exit(1);
 }
 
-global.verbose = argv.verbose;
-global.dryRun = argv['dry-run'];
-if (global.dryRun) {
-  console.log('dry run');
-}
-
-
-var MIGRATIONS_DIR = argv['migrations-dir'];
-var action = argv._.shift();
+const MIGRATIONS_DIR = argv['migrations-dir'];
+const action = argv._.shift();
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
-  var new_migration_name = argv._.length ? argv._.join('-') : '';
+  let new_migration_name = argv._.length ? argv._.join('-') : '';
   // forces use of dashes in names - keep thing clean
   new_migration_name = new_migration_name.replace(/_ /g, '-');
 
@@ -105,31 +91,37 @@ if (action === 'create') {
     process.exit(1);
   }
 
-  var migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
+  const migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'up' || action === 'down') {
-  var DATABASE_URL = process.env[argv['database-url-var']];
-  var MIGRATIONS_SCHEMA = argv['migrations-schema'];
-  var MIGRATIONS_TABLE = argv['migrations-table'];
+  const DATABASE_URL = process.env[argv['database-url-var']];
+  const MIGRATIONS_SCHEMA = argv['migrations-schema'];
+  const MIGRATIONS_TABLE = argv['migrations-table'];
+  const DRY_RUN = argv['dry-run'];
 
   if (!DATABASE_URL) {
-    console.error('The $' + argv['database-url-var'] + ' environment variable is not set.');
+    console.error(`The $${argv['database-url-var']} environment variable is not set.`);
     process.exit(1);
   }
 
-  var updown_arg = argv._.length ? argv._[0] : null;
-  var num_migrations;
-  var migration_name;
+  if (DRY_RUN) {
+    console.log('dry run');
+  }
+
+  const updown_arg = argv._.length ? argv._[0] : null;
+  let num_migrations;
+  let migration_name;
 
   if (updown_arg !== null) {
-    if (parseInt(updown_arg) == updown_arg) { // eslint-disable-line eqeqeq
-      num_migrations = parseInt(updown_arg);
+    if (parseInt(updown_arg, 10) == updown_arg) { // eslint-disable-line eqeqeq
+      num_migrations = parseInt(updown_arg, 10);
     } else {
       migration_name = argv._.join('-').replace(/_ /g, '-');
     }
   }
 
-  var runner = new MigrationRunner({
+  const runner = new MigrationRunner({
+    dryRun: DRY_RUN,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
     migrations_schema: MIGRATIONS_SCHEMA,
@@ -140,7 +132,7 @@ if (action === 'create') {
     checkOrder: argv['check-order'],
   });
 
-  runner.run(function(err) {
+  runner.run((err) => {
     // finish -- show some logging about what happened?
     if (err) {
       console.log(err.stack);
