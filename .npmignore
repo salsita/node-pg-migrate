@@ -1,3 +1,5 @@
-test
-migrations
-node_modules
+test/
+migrations/
+node_modules/
+lib/
+dist-test/

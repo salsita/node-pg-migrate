@@ -1,2 +1,3 @@
 lib/migration-template.js
 node_modules/**
+dist*/**
