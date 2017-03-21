@@ -31,11 +31,9 @@
     "url": "https://github.com/theoephraim/node-pg-migrate.git"
   },
   "dependencies": {
-    "async": "~2.3.0",
     "dotenv": "~4.0.0",
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
-    "step": "~1.0.0",
     "yargs": "~7.1.0"
   },
   "devDependencies": {
@@ -57,10 +55,12 @@
   },
   "scripts": {
     "compile": "babel lib/ -d dist/",
-    "compile:test": "babel test/ -d dist-test/",
-    "test": "cross-env NODE_ENV=test npm run compile && npm run compile:test && mocha dist-test",
+    "test": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register test",
     "lint": "eslint -c .eslintrc . bin/pg-migrate",
     "lintfix": "npm run lint -- --fix",
     "prepublish": "npm run compile"
+  },
+  "engines": {
+    "node": "4.0.0"
   }
 }

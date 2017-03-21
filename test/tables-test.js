@@ -1,5 +1,5 @@
 import assert from 'assert';
-import * as Tables from '../dist/operations/tables';
+import * as Tables from '../lib/operations/tables';
 
 describe('lib/operations/tables', () => {
   describe('.create', () => {

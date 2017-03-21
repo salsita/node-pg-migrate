@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import assert from 'assert';
-import Db, { __RewireAPI__ as DbRewireAPI } from '../dist/db';
+import Db, { __RewireAPI__ as DbRewireAPI } from '../lib/db'; // eslint-disable-line import/named
 
 describe('lib/db', () => {
   let sandbox;
@@ -37,7 +37,7 @@ describe('lib/db', () => {
     });
   });
 
-  describe('.query( query, callback )', () => {
+  describe('.query( query )', () => {
     let db;
     beforeEach(() => {
       db = Db();
@@ -51,46 +51,53 @@ describe('lib/db', () => {
     it('should call client.connect if this is the first query', () => {
       client.connect.callsArg(0);
       client.query.callsArg(1);
-      db.query('query', () => {
+      return db.query('query').then(() => {
+        assert(client.connect.calledOnce);
       });
-      assert(client.connect.calledOnce);
     });
     it('should not call client.connect on subsequent queries', () => {
       client.connect.callsArg(0);
       client.query.callsArg(1);
-      db.query('query_one', () => {
-      });
-      db.query('query_two', () => {
-      });
-      assert(client.connect.calledOnce);
+      return db.query('query_one')
+        .then(() =>
+          db.query('query_two')
+        )
+        .then(() => {
+          assert(client.connect.calledOnce);
+        });
     });
     it('should call client.query with query', () => {
       client.connect.callsArg(0);
       client.query.callsArg(1);
-      db.query('query', () => {
-      });
-      assert(client.query.getCall(0).args[0] === 'query');
+      return db.query('query')
+        .then(() => {
+          assert(client.query.getCall(0).args[0] === 'query');
+        });
     });
     it('should not call client.query if client.connect fails', () => {
       client.connect.callsArgWith(0, 'error');
-      const callback = sinon.spy();
-      db.query('query', callback);
-      sinon.assert.notCalled(client.query);
-      assert(callback.calledWith('error'));
+      return db.query('query')
+        .then(() => assert(false))
+        .catch((err) => {
+          sinon.assert.notCalled(client.query);
+          assert(err === 'error');
+        });
     });
-    it('should return callback with result if query throws no error', () => {
+    it('should resolve promise if query throws no error', () => {
       client.connect.callsArg(0);
       client.query.callsArgWith(1, null, 'result');
-      const callback = sinon.spy();
-      db.query('query', callback);
-      assert(callback.calledWith(null, 'result'));
+      return db.query('query').then((result) => {
+        assert(result === 'result');
+      });
     });
-    it('should return callback with error if query throws error', () => {
+    it('should reject promise if query throws error', () => {
       client.connect.callsArg(0);
       client.query.callsArgWith(1, 'error');
-      const callback = sinon.spy();
-      db.query('query', callback);
-      assert(callback.calledWithExactly('error'));
+      return db.query('query')
+        .then(() => assert(false))
+        .catch((err) => {
+          assert(err === 'error');
+        });
     });
   });
 
