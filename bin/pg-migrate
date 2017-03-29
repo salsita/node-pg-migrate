@@ -19,7 +19,7 @@ var argv = yargs
     alias: 'database-url-var',
     default: 'DATABASE_URL',
     describe: 'Name of env variable where is set the database_url',
-    type: 'string'
+    type: 'string',
   })
 
   .option('m', {
@@ -27,47 +27,47 @@ var argv = yargs
     default: process.cwd() + '/migrations',
     defaultDescription: 'migrations',
     describe: 'The directory containing your migration files',
-    type: 'string'
+    type: 'string',
   })
 
   .option('t', {
     alias: 'migrations-table',
     default: 'pgmigrations',
     describe: 'The table storing which migrations have been run',
-    type: 'string'
+    type: 'string',
   })
 
   .option('s', {
     alias: 'migrations-schema',
     default: 'public',
     describe: 'The schema storing table which migrations have been run',
-    type: 'string'
+    type: 'string',
   })
 
   .option('dry-run', {
     default: false,
     describe: 'Prints the SQL but doesn\'t run it',
-    type: 'boolean'
+    type: 'boolean',
   })
 
   .option('check-order', {
     default: false,
     describe: 'Check order of migrations before running them',
-    type: 'boolean'
+    type: 'boolean',
   })
 
   .option('v', {
     alias: 'verbose',
     default: false,
     describe: 'Verbose mode',
-    type: 'boolean'
+    type: 'boolean',
   })
 
   .option('i', {
     alias: 'version',
     default: false,
     describe: 'Print version info',
-    type: 'boolean'
+    type: 'boolean',
   })
 
   .help()
@@ -117,7 +117,7 @@ if (action === 'create') {
   var migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'up' || action === 'down') {
-  var updown_arg = argv._.length ? argv._.shift() : null;
+  var updown_arg = argv._.length ? argv._[0] : null;
   var num_migrations;
   var migration_name;
 
