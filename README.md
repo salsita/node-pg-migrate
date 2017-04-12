@@ -43,6 +43,9 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 
 See all by running `pg-migrate --help`.
 
+For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
+e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+
 
 ## Defining Migrations
 
