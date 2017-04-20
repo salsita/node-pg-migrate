@@ -91,15 +91,6 @@ if (global.dryRun) {
 
 
 var MIGRATIONS_DIR = argv['migrations-dir'];
-var DATABASE_URL = process.env[argv['database-url-var']];
-var MIGRATIONS_SCHEMA = argv['migrations-schema'];
-var MIGRATIONS_TABLE = argv['migrations-table'];
-
-if (!DATABASE_URL) {
-  console.error('The $' + argv['database-url-var'] + ' environment variable is not set.');
-  process.exit(1);
-}
-
 var action = argv._.shift();
 
 if (action === 'create') {
@@ -117,6 +108,15 @@ if (action === 'create') {
   var migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'up' || action === 'down') {
+  var DATABASE_URL = process.env[argv['database-url-var']];
+  var MIGRATIONS_SCHEMA = argv['migrations-schema'];
+  var MIGRATIONS_TABLE = argv['migrations-table'];
+
+  if (!DATABASE_URL) {
+    console.error('The $' + argv['database-url-var'] + ' environment variable is not set.');
+    process.exit(1);
+  }
+
   var updown_arg = argv._.length ? argv._[0] : null;
   var num_migrations;
   var migration_name;
