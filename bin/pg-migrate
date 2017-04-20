@@ -1,29 +1,43 @@
 #!/usr/bin/env node
+'use strict';
 
 const util = require('util');
 const yargs = require('yargs');
 const Migration = require('../dist/migration').default; // eslint-disable-line import/no-unresolved,import/extensions
 const migrationRunner = require('../dist/runner').default; // eslint-disable-line import/no-unresolved,import/extensions
 
-require('dotenv').load({ silent: true });
-
 process.on('uncaughtException', (err) => {
   console.log(err.stack);
   process.exit(1);
 });
 
+try {
+  require('dotenv').load({ silent: true }); // eslint-disable-line global-require,import/no-extraneous-dependencies
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+
+const databaseUrlVar = 'database-url-var';
+const migrationsDir = 'migrations-dir';
+const migrationsTable = 'migrations-table';
+const migrationsSchema = 'migrations-schema';
+const checkOrder = 'check-order';
+const configValue = 'config-value';
+
 const argv = yargs
   .usage('Usage: db-migrate [up|down|create] migrationName [options]')
 
   .option('d', {
-    alias: 'database-url-var',
+    alias: databaseUrlVar,
     default: 'DATABASE_URL',
     describe: 'Name of env variable where is set the database_url',
     type: 'string',
   })
 
   .option('m', {
-    alias: 'migrations-dir',
+    alias: migrationsDir,
     default: `${process.cwd()}/migrations`,
     defaultDescription: 'migrations',
     describe: 'The directory containing your migration files',
@@ -31,14 +45,14 @@ const argv = yargs
   })
 
   .option('t', {
-    alias: 'migrations-table',
+    alias: migrationsTable,
     default: 'pgmigrations',
     describe: 'The table storing which migrations have been run',
     type: 'string',
   })
 
   .option('s', {
-    alias: 'migrations-schema',
+    alias: migrationsSchema,
     default: 'public',
     describe: 'The schema storing table which migrations have been run',
     type: 'string',
@@ -50,8 +64,8 @@ const argv = yargs
     type: 'boolean',
   })
 
-  .option('check-order', {
-    default: false,
+  .option(checkOrder, {
+    default: true,
     describe: 'Check order of migrations before running them',
     type: 'boolean',
   })
@@ -61,6 +75,12 @@ const argv = yargs
     default: false,
     describe: 'Print version info',
     type: 'boolean',
+  })
+
+  .option('config-value', {
+    default: 'db',
+    describe: 'Name of config section with db options',
+    type: 'string',
   })
 
   .help()
@@ -76,7 +96,39 @@ if (argv.help || argv._.length === 0) {
   process.exit(1);
 }
 
-const MIGRATIONS_DIR = argv['migrations-dir'];
+let MIGRATIONS_DIR = argv[migrationsDir];
+let DATABASE_URL = process.env[argv[databaseUrlVar]];
+let MIGRATIONS_SCHEMA = argv[migrationsSchema];
+let MIGRATIONS_TABLE = argv[migrationsTable];
+let CHECK_ORDER = argv[checkOrder];
+
+try {
+  // Load config (and suppress the no-config-warning)
+  process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
+  const config = require('config'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+  if (config[argv[configValue]]) {
+    const db = config[argv[configValue]];
+    if (typeof db === 'object') {
+      MIGRATIONS_DIR = db[migrationsDir] || MIGRATIONS_DIR;
+      MIGRATIONS_SCHEMA = db[migrationsSchema] || MIGRATIONS_SCHEMA;
+      MIGRATIONS_TABLE = db[migrationsTable] || MIGRATIONS_TABLE;
+      CHECK_ORDER = typeof db[checkOrder] !== 'undefined' ? db[checkOrder] : CHECK_ORDER;
+      if (db.url) {
+        DATABASE_URL = db.url;
+      } else if (db.host || db.port || db.name) {
+        const creds = `${db.user}${db.password ? `:${db.password}` : ''}`;
+        DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${db.host || 'localhost'}:${db.port || 5432}/${db.name}`;
+      }
+    } else {
+      DATABASE_URL = db;
+    }
+  }
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+
 const action = argv._.shift();
 
 if (action === 'create') {
@@ -94,17 +146,13 @@ if (action === 'create') {
   const migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'up' || action === 'down') {
-  const DATABASE_URL = process.env[argv['database-url-var']];
-  const MIGRATIONS_SCHEMA = argv['migrations-schema'];
-  const MIGRATIONS_TABLE = argv['migrations-table'];
-  const DRY_RUN = argv['dry-run'];
-
   if (!DATABASE_URL) {
-    console.error(`The $${argv['database-url-var']} environment variable is not set.`);
+    console.error(`The $${argv[databaseUrlVar]} environment variable is not set.`);
     process.exit(1);
   }
 
-  if (DRY_RUN) {
+  const dryRun = argv['dry-run'];
+  if (dryRun) {
     console.log('dry run');
   }
 
@@ -121,7 +169,7 @@ if (action === 'create') {
   }
 
   migrationRunner({
-    dryRun: DRY_RUN,
+    dryRun,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
     migrations_schema: MIGRATIONS_SCHEMA,
@@ -129,7 +177,7 @@ if (action === 'create') {
     direction: action,
     count: num_migrations,
     file: migration_name,
-    checkOrder: argv['check-order'],
+    checkOrder: CHECK_ORDER,
   })
     .then(() => {
       console.log('Migrations complete!');
