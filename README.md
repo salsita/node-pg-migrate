@@ -94,7 +94,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createTable( tablename, columns, options )`
 
-> Create a new table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createtable.html)
+> Create a new table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createtable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name for the new table
@@ -108,7 +108,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropTable( tablename )`
 
-> Drop existing table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-droptable.html)
+> Drop existing table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to drop
@@ -117,7 +117,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameTable( tablename, new_tablename )`
 
-> Rename a table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Rename a table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to rename
@@ -129,7 +129,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.addColumns( tablename, new_columns )`
 
-> Add columns to an existing table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Add columns to an existing table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -142,7 +142,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropColumns( tablename, columns )`
 
-> Drop columns from a table - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Drop columns from a table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -154,7 +154,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameColumn( tablename, old_column_name, new_column_name )`
 
-> Rename a column - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Rename a column - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -167,7 +167,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.alterColumn( tablename, column_name, column_options )`
 
-> Alter a column (default value, type, allow null) - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Alter a column (default value, type, allow null) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -181,7 +181,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.addConstraint( tablename, constraint_name, expression )`
 
-> Add a named column constraint - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Add a named column constraint - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -195,7 +195,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropConstraint( tablename, constraint_name )`
 
-> Drop a named column constraint - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-altertable.html)
+> Drop a named column constraint - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -205,7 +205,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createIndex( tablename, columns, options )`
 
-> Create a new index - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createindex.html)
+> Create a new index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createindex.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -224,7 +224,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropIndex( tablename, columns, options )`
 
-> Drop an index - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-dropindex.html)
+> Drop an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropindex.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
@@ -248,7 +248,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createExtension( extension )`
 
-> Install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createextension.html.html)
+> Install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createextension.html.html)
 
 **Arguments:**
 - `extension` _[string or array of strings]_ - name(s) of extensions to install
@@ -260,7 +260,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropExtension( extension )`
 
-> Un-install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-dropextension.html)
+> Un-install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropextension.html)
 
 **Arguments:**
 - `extension` _[string or array of strings]_ - name(s) of extensions to install
@@ -270,7 +270,7 @@ This is required for some SQL operations that cannot be run within a transaction
 #### `pgm.createType( type_name, values )`
 
 
-> Create a new data type - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createtype.html)
+> Create a new data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createtype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the new type
@@ -283,7 +283,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropType( type_name )`
 
-> Drop a custom data type - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-droptype.html)
+> Drop a custom data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the new type
