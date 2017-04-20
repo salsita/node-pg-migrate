@@ -269,11 +269,12 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createType( type_name, values )`
 
-> Create a new enum data type - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createtype.html)
+
+> Create a new data type - [postgres docs](http://www.postgresql.org/docs/9.3/static/sql-createtype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the new type
-- `values` _[array of strings]_ - possible values
+- `values` _[array of strings or object]_ if an array the contents are possible values for an enum type, if an object names and types for a composite type
 
 **Aliases:** `addType`
 **Reverse Operation:** `dropType`
