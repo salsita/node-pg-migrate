@@ -1,8 +1,9 @@
 # pg-migrate
 
-[![Dependency Status](https://david-dm.org/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate)
-[![devDependency Status](https://david-dm.org/theoephraim/node-pg-migrate/dev-status.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=dev)
-[![peerDependencies Status](https://david-dm.org/theoephraim/node-pg-migrate/peer-status.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=peer)
+[![Dependency Status](https://img.shields.io/david/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate)
+[![devDependency Status](https://img.shields.io/david/dev/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=dev)
+[![peerDependencies Status](https://img.shields.io/david/peer/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=peer)
+[![optionalDependencies Status](https://img.shields.io/david/optional/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=optional)
 [![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
@@ -17,8 +18,37 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 ## Usage
 
-You must specify your database connection url by setting the environment variable `DATABASE_URL`.
-If a .env file exists, it will be loaded using [dotenv](https://github.com/motdotla/dotenv) when running the pg-migrate binary.
+You can specify your database connection information using [config](https://www.npmjs.com/package/config).
+
+```json
+// config/default.json
+{
+  "db": "postgres://postgres:password@localhost:5432/name"
+}
+```
+
+or
+
+```json
+// config/default.json
+{
+  "db": {
+    "user": "postgres",
+    "password": "",
+    "host": "localhost",
+    "port": 5432,
+    "name": "name"
+  }
+}
+```
+
+You could also specify your database url by setting the environment variable `DATABASE_URL`.
+
+```
+DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
+```
+
+If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the pg-migrate binary.
 
 Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
 
@@ -34,14 +64,18 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 
 You can adjust defaults by passing arguments to `pg-migrate`:
 
+* `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
 * `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
-* `migrations-schema` (`s`) - The schema storing table which migrations have been run (defaults to `public`)
+* `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 
-* `check-order` - Check order of migrations before running them. (There should be no migration with timestamp lesser than last run migration.)
+* `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
+                  (There should be no migration with timestamp lesser than last run migration.)
 
 See all by running `pg-migrate --help`.
+
+Most of configuration options can be also specified in `node-config` configuration file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
 e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
@@ -52,10 +86,10 @@ e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-post
 When you run `pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.up = function(pgm){
+exports.up = function up(pgm) {
 
 }
-exports.down = function(pgm){
+exports.down = function down(pgm) {
 
 }
 ```
@@ -74,13 +108,23 @@ If `exports.down` is not present in a migration, pg-migrate will try to automati
 In some cases, you may want to perform some async operation during a migration, for example fetching some information from an external server, or inserting some data into the database. To make a migration block operate in async mode, just add another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed until `run()` is called. Here's an example:
 
 ```javascript
-exports.up = function(pgm, run){
-  doSomethingAsync(function(){
+exports.up = function up(pgm, run) {
+  doSomethingAsync(function() {
     run();
   });
 }
 ```
 
+Another way how to perform some async operation is to return [Promise](https://promisesaplus.com/) from `up` or `down` function. Example:
+
+```javascript
+exports.up = function(pgm) {
+  return new Promise(resolve => {
+    // doSomethingAsync
+    resolve();
+  });
+}
+```
 
 
 ## Migration methods

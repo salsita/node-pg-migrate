@@ -1,52 +1,63 @@
-var rewire = require('rewire');
-var Migration = rewire('../lib/migration');
-var actions = require('./1414549381268_names');
-var sinon = require('sinon');
-var assert = require('assert');
+import sinon from 'sinon';
+import assert from 'assert';
+import actions from './1414549381268_names';
+import actionsPromise from './1414549381268_names_promise';
+import Migration from '../lib/migration';
 
-var migration;
+describe('lib/migration', () => {
+  const dbMock = {};
+  let migration;
 
-describe('lib/migration', function() {
-  var dbMock = {};
-  var done;
-
-  before(function() {
-    Migration.__set__({
-      db: dbMock,
-    });
-    migration = new Migration('1414549381268_names.js', actions, { migrations_table: 'pgmigrations' });
-  });
-
-  beforeEach(function() {
+  beforeEach(() => {
     dbMock.query = sinon.spy();
-    done = sinon.mock();
   });
 
-  describe('self.applyUp', function() {
-    it('normal operations: db.query should be called', function() {
-      migration.applyUp(done);
-      assert.equal(dbMock.query.calledOnce, true);
+  describe('self.applyUp', () => {
+    it('normal operations: db.query should be called', () => {
+      migration = new Migration(dbMock, '1414549381268_names.js', actions);
+      return migration
+        .applyUp()
+        .then(() => {
+          assert.equal(dbMock.query.called, true);
+        });
     });
 
-    it('--dry-run option: db.query should not be called', function() {
-      global.dryRun = true;
-      migration.applyUp(done);
-      assert.equal(dbMock.query.called, false);
-      global.dryRun = false;
+    it('normal operations: db.query should be called when returning promise', () => {
+      migration = new Migration(dbMock, '1414549381268_names_promise.js', actionsPromise);
+      return migration
+        .applyUp()
+        .then(() => {
+          assert.equal(dbMock.query.called, true);
+        });
+    });
+
+    it('--dry-run option: db.query should not be called', () => {
+      migration = new Migration(dbMock, '1414549381268_names.js', actions, { dryRun: true });
+      return migration
+        .applyUp()
+        .then(() => {
+          assert.equal(dbMock.query.called, false);
+        });
     });
   });
 
-  describe('self.applyDown', function() {
-    it('normal operations: db.query should be called', function() {
-      migration.applyDown(done);
-      assert.equal(dbMock.query.calledOnce, true);
+  describe('self.applyDown', () => {
+    it('normal operations: db.query should be called', () => {
+      migration = new Migration(dbMock, '1414549381268_names.js', actions);
+      return migration
+        .applyDown()
+        .then(() => {
+          assert.equal(dbMock.query.called, true);
+        });
     });
 
-    it('--dry-run option: db.query should not be called', function() {
-      global.dryRun = true;
-      migration.applyDown(done);
-      assert.equal(dbMock.query.called, false);
-      global.dryRun = false;
+    it('--dry-run option: db.query should not be called', () => {
+      migration = new Migration(dbMock, '1414549381268_names.js', actions, { dryRun: true });
+      return migration
+        .applyDown()
+        .then(() => {
+          assert.equal(dbMock.query.called, false);
+        });
     });
   });
 });

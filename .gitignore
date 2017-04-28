@@ -3,3 +3,4 @@
 *.log
 migrations/
 node_modules/
+dist*/**
