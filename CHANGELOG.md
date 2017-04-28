@@ -1,6 +1,6 @@
 # Change Log
 
-## [2.0.0] (2017-04-20)
+## [2.0.0] (2017-04-28)
 
 Rewritten using es6 (transpiled via [babel](https://babeljs.io/)) and Promises.
 
