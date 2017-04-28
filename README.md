@@ -64,9 +64,10 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 
 You can adjust defaults by passing arguments to `pg-migrate`:
 
+* `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
 * `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
-* `migrations-schema` (`s`) - The schema storing table which migrations have been run (defaults to `public`)
+* `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).

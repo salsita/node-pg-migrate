@@ -9,6 +9,7 @@ Rewritten using es6 (transpiled via [babel](https://babeljs.io/)) and Promises.
 - supports only node >= 4
 - `check-order` flag now defaults to `true` (to switch it off supply `--no-check-order` on command line)
 - [dotenv](https://www.npmjs.com/package/dotenv) package is `optionalDependency`
+- `s` option is now alias for `schema` which sets schema for migrations SQL, if you only need to change schema of migrations table use `--migrations-schema`
 
 ### Added
 

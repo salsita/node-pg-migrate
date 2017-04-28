@@ -19,6 +19,7 @@ try {
   }
 }
 
+const schema = 'schema';
 const databaseUrlVar = 'database-url-var';
 const migrationsDir = 'migrations-dir';
 const migrationsTable = 'migrations-table';
@@ -52,8 +53,15 @@ const argv = yargs
   })
 
   .option('s', {
-    alias: migrationsSchema,
+    alias: schema,
     default: 'public',
+    describe: 'The schema on which migration will be run (defaults to `public`)',
+    type: 'string',
+  })
+
+  .option(migrationsSchema, {
+    default: undefined,
+    defaultDescription: 'Same as "schema"',
     describe: 'The schema storing table which migrations have been run',
     type: 'string',
   })
@@ -98,6 +106,7 @@ if (argv.help || argv._.length === 0) {
 
 let MIGRATIONS_DIR = argv[migrationsDir];
 let DATABASE_URL = process.env[argv[databaseUrlVar]];
+let SCHEMA = argv[schema];
 let MIGRATIONS_SCHEMA = argv[migrationsSchema];
 let MIGRATIONS_TABLE = argv[migrationsTable];
 let CHECK_ORDER = argv[checkOrder];
@@ -109,6 +118,7 @@ try {
   if (config[argv[configValue]]) {
     const db = config[argv[configValue]];
     if (typeof db === 'object') {
+      SCHEMA = db[schema] || SCHEMA;
       MIGRATIONS_DIR = db[migrationsDir] || MIGRATIONS_DIR;
       MIGRATIONS_SCHEMA = db[migrationsSchema] || MIGRATIONS_SCHEMA;
       MIGRATIONS_TABLE = db[migrationsTable] || MIGRATIONS_TABLE;
@@ -172,6 +182,7 @@ if (action === 'create') {
     dryRun,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
+    schema: SCHEMA,
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
     direction: action,
