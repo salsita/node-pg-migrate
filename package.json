@@ -33,7 +33,7 @@
   "dependencies": {
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
-    "yargs": "~7.1.0"
+    "yargs": "~8.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
