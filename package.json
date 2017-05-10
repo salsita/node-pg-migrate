@@ -59,7 +59,7 @@
     "dotenv": ">=1.0.0"
   },
   "scripts": {
-    "compile": "babel lib/ -d dist/",
+    "compile": "babel lib/ -d dist/ && cp lib/migration-template.js dist/",
     "test": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register test",
     "lint": "eslint -c .eslintrc . bin/pg-migrate",
     "lintfix": "npm run lint -- --fix",
