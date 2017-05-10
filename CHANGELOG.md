@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.1.0] (2017-05-10)
+
+### Added
+
+- Enable string functions and arrays as default column values #82
+
 ## [2.0.0] (2017-04-28)
 
 Rewritten using es6 (transpiled via [babel](https://babeljs.io/)) and Promises.
