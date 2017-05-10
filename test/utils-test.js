@@ -27,6 +27,14 @@ describe('lib/utils', () => {
       assert.equal(escapeValue(value), 77.7);
     });
 
+    it('parse array to ARRAY constructor syntax string', () => {
+      const value = [[1], [2]];
+      const value2 = [['a'], ['b']];
+
+      assert.equal(escapeValue(value), 'ARRAY[[1],[2]]');
+      assert.equal(escapeValue(value2), 'ARRAY[[\'a\'],[\'b\']]');
+    });
+
     it('parse PgLiteral to unescaped string', () => {
       const value = PgLiteral.create('@l|<e');
 
