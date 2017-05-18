@@ -1,4 +1,4 @@
-exports.up = function up(pgm) {
+exports.up = (pgm) => {
   pgm.createTable('names', {
     id: 'id',
     name: { type: 'varchar(10)' },
