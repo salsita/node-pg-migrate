@@ -1,5 +1,6 @@
+/* eslint-disable no-unused-expressions */
 import sinon from 'sinon';
-import assert from 'assert';
+import { expect } from 'chai';
 import Db, { __RewireAPI__ as DbRewireAPI } from '../lib/db'; // eslint-disable-line import/named
 
 describe('lib/db', () => {
@@ -33,7 +34,7 @@ describe('lib/db', () => {
 
     it('pg.Client should be called with connection_string', () => {
       db = Db('connection_string');
-      assert(pgMock.Client.calledWith('connection_string'));
+      expect(pgMock.Client).to.be.calledWith('connection_string');
     });
   });
 
@@ -52,7 +53,7 @@ describe('lib/db', () => {
       client.connect.callsArg(0);
       client.query.callsArg(1);
       return db.query('query').then(() => {
-        assert(client.connect.calledOnce);
+        expect(client.connect).to.be.calledOnce;
       });
     });
     it('should not call client.connect on subsequent queries', () => {
@@ -63,7 +64,7 @@ describe('lib/db', () => {
           db.query('query_two')
         )
         .then(() => {
-          assert(client.connect.calledOnce);
+          expect(client.connect).to.be.calledOnce;
         });
     });
     it('should call client.query with query', () => {
@@ -71,33 +72,31 @@ describe('lib/db', () => {
       client.query.callsArg(1);
       return db.query('query')
         .then(() => {
-          assert(client.query.getCall(0).args[0] === 'query');
+          expect(client.query.getCall(0).args[0]).to.equal('query');
         });
     });
     it('should not call client.query if client.connect fails', () => {
-      client.connect.callsArgWith(0, 'error');
-      return db.query('query')
-        .then(() => assert(false))
-        .catch((err) => {
-          sinon.assert.notCalled(client.query);
-          assert(err === 'error');
-        });
+      const error = 'error';
+      client.connect.callsArgWith(0, error);
+      return expect(db.query('query'))
+        .to.eventually.be.rejectedWith(error)
+        .then(() =>
+          expect(client.query).to.not.been.called
+        );
     });
     it('should resolve promise if query throws no error', () => {
       client.connect.callsArg(0);
-      client.query.callsArgWith(1, null, 'result');
-      return db.query('query').then((result) => {
-        assert(result === 'result');
-      });
+      const result = 'result';
+      client.query.callsArgWith(1, null, result);
+      return expect(db.query('query'))
+        .to.eventually.equal(result);
     });
     it('should reject promise if query throws error', () => {
       client.connect.callsArg(0);
-      client.query.callsArgWith(1, 'error');
-      return db.query('query')
-        .then(() => assert(false))
-        .catch((err) => {
-          assert(err === 'error');
-        });
+      const error = 'error';
+      client.query.callsArgWith(1, error);
+      return expect(db.query('query'))
+        .to.eventually.be.rejectedWith(error);
     });
   });
 
@@ -113,7 +112,7 @@ describe('lib/db', () => {
     it('should call client.end', () => {
       client.end = sinon.spy();
       db.close();
-      assert(client.end.calledOnce);
+      expect(client.end).to.be.calledOnce;
     });
   });
 });
