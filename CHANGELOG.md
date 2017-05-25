@@ -1,11 +1,12 @@
 # Change Log
 
-## [2.2.0]
+## [2.2.0] (2017-05-25)
 
 ### Added
 
 - Better error logging #86
 - Locking migrations #88
+- Updated docs #89
 
 ## [2.1.1] (2017-05-18)
 
