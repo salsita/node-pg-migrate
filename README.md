@@ -83,10 +83,10 @@ e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-post
 
 ### Locking
 
-`pg-migrate` automatically checks if no other migration is run. For this it locks migration table and enters comment there.
+`pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
 There are other options how to do it, but I choose this one (see #88).
 In some circumstances it is possible that lock will not be released (Error message - `Error: Unable to fetch migrations: Error: Another migration is already running`).
-In that case it is needed to run `pg-migrate unlock`.
+In that case you need to run `pg-migrate unlock` to release the lock again.
 
 
 ## Defining Migrations
