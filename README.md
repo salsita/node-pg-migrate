@@ -59,6 +59,7 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 - `pg-migrate up {N}` - runs N up migrations from the current state.
 - `pg-migrate down` - runs a single down migration.
 - `pg-migrate down {N}` - runs N down migrations from the current state.
+- `pg-migrate unlock` - unlocks migrations (if previous up/down migration failed and was not automatically unlocked).
 
 ### Configuration
 
@@ -79,6 +80,13 @@ Most of configuration options can be also specified in `node-config` configurati
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
 e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+
+### Locking
+
+`pg-migrate` automatically checks if no other migration is run. For this it locks migration table and enters comment there.
+There are other options how to do it, but I choose this one (see #88).
+In some circumstances it is possible that lock will not be released (Error message - `Error: Unable to fetch migrations: Error: Another migration is already running`).
+In that case it is needed to run `pg-migrate unlock`.
 
 
 ## Defining Migrations
@@ -287,6 +295,17 @@ This is required for some SQL operations that cannot be run within a transaction
 **Arguments:**
 - `sql` _[string]_ - SQL query to run
 - `args` _[object]_ - (optional) key/val of arguments to replace
+
+-----------------------------------------------------
+
+#### `pgm.func( sql )`
+
+> Inserts raw string, which is not escaped
+
+e.g. `pgm.func('CURRENT_TIMESTAMP')` to use in `default` option for column definition
+
+**Arguments:**
+- `sql` _[string]_ - string to not be escaped
 
 -----------------------------------------------------
 
