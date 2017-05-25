@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.2.0]
+
+### Added
+
+- Better error logging #86
+- Locking migrations #88
+
+## [2.1.1] (2017-05-18)
+
+### Fixed
+
+- Down migration when down method is inferred #84
+
 ## [2.1.0] (2017-05-10)
 
 ### Added
