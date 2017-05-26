@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.2.1] (2017-05-26)
+
+### Fixed
+
+- Syntax error in node 4
+
 ## [2.2.0] (2017-05-25)
 
 ### Added

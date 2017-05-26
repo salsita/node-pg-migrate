@@ -4,7 +4,9 @@
 const util = require('util');
 const yargs = require('yargs');
 const Migration = require('../dist/migration').default; // eslint-disable-line import/no-unresolved,import/extensions
-const { default: migrationRunner, unlockRunner } = require('../dist/runner'); // eslint-disable-line import/no-unresolved,import/extensions
+const runner = require('../dist/runner'); // eslint-disable-line import/no-unresolved,import/extensions
+const migrationRunner = runner.default;
+const unlockRunner = runner.unlockRunner;
 
 process.on('uncaughtException', (err) => {
   console.log(err.stack);
