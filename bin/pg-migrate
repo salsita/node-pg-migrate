@@ -2,9 +2,11 @@
 'use strict';
 
 const util = require('util');
+const path = require('path');
 const yargs = require('yargs');
 const Migration = require('../dist/migration').default; // eslint-disable-line import/no-unresolved,import/extensions
 const runner = require('../dist/runner'); // eslint-disable-line import/no-unresolved,import/extensions
+
 const migrationRunner = runner.default;
 const unlockRunner = runner.unlockRunner;
 
@@ -28,6 +30,7 @@ const migrationsTable = 'migrations-table';
 const migrationsSchema = 'migrations-schema';
 const checkOrder = 'check-order';
 const configValue = 'config-value';
+const configFile = 'config-file';
 
 const argv = yargs
   .usage('Usage: db-migrate [up|down|create|unlock] [migrationName] [options]')
@@ -87,9 +90,16 @@ const argv = yargs
     type: 'boolean',
   })
 
-  .option('config-value', {
+  .option(configValue, {
     default: 'db',
     describe: 'Name of config section with db options',
+    type: 'string',
+  })
+
+  .option('f', {
+    alias: configFile,
+    default: undefined,
+    describe: 'Name of config file with db options',
     type: 'string',
   })
 
@@ -112,33 +122,47 @@ let SCHEMA = argv[schema];
 let MIGRATIONS_SCHEMA = argv[migrationsSchema];
 let MIGRATIONS_TABLE = argv[migrationsTable];
 let CHECK_ORDER = argv[checkOrder];
+let TYPE_SHORTHANDS = {};
+
+function readJson(json) {
+  if (typeof json === 'object') {
+    SCHEMA = json[schema] || SCHEMA;
+    MIGRATIONS_DIR = json[migrationsDir] || MIGRATIONS_DIR;
+    MIGRATIONS_SCHEMA = json[migrationsSchema] || MIGRATIONS_SCHEMA;
+    MIGRATIONS_TABLE = json[migrationsTable] || MIGRATIONS_TABLE;
+    CHECK_ORDER = typeof json[checkOrder] !== 'undefined' ? json[checkOrder] : CHECK_ORDER;
+    TYPE_SHORTHANDS = json['type-shorthands'] || TYPE_SHORTHANDS;
+    if (json.url) {
+      DATABASE_URL = json.url;
+    } else if (json.host || json.port || json.name) {
+      const creds = `${json.user}${json.password ? `:${json.password}` : ''}`;
+      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name}`;
+    }
+  } else {
+    DATABASE_URL = json || DATABASE_URL;
+  }
+}
 
 try {
   // Load config (and suppress the no-config-warning)
+  const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
   process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
   const config = require('config'); // eslint-disable-line global-require,import/no-extraneous-dependencies
   if (config[argv[configValue]]) {
     const db = config[argv[configValue]];
-    if (typeof db === 'object') {
-      SCHEMA = db[schema] || SCHEMA;
-      MIGRATIONS_DIR = db[migrationsDir] || MIGRATIONS_DIR;
-      MIGRATIONS_SCHEMA = db[migrationsSchema] || MIGRATIONS_SCHEMA;
-      MIGRATIONS_TABLE = db[migrationsTable] || MIGRATIONS_TABLE;
-      CHECK_ORDER = typeof db[checkOrder] !== 'undefined' ? db[checkOrder] : CHECK_ORDER;
-      if (db.url) {
-        DATABASE_URL = db.url;
-      } else if (db.host || db.port || db.name) {
-        const creds = `${db.user}${db.password ? `:${db.password}` : ''}`;
-        DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${db.host || 'localhost'}:${db.port || 5432}/${db.name}`;
-      }
-    } else {
-      DATABASE_URL = db;
-    }
+    readJson(db);
   }
+  process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 } catch (err) {
   if (err.code !== 'MODULE_NOT_FOUND') {
     throw err;
   }
+}
+
+const configFileName = argv[configFile];
+if (configFileName) {
+  const config = require(path.resolve(configFileName)); // eslint-disable-line global-require,import/no-dynamic-require
+  readJson(config);
 }
 
 const action = argv._.shift();
@@ -210,6 +234,7 @@ if (action === 'create') {
     count: num_migrations,
     file: migration_name,
     checkOrder: CHECK_ORDER,
+    typeShorthands: TYPE_SHORTHANDS,
   })
     .then(() => {
       console.log('Migrations complete!');
