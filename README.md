@@ -79,7 +79,7 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 
 See all by running `pg-migrate --help`.
 
-Most of configuration options can be also specified in [config](https://www.npmjs.com/package/config) configuration file.
+Most of configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
 e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
@@ -97,7 +97,7 @@ Available options are:
 * `type-shorthands` - for column type shorthands
 
   You can specify custom types which will be expanded to column definition (e.g. for `module.exports = { "type-shorthands": { id: { type: 'uuid', primaryKey: true }, createdAt: { type: 'timestamp', notNull: true, default: new require('node-pg-migrate').PgLiteral('current_timestamp') } } }`
-  will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`.
+  it will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`).
 
 ### Locking
 
