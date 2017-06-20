@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.3.0] (2017-06-20)
+
+### Added
+
+- JSON config and type shorthands [see](README.md#json-configuration) #91
+
 ## [2.2.1] (2017-05-26)
 
 ### Fixed
