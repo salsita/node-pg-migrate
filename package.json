@@ -8,6 +8,7 @@
   "bin": {
     "pg-migrate": "bin/pg-migrate"
   },
+  "main": "dist/runner.js",
   "keywords": [
     "db",
     "database",
@@ -41,12 +42,12 @@
     "babel-plugin-rewire": "^1.1.0",
     "babel-preset-env": "^1.4.0",
     "babel-preset-stage-3": "^6.24.0",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
+    "chai": "^4.0.0",
+    "chai-as-promised": "^7.0.0",
     "config": ">=1.0.0",
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
-    "eslint": "^3.17.0",
+    "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "11.2.0",
     "eslint-plugin-import": "^2.2.0",
     "mocha": "^3.4.1",
@@ -66,6 +67,6 @@
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "lint": "eslint -c .eslintrc . bin/pg-migrate",
     "lintfix": "npm run lint -- --fix",
-    "prepublish": "npm run compile"
+    "prepare": "npm run compile"
   }
 }

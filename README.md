@@ -48,6 +48,8 @@ You could also specify your database url by setting the environment variable `DA
 DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
 ```
 
+You can specify custom JSON file with config (format is same as for `db` entry of [config](https://www.npmjs.com/package/config) file)
+
 If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the pg-migrate binary.
 
 Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
@@ -65,6 +67,7 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 
 You can adjust defaults by passing arguments to `pg-migrate`:
 
+* `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
 * `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
 * `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
@@ -76,10 +79,25 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 
 See all by running `pg-migrate --help`.
 
-Most of configuration options can be also specified in `node-config` configuration file.
+Most of configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
 e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+
+#### JSON Configuration
+
+You can use [config](https://www.npmjs.com/package/config) or your own json file with configuration (`config-file` command line option).
+
+Available options are:
+
+* `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order` - same as above
+
+* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `name` - for connection details
+
+* `type-shorthands` - for column type shorthands
+
+  You can specify custom types which will be expanded to column definition (e.g. for `module.exports = { "type-shorthands": { id: { type: 'uuid', primaryKey: true }, createdAt: { type: 'timestamp', notNull: true, default: new require('node-pg-migrate').PgLiteral('current_timestamp') } } }`
+  it will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`).
 
 ### Locking
 

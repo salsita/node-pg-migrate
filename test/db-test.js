@@ -6,6 +6,7 @@ import Db, { __RewireAPI__ as DbRewireAPI } from '../lib/db'; // eslint-disable-
 describe('lib/db', () => {
   let sandbox;
   const pgMock = {};
+  const log = () => null;
   let client;
 
   before(() => {
@@ -41,7 +42,7 @@ describe('lib/db', () => {
   describe('.query( query )', () => {
     let db;
     beforeEach(() => {
-      db = Db();
+      db = Db(undefined, log);
       client.connect = sandbox.stub();
       client.query = sandbox.stub();
     });
@@ -111,8 +112,10 @@ describe('lib/db', () => {
 
     it('should call client.end', () => {
       client.end = sinon.spy();
-      db.close();
-      expect(client.end).to.be.calledOnce;
+      return db.close()
+        .then(() =>
+          expect(client.end).to.be.calledOnce
+        );
     });
   });
 });
