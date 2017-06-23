@@ -33,7 +33,7 @@ const configValue = 'config-value';
 const configFile = 'config-file';
 
 const argv = yargs
-  .usage('Usage: db-migrate [up|down|create|unlock] [migrationName] [options]')
+  .usage('Usage: pg-migrate [up|down|create|unlock] [migrationName] [options]')
 
   .option('d', {
     alias: databaseUrlVar,
