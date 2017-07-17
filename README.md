@@ -246,6 +246,7 @@ This is required for some SQL operations that cannot be run within a transaction
   - `default` _[string or null]_ - null, string
   - `type` _[string]_ - new datatype
   - `notNull` _[boolean]_ - sets NOT NULL if true
+  - `using` _[string]_ - adds USING clause to change values in column
 
 -----------------------------------------------------
 
