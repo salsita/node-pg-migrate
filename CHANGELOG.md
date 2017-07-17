@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.4.0] (2017-07-17)
+
+### Changed
+
+- Do not check file extension of migration file #93
+
 ## [2.3.0] (2017-06-20)
 
 ### Added
