@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.5.0] (2017-07-19)
+
+### Added
+
+- USING clasue in alter column #99
+- Role operations #100
+
 ## [2.4.0] (2017-07-17)
 
 ### Changed
