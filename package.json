@@ -40,23 +40,23 @@
     "babel-cli": "^6.24.0",
     "babel-eslint": "^7.2.0",
     "babel-plugin-rewire": "^1.1.0",
-    "babel-preset-env": "^1.4.0",
+    "babel-preset-env": "^1.6.0",
     "babel-preset-stage-3": "^6.24.0",
-    "chai": "^4.0.0",
-    "chai-as-promised": "^7.0.0",
+    "chai": "^4.1.0",
+    "chai-as-promised": "^7.1.0",
     "config": ">=1.0.0",
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "11.2.0",
-    "eslint-plugin-import": "^2.2.0",
-    "mocha": "^3.4.1",
-    "pg": "^6.2.2",
-    "sinon": "^2.1.0",
-    "sinon-chai": "^2.10.0"
+    "eslint-plugin-import": "^2.7.0",
+    "mocha": "^3.4.0",
+    "pg": "^7.0.0",
+    "sinon": "^2.3.0",
+    "sinon-chai": "^2.12.0"
   },
   "peerDependencies": {
-    "pg": ">=4.3.0 <7.0.0"
+    "pg": ">=4.3.0 <8.0.0"
   },
   "optionalDependencies": {
     "config": ">=1.0.0",
