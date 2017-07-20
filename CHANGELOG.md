@@ -1,10 +1,17 @@
 # Change Log
 
+## [2.6.0] (2017-07-20)
+
+### Added
+
+- Support for pg >=4.3.0 <8.0.0
+- Interpret only files as migrations in migration directory #101
+
 ## [2.5.0] (2017-07-19)
 
 ### Added
 
-- USING clasue in alter column #99
+- USING clause in alter column #99
 - Role operations #100
 
 ## [2.4.0] (2017-07-17)
