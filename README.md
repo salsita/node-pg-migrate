@@ -482,6 +482,7 @@ This is required for some SQL operations that cannot be run within a transaction
   - `condition` _[string]_ - condition to met to execute trigger
   - `deferrable` _[boolean]_ - flag for deferrable constraint trigger
   - `deferred` _[boolean]_ - flag for initially deferred deferrable constraint trigger
+- `definition` _[string]_ - optional definition of function which will be created with same name as trigger
 
 **Reverse Operation:** `dropTrigger`
 
