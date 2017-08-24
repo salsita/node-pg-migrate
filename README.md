@@ -401,7 +401,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameRole( old_role_name, new_role_name )`
 
-> Alters a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
+> Renames a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
 **Arguments:**
 - `old_role_name` _[string]_ - old name of the role
@@ -426,10 +426,10 @@ This is required for some SQL operations that cannot be run within a transaction
   - `type` _[string]_ - datatype of argument
   - `default` _[string]_ - default value of argument
 - `function_options` _[object]_ - options:
-  - `replace` _[boolean]_ - create or replace function
   - `returns` _[string]_ - returns clause
-  - `delimiter` _[string]_ - delimiter for definition
   - `language` _[string]_ - language name of function definition
+  - `replace` _[boolean]_ - create or replace function
+  - `delimiter` _[string]_ - delimiter for definition
   - `window` _[boolean]_ - window function
   - `behavior` _[string]_ - `IMMUTABLE`, `STABLE`, or `VOLATILE`
   - `onNull` _[boolean]_ - `RETURNS NULL ON NULL INPUT`
@@ -440,24 +440,74 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
-#### `pgm.dropFunction( function_name, function_params )`
+#### `pgm.dropFunction( function_name, function_params, drop_options )`
 
 > Drop a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropfunction.html)
 
 **Arguments:**
-- `function_name` _[string]_ - name of the new function
+- `function_name` _[string]_ - name of the the function to drop
 - `function_params` _[array]_ - [see](#pgmcreatefunction-function_name-function_params-function_options-definition-)
+- `drop_options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops function only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 -----------------------------------------------------
 
 #### `pgm.renameFunction( old_function_name, function_params, new_function_name )`
 
-> Alters a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
+> Renames a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
 
 **Arguments:**
 - `old_function_name` _[string]_ - old name of the function
 - `function_params` _[array]_ - [see](#pgmcreatefunction-function_name-function_params-function_options-definition-)
 - `new_function_name` _[string]_ - new name of the function
+
+-----------------------------------------------------
+
+### Trigger Operations
+
+#### `pgm.createTrigger( table_name, trigger_name, trigger_options )`
+
+> Create a new function - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createtrigger.html)
+
+**Arguments:**
+- `table_name` _[string]_ - name of the table where the new trigger will live
+- `trigger_name` _[string]_ - name of the new trigger
+- `trigger_options` _[object]_ - options:
+  - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
+  - `operation` _[string or array]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
+  - `constraint` _[boolean]_ - creates constraint trigger
+  - `procedure` _[string]_ - the name of procedure to execute
+  - `level` _[string]_ - `STATEMENT`, or `ROW`
+  - `condition` _[string]_ - condition to met to execute trigger
+  - `deferrable` _[boolean]_ - flag for deferrable constraint trigger
+  - `deferred` _[boolean]_ - flag for initially deferred deferrable constraint trigger
+
+**Reverse Operation:** `dropTrigger`
+
+-----------------------------------------------------
+
+#### `pgm.dropTrigger( table_name, trigger_name, drop_options )`
+
+> Drop a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptrigger.html)
+
+**Arguments:**
+- `table_name` _[string]_ - name of the table where the trigger lives
+- `trigger_name` _[string]_ - name of the the trigger to drop
+- `drop_options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops trigger only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
+
+-----------------------------------------------------
+
+#### `pgm.renameTrigger( table_name, old_trigger_name, new_trigger_name )`
+
+> Renames a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
+
+**Arguments:**
+- `table_name` _[string]_ - name of the table where the trigger lives
+- `old_trigger_name` _[string]_ - old name of the trigger
+- `new_trigger_name` _[string]_ - new name of the trigger
 
 -----------------------------------------------------
 
