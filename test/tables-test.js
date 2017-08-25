@@ -23,5 +23,12 @@ describe('lib/operations/tables', () => {
   "id" uuid PRIMARY KEY
 );`);
     });
+
+    it('check schemas can be used for foreign keys', () => {
+      const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: { schema: 'a', name: 'b' } } });
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES "a"."b"
+);`);
+    });
   });
 });
