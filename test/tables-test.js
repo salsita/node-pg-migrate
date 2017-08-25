@@ -30,5 +30,17 @@ describe('lib/operations/tables', () => {
   "parent_id" integer REFERENCES "a"."b"
 );`);
     });
+
+    it('check multicolumn primary key name does not include schema', () => {
+      const sql = Tables.create()({ schema: 's', name: 'my_table_name' }, {
+        a: { type: 'integer', primaryKey: true },
+        b: { type: 'varchar', primaryKey: true },
+      });
+      expect(sql).to.equal(`CREATE TABLE "s"."my_table_name" (
+  "a" integer,
+  "b" varchar,
+  CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("a", "b")
+);`);
+    });
   });
 });
