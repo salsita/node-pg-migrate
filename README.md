@@ -477,7 +477,7 @@ This is required for some SQL operations that cannot be run within a transaction
   - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
   - `operation` _[string or array]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
   - `constraint` _[boolean]_ - creates constraint trigger
-  - `procedure` _[string]_ - the name of procedure to execute
+  - `function` _[string]_ - the name of procedure to execute
   - `level` _[string]_ - `STATEMENT`, or `ROW`
   - `condition` _[string]_ - condition to met to execute trigger
   - `deferrable` _[boolean]_ - flag for deferrable constraint trigger
