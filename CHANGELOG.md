@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.7.1] (2017-08-28)
+
+### Fixed
+
+- Support object with schema and table name in more places [#105](https://github.com/theoephraim/node-pg-migrate/pull/105)
+
 ## [2.7.0] (2017-08-01)
 
 ### Added
