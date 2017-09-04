@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.8.0] (2017-09-04)
+
+### Added
+
+- Trigger operations [#104](https://github.com/theoephraim/node-pg-migrate/pull/104)
+
 ## [2.7.1] (2017-08-28)
 
 ### Fixed
