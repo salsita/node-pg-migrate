@@ -31,6 +31,13 @@ describe('lib/operations/tables', () => {
 );`);
     });
 
+    it('check defining column can be used for foreign keys', () => {
+      const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: 'a.b(id)' } });
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES a.b(id)
+);`);
+    });
+
     it('check multicolumn primary key name does not include schema', () => {
       const sql = Tables.create()({ schema: 's', name: 'my_table_name' }, {
         a: { type: 'integer', primaryKey: true },
