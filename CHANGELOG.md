@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.8.1] (2017-09-06)
+
+### Fixed
+
+- Fixing referencing column [#107](https://github.com/theoephraim/node-pg-migrate/pull/107)
+
+### Changed
+
+- Formatting changes, added licence [#108](https://github.com/theoephraim/node-pg-migrate/pull/108)
+
 ## [2.8.0] (2017-09-04)
 
 ### Added
