@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.8.2] (2017-09-11)
+
+### Fixed
+
+- Fix automatic reversal of addColumns [#110](https://github.com/theoephraim/node-pg-migrate/pull/110)
+
 ## [2.8.1] (2017-09-06)
 
 ### Fixed
