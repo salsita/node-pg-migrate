@@ -352,6 +352,75 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
+#### `pgm.renameType( type_name, new_type_name )`
+
+> Rename a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type to rename
+- `new_type_name` _[string]_ - name of the new type
+
+-----------------------------------------------------
+
+#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
+
+> Adds an attribute to data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to add
+- `attribute_type` _[string]_ - type of the attribute to add
+
+-----------------------------------------------------
+
+#### `pgm.dropTypeAttribute( type_name, attribute_name, options )`
+
+> Adds an attribute to data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to drop
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - default false
+
+-----------------------------------------------------
+
+#### `pgm.setTypeAttribute( type_name, attribute_name, options )`
+
+> Sets a data type of attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute
+- `attribute_type` _[string]_ - new type of the attribute
+
+-----------------------------------------------------
+
+#### `pgm.addTypeValue( type_name, value )`
+
+> Adds a value to list of enum data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `value` _[string]_ - value to add to list
+- `options` _[object]_ - options:
+  - `ifNotExists` _[boolean]_ - default false
+  - `before` _[string]_ - value before which the new value should be add
+  - `after` _[string]_ - value after which the new value should be add
+
+-----------------------------------------------------
+
+#### `pgm.renameTypeAttribute( type_name, attribute_name, new_attribute_name )`
+
+> Rename an attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to rename
+- `new_attribute_name` _[string]_ - new name of the attribute
+
+-----------------------------------------------------
+
 ### Role Operations
 
 #### `pgm.createRole( role_name, role_options )`
