@@ -42,6 +42,18 @@ or
 }
 ```
 
+if using your own custom config file:
+```json
+// path/to/config.json
+{
+  "user": "postgres",
+  "password": "",
+  "host": "localhost",
+  "port": 5432,
+  "name": "name"
+}
+```
+
 You could also specify your database url by setting the environment variable `DATABASE_URL`.
 
 ```
