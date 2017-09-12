@@ -62,8 +62,8 @@ Depending on your project's setup, it may make sense to write some custom grunt 
 - `pg-migrate down` - runs a single down migration.
 - `pg-migrate down {N}` - runs N down migrations from the current state.
 - `pg-migrate unlock` - unlocks migrations (if previous up/down migration failed and was not automatically unlocked).
-- `pg-migrate redo` - redos last migration (runs a single down migration, then single up migration).
-- `pg-migrate redo {N}` - redos N last migrations (runs N down migrations, then N up migrations).
+- `pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
+- `pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
 
 ### Configuration
 
