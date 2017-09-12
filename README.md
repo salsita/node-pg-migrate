@@ -364,7 +364,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
 
-> Adds an attribute to data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+> Add attribute to an existing data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the type
@@ -375,7 +375,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.dropTypeAttribute( type_name, attribute_name, options )`
 
-> Adds an attribute to data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+> Drop attribute from a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the type
@@ -385,9 +385,9 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
-#### `pgm.setTypeAttribute( type_name, attribute_name, options )`
+#### `pgm.setTypeAttribute( type_name, attribute_name, attribute_type )`
 
-> Sets a data type of attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+> Set data type of an existing attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the type
@@ -396,9 +396,9 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
-#### `pgm.addTypeValue( type_name, value )`
+#### `pgm.addTypeValue( type_name, value, options )`
 
-> Adds a value to list of enum data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+> Add value to a list of enum data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
 **Arguments:**
 - `type_name` _[string]_ - name of the type
@@ -460,7 +460,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.alterRole( role_name, role_options )`
 
-> Alters a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
+> Alter a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
 **Arguments:**
 - `role_name` _[string]_ - name of the new role
@@ -470,7 +470,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameRole( old_role_name, new_role_name )`
 
-> Renames a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
+> Rename a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
 **Arguments:**
 - `old_role_name` _[string]_ - old name of the role
@@ -524,7 +524,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameFunction( old_function_name, function_params, new_function_name )`
 
-> Renames a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
+> Rename a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
 
 **Arguments:**
 - `old_function_name` _[string]_ - old name of the function
@@ -572,7 +572,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameTrigger( table_name, old_trigger_name, new_trigger_name )`
 
-> Renames a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
+> Rename a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
 
 **Arguments:**
 - `table_name` _[string]_ - name of the table where the trigger lives
