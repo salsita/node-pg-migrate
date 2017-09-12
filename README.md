@@ -352,6 +352,75 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
+#### `pgm.renameType( type_name, new_type_name )`
+
+> Rename a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type to rename
+- `new_type_name` _[string]_ - name of the new type
+
+-----------------------------------------------------
+
+#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
+
+> Add attribute to an existing data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to add
+- `attribute_type` _[string]_ - type of the attribute to add
+
+-----------------------------------------------------
+
+#### `pgm.dropTypeAttribute( type_name, attribute_name, options )`
+
+> Drop attribute from a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to drop
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - default false
+
+-----------------------------------------------------
+
+#### `pgm.setTypeAttribute( type_name, attribute_name, attribute_type )`
+
+> Set data type of an existing attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute
+- `attribute_type` _[string]_ - new type of the attribute
+
+-----------------------------------------------------
+
+#### `pgm.addTypeValue( type_name, value, options )`
+
+> Add value to a list of enum data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `value` _[string]_ - value to add to list
+- `options` _[object]_ - options:
+  - `ifNotExists` _[boolean]_ - default false
+  - `before` _[string]_ - value before which the new value should be add
+  - `after` _[string]_ - value after which the new value should be add
+
+-----------------------------------------------------
+
+#### `pgm.renameTypeAttribute( type_name, attribute_name, new_attribute_name )`
+
+> Rename an attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to rename
+- `new_attribute_name` _[string]_ - new name of the attribute
+
+-----------------------------------------------------
+
 ### Role Operations
 
 #### `pgm.createRole( role_name, role_options )`
@@ -391,7 +460,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.alterRole( role_name, role_options )`
 
-> Alters a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
+> Alter a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
 **Arguments:**
 - `role_name` _[string]_ - name of the new role
@@ -401,7 +470,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameRole( old_role_name, new_role_name )`
 
-> Renames a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
+> Rename a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
 **Arguments:**
 - `old_role_name` _[string]_ - old name of the role
@@ -455,7 +524,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameFunction( old_function_name, function_params, new_function_name )`
 
-> Renames a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
+> Rename a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
 
 **Arguments:**
 - `old_function_name` _[string]_ - old name of the function
@@ -503,7 +572,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.renameTrigger( table_name, old_trigger_name, new_trigger_name )`
 
-> Renames a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
+> Rename a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
 
 **Arguments:**
 - `table_name` _[string]_ - name of the table where the trigger lives
