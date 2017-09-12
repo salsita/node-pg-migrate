@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.9.0] (2017-09-12)
+
+### Added
+
+- Alter type functions [#111](https://github.com/theoephraim/node-pg-migrate/pull/111)
+- redo command [#112](https://github.com/theoephraim/node-pg-migrate/pull/112)
+
 ## [2.8.2] (2017-09-11)
 
 ### Fixed
