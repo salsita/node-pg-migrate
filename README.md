@@ -48,7 +48,18 @@ You could also specify your database url by setting the environment variable `DA
 DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
 ```
 
-You can specify custom JSON file with config (format is same as for `db` entry of [config](https://www.npmjs.com/package/config) file)
+You can specify custom JSON file with config (format is same as for `db` entry of [config](https://www.npmjs.com/package/config) file), for example:
+
+```json
+// path/to/config.json
+{
+  "user": "postgres",
+  "password": "",
+  "host": "localhost",
+  "port": 5432,
+  "name": "name"
+}
+```
 
 If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the pg-migrate binary.
 
