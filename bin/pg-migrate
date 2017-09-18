@@ -35,7 +35,7 @@ const configValue = 'config-value';
 const configFile = 'config-file';
 
 const argv = yargs
-  .usage('Usage: pg-migrate [up|down|create|unlock|redo] [migrationName] [options]')
+  .usage('Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]')
 
   .option('d', {
     alias: databaseUrlVar,
@@ -252,7 +252,7 @@ if (action === 'create') {
       process.exit(1);
     });
 } else {
-  console.log('Invalid Action: Must be [up|down|create].');
+  console.log('Invalid Action: Must be [up|down|create|unlock|redo].');
   yargs.showHelp();
   process.exit(1);
 }

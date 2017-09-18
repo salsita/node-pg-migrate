@@ -34,11 +34,11 @@
   "dependencies": {
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
-    "yargs": "~8.0.1"
+    "yargs": "~9.0.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.0",
-    "babel-eslint": "^7.2.0",
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.0.0",
     "babel-plugin-rewire": "^1.1.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-stage-3": "^6.24.0",
@@ -47,13 +47,13 @@
     "config": ">=1.0.0",
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
-    "eslint": "^4.3.0",
-    "eslint-config-airbnb-base": "11.3.1",
+    "eslint": "^4.7.0",
+    "eslint-config-airbnb-base": "12.0.0",
     "eslint-plugin-import": "^2.7.0",
-    "mocha": "^3.4.0",
-    "pg": "^7.0.0",
-    "sinon": "^2.4.0",
-    "sinon-chai": "^2.12.0"
+    "mocha": "^3.5.0",
+    "pg": "^7.3.0",
+    "sinon": "^3.3.0",
+    "sinon-chai": "^2.13.0"
   },
   "peerDependencies": {
     "pg": ">=4.3.0 <8.0.0"
