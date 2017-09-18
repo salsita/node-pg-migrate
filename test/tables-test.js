@@ -27,14 +27,14 @@ describe('lib/operations/tables', () => {
     it('check schemas can be used for foreign keys', () => {
       const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: { schema: 'a', name: 'b' } } });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES "a"."b"
+  "parent_id" integer REFERENCES "a"."b" MATCH SIMPLE
 );`);
     });
 
     it('check defining column can be used for foreign keys', () => {
       const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: 'a.b(id)' } });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES a.b(id)
+  "parent_id" integer REFERENCES a.b(id) MATCH SIMPLE
 );`);
     });
 
