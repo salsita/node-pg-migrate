@@ -631,7 +631,6 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
 - `default` _[string]_ - adds DEFAULT clause for column
 
-
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
 
