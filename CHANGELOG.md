@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.10.0] (2017-09-21)
+
+### Added
+
+- Ability to specify constraints on table level [#114](https://github.com/theoephraim/node-pg-migrate/pull/114)
+
 ## [2.9.0] (2017-09-12)
 
 ### Added
