@@ -183,18 +183,37 @@ This is required for some SQL operations that cannot be run within a transaction
 - `tablename` _[string]_ - name for the new table
 - `columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
 - `options` _[object]_ - table options (optional)
-  - `inherits` _[string]_ - table to inherit from
+  - `temporary` _[bool]_ - default false
+  - `ifNotExists` _[bool]_ - default false
+  - `inherits` _[string]_ - table(s) to inherit from
+  - `constraints` _[object]_ - table constraints
+    - `check` _[string]_ - sql for a check constraint
+    - `unique` _[string or array of strings]_ - names of unique columns
+    - `primaryKey` _[string or array]_ - names of primary columns
+    - `exclude` _[string]_ - sql for an exclude constraint
+    - `deferrable` _[boolean]_ - flag for deferrable table
+    - `deferred` _[boolean]_ - flag for initially deferred deferrable table
+    - `foreignKeys` _[object or array of objects]_ - foreign keys specification
+      - `columns` _[string or array of strings]_ - names of columns
+      - `references` _[string]_ - names of foreign table and column names
+      - `onDelete` _[string]_ - action to perform on delete
+      - `onUpdate` _[string]_ - action to perform on update
+      - `match` _[string]_ - `FULL` or `SIMPLE`
+  - `like` _[string]_ - table(s) to inherit from
 
 **Reverse Operation:** `dropTable`
 
 -----------------------------------------------------
 
-#### `pgm.dropTable( tablename )`
+#### `pgm.dropTable( tablename, options )`
 
 > Drop existing table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to drop
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops table only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 -----------------------------------------------------
 
@@ -223,13 +242,16 @@ This is required for some SQL operations that cannot be run within a transaction
 
 -----------------------------------------------------
 
-#### `pgm.dropColumns( tablename, columns )`
+#### `pgm.dropColumns( tablename, columns, options )`
 
 > Drop columns from a table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
 - `columns` _[array of strings or object]_ - columns to drop (if object, uses keys)
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops column only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 **Aliases:** `dropColumn`
 
@@ -260,6 +282,7 @@ This is required for some SQL operations that cannot be run within a transaction
   - `type` _[string]_ - new datatype
   - `notNull` _[boolean]_ - sets NOT NULL if true
   - `using` _[string]_ - adds USING clause to change values in column
+  - `collation` _[string]_ - adds COLLATE clause to change values in column
 
 -----------------------------------------------------
 
@@ -270,20 +293,36 @@ This is required for some SQL operations that cannot be run within a transaction
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
-- `expression` _[string]_ - constraint expression (raw sql)
+- `expression` _[string or object]_ - constraint expression (raw sql) or see [constraints section of create table](#pgmcreatetable-tablename-columns-options-)
 
 **Aliases:** `createConstraint`
 **Reverse Operation:** `dropConstraint`
 
 -----------------------------------------------------
 
-#### `pgm.dropConstraint( tablename, constraint_name )`
+#### `pgm.dropConstraint( tablename, constraint_name, options )`
 
 > Drop a named column constraint - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
 - `tablename` _[string]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops constraint only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
+
+#### `pgm.renameConstraint( tablename, old_constraint_name, new_constraint_name )`
+
+-----------------------------------------------------
+
+> Rename a constraint - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
+
+**Arguments:**
+- `tablename` _[string]_ - name of the table to alter
+- `old_constraint_name` _[string]_ - current constraint name
+- `new_constraint_name` _[string]_ - new constraint name
+
+**Reverse Operation:** same operation in opposite direction
 
 -----------------------------------------------------
 
@@ -454,9 +493,9 @@ This is required for some SQL operations that cannot be run within a transaction
   - `password` _[string]_ -
   - `encrypted` _[boolean]_ - default true
   - `valid` _[string]_ - timestamp
-  - `inRole` _[string or array]_ - role or array of roles
-  - `role` _[string or array]_ - role or array of roles
-  - `admin` _[string or array]_ - role or array of roles
+  - `inRole` _[string or array of strings]_ - role or array of roles
+  - `role` _[string or array of strings]_ - role or array of roles
+  - `admin` _[string or array of strings]_ - role or array of roles
 
 **Reverse Operation:** `dropRole`
 
@@ -557,7 +596,7 @@ This is required for some SQL operations that cannot be run within a transaction
 - `trigger_name` _[string]_ - name of the new trigger
 - `trigger_options` _[object]_ - options:
   - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
-  - `operation` _[string or array]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
+  - `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
   - `constraint` _[boolean]_ - creates constraint trigger
   - `function` _[string]_ - the name of procedure to execute
   - `level` _[string]_ - `STATEMENT`, or `ROW`
@@ -622,14 +661,16 @@ e.g. `pgm.func('CURRENT_TIMESTAMP')` to use in `default` option for column defin
 The `createTable` and `addColumns` methods both take a `columns` argument that specifies column names and options. It is a object (key/value) where each key is the name of the column, and the value is another object that defines the options for the column.
 
 - `type` _[string]_ - data type (use normal postgres types)
+- `collation` _[string]_ - collation of data type
 - `unique` _[boolean]_ - set to true to add a unique constraint on this column
 - `primaryKey` _[boolean]_ - set to true to make this column the primary key
 - `notNull` _[boolean]_ - set to true to make this column not null
+- `default` _[string]_ - adds DEFAULT clause for column
 - `check` _[string]_ - sql for a check constraint for this column
 - `references` _[string]_ - a table name that this column is a foreign key to
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
-- `default` _[string]_ - adds DEFAULT clause for column
+- `match` _[string]_ - `FULL` or `SIMPLE`
 
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
