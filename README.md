@@ -589,7 +589,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createTrigger( table_name, trigger_name, trigger_options )`
 
-> Create a new function - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createtrigger.html)
+> Create a new trigger - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createtrigger.html)
 
 **Arguments:**
 - `table_name` _[string]_ - name of the table where the new trigger will live
@@ -637,7 +637,7 @@ This is required for some SQL operations that cannot be run within a transaction
 
 #### `pgm.createSchema( schema_name, schema_options )`
 
-> Create a new function - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createschema.html)
+> Create a new schema - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createschema.html)
 
 **Arguments:**
 - `schema_name` _[string]_ - name of the new schema
