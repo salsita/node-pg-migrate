@@ -49,5 +49,30 @@ describe('lib/operations/tables', () => {
   CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("a", "b")
 );`);
     });
+
+    it('check table references work correctly', () => {
+      const sql = Tables.create()(
+        'my_table_name',
+        {
+          a: { type: 'integer' },
+          b: { type: 'varchar' },
+        },
+        {
+          constraints: {
+            foreignKeys: [
+              {
+                columns: ['a', 'b'],
+                references: 'otherTable (A, B)',
+              },
+            ],
+          },
+        }
+      );
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "a" integer,
+  "b" varchar,
+  FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B) MATCH SIMPLE
+);`);
+    });
   });
 });
