@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.10.1] (2017-09-25)
+
+### Fixed
+
+- Fixed invalid SQL for table level foreign key [#118](https://github.com/theoephraim/node-pg-migrate/pull/118)
+
 ## [2.10.0] (2017-09-21)
 
 ### Added
