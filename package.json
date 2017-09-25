@@ -19,7 +19,7 @@
     "postgres",
     "postgresql"
   ],
-  "version": "2.10.0",
+  "version": "2.10.1",
   "engines": {
     "node": ">=4.0.0"
   },
