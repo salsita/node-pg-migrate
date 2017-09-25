@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.11.0] (2017-09-25)
+
+### Added
+
+- Schemas operations [#119](https://github.com/theoephraim/node-pg-migrate/pull/119)
+
 ## [2.10.1] (2017-09-25)
 
 ### Fixed
