@@ -75,4 +75,13 @@ describe('lib/operations/tables', () => {
 );`);
     });
   });
+
+  describe('.dropColumns', () => {
+    it('check multiple columns can be dropped', () => {
+      const sql = Tables.dropColumns('my_table_name', ['c1', 'c2']);
+      expect(sql).to.equal(`ALTER TABLE "my_table_name"
+  DROP "c1",
+  DROP "c2";`);
+    });
+  });
 });
