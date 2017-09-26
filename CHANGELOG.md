@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.11.1] (2017-09-26)
+
+### Fixed
+
+- Fixed SQL for dropping multiple columns [#120](https://github.com/theoephraim/node-pg-migrate/pull/120)
+
 ## [2.11.0] (2017-09-25)
 
 ### Added
