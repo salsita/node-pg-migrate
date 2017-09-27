@@ -1,14 +1,14 @@
 # pg-migrate
 
-[![Dependency Status](https://img.shields.io/david/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate)
-[![devDependency Status](https://img.shields.io/david/dev/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=dev)
-[![peerDependencies Status](https://img.shields.io/david/peer/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=peer)
-[![optionalDependencies Status](https://img.shields.io/david/optional/theoephraim/node-pg-migrate.svg)](https://david-dm.org/theoephraim/node-pg-migrate?type=optional)
+[![Dependency Status](https://img.shields.io/david/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate)
+[![devDependency Status](https://img.shields.io/david/dev/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=dev)
+[![peerDependencies Status](https://img.shields.io/david/peer/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=peer)
+[![optionalDependencies Status](https://img.shields.io/david/optional/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=optional)
 [![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
 
-Node.js database migration management built exclusively for postgres.
+Node.js database migration management built exclusively for postgres. Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
 
 ## Installation
 

@@ -24,12 +24,12 @@
     "node": ">=4.0.0"
   },
   "bugs": {
-    "url": "https://github.com/theoephraim/node-pg-migrate/issues"
+    "url": "https://github.com/salsita/node-pg-migrate/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/theoephraim/node-pg-migrate.git"
+    "url": "https://github.com/salsita/node-pg-migrate.git"
   },
   "dependencies": {
     "lodash": "~4.17.0",
