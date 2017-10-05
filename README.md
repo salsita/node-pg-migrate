@@ -7,6 +7,7 @@
 [![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
+[![Known Vulnerabilities](https://snyk.io/test/github/salsita/node-pg-migrate/badge.svg)](https://snyk.io/test/github/salsita/node-pg-migrate)
 
 Node.js database migration management built exclusively for postgres. Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
 
