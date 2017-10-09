@@ -550,7 +550,6 @@ This is required for some SQL operations that cannot be run within a transaction
   - `returns` _[string]_ - returns clause
   - `language` _[string]_ - language name of function definition
   - `replace` _[boolean]_ - create or replace function
-  - `delimiter` _[string]_ - delimiter for definition
   - `window` _[boolean]_ - window function
   - `behavior` _[string]_ - `IMMUTABLE`, `STABLE`, or `VOLATILE`
   - `onNull` _[boolean]_ - `RETURNS NULL ON NULL INPUT`
