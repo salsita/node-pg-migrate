@@ -15,9 +15,18 @@
     "migrate",
     "migration",
     "migrations",
+    "migrator",
+    "db-migrate",
+    "sql",
     "pg",
+    "postgre",
     "postgres",
-    "postgresql"
+    "postgresql",
+    "extensible",
+    "expandable",
+    "programatic",
+    "programable",
+    "api"
   ],
   "version": "2.11.1",
   "engines": {
@@ -48,7 +57,7 @@
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
     "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "12.0.1",
+    "eslint-config-airbnb-base": "12.0.2",
     "eslint-plugin-import": "^2.7.0",
     "mocha": "^4.0.0",
     "pg": "^7.3.0",

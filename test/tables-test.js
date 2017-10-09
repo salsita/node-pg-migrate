@@ -28,8 +28,8 @@ describe('lib/operations/tables', () => {
       const sql = Tables.create()('my_table_name', {
         parent_id: {
           type: 'integer',
-          references: { schema: 'a', name: 'b' }
-        }
+          references: { schema: 'a', name: 'b' },
+        },
       });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES "a"."b" MATCH SIMPLE

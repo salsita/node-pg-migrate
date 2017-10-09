@@ -18,7 +18,7 @@ describe('lib/utils', () => {
     it('escape string', () => {
       const value = '#escape_me';
 
-      expect(escapeValue(value)).to.equal('\'%23escape_me\'');
+      expect(escapeValue(value)).to.equal('$pg1$#escape_me$pg1$');
     });
 
     it('keep number as is', () => {
@@ -32,7 +32,7 @@ describe('lib/utils', () => {
       const value2 = [['a'], ['b']];
 
       expect(escapeValue(value)).to.equal('ARRAY[[1],[2]]');
-      expect(escapeValue(value2)).to.equal('ARRAY[[\'a\'],[\'b\']]');
+      expect(escapeValue(value2)).to.equal('ARRAY[[$pg1$a$pg1$],[$pg1$b$pg1$]]');
     });
 
     it('parse PgLiteral to unescaped string', () => {
