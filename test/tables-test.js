@@ -25,7 +25,12 @@ describe('lib/operations/tables', () => {
     });
 
     it('check schemas can be used for foreign keys', () => {
-      const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: { schema: 'a', name: 'b' } } });
+      const sql = Tables.create()('my_table_name', {
+        parent_id: {
+          type: 'integer',
+          references: { schema: 'a', name: 'b' }
+        }
+      });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES "a"."b" MATCH SIMPLE
 );`);
@@ -72,6 +77,52 @@ describe('lib/operations/tables', () => {
   "a" integer,
   "b" varchar,
   FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B) MATCH SIMPLE
+);`);
+    });
+
+    it('check table unique constraint work correctly', () => {
+      const sql = Tables.create()(
+        'my_table_name',
+        {
+          a: { type: 'integer' },
+          b: { type: 'varchar' },
+        },
+        {
+          constraints: {
+            unique: ['a', 'b'],
+          },
+        }
+      );
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "a" integer,
+  "b" varchar,
+  CONSTRAINT "my_table_name_uniq" UNIQUE ("a", "b")
+);`);
+    });
+
+    it('check table unique constraint work correctly for array of arrays', () => {
+      const sql = Tables.create()(
+        'my_table_name',
+        {
+          a: { type: 'integer' },
+          b: { type: 'varchar' },
+          c: { type: 'varchar' },
+        },
+        {
+          constraints: {
+            unique: [
+              ['a', 'b'],
+              'c',
+            ],
+          },
+        }
+      );
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "a" integer,
+  "b" varchar,
+  "c" varchar,
+  CONSTRAINT "my_table_name_uniq_1" UNIQUE ("a", "b"),
+  CONSTRAINT "my_table_name_uniq_2" UNIQUE ("c")
 );`);
     });
   });
