@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.12.0] (2017-10-09)
+
+### Fixed
+
+- Dollar quoted string constants [#127](https://github.com/salsita/node-pg-migrate/pull/127)
+- Table unique constraint can be array of arrays [#126](https://github.com/salsita/node-pg-migrate/pull/126)
+
+### Changed
+
+- If user disables migration, return Error instead of string [#125](https://github.com/salsita/node-pg-migrate/pull/125)
+- Circle CI integration [#124](https://github.com/salsita/node-pg-migrate/pull/124)
+- Moved to Salsita organization [#122](https://github.com/salsita/node-pg-migrate/pull/122)
+
 ## [2.11.1] (2017-09-26)
 
 ### Fixed
