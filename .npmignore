@@ -1,4 +1,6 @@
-test/
+.*
+*.log
 migrations/
-node_modules/
 lib/
+test/
+mocha*
