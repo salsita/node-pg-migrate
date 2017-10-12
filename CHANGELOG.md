@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.13.0] (2017-10-12)
+
+### Added
+
+- Ability to specify files to ignore in migrations directory [#131](https://github.com/salsita/node-pg-migrate/pull/131)
+
 ## [2.12.0] (2017-10-09)
 
 ### Fixed
