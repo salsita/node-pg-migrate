@@ -87,6 +87,7 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
 * `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
+* `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
@@ -104,7 +105,7 @@ You can use [config](https://www.npmjs.com/package/config) or your own json file
 
 Available options are:
 
-* `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order` - same as above
+* `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
 
 * either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `name` - for connection details
 
@@ -189,8 +190,8 @@ This is required for some SQL operations that cannot be run within a transaction
   - `inherits` _[string]_ - table(s) to inherit from
   - `constraints` _[object]_ - table constraints
     - `check` _[string]_ - sql for a check constraint
-    - `unique` _[string or array of strings]_ - names of unique columns
-    - `primaryKey` _[string or array]_ - names of primary columns
+    - `unique` _[string or array of strings or array of array of strings]_ - names of unique columns
+    - `primaryKey` _[string or array of strings]_ - names of primary columns
     - `exclude` _[string]_ - sql for an exclude constraint
     - `deferrable` _[boolean]_ - flag for deferrable table
     - `deferred` _[boolean]_ - flag for initially deferred deferrable table

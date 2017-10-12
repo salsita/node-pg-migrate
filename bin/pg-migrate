@@ -33,6 +33,7 @@ const migrationsSchema = 'migrations-schema';
 const checkOrder = 'check-order';
 const configValue = 'config-value';
 const configFile = 'config-file';
+const ignorePattern = 'ignore-pattern';
 
 const argv = yargs
   .usage('Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]')
@@ -85,6 +86,12 @@ const argv = yargs
     type: 'boolean',
   })
 
+  .option(ignorePattern, {
+    default: '',
+    describe: 'Regex pattern for file names to ignore',
+    type: 'string',
+  })
+
   .option('i', {
     alias: 'version',
     default: false,
@@ -120,6 +127,7 @@ if (argv.help || argv._.length === 0) {
 
 let MIGRATIONS_DIR = argv[migrationsDir];
 let DATABASE_URL = process.env[argv[databaseUrlVar]];
+let IGNORE_PATTERN = argv[ignorePattern];
 let SCHEMA = argv[schema];
 let MIGRATIONS_SCHEMA = argv[migrationsSchema];
 let MIGRATIONS_TABLE = argv[migrationsTable];
@@ -134,6 +142,7 @@ function readJson(json) {
     MIGRATIONS_TABLE = json[migrationsTable] || MIGRATIONS_TABLE;
     CHECK_ORDER = typeof json[checkOrder] !== 'undefined' ? json[checkOrder] : CHECK_ORDER;
     TYPE_SHORTHANDS = json['type-shorthands'] || TYPE_SHORTHANDS;
+    IGNORE_PATTERN = json[ignorePattern] || IGNORE_PATTERN;
     if (json.url) {
       DATABASE_URL = json.url;
     } else if (json.host || json.port || json.name) {
@@ -230,6 +239,7 @@ if (action === 'create') {
     dryRun,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
+    ignorePattern: IGNORE_PATTERN,
     schema: SCHEMA,
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
