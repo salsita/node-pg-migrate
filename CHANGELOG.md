@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.13.1] (2017-10-23)
+
+### Fixed
+
+- addTypeValue's `after` option is using BEFORE instead of AFTER [#133](https://github.com/salsita/node-pg-migrate/pull/133)
+
 ## [2.13.0] (2017-10-12)
 
 ### Added
