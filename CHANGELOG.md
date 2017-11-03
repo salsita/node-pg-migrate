@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.13.2] (2017-11-03)
+
+### Fixed
+
+- Cannot use embedded value in config [#137](https://github.com/salsita/node-pg-migrate/pull/137)
+- add space before `USING` keyword [#138](https://github.com/salsita/node-pg-migrate/pull/138)
+
 ## [2.13.1] (2017-10-23)
 
 ### Fixed
