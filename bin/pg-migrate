@@ -159,8 +159,8 @@ try {
   const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
   process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
   const config = require('config'); // eslint-disable-line global-require,import/no-extraneous-dependencies
-  if (config[argv[configValue]]) {
-    const db = config[argv[configValue]];
+  if (config.has(argv[configValue])) {
+    const db = config.get(argv[configValue]);
     readJson(db);
   }
   process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
