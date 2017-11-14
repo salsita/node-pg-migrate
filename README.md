@@ -193,8 +193,8 @@ This is required for some SQL operations that cannot be run within a transaction
     - `unique` _[string or array of strings or array of array of strings]_ - names of unique columns
     - `primaryKey` _[string or array of strings]_ - names of primary columns
     - `exclude` _[string]_ - sql for an exclude constraint
-    - `deferrable` _[boolean]_ - flag for deferrable table
-    - `deferred` _[boolean]_ - flag for initially deferred deferrable table
+    - `deferrable` _[boolean]_ - flag for deferrable table constraint
+    - `deferred` _[boolean]_ - flag for initially deferred deferrable table constraint
     - `foreignKeys` _[object or array of objects]_ - foreign keys specification
       - `columns` _[string or array of strings]_ - names of columns
       - `references` _[string]_ - names of foreign table and column names
@@ -710,6 +710,8 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
 - `match` _[string]_ - `FULL` or `SIMPLE`
+- `deferrable` _[boolean]_ - flag for deferrable column constraint
+- `deferred` _[boolean]_ - flag for initially deferred deferrable column constraint
 
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
