@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.14.0] (2017-11-14)
+
+### Added
+
+- Deferrable column constraints [#139](https://github.com/salsita/node-pg-migrate/pull/139)
+- Possibility to use function in multi-column index [#140](https://github.com/salsita/node-pg-migrate/pull/140)
+
+### Changed
+
+- Changed all references from pg-migrate to node-pg-migrate [#141](https://github.com/salsita/node-pg-migrate/pull/141)
+
+  !!! Breaking change from version 3 !!! (now with warning)
+
 ## [2.13.2] (2017-11-03)
 
 ### Fixed
