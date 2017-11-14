@@ -6,7 +6,8 @@
     "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)"
   ],
   "bin": {
-    "pg-migrate": "bin/pg-migrate"
+    "pg-migrate": "bin/pg-migrate",
+    "node-pg-migrate": "bin/node-pg-migrate"
   },
   "main": "dist/runner.js",
   "keywords": [
@@ -74,7 +75,7 @@
   "scripts": {
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.js dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
-    "lint": "eslint -c .eslintrc . bin/pg-migrate",
+    "lint": "eslint -c .eslintrc . bin/*",
     "lintfix": "npm run lint -- --fix",
     "prepare": "npm run compile"
   }

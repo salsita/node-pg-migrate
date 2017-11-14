@@ -1,0 +1,273 @@
+#!/usr/bin/env node
+/* eslint-disable strict,prefer-destructuring */
+
+'use strict';
+
+const util = require('util');
+const path = require('path');
+const yargs = require('yargs');
+const Migration = require('../dist/migration').default; // eslint-disable-line import/no-unresolved,import/extensions
+const runner = require('../dist/runner'); // eslint-disable-line import/no-unresolved,import/extensions
+
+const migrationRunner = runner.default;
+const unlockRunner = runner.unlockRunner;
+
+process.on('uncaughtException', (err) => {
+  console.log(err.stack);
+  process.exit(1);
+});
+
+try {
+  require('dotenv').load({ silent: true }); // eslint-disable-line global-require,import/no-extraneous-dependencies
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+
+const schema = 'schema';
+const databaseUrlVar = 'database-url-var';
+const migrationsDir = 'migrations-dir';
+const migrationsTable = 'migrations-table';
+const migrationsSchema = 'migrations-schema';
+const checkOrder = 'check-order';
+const configValue = 'config-value';
+const configFile = 'config-file';
+const ignorePattern = 'ignore-pattern';
+
+const argv = yargs
+  .usage('Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]')
+
+  .option('d', {
+    alias: databaseUrlVar,
+    default: 'DATABASE_URL',
+    describe: 'Name of env variable where is set the database_url',
+    type: 'string',
+  })
+
+  .option('m', {
+    alias: migrationsDir,
+    default: `${process.cwd()}/migrations`,
+    defaultDescription: 'migrations',
+    describe: 'The directory containing your migration files',
+    type: 'string',
+  })
+
+  .option('t', {
+    alias: migrationsTable,
+    default: 'pgmigrations',
+    describe: 'The table storing which migrations have been run',
+    type: 'string',
+  })
+
+  .option('s', {
+    alias: schema,
+    default: 'public',
+    describe: 'The schema on which migration will be run (defaults to `public`)',
+    type: 'string',
+  })
+
+  .option(migrationsSchema, {
+    default: undefined,
+    defaultDescription: 'Same as "schema"',
+    describe: 'The schema storing table which migrations have been run',
+    type: 'string',
+  })
+
+  .option('dry-run', {
+    default: false,
+    describe: 'Prints the SQL but doesn\'t run it',
+    type: 'boolean',
+  })
+
+  .option(checkOrder, {
+    default: true,
+    describe: 'Check order of migrations before running them',
+    type: 'boolean',
+  })
+
+  .option(ignorePattern, {
+    default: '',
+    describe: 'Regex pattern for file names to ignore',
+    type: 'string',
+  })
+
+  .option('i', {
+    alias: 'version',
+    default: false,
+    describe: 'Print version info',
+    type: 'boolean',
+  })
+
+  .option(configValue, {
+    default: 'db',
+    describe: 'Name of config section with db options',
+    type: 'string',
+  })
+
+  .option('f', {
+    alias: configFile,
+    default: undefined,
+    describe: 'Name of config file with db options',
+    type: 'string',
+  })
+
+  .help()
+  .argv;
+
+if (argv.version) {
+  console.log(module.exports.version);
+  process.exit(0);
+}
+
+if (argv.help || argv._.length === 0) {
+  yargs.showHelp();
+  process.exit(1);
+}
+
+let MIGRATIONS_DIR = argv[migrationsDir];
+let DATABASE_URL = process.env[argv[databaseUrlVar]];
+let IGNORE_PATTERN = argv[ignorePattern];
+let SCHEMA = argv[schema];
+let MIGRATIONS_SCHEMA = argv[migrationsSchema];
+let MIGRATIONS_TABLE = argv[migrationsTable];
+let CHECK_ORDER = argv[checkOrder];
+let TYPE_SHORTHANDS = {};
+
+function readJson(json) {
+  if (typeof json === 'object') {
+    SCHEMA = json[schema] || SCHEMA;
+    MIGRATIONS_DIR = json[migrationsDir] || MIGRATIONS_DIR;
+    MIGRATIONS_SCHEMA = json[migrationsSchema] || MIGRATIONS_SCHEMA;
+    MIGRATIONS_TABLE = json[migrationsTable] || MIGRATIONS_TABLE;
+    CHECK_ORDER = typeof json[checkOrder] !== 'undefined' ? json[checkOrder] : CHECK_ORDER;
+    TYPE_SHORTHANDS = json['type-shorthands'] || TYPE_SHORTHANDS;
+    IGNORE_PATTERN = json[ignorePattern] || IGNORE_PATTERN;
+    if (json.url) {
+      DATABASE_URL = json.url;
+    } else if (json.host || json.port || json.name) {
+      const creds = `${json.user}${json.password ? `:${json.password}` : ''}`;
+      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name}`;
+    }
+  } else {
+    DATABASE_URL = json || DATABASE_URL;
+  }
+}
+
+try {
+  // Load config (and suppress the no-config-warning)
+  const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
+  process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
+  const config = require('config'); // eslint-disable-line global-require,import/no-extraneous-dependencies
+  if (config.has(argv[configValue])) {
+    const db = config.get(argv[configValue]);
+    readJson(db);
+  }
+  process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    throw err;
+  }
+}
+
+const configFileName = argv[configFile];
+if (configFileName) {
+  // eslint-disable-next-line global-require,import/no-dynamic-require
+  const config = require(path.resolve(configFileName));
+  readJson(config);
+}
+
+const action = argv._.shift();
+
+if (action === 'create') {
+  // replaces spaces with dashes - should help fix some errors
+  let new_migration_name = argv._.length ? argv._.join('-') : '';
+  // forces use of dashes in names - keep thing clean
+  new_migration_name = new_migration_name.replace(/_ /g, '-');
+
+  if (!new_migration_name) {
+    console.log('\'migrationName\' is required.');
+    yargs.showHelp();
+    process.exit(1);
+  }
+
+  const migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
+  console.log(util.format('Created migration -- %s', migration.path));
+} else if (action === 'unlock') {
+  if (!DATABASE_URL) {
+    console.error(`The $${argv[databaseUrlVar]} environment variable is not set.`);
+    process.exit(1);
+  }
+  unlockRunner({
+    database_url: DATABASE_URL,
+    schema: SCHEMA,
+    migrations_schema: MIGRATIONS_SCHEMA,
+    migrations_table: MIGRATIONS_TABLE,
+  })
+    .then(() => {
+      console.log('Unlocked!');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.log(err.stack);
+      process.exit(1);
+    });
+} else if (action === 'up' || action === 'down' || action === 'redo') {
+  if (!DATABASE_URL) {
+    console.error(`The $${argv[databaseUrlVar]} environment variable is not set.`);
+    process.exit(1);
+  }
+
+  const dryRun = argv['dry-run'];
+  if (dryRun) {
+    console.log('dry run');
+  }
+
+  const updown_arg = argv._.length ? argv._[0] : null;
+  let num_migrations;
+  let migration_name;
+
+  if (updown_arg !== null) {
+    if (parseInt(updown_arg, 10) == updown_arg) { // eslint-disable-line eqeqeq
+      num_migrations = parseInt(updown_arg, 10);
+    } else {
+      migration_name = argv._.join('-').replace(/_ /g, '-');
+    }
+  }
+
+  const options = direction => ({
+    dryRun,
+    database_url: DATABASE_URL,
+    dir: MIGRATIONS_DIR,
+    ignorePattern: IGNORE_PATTERN,
+    schema: SCHEMA,
+    migrations_schema: MIGRATIONS_SCHEMA,
+    migrations_table: MIGRATIONS_TABLE,
+    count: num_migrations,
+    file: migration_name,
+    checkOrder: CHECK_ORDER,
+    typeShorthands: TYPE_SHORTHANDS,
+    direction,
+  });
+  const promise = action === 'redo'
+    ? migrationRunner(options('down')).then(() => migrationRunner(options('up')))
+    : migrationRunner(options(action));
+  promise
+    .then(() => {
+      console.log('Migrations complete!');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.log(err.stack);
+      process.exit(1);
+    });
+} else {
+  console.log('Invalid Action: Must be [up|down|create|unlock|redo].');
+  yargs.showHelp();
+  process.exit(1);
+}
+
+if (argv['force-exit']) {
+  console.log('Forcing exit');
+  process.exit(0);
+}

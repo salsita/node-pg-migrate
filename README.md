@@ -1,4 +1,4 @@
-# pg-migrate
+# node-pg-migrate
 
 [![Dependency Status](https://img.shields.io/david/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate)
 [![devDependency Status](https://img.shields.io/david/dev/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=dev)
@@ -15,7 +15,7 @@ Node.js database migration management built exclusively for postgres. Started by
 
     $ npm install node-pg-migrate
 
-Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `pg-migrate` and if not, you can run `./node_modules/.bin/pg-migrate`
+Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
 
 ## Usage
 
@@ -62,24 +62,24 @@ You can specify custom JSON file with config (format is same as for `db` entry o
 }
 ```
 
-If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the pg-migrate binary.
+If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the node-pg-migrate binary.
 
 Depending on your project's setup, it may make sense to write some custom grunt tasks that set this env var and run your migration commands. More on that below.
 
 **The following are the available commands:**
 
-- `pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
-- `pg-migrate up` - runs all up migrations from the current state.
-- `pg-migrate up {N}` - runs N up migrations from the current state.
-- `pg-migrate down` - runs a single down migration.
-- `pg-migrate down {N}` - runs N down migrations from the current state.
-- `pg-migrate unlock` - unlocks migrations (if previous up/down migration failed and was not automatically unlocked).
-- `pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
-- `pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
+- `node-pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
+- `node-pg-migrate up` - runs all up migrations from the current state.
+- `node-pg-migrate up {N}` - runs N up migrations from the current state.
+- `node-pg-migrate down` - runs a single down migration.
+- `node-pg-migrate down {N}` - runs N down migrations from the current state.
+- `node-pg-migrate unlock` - unlocks migrations (if previous up/down migration failed and was not automatically unlocked).
+- `node-pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
+- `node-pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
 
 ### Configuration
 
-You can adjust defaults by passing arguments to `pg-migrate`:
+You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 * `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
 * `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
@@ -92,12 +92,12 @@ You can adjust defaults by passing arguments to `pg-migrate`:
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
 
-See all by running `pg-migrate --help`.
+See all by running `node-pg-migrate --help`.
 
 Most of configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
-e.g. `PGSSLMODE=require pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
 
 #### JSON Configuration
 
@@ -116,15 +116,15 @@ Available options are:
 
 ### Locking
 
-`pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
+`node-pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
 There are other options how to do it, but I choose this one (see #88).
 In some circumstances it is possible that lock will not be released (Error message - `Error: Unable to fetch migrations: Error: Another migration is already running`).
-In that case you need to run `pg-migrate unlock` to release the lock again.
+In that case you need to run `node-pg-migrate unlock` to release the lock again.
 
 
 ## Defining Migrations
 
-When you run `pg-migrate create` a new migration file is created that looks like this:
+When you run `node-pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
 exports.up = function up(pgm) {
@@ -142,7 +142,7 @@ Calling the migration functions on `pgm` doesn't actually migrate your database.
 
 #### Automatic Down Migrations
 
-If `exports.down` is not present in a migration, pg-migrate will try to automatically infer the operations that make up the down migration by reversing the operations of the up migration. Only some operations have automatically inferrable equivalents (details below on each operation). Sometimes, migrations are destructive and cannot be rolled back. In this case, you can set `exports.down = false` to tell pg-migrate that the down migration is impossible.
+If `exports.down` is not present in a migration, node-pg-migrate will try to automatically infer the operations that make up the down migration by reversing the operations of the up migration. Only some operations have automatically inferrable equivalents (details below on each operation). Sometimes, migrations are destructive and cannot be rolled back. In this case, you can set `exports.down = false` to tell node-pg-migrate that the down migration is impossible.
 
 #### Async Migrations
 
