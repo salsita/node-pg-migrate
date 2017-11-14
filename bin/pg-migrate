@@ -1,7 +1,0 @@
-#!/usr/bin/env node
-
-console.warn(`
-!!! This script is deprecated and will be removed in version 3. !!!
-!!! Please use node-pg-migrate !!!
-`);
-require('./node-pg-migrate');
