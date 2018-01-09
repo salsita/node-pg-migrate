@@ -10,6 +10,7 @@
     "node-pg-migrate": "bin/node-pg-migrate"
   },
   "main": "dist/runner.js",
+  "types": "index.d.ts",
   "keywords": [
     "db",
     "database",
