@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.15.0] (2018-01-11)
+
+### Fixed
+
+- Handle rejections in migration actions [#148](https://github.com/salsita/node-pg-migrate/pull/148)
+
+### Added
+
+- TypeScript declaration file [#147](https://github.com/salsita/node-pg-migrate/pull/147) [#150](https://github.com/salsita/node-pg-migrate/pull/150)
+
 ## [2.14.0] (2017-11-14)
 
 ### Added
