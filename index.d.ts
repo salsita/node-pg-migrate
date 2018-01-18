@@ -154,7 +154,14 @@ export interface RoleOptions {
 }
 
 export interface DropOptions {
-    ifExists?: boolean,
+    ifExists?: boolean
+    cascade?: boolean
+}
+
+export interface DropIndexOptions {
+    name?: string
+    concurrently?: boolean
+    ifExists?: boolean
     cascade?: boolean
 }
 
@@ -193,14 +200,14 @@ export type TriggerOptions = TriggerOptionsEn & FunctionOptions
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
-    dropTable(tableName: Name): void
+    dropTable(tableName: Name, drop_options: DropOptions): void
     renameTable(tablename: Name, new_tablename: Name): void
 
     // Columns
     addColumns(tablename: Name, new_columns: ColumnDefinitions): void
     addColumn(tablename: Name, new_columns: ColumnDefinitions): void
-    dropColumns(tablename: Name, columns: string | string[] | { [name: string]: any }): void
-    dropColumn(tablename: Name, columns: string | string[] | { [name: string]: any }): void
+    dropColumns(tablename: Name, columns: string | string[] | { [name: string]: any }, drop_options: DropOptions): void
+    dropColumn(tablename: Name, columns: string | string[] | { [name: string]: any }, drop_options: DropOptions): void
     renameColumn(tablename: Name, old_column_name: string, new_column_name: string): void
     alterColumn(tableName: Name, columnName: string, options: ColumnOptions): void
 
@@ -213,17 +220,17 @@ export interface MigrationBuilder {
     // Indexes
     createIndex(tableName: Name, columns: string | string[], options?: CreateIndexOptions): void
     addIndex(tableName: Name, columns: string | string[], options?: CreateIndexOptions): void
-    dropIndex(tableName: Name, columns: string | string[], options?: { name?: string }): void
+    dropIndex(tableName: Name, columns: string | string[], options?: DropIndexOptions): void
 
     // Extensions
     createExtension(extension: string | string[]): void
     addExtension(extension: string | string[]): void
-    dropExtension(extension: string | string[]): void
+    dropExtension(extension: string | string[], drop_options: DropOptions): void
 
     // Types
     createType(type_name: Name, values: Value[] | { [name: string]: Type }): void
     addType(type_name: Name, values: Value[] | { [name: string]: Type }): void
-    dropType(type_name: Name): void
+    dropType(type_name: Name, drop_options: DropOptions): void
     renameType(type_name: Name, new_type_name: Name): void
     addTypeAttribute(type_name: Name, attribute_name: string, attribute_type: Type): void
     dropTypeAttribute(type_name: Name, attribute_name: string, options: { ifExists?: boolean }): void
@@ -233,7 +240,7 @@ export interface MigrationBuilder {
 
     // Roles
     createRole(role_name: Name, role_options: RoleOptions): void
-    dropRole(role_name: Name): void
+    dropRole(role_name: Name, options: { ifExists?: boolean }): void
     alterRole(role_name: Name, role_options: RoleOptions): void
     renameRole(old_role_name: Name, new_role_name: Name): void
 
