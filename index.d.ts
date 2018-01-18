@@ -188,6 +188,22 @@ export interface TriggerOptionsEn {
     deferred: boolean
 }
 
+export interface DomainOptionsCreate {
+    default?: Value
+    collation?: string
+    notNull?: boolean
+    check?: string
+    constraintName?: string
+}
+
+export interface DomainOptionsAlter {
+    default?: Value
+    notNull?: boolean
+    allowNull?: boolean
+    check?: string
+    constraintName?: string
+}
+
 export type TriggerOptions = TriggerOptionsEn & FunctionOptions
 
 export interface MigrationBuilder {
@@ -251,6 +267,13 @@ export interface MigrationBuilder {
     createSchema(schema_name: string, schema_options: { ifNotExists?: boolean, authorization?: string }): void
     dropSchema(schema_name: string, drop_options: DropOptions): void
     renameSchema(old_schema_name: string, new_schema_name: string): void
+
+    // Domains
+    createDomain(domain_name: Name, domain_options: DomainOptionsCreate): void
+    dropDomain(domain_name: Name, drop_options: DropOptions): void
+    alterDomain(domain_name: Name, domain_options: DomainOptionsAlter): void
+    renameDomain(old_domain_name: Name, new_domain_name: Name): void
+
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
     noTransaction(): void
