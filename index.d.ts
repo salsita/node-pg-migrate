@@ -246,6 +246,39 @@ export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions
 
 export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions
 
+export interface CreateOperatorOptions {
+    procedure: Name
+    left?: Name
+    right?: Name
+    commutator?: Name
+    negator?: Name
+    restrict?: Name
+    join?: Name
+    hashes?: boolean
+    merges?: boolean
+}
+
+export interface DropOperatorOptions {
+    left?: Name
+    right?: Name
+    ifExists?: boolean
+    cascade?: boolean
+}
+
+export interface CreateOperatorClassOptions {
+    default?: boolean
+    family?: string
+}
+
+export interface OperatorListDefinition {
+    type?: string
+    number?: number
+    name?: Name
+    params?: FunctionParam[]
+}
+
+export type TriggerOptions = TriggerOptionsEn & FunctionOptions
+
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
@@ -314,11 +347,23 @@ export interface MigrationBuilder {
     alterDomain(domain_name: Name, domain_options: DomainOptionsAlter): void
     renameDomain(old_domain_name: Name, new_domain_name: Name): void
 
-    // Domains
+    // Sequences
     createSequence(sequence_name: Name, sequence_options: SequenceOptionsCreate): void
     dropSequence(sequence_name: Name, drop_options: DropOptions): void
     alterSequence(sequence_name: Name, sequence_options: SequenceOptionsAlter): void
     renameSequence(old_sequence_name: Name, new_sequence_name: Name): void
+
+    // Operators
+    createOperator(operator_name: Name, options: CreateOperatorOptions): void
+    dropOperator(operator_name: Name, drop_options: DropOperatorOptions): void
+    createOperatorClass(operator_class_name: Name, type: Name, index_method: Name, operator_list: OperatorListDefinition, options: CreateOperatorClassOptions): void
+    dropOperatorClass(operator_class_name: Name, index_method: Name, drop_options: DropOptions): void
+    renameOperatorClass(old_operator_class_name: Name, index_method: Name, new_operator_class_name: Name): void
+    createOperatorFamily(operator_family_name: Name, index_method: Name): void
+    dropOperatorFamily(operator_family_name: Name, new_schema_name: Name, drop_options: DropOptions): void
+    renameOperatorFamily(old_operator_family_name: Name, index_method: Name, new_operator_family_name: Name): void
+    addToOperatorFamily(operator_family_name: Name, index_method: Name, operator_list: OperatorListDefinition): void
+    removeFromOperatorFamily(operator_family_name: Name, index_method: Name, operator_list: OperatorListDefinition): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
