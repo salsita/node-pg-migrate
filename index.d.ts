@@ -5,6 +5,7 @@
 // Definitions by: Jan Doležel <https://github.com/dolezel>
 
 interface ValueArray extends Array<Value> {}
+
 export type Value = null | boolean | string | number | PgLiteral | ValueArray
 
 export type Name = string | { schema?: string, name: string }
@@ -153,17 +154,22 @@ export interface RoleOptions {
     admin?: string | string[]
 }
 
-export interface DropOptions {
+export interface IfExistsOption {
     ifExists?: boolean
+}
+
+export interface CascadeOption {
     cascade?: boolean
 }
 
-export interface DropIndexOptions {
+export type DropOptions = IfExistsOption & CascadeOption
+
+interface DropIndexOptionsEn {
     name?: string
     concurrently?: boolean
-    ifExists?: boolean
-    cascade?: boolean
 }
+
+export type DropIndexOptions = DropIndexOptionsEn & DropOptions
 
 export interface FunctionParamType {
     mode: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC'
@@ -184,7 +190,7 @@ export interface FunctionOptions {
     parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE'
 }
 
-export interface TriggerOptionsEn {
+interface TriggerOptionsEn {
     when: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
     operation: string | string[]
     constraint: boolean
@@ -195,23 +201,50 @@ export interface TriggerOptionsEn {
     deferred: boolean
 }
 
-export interface DomainOptionsCreate {
-    default?: Value
-    collation?: string
-    notNull?: boolean
-    check?: string
-    constraintName?: string
-}
-
-export interface DomainOptionsAlter {
-    default?: Value
-    notNull?: boolean
-    allowNull?: boolean
-    check?: string
-    constraintName?: string
-}
-
 export type TriggerOptions = TriggerOptionsEn & FunctionOptions
+
+interface DomainOptions {
+    default?: Value
+    notNull?: boolean
+    check?: string
+    constraintName?: string
+}
+
+interface DomainOptionsCreateEn {
+    collation?: string
+}
+
+interface DomainOptionsAlterEn {
+    allowNull?: boolean
+}
+
+export type DomainOptionsCreate = DomainOptionsCreateEn & DomainOptions
+
+export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions
+
+interface SequenceOptions {
+    type?: string
+    increment?: number
+    minvalue?: number | null | false
+    maxvalue?: number | null | false
+    start?: number
+    cache?: number
+    cycle?: boolean
+    owner?: string | null | false
+}
+
+interface SequenceOptionsCreateEn {
+    temporary?: boolean
+    ifNotExists?: boolean
+}
+
+interface SequenceOptionsAlterEn {
+    restart?: number | true
+}
+
+export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions
+
+export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions
 
 export interface MigrationBuilder {
     // Tables
@@ -249,14 +282,14 @@ export interface MigrationBuilder {
     dropType(type_name: Name, drop_options: DropOptions): void
     renameType(type_name: Name, new_type_name: Name): void
     addTypeAttribute(type_name: Name, attribute_name: string, attribute_type: Type): void
-    dropTypeAttribute(type_name: Name, attribute_name: string, options: { ifExists?: boolean }): void
+    dropTypeAttribute(type_name: Name, attribute_name: string, options: IfExistsOption): void
     setTypeAttribute(type_name: Name, attribute_name: string, attribute_type: Type): void
     addTypeValue(type_name: Name, value: Value, options: { ifNotExists?: boolean, before?: string, after?: string }): void
     renameTypeAttribute(type_name: Name, attribute_name: string, new_attribute_name: string): void
 
     // Roles
     createRole(role_name: Name, role_options: RoleOptions): void
-    dropRole(role_name: Name, options: { ifExists?: boolean }): void
+    dropRole(role_name: Name, options: IfExistsOption): void
     alterRole(role_name: Name, role_options: RoleOptions): void
     renameRole(old_role_name: Name, new_role_name: Name): void
 
@@ -280,6 +313,12 @@ export interface MigrationBuilder {
     dropDomain(domain_name: Name, drop_options: DropOptions): void
     alterDomain(domain_name: Name, domain_options: DomainOptionsAlter): void
     renameDomain(old_domain_name: Name, new_domain_name: Name): void
+
+    // Domains
+    createSequence(sequence_name: Name, sequence_options: SequenceOptionsCreate): void
+    dropSequence(sequence_name: Name, drop_options: DropOptions): void
+    alterSequence(sequence_name: Name, sequence_options: SequenceOptionsAlter): void
+    renameSequence(old_sequence_name: Name, new_sequence_name: Name): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
