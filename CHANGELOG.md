@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.16.0] (2018-01-23)
+
+### Added
+
+- Uniting drop statements [#154](https://github.com/salsita/node-pg-migrate/pull/154)
+- Handling domains [#155](https://github.com/salsita/node-pg-migrate/pull/155)
+- Operator operations [#156](https://github.com/salsita/node-pg-migrate/pull/156)
+- Sequences operations  [#157](https://github.com/salsita/node-pg-migrate/pull/157)
+
 ## [2.15.0] (2018-01-11)
 
 ### Fixed
