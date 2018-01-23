@@ -45,7 +45,7 @@
   "dependencies": {
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.1",
-    "yargs": "~9.0.1"
+    "yargs": "~10.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -59,9 +59,9 @@
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
     "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "12.0.2",
+    "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "^2.7.0",
-    "mocha": "^4.0.0",
+    "mocha": "^5.0.0",
     "pg": "^7.3.0",
     "sinon": "^4.0.0",
     "sinon-chai": "^2.14.0"
