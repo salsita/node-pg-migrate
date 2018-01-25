@@ -6,7 +6,6 @@
     "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)"
   ],
   "bin": {
-    "pg-migrate": "bin/pg-migrate",
     "node-pg-migrate": "bin/node-pg-migrate"
   },
   "main": "dist/runner.js",
