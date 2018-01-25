@@ -1,3 +1,4 @@
 lib/migration-template.js
+lib/migration-template.ts
 node_modules
 dist

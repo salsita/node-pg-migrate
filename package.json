@@ -6,7 +6,6 @@
     "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)"
   ],
   "bin": {
-    "pg-migrate": "bin/pg-migrate",
     "node-pg-migrate": "bin/node-pg-migrate"
   },
   "main": "dist/runner.js",
@@ -67,14 +66,14 @@
     "sinon-chai": "^2.14.0"
   },
   "peerDependencies": {
-    "pg": ">=4.3.0 <8.0.0"
+    "pg": "~4.5.7 || ~5.2.1 || ~6.4.2 || >=7.1.0 <8.0.0"
   },
   "optionalDependencies": {
     "config": ">=1.0.0",
     "dotenv": ">=1.0.0"
   },
   "scripts": {
-    "compile": "babel lib/ -d dist/ && cp lib/migration-template.js dist/",
+    "compile": "babel lib/ -d dist/ && cp lib/migration-template.js dist/ && cp lib/migration-template.ts dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "lint": "eslint -c .eslintrc . bin/*",
     "lintfix": "npm run lint -- --fix",
