@@ -30,6 +30,7 @@ const databaseUrlVar = 'database-url-var';
 const migrationsDir = 'migrations-dir';
 const migrationsTable = 'migrations-table';
 const migrationsSchema = 'migrations-schema';
+const migrationFileLanguage = 'migration-file-language';
 const checkOrder = 'check-order';
 const configValue = 'config-value';
 const configFile = 'config-file';
@@ -112,6 +113,14 @@ const argv = yargs
     type: 'string',
   })
 
+  .option('j', {
+    alias: migrationFileLanguage,
+    default: 'js',
+    choices: ['js', 'ts'],
+    describe: 'Language of the migration file (Only valid with the create action)',
+    type: 'string'
+  })
+
   .help()
   .argv;
 
@@ -131,6 +140,7 @@ let IGNORE_PATTERN = argv[ignorePattern];
 let SCHEMA = argv[schema];
 let MIGRATIONS_SCHEMA = argv[migrationsSchema];
 let MIGRATIONS_TABLE = argv[migrationsTable];
+let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguage];
 let CHECK_ORDER = argv[checkOrder];
 let TYPE_SHORTHANDS = {};
 
@@ -191,7 +201,7 @@ if (action === 'create') {
     process.exit(1);
   }
 
-  const migration = Migration.create(new_migration_name, MIGRATIONS_DIR);
+  const migration = Migration.create(new_migration_name, MIGRATIONS_DIR, MIGRATIONS_FILE_LANGUAGE);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'unlock') {
   if (!DATABASE_URL) {
