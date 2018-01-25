@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.16.1] (2018-01-25)
+
+### Changed
+
+- Updated dependencies [#158](https://github.com/salsita/node-pg-migrate/pull/158)
+
+### Fixed
+
+- Typescript definition fixes [#162](https://github.com/salsita/node-pg-migrate/pull/162)
+
 ## [2.16.0] (2018-01-23)
 
 ### Added
