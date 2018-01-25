@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.16.2] (2018-01-25)
+
+### Fixed
+
+- Deleted duplicate declaration [#164](https://github.com/salsita/node-pg-migrate/pull/164)
+
 ## [2.16.1] (2018-01-25)
 
 ### Changed
