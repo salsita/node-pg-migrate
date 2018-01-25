@@ -280,22 +280,22 @@ export interface OperatorListDefinition {
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
-    dropTable(tableName: Name, drop_options: DropOptions): void
-    renameTable(tablename: Name, new_tablename: Name): void
+    dropTable(tableName: Name, dropOptions: DropOptions): void
+    renameTable(tableName: Name, newtableName: Name): void
 
     // Columns
-    addColumns(tablename: Name, new_columns: ColumnDefinitions): void
-    addColumn(tablename: Name, new_columns: ColumnDefinitions): void
-    dropColumns(tablename: Name, columns: string | string[] | { [name: string]: any }, drop_options: DropOptions): void
-    dropColumn(tablename: Name, columns: string | string[] | { [name: string]: any }, drop_options: DropOptions): void
-    renameColumn(tablename: Name, old_column_name: string, new_column_name: string): void
+    addColumns(tableName: Name, newColumns: ColumnDefinitions): void
+    addColumn(tableName: Name, newColumns: ColumnDefinitions): void
+    dropColumns(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions: DropOptions): void
+    dropColumn(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions: DropOptions): void
+    renameColumn(tableName: Name, oldColumnName: string, newColumnName: string): void
     alterColumn(tableName: Name, columnName: string, options: ColumnOptions): void
 
     // Constraints
-    addConstraint(tablename: Name, constraint_name: string | null, expression: string | ConstraintOptions): void
-    createConstraint(tablename: Name, constraint_name: string | null, expression: string | ConstraintOptions): void
-    dropConstraint(tablename: Name, constraint_name: string, options: DropOptions): void
-    renameConstraint(tablename: Name, old_constraint_name: string, new_constraint_name: string): void
+    addConstraint(tableName: Name, constraintName: string | null, expression: string | ConstraintOptions): void
+    createConstraint(tableName: Name, constraintName: string | null, expression: string | ConstraintOptions): void
+    dropConstraint(tableName: Name, constraintName: string, options: DropOptions): void
+    renameConstraint(tableName: Name, oldConstraintName: string, newConstraintName: string): void
 
     // Indexes
     createIndex(tableName: Name, columns: string | string[], options?: CreateIndexOptions): void
@@ -305,63 +305,63 @@ export interface MigrationBuilder {
     // Extensions
     createExtension(extension: string | string[]): void
     addExtension(extension: string | string[]): void
-    dropExtension(extension: string | string[], drop_options: DropOptions): void
+    dropExtension(extension: string | string[], dropOptions: DropOptions): void
 
     // Types
-    createType(type_name: Name, values: Value[] | { [name: string]: Type }): void
-    addType(type_name: Name, values: Value[] | { [name: string]: Type }): void
-    dropType(type_name: Name, drop_options: DropOptions): void
-    renameType(type_name: Name, new_type_name: Name): void
-    addTypeAttribute(type_name: Name, attribute_name: string, attribute_type: Type): void
-    dropTypeAttribute(type_name: Name, attribute_name: string, options: IfExistsOption): void
-    setTypeAttribute(type_name: Name, attribute_name: string, attribute_type: Type): void
-    addTypeValue(type_name: Name, value: Value, options: { ifNotExists?: boolean, before?: string, after?: string }): void
-    renameTypeAttribute(type_name: Name, attribute_name: string, new_attribute_name: string): void
+    createType(typeName: Name, values: Value[] | { [name: string]: Type }): void
+    addType(typeName: Name, values: Value[] | { [name: string]: Type }): void
+    dropType(typeName: Name, dropOptions: DropOptions): void
+    renameType(typeName: Name, newTypeName: Name): void
+    addTypeAttribute(typeName: Name, attributeName: string, attributeType: Type): void
+    dropTypeAttribute(typeName: Name, attributeName: string, options: IfExistsOption): void
+    setTypeAttribute(typeName: Name, attributeName: string, attributeType: Type): void
+    addTypeValue(typeName: Name, value: Value, options: { ifNotExists?: boolean, before?: string, after?: string }): void
+    renameTypeAttribute(typeName: Name, attributeName: string, newAttributeName: string): void
 
     // Roles
-    createRole(role_name: Name, role_options: RoleOptions): void
-    dropRole(role_name: Name, options: IfExistsOption): void
-    alterRole(role_name: Name, role_options: RoleOptions): void
-    renameRole(old_role_name: Name, new_role_name: Name): void
+    createRole(roleName: Name, roleOptions: RoleOptions): void
+    dropRole(roleName: Name, options: IfExistsOption): void
+    alterRole(roleName: Name, roleOptions: RoleOptions): void
+    renameRole(oldRoleName: Name, newRoleName: Name): void
 
     // Functions
-    createFunction(function_name: Name, function_params: FunctionParam[], function_options: FunctionOptions, definition: Value): void
-    dropFunction(function_name: Name, function_params: FunctionParam[], drop_options: DropOptions): void
-    renameFunction(old_function_name: Name, function_params: FunctionParam[], new_function_name: Name): void
+    createFunction(functionName: Name, functionParams: FunctionParam[], functionOptions: FunctionOptions, definition: Value): void
+    dropFunction(functionName: Name, functionParams: FunctionParam[], dropOptions: DropOptions): void
+    renameFunction(oldFunctionName: Name, functionParams: FunctionParam[], newFunctionName: Name): void
 
     // Triggers
-    createTrigger(table_name: Name, trigger_name: Name, trigger_options: TriggerOptions, definition?: Value): void
-    dropTrigger(table_name: Name, trigger_name: Name, drop_options: DropOptions): void
-    renameTrigger(table_name: Name, old_trigger_name: Name, new_trigger_name: Name): void
+    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions, definition?: Value): void
+    dropTrigger(tableName: Name, triggerName: Name, dropOptions: DropOptions): void
+    renameTrigger(tableName: Name, oldTriggerName: Name, newTriggerName: Name): void
 
     // Schemas
-    createSchema(schema_name: string, schema_options: { ifNotExists?: boolean, authorization?: string }): void
-    dropSchema(schema_name: string, drop_options: DropOptions): void
-    renameSchema(old_schema_name: string, new_schema_name: string): void
+    createSchema(schemaName: string, schemaOptions: { ifNotExists?: boolean, authorization?: string }): void
+    dropSchema(schemaName: string, dropOptions: DropOptions): void
+    renameSchema(oldSchemaName: string, newSchemaName: string): void
 
     // Domains
-    createDomain(domain_name: Name, type: Type, domain_options: DomainOptionsCreate): void
-    dropDomain(domain_name: Name, drop_options: DropOptions): void
-    alterDomain(domain_name: Name, domain_options: DomainOptionsAlter): void
-    renameDomain(old_domain_name: Name, new_domain_name: Name): void
+    createDomain(domainName: Name, domainOptions: DomainOptionsCreate): void
+    dropDomain(domainName: Name, dropOptions: DropOptions): void
+    alterDomain(domainName: Name, domainOptions: DomainOptionsAlter): void
+    renameDomain(oldDomainName: Name, newDomainName: Name): void
 
     // Sequences
-    createSequence(sequence_name: Name, sequence_options: SequenceOptionsCreate): void
-    dropSequence(sequence_name: Name, drop_options: DropOptions): void
-    alterSequence(sequence_name: Name, sequence_options: SequenceOptionsAlter): void
-    renameSequence(old_sequence_name: Name, new_sequence_name: Name): void
+    createSequence(sequenceName: Name, sequenceOptions: SequenceOptionsCreate): void
+    dropSequence(sequenceName: Name, dropOptions: DropOptions): void
+    alterSequence(sequenceName: Name, sequenceOptions: SequenceOptionsAlter): void
+    renameSequence(oldSequenceName: Name, newSequenceName: Name): void
 
     // Operators
-    createOperator(operator_name: Name, options: CreateOperatorOptions): void
-    dropOperator(operator_name: Name, drop_options: DropOperatorOptions): void
-    createOperatorClass(operator_class_name: Name, type: Type, index_method: Name, operator_list: OperatorListDefinition, options: CreateOperatorClassOptions): void
-    dropOperatorClass(operator_class_name: Name, index_method: Name, drop_options: DropOptions): void
-    renameOperatorClass(old_operator_class_name: Name, index_method: Name, new_operator_class_name: Name): void
-    createOperatorFamily(operator_family_name: Name, index_method: Name): void
-    dropOperatorFamily(operator_family_name: Name, new_schema_name: Name, drop_options: DropOptions): void
-    renameOperatorFamily(old_operator_family_name: Name, index_method: Name, new_operator_family_name: Name): void
-    addToOperatorFamily(operator_family_name: Name, index_method: Name, operator_list: OperatorListDefinition): void
-    removeFromOperatorFamily(operator_family_name: Name, index_method: Name, operator_list: OperatorListDefinition): void
+    createOperator(operatorName: Name, options: CreateOperatorOptions): void
+    dropOperator(operatorName: Name, dropOptions: DropOperatorOptions): void
+    createOperatorClass(operatorClassName: Name, type: Name, indexMethod: Name, operatorList: OperatorListDefinition, options: CreateOperatorClassOptions): void
+    dropOperatorClass(operatorClassName: Name, indexMethod: Name, dropOptions: DropOptions): void
+    renameOperatorClass(oldOperatorClassName: Name, indexMethod: Name, newOperatorClassName: Name): void
+    createOperatorFamily(operatorFamilyName: Name, indexMethod: Name): void
+    dropOperatorFamily(operatorFamilyName: Name, newSchemaName: Name, dropOptions: DropOptions): void
+    renameOperatorFamily(oldOperatorFamilyName: Name, indexMethod: Name, newOperatorFamilyName: Name): void
+    addToOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
+    removeFromOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
