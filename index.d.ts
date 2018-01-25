@@ -374,8 +374,23 @@ export class PgLiteral {
     toString(): string
 }
 
+export interface ConnectionConfig {
+    user?: string;
+    database?: string;
+    password?: string;
+    port?: number;
+    host?: string;
+    connectionString?: string;
+}
+
+import { TlsOptions } from "tls";
+
+export interface ClientConfig extends ConnectionConfig {
+    ssl?: boolean | TlsOptions;
+}
+
 export interface RunnerOption {
-    database_url: string
+    database_url: string | ClientConfig
     migrations_table: string
     migrations_schema?: string
     schema?: string
@@ -390,3 +405,12 @@ export interface RunnerOption {
 }
 
 export default function (options: RunnerOption): Promise<void>
+
+export interface UnlockRunnerOption {
+    database_url: string | ClientConfig
+    migrations_table: string
+    migrations_schema?: string
+    schema?: string
+}
+
+export function unlockRunner(options: RunnerOption): Promise<void>
