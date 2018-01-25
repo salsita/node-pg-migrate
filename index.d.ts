@@ -277,8 +277,6 @@ export interface OperatorListDefinition {
     params?: FunctionParam[]
 }
 
-export type TriggerOptions = TriggerOptionsEn & FunctionOptions
-
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
