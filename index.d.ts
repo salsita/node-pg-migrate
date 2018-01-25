@@ -340,7 +340,7 @@ export interface MigrationBuilder {
     renameSchema(oldSchemaName: string, newSchemaName: string): void
 
     // Domains
-    createDomain(domainName: Name, domainOptions: DomainOptionsCreate): void
+    createDomain(domainName: Name, type: Type, domainOptions: DomainOptionsCreate): void
     dropDomain(domainName: Name, dropOptions: DropOptions): void
     alterDomain(domainName: Name, domainOptions: DomainOptionsAlter): void
     renameDomain(oldDomainName: Name, newDomainName: Name): void
@@ -354,7 +354,7 @@ export interface MigrationBuilder {
     // Operators
     createOperator(operatorName: Name, options: CreateOperatorOptions): void
     dropOperator(operatorName: Name, dropOptions: DropOperatorOptions): void
-    createOperatorClass(operatorClassName: Name, type: Name, indexMethod: Name, operatorList: OperatorListDefinition, options: CreateOperatorClassOptions): void
+    createOperatorClass(operatorClassName: Name, type: Type, indexMethod: Name, operatorList: OperatorListDefinition, options: CreateOperatorClassOptions): void
     dropOperatorClass(operatorClassName: Name, indexMethod: Name, dropOptions: DropOptions): void
     renameOperatorClass(oldOperatorClassName: Name, indexMethod: Name, newOperatorClassName: Name): void
     createOperatorFamily(operatorFamilyName: Name, indexMethod: Name): void
