@@ -11,7 +11,7 @@
     "mocha": true
   },
   "rules": {
-    "camelcase": 0,
+    "camelcase": 1,
     "no-console": 0,
     "no-underscore-dangle": 0,
     "quote-props": [2, "consistent-as-needed"],
