@@ -172,10 +172,10 @@ interface DropIndexOptionsEn {
 export type DropIndexOptions = DropIndexOptionsEn & DropOptions
 
 export interface FunctionParamType {
-    mode: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC'
-    name: string
+    mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC'
+    name?: string
     type: string
-    default: Value
+    default?: Value
 }
 
 export type FunctionParam = string | FunctionParamType
@@ -191,14 +191,14 @@ export interface FunctionOptions {
 }
 
 interface TriggerOptionsEn {
-    when: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
+    when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
     operation: string | string[]
-    constraint: boolean
-    function: Name
-    level: 'STATEMENT' | 'ROW'
-    condition: string
-    deferrable: boolean
-    deferred: boolean
+    constraint?: boolean
+    function?: Name
+    level?: 'STATEMENT' | 'ROW'
+    condition?: string
+    deferrable?: boolean
+    deferred?: boolean
 }
 
 export type TriggerOptions = TriggerOptionsEn & FunctionOptions
@@ -223,7 +223,7 @@ export type DomainOptionsCreate = DomainOptionsCreateEn & DomainOptions
 export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions
 
 interface SequenceOptions {
-    type?: string
+    type?: Type
     increment?: number
     minvalue?: number | null | false
     maxvalue?: number | null | false
@@ -271,9 +271,9 @@ export interface CreateOperatorClassOptions {
 }
 
 export interface OperatorListDefinition {
-    type?: string
-    number?: number
-    name?: Name
+    type: 'function' | 'operator'
+    number: number
+    name: Name
     params?: FunctionParam[]
 }
 
@@ -342,7 +342,7 @@ export interface MigrationBuilder {
     renameSchema(old_schema_name: string, new_schema_name: string): void
 
     // Domains
-    createDomain(domain_name: Name, domain_options: DomainOptionsCreate): void
+    createDomain(domain_name: Name, type: Type, domain_options: DomainOptionsCreate): void
     dropDomain(domain_name: Name, drop_options: DropOptions): void
     alterDomain(domain_name: Name, domain_options: DomainOptionsAlter): void
     renameDomain(old_domain_name: Name, new_domain_name: Name): void
@@ -356,7 +356,7 @@ export interface MigrationBuilder {
     // Operators
     createOperator(operator_name: Name, options: CreateOperatorOptions): void
     dropOperator(operator_name: Name, drop_options: DropOperatorOptions): void
-    createOperatorClass(operator_class_name: Name, type: Name, index_method: Name, operator_list: OperatorListDefinition, options: CreateOperatorClassOptions): void
+    createOperatorClass(operator_class_name: Name, type: Type, index_method: Name, operator_list: OperatorListDefinition, options: CreateOperatorClassOptions): void
     dropOperatorClass(operator_class_name: Name, index_method: Name, drop_options: DropOptions): void
     renameOperatorClass(old_operator_class_name: Name, index_method: Name, new_operator_class_name: Name): void
     createOperatorFamily(operator_family_name: Name, index_method: Name): void
