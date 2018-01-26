@@ -191,17 +191,17 @@ const action = argv._.shift();
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
-  let new_migration_name = argv._.length ? argv._.join('-') : '';
+  let newMigrationName = argv._.length ? argv._.join('-') : '';
   // forces use of dashes in names - keep thing clean
-  new_migration_name = new_migration_name.replace(/_ /g, '-');
+  newMigrationName = newMigrationName.replace(/_ /g, '-');
 
-  if (!new_migration_name) {
+  if (!newMigrationName) {
     console.log('\'migrationName\' is required.');
     yargs.showHelp();
     process.exit(1);
   }
 
-  const migration = Migration.create(new_migration_name, MIGRATIONS_DIR, MIGRATIONS_FILE_LANGUAGE);
+  const migration = Migration.create(newMigrationName, MIGRATIONS_DIR, MIGRATIONS_FILE_LANGUAGE);
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'unlock') {
   if (!DATABASE_URL) {
@@ -233,15 +233,15 @@ if (action === 'create') {
     console.log('dry run');
   }
 
-  const updown_arg = argv._.length ? argv._[0] : null;
-  let num_migrations;
-  let migration_name;
+  const updownArg = argv._.length ? argv._[0] : null;
+  let numMigrations;
+  let migrationName;
 
-  if (updown_arg !== null) {
-    if (parseInt(updown_arg, 10) == updown_arg) { // eslint-disable-line eqeqeq
-      num_migrations = parseInt(updown_arg, 10);
+  if (updownArg !== null) {
+    if (parseInt(updownArg, 10) == updownArg) { // eslint-disable-line eqeqeq
+      numMigrations = parseInt(updownArg, 10);
     } else {
-      migration_name = argv._.join('-').replace(/_ /g, '-');
+      migrationName = argv._.join('-').replace(/_ /g, '-');
     }
   }
 
@@ -253,8 +253,8 @@ if (action === 'create') {
     schema: SCHEMA,
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
-    count: num_migrations,
-    file: migration_name,
+    count: numMigrations,
+    file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
     direction,
