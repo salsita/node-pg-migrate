@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.17.0] (2018-01-26)
+
+### Added
+
+- Added typescript migration template [#165](https://github.com/salsita/node-pg-migrate/pull/165)
+- Updated type definitions to accept db client config [#166](https://github.com/salsita/node-pg-migrate/pull/166)
+
 ## [2.16.2] (2018-01-25)
 
 ### Fixed
