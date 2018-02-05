@@ -32,6 +32,19 @@ describe('lib/operations/tables', () => {
         },
       });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES "a"."b"
+);`);
+    });
+
+    it('check match clause can be used for foreign keys', () => {
+      const sql = Tables.create()('my_table_name', {
+        parent_id: {
+          type: 'integer',
+          references: { schema: 'a', name: 'b' },
+          match: 'SIMPLE',
+        },
+      });
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES "a"."b" MATCH SIMPLE
 );`);
     });
@@ -39,7 +52,7 @@ describe('lib/operations/tables', () => {
     it('check defining column can be used for foreign keys', () => {
       const sql = Tables.create()('my_table_name', { parent_id: { type: 'integer', references: 'a.b(id)' } });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES a.b(id) MATCH SIMPLE
+  "parent_id" integer REFERENCES a.b(id)
 );`);
     });
 
@@ -76,7 +89,7 @@ describe('lib/operations/tables', () => {
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "a" integer,
   "b" varchar,
-  FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B) MATCH SIMPLE
+  FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B)
 );`);
     });
 
