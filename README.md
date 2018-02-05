@@ -9,7 +9,8 @@
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
 [![Known Vulnerabilities](https://snyk.io/test/github/salsita/node-pg-migrate/badge.svg)](https://snyk.io/test/github/salsita/node-pg-migrate)
 
-Node.js database migration management built exclusively for postgres. Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
+Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
+Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
 
 ## Installation
 
@@ -88,9 +89,11 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 * `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 * `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
+* `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
+* `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](#locking))
 
 See all by running `node-pg-migrate --help`.
 
@@ -117,7 +120,7 @@ Available options are:
 ### Locking
 
 `node-pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
-There are other options how to do it, but I choose this one (see #88).
+There are other options how to do it, but I choose this one (see [#88](https://github.com/salsita/node-pg-migrate/pull/88)).
 In some circumstances it is possible that lock will not be released (Error message - `Error: Unable to fetch migrations: Error: Another migration is already running`).
 In that case you need to run `node-pg-migrate unlock` to release the lock again.
 
