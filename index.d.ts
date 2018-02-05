@@ -402,6 +402,7 @@ export interface RunnerOption {
     file?: string
     dryRun?: boolean
     typeShorthands?: { [name: string]: string }
+    noLock?: boolean
 }
 
 export default function (options: RunnerOption): Promise<void>
