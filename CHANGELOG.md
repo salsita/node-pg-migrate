@@ -1,5 +1,18 @@
 # Change Log
 
+## [2.18.0] (2018-02-05)
+
+### Added
+
+- Add no lock option [#171](https://github.com/salsita/node-pg-migrate/pull/171)
+- Updated docs [#174](https://github.com/salsita/node-pg-migrate/pull/174)
+
+### Changed
+
+- Remove old version number from index.d.ts [#173](https://github.com/salsita/node-pg-migrate/pull/173)
+- Remove default match in column reference [#172](https://github.com/salsita/node-pg-migrate/pull/172)
+- Refactor code to use camel casing [#167](https://github.com/salsita/node-pg-migrate/pull/167)
+
 ## [2.17.0] (2018-01-26)
 
 ### Added
@@ -30,7 +43,7 @@
 - Uniting drop statements [#154](https://github.com/salsita/node-pg-migrate/pull/154)
 - Handling domains [#155](https://github.com/salsita/node-pg-migrate/pull/155)
 - Operator operations [#156](https://github.com/salsita/node-pg-migrate/pull/156)
-- Sequences operations  [#157](https://github.com/salsita/node-pg-migrate/pull/157)
+- Sequences operations [#157](https://github.com/salsita/node-pg-migrate/pull/157)
 
 ## [2.15.0] (2018-01-11)
 
