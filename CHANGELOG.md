@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.19.0] (2018-02-06)
+
+### Added
+
+- `migration-file-language` can be set in config file  [#180](https://github.com/salsita/node-pg-migrate/pull/180)
+- Treat number argument to up/down migration as timestamp [#179](https://github.com/salsita/node-pg-migrate/pull/179)
+
 ## [2.18.1] (2018-02-06)
 
 ### Fixed
