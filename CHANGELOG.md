@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.18.1] (2018-02-06)
+
+### Fixed
+
+- Fixing addConstraint method with object expression [#176](https://github.com/salsita/node-pg-migrate/pull/176)
+
 ## [2.18.0] (2018-02-05)
 
 ### Added
