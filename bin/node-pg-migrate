@@ -35,6 +35,7 @@ const checkOrder = 'check-order';
 const configValue = 'config-value';
 const configFile = 'config-file';
 const ignorePattern = 'ignore-pattern';
+const timestamp = 'timestamp';
 
 const argv = yargs
   .usage('Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]')
@@ -127,6 +128,12 @@ const argv = yargs
     type: 'boolean',
   })
 
+  .option('timestamp', {
+    default: false,
+    describe: 'Treats number argument to up/down migration as timestamp',
+    type: 'boolean',
+  })
+
   .help()
   .argv;
 
@@ -149,6 +156,7 @@ let MIGRATIONS_TABLE = argv[migrationsTable];
 const MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguage];
 let CHECK_ORDER = argv[checkOrder];
 let TYPE_SHORTHANDS = {};
+const TIMESTAMP = argv[timestamp];
 
 function readJson(json) {
   if (typeof json === 'object') {
@@ -265,6 +273,7 @@ if (action === 'create') {
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
     count: numMigrations,
+    timestamp: TIMESTAMP,
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,

@@ -90,6 +90,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 * `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
 * `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
+* `timestamp` - Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
