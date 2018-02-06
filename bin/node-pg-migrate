@@ -25,30 +25,32 @@ try {
   }
 }
 
-const schema = 'schema';
-const databaseUrlVar = 'database-url-var';
-const migrationsDir = 'migrations-dir';
-const migrationsTable = 'migrations-table';
-const migrationsSchema = 'migrations-schema';
-const migrationFileLanguage = 'migration-file-language';
-const checkOrder = 'check-order';
-const configValue = 'config-value';
-const configFile = 'config-file';
-const ignorePattern = 'ignore-pattern';
-const timestamp = 'timestamp';
+const schemaArg = 'schema';
+const databaseUrlVarArg = 'database-url-var';
+const migrationsDirArg = 'migrations-dir';
+const migrationsTableArg = 'migrations-table';
+const migrationsSchemaArg = 'migrations-schema';
+const migrationFileLanguageArg = 'migration-file-language';
+const checkOrderArg = 'check-order';
+const configValueArg = 'config-value';
+const configFileArg = 'config-file';
+const ignorePatternArg = 'ignore-pattern';
+const noLockArg = 'no-lock';
+const timestampArg = 'timestamp';
+const dryRunArg = 'dry-run';
 
 const argv = yargs
   .usage('Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]')
 
   .option('d', {
-    alias: databaseUrlVar,
+    alias: databaseUrlVarArg,
     default: 'DATABASE_URL',
     describe: 'Name of env variable where is set the database_url',
     type: 'string',
   })
 
   .option('m', {
-    alias: migrationsDir,
+    alias: migrationsDirArg,
     default: `${process.cwd()}/migrations`,
     defaultDescription: 'migrations',
     describe: 'The directory containing your migration files',
@@ -56,39 +58,39 @@ const argv = yargs
   })
 
   .option('t', {
-    alias: migrationsTable,
+    alias: migrationsTableArg,
     default: 'pgmigrations',
     describe: 'The table storing which migrations have been run',
     type: 'string',
   })
 
   .option('s', {
-    alias: schema,
+    alias: schemaArg,
     default: 'public',
     describe: 'The schema on which migration will be run (defaults to `public`)',
     type: 'string',
   })
 
-  .option(migrationsSchema, {
+  .option(migrationsSchemaArg, {
     default: undefined,
     defaultDescription: 'Same as "schema"',
     describe: 'The schema storing table which migrations have been run',
     type: 'string',
   })
 
-  .option('dry-run', {
+  .option(dryRunArg, {
     default: false,
     describe: 'Prints the SQL but doesn\'t run it',
     type: 'boolean',
   })
 
-  .option(checkOrder, {
+  .option(checkOrderArg, {
     default: true,
     describe: 'Check order of migrations before running them',
     type: 'boolean',
   })
 
-  .option(ignorePattern, {
+  .option(ignorePatternArg, {
     default: '',
     describe: 'Regex pattern for file names to ignore',
     type: 'string',
@@ -101,34 +103,34 @@ const argv = yargs
     type: 'boolean',
   })
 
-  .option(configValue, {
+  .option(configValueArg, {
     default: 'db',
     describe: 'Name of config section with db options',
     type: 'string',
   })
 
   .option('f', {
-    alias: configFile,
+    alias: configFileArg,
     default: undefined,
     describe: 'Name of config file with db options',
     type: 'string',
   })
 
   .option('j', {
-    alias: migrationFileLanguage,
+    alias: migrationFileLanguageArg,
     default: 'js',
     choices: ['js', 'ts'],
     describe: 'Language of the migration file (Only valid with the create action)',
     type: 'string',
   })
 
-  .option('no-lock', {
+  .option(noLockArg, {
     default: false,
     describe: 'Disables locking mechanism and checks',
     type: 'boolean',
   })
 
-  .option('timestamp', {
+  .option(timestampArg, {
     default: false,
     describe: 'Treats number argument to up/down migration as timestamp',
     type: 'boolean',
@@ -147,26 +149,27 @@ if (argv.help || argv._.length === 0) {
   process.exit(1);
 }
 
-let MIGRATIONS_DIR = argv[migrationsDir];
-let DATABASE_URL = process.env[argv[databaseUrlVar]];
-let IGNORE_PATTERN = argv[ignorePattern];
-let SCHEMA = argv[schema];
-let MIGRATIONS_SCHEMA = argv[migrationsSchema];
-let MIGRATIONS_TABLE = argv[migrationsTable];
-const MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguage];
-let CHECK_ORDER = argv[checkOrder];
+let MIGRATIONS_DIR = argv[migrationsDirArg];
+let DATABASE_URL = process.env[argv[databaseUrlVarArg]];
+let IGNORE_PATTERN = argv[ignorePatternArg];
+let SCHEMA = argv[schemaArg];
+let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
+let MIGRATIONS_TABLE = argv[migrationsTableArg];
+let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
+let CHECK_ORDER = argv[checkOrderArg];
 let TYPE_SHORTHANDS = {};
-const TIMESTAMP = argv[timestamp];
+const TIMESTAMP = argv[timestampArg];
 
 function readJson(json) {
   if (typeof json === 'object') {
-    SCHEMA = json[schema] || SCHEMA;
-    MIGRATIONS_DIR = json[migrationsDir] || MIGRATIONS_DIR;
-    MIGRATIONS_SCHEMA = json[migrationsSchema] || MIGRATIONS_SCHEMA;
-    MIGRATIONS_TABLE = json[migrationsTable] || MIGRATIONS_TABLE;
-    CHECK_ORDER = typeof json[checkOrder] !== 'undefined' ? json[checkOrder] : CHECK_ORDER;
+    SCHEMA = json[schemaArg] || SCHEMA;
+    MIGRATIONS_DIR = json[migrationsDirArg] || MIGRATIONS_DIR;
+    MIGRATIONS_SCHEMA = json[migrationsSchemaArg] || MIGRATIONS_SCHEMA;
+    MIGRATIONS_TABLE = json[migrationsTableArg] || MIGRATIONS_TABLE;
+    MIGRATIONS_FILE_LANGUAGE = json[migrationFileLanguageArg] || MIGRATIONS_FILE_LANGUAGE;
+    CHECK_ORDER = typeof json[checkOrderArg] !== 'undefined' ? json[checkOrderArg] : CHECK_ORDER;
     TYPE_SHORTHANDS = json['type-shorthands'] || TYPE_SHORTHANDS;
-    IGNORE_PATTERN = json[ignorePattern] || IGNORE_PATTERN;
+    IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
     if (json.url) {
       DATABASE_URL = json.url;
     } else if (json.host || json.port || json.name) {
@@ -183,8 +186,8 @@ try {
   const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
   process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
   const config = require('config'); // eslint-disable-line global-require,import/no-extraneous-dependencies
-  if (config.has(argv[configValue])) {
-    const db = config.get(argv[configValue]);
+  if (config.has(argv[configValueArg])) {
+    const db = config.get(argv[configValueArg]);
     readJson(db);
   }
   process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
@@ -194,7 +197,7 @@ try {
   }
 }
 
-const configFileName = argv[configFile];
+const configFileName = argv[configFileArg];
 if (configFileName) {
   // eslint-disable-next-line global-require,import/no-dynamic-require
   const config = require(path.resolve(configFileName));
@@ -219,7 +222,7 @@ if (action === 'create') {
   console.log(util.format('Created migration -- %s', migration.path));
 } else if (action === 'unlock') {
   if (!DATABASE_URL) {
-    console.error(`The $${argv[databaseUrlVar]} environment variable is not set.`);
+    console.error(`The $${argv[databaseUrlVarArg]} environment variable is not set.`);
     process.exit(1);
   }
   unlockRunner({
@@ -238,16 +241,16 @@ if (action === 'create') {
     });
 } else if (action === 'up' || action === 'down' || action === 'redo') {
   if (!DATABASE_URL) {
-    console.error(`The $${argv[databaseUrlVar]} environment variable is not set.`);
+    console.error(`The $${argv[databaseUrlVarArg]} environment variable is not set.`);
     process.exit(1);
   }
 
-  const dryRun = argv['dry-run'];
+  const dryRun = argv[dryRunArg];
   if (dryRun) {
     console.log('dry run');
   }
 
-  const noLock = argv['no-lock'];
+  const noLock = argv[noLockArg];
   if (noLock) {
     console.log('no lock');
   }
@@ -264,7 +267,7 @@ if (action === 'create') {
     }
   }
 
-  const options = (direction, count = numMigrations, ts = TIMESTAMP) => ({
+  const options = (direction, count = numMigrations, timestamp = TIMESTAMP) => ({
     dryRun,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
@@ -273,7 +276,7 @@ if (action === 'create') {
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
     count,
-    timestamp: ts,
+    timestamp,
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
