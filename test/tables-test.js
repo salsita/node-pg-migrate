@@ -89,7 +89,7 @@ describe('lib/operations/tables', () => {
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "a" integer,
   "b" varchar,
-  FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B)
+  CONSTRAINT "my_table_name_fk_a_b" FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B)
 );`);
     });
 
@@ -109,7 +109,7 @@ describe('lib/operations/tables', () => {
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "a" integer,
   "b" varchar,
-  CONSTRAINT "my_table_name_uniq" UNIQUE ("a", "b")
+  CONSTRAINT "my_table_name_uniq_a_b" UNIQUE ("a", "b")
 );`);
     });
 
@@ -134,8 +134,8 @@ describe('lib/operations/tables', () => {
   "a" integer,
   "b" varchar,
   "c" varchar,
-  CONSTRAINT "my_table_name_uniq_1" UNIQUE ("a", "b"),
-  CONSTRAINT "my_table_name_uniq_2" UNIQUE ("c")
+  CONSTRAINT "my_table_name_uniq_a_b" UNIQUE ("a", "b"),
+  CONSTRAINT "my_table_name_uniq_c" UNIQUE ("c")
 );`);
     });
   });
