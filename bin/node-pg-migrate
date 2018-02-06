@@ -264,7 +264,7 @@ if (action === 'create') {
     }
   }
 
-  const options = direction => ({
+  const options = (direction, count = numMigrations, ts = TIMESTAMP) => ({
     dryRun,
     database_url: DATABASE_URL,
     dir: MIGRATIONS_DIR,
@@ -272,8 +272,8 @@ if (action === 'create') {
     schema: SCHEMA,
     migrations_schema: MIGRATIONS_SCHEMA,
     migrations_table: MIGRATIONS_TABLE,
-    count: numMigrations,
-    timestamp: TIMESTAMP,
+    count,
+    timestamp: ts,
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
@@ -281,7 +281,7 @@ if (action === 'create') {
     noLock,
   });
   const promise = action === 'redo'
-    ? migrationRunner(options('down')).then(() => migrationRunner(options('up')))
+    ? migrationRunner(options('down')).then(() => migrationRunner(options('up', Infinity, false)))
     : migrationRunner(options(action));
   promise
     .then(() => {
