@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.21.0] (2018-02-12)
+
+### Added
+
+- Table and column comments [#183](https://github.com/salsita/node-pg-migrate/pull/183)
+
 ## [2.19.0] (2018-02-06)
 
 ### Added
