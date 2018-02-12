@@ -223,6 +223,7 @@ This is required for some SQL operations that cannot be run within a transaction
       - `onUpdate` _[string]_ - action to perform on update
       - `match` _[string]_ - `FULL` or `SIMPLE`
   - `like` _[string]_ - table(s) to inherit from
+  - `comment` _[string]_ - adds comment on table
 
 **Reverse Operation:** `dropTable`
 
@@ -307,6 +308,7 @@ This is required for some SQL operations that cannot be run within a transaction
   - `allowNull` _[boolean]_ - sets NULL if true (alternative to `notNull`)
   - `using` _[string]_ - adds USING clause to change values in column
   - `collation` _[string]_ - adds COLLATE clause to change values in column
+  - `comment` _[string]_ - adds comment on column
 
 -----------------------------------------------------
 
@@ -1004,6 +1006,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `match` _[string]_ - `FULL` or `SIMPLE`
 - `deferrable` _[boolean]_ - flag for deferrable column constraint
 - `deferred` _[boolean]_ - flag for initially deferred deferrable column constraint
+- `comment` _[string]_ - adds comment on column
 
 #### Data types & Convenience Shorthand
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the queries by hand.
