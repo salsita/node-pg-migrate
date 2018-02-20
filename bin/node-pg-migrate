@@ -190,9 +190,9 @@ function readJson(json) {
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
     if (json.url) {
       DATABASE_URL = json.url;
-    } else if (json.host || json.port || json.name) {
+    } else if (json.host || json.port || json.name || json.database) {
       const creds = `${json.user}${json.password ? `:${json.password}` : ''}`;
-      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name}`;
+      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name || json.database}`;
     }
   } else {
     DATABASE_URL = json || DATABASE_URL;

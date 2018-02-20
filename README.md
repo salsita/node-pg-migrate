@@ -25,7 +25,7 @@ You can specify your database connection information using [config](https://www.
 ```json
 // config/default.json
 {
-  "db": "postgres://postgres:password@localhost:5432/name"
+  "db": "postgres://postgres:password@localhost:5432/database"
 }
 ```
 
@@ -39,7 +39,7 @@ or
     "password": "",
     "host": "localhost",
     "port": 5432,
-    "name": "name"
+    "database": "database"
   }
 }
 ```
@@ -47,7 +47,7 @@ or
 You could also specify your database url by setting the environment variable `DATABASE_URL`.
 
 ```
-DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
+DATABASE_URL=postgres://postgres@localhost/database node-pg-migrate
 ```
 
 You can specify custom JSON file with config (format is same as for `db` entry of [config](https://www.npmjs.com/package/config) file), for example:
@@ -59,7 +59,7 @@ You can specify custom JSON file with config (format is same as for `db` entry o
   "password": "",
   "host": "localhost",
   "port": 5432,
-  "name": "name"
+  "database": "database"
 }
 ```
 
@@ -113,7 +113,7 @@ Available options are:
 
 * `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
 
-* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `name` - for connection details
+* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details
 
 * `type-shorthands` - for column type shorthands
 
