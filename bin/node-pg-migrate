@@ -47,7 +47,7 @@ const argv = yargs
   .option('d', {
     alias: databaseUrlVarArg,
     default: 'DATABASE_URL',
-    describe: 'Name of env variable where is set the database_url',
+    describe: 'Name of env variable where is set the databaseUrl',
     type: 'string',
   })
 
@@ -244,10 +244,10 @@ if (action === 'create') {
     process.exit(1);
   }
   unlockRunner({
-    database_url: DATABASE_URL,
+    databaseUrl: DATABASE_URL,
     schema: SCHEMA,
-    migrations_schema: MIGRATIONS_SCHEMA,
-    migrations_table: MIGRATIONS_TABLE,
+    migrationsSchema: MIGRATIONS_SCHEMA,
+    migrationsTable: MIGRATIONS_TABLE,
   })
     .then(() => {
       console.log('Unlocked!');
@@ -287,19 +287,19 @@ if (action === 'create') {
 
   const options = (direction, count = numMigrations, timestamp = TIMESTAMP) => ({
     dryRun,
-    database_url: DATABASE_URL,
+    databaseUrl: DATABASE_URL,
     dir: MIGRATIONS_DIR,
     ignorePattern: IGNORE_PATTERN,
     schema: SCHEMA,
-    migrations_schema: MIGRATIONS_SCHEMA,
-    migrations_table: MIGRATIONS_TABLE,
+    migrationsSchema: MIGRATIONS_SCHEMA,
+    migrationsTable: MIGRATIONS_TABLE,
     count,
     timestamp,
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
-    create_schema: CREATE_SCHEMA,
-    create_migrations_schema: CREATE_MIGRATIONS_SCHEMA,
+    createSchema: CREATE_SCHEMA,
+    createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
     direction,
     noLock,
   });

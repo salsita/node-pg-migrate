@@ -148,9 +148,9 @@ You can use babel or typescript for transpiling migration files. It requires a l
 Alongside with command line, you can use `node-pg-migrate` also programmatically. It exports runner function,
 which takes options argument with following structure (similar to [command line arguments](#configuration)):
 
-* `database_url` _[string or object]_ - Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#new-client-config-object-)
-* `migrations_table` _[string]_ - The table storing which migrations have been run
-* `migrations_schema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
+* `databaseUrl` _[string or object]_ - Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#new-client-config-object-)
+* `migrationsTable` _[string]_ - The table storing which migrations have been run
+* `migrationsSchema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
 * `schema` _[string]_ - The schema on which migration will be run (defaults to `public`)
 * `dir` _[string]_ - The directory containing your migration files
 * `checkOrder` _[boolean]_ - Check order of migrations before running them
@@ -160,6 +160,8 @@ which takes options argument with following structure (similar to [command line 
 * `ignorePattern` _[string]_ - Regex pattern for file names to ignore
 * `file` _[string]_ - Run only migration with this name
 * `typeShorthands` _[object]_ - Object with column type shorthands
+* `createSchema` _[boolean]_ - Creates the configured schema if it doesn't exist 
+* `createMigrationsSchema` _[boolean]_ - Creates the configured migration schema if it doesn't exist
 * `noLock` _[boolean]_ - Disables locking mechanism and checks
 * `dryRun` _[boolean]_
 
