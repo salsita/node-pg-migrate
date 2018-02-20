@@ -13,7 +13,7 @@ const actionsPromise = require(`./${promiseMigration}`); // eslint-disable-line 
 describe('lib/migration', () => {
   const dbMock = {};
   const log = () => null;
-  const options = { migrations_table: migrationsTable };
+  const options = { migrationsTable };
   let migration;
 
   beforeEach(() => {
