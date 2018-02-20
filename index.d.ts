@@ -405,7 +405,6 @@ export interface RunnerOption {
     ignorePattern: string
     file?: string
     dryRun?: boolean
-    typeShorthands?: { [name: string]: ColumnDefinition }
     createSchema?: boolean
     createMigrationsSchema?: boolean
     noLock?: boolean
