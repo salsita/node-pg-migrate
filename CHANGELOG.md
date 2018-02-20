@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.22.2] (2018-02-20)
+
+### Fixed
+
+- Role encrypted default [#196](https://github.com/salsita/node-pg-migrate/pull/196)
+- Running queries in order [#195](https://github.com/salsita/node-pg-migrate/pull/195)
+
 ## [2.22.1] (2018-02-20)
 
 ### Fixed
