@@ -30,7 +30,7 @@
     "programable",
     "api"
   ],
-  "version": "2.22.1",
+  "version": "2.22.2",
   "engines": {
     "node": ">=4.0.0"
   },
