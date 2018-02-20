@@ -145,6 +145,27 @@ You can use babel or typescript for transpiling migration files. It requires a l
     You can then use migration as usual via e.g. `npm run migrate up`. :tada:
 
 
+## Programmatic API
+
+Alongside with command line, you can use `node-pg-migrate` also programmatically. It exports runner function,
+which takes options argument with following structure (similar to [command line arguments](#configuration)):
+
+* `database_url` _[string or object]_ - Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#new-client-config-object-)
+* `migrations_table` _[string]_ - The table storing which migrations have been run
+* `migrations_schema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
+* `schema` _[string]_ - The schema on which migration will be run (defaults to `public`)
+* `dir` _[string]_ - The directory containing your migration files
+* `checkOrder` _[boolean]_ - Check order of migrations before running them
+* `direction` _[enum]_ - `up` or `down`
+* `count` _[number]_ - Number of migration to run
+* `timestamp` _[boolean]_ - Treats `count` as timestamp
+* `ignorePattern` _[string]_ - Regex pattern for file names to ignore
+* `file` _[string]_ - Run only migration with this name
+* `typeShorthands` _[object]_ - Object with column type shorthands
+* `noLock` _[boolean]_ - Disables locking mechanism and checks
+* `dryRun` _[boolean]_
+
+
 ## Defining Migrations
 
 When you run `node-pg-migrate create` a new migration file is created that looks like this:

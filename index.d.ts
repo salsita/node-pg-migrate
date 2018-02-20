@@ -401,10 +401,11 @@ export interface RunnerOption {
     checkOrder?: boolean
     direction: 'up' | 'down'
     count: number
+    timestamp?: boolean
     ignorePattern: string
     file?: string
     dryRun?: boolean
-    typeShorthands?: { [name: string]: string }
+    typeShorthands?: { [name: string]: ColumnDefinition }
     noLock?: boolean
 }
 
