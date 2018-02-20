@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.22.0] (2018-02-20)
+
+### Added
+
+- Auto create configured schemas if they don't exist [#192](https://github.com/salsita/node-pg-migrate/pull/192)
+- Add ifNotExists option to create extension [#188](https://github.com/salsita/node-pg-migrate/pull/188)
+- Programmatic API docs [#187](https://github.com/salsita/node-pg-migrate/pull/187)
+
 ## [2.21.0] (2018-02-12)
 
 ### Added
