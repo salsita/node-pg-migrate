@@ -2,8 +2,6 @@
 
 [![Dependency Status](https://img.shields.io/david/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate)
 [![devDependency Status](https://img.shields.io/david/dev/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=dev)
-[![peerDependencies Status](https://img.shields.io/david/peer/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=peer)
-[![optionalDependencies Status](https://img.shields.io/david/optional/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=optional)
 [![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
