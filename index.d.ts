@@ -393,9 +393,9 @@ export interface ClientConfig extends ConnectionConfig {
 }
 
 export interface RunnerOption {
-    database_url: string | ClientConfig
-    migrations_table: string
-    migrations_schema?: string
+    databaseUrl: string | ClientConfig
+    migrationsTable: string
+    migrationsSchema?: string
     schema?: string
     dir: string
     checkOrder?: boolean
@@ -406,15 +406,17 @@ export interface RunnerOption {
     file?: string
     dryRun?: boolean
     typeShorthands?: { [name: string]: ColumnDefinition }
+    createSchema?: boolean
+    createMigrationsSchema?: boolean
     noLock?: boolean
 }
 
 export default function (options: RunnerOption): Promise<void>
 
 export interface UnlockRunnerOption {
-    database_url: string | ClientConfig
-    migrations_table: string
-    migrations_schema?: string
+    databaseUrl: string | ClientConfig
+    migrationsTable: string
+    migrationsSchema?: string
     schema?: string
 }
 
