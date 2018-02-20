@@ -84,9 +84,11 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 * `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
 * `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
+* `create-schema` - Create the configured schema if it doesn't exist (defaults to `false`)
 * `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 * `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
 * `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
+* `create-migrations-schema` - Create the configured migrations schema if it doesn't exist (defaults to `false`)
 * `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 * `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
 * `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
