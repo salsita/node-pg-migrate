@@ -113,11 +113,6 @@ Available options are:
 
 * either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details
 
-* `type-shorthands` - for column type shorthands
-
-  You can specify custom types which will be expanded to column definition (e.g. for `module.exports = { "type-shorthands": { id: { type: 'uuid', primaryKey: true }, createdAt: { type: 'timestamp', notNull: true, default: new require('node-pg-migrate').PgLiteral('current_timestamp') } } }`
-  it will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`).
-
 ### Locking
 
 `node-pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
@@ -171,15 +166,24 @@ which takes options argument with following structure (similar to [command line 
 When you run `node-pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
+exports.shorthands = undefined;
+
 exports.up = function up(pgm) {
 
 }
+
 exports.down = function down(pgm) {
 
 }
 ```
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
+
+`shorthands` is optional for column type shorthands. You can specify custom types which will be expanded to column definition
+(e.g. for `exports.shorthands = { id: { type: 'uuid', primaryKey: true }, createdAt: { type: 'timestamp', notNull: true, default: new PgLiteral('current_timestamp') } };`
+it will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`).
+These shorthands are inherited from previous migrations. You can override/change value by simply defining new value for given shorthand name,
+if will be used in current and all following migrations (until changed again).
 
 **IMPORTANT**
 Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run.

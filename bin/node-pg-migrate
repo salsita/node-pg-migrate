@@ -173,7 +173,6 @@ let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
 let CHECK_ORDER = argv[checkOrderArg];
-let TYPE_SHORTHANDS = {};
 const TIMESTAMP = argv[timestampArg];
 
 function readJson(json) {
@@ -186,7 +185,6 @@ function readJson(json) {
     MIGRATIONS_TABLE = json[migrationsTableArg] || MIGRATIONS_TABLE;
     MIGRATIONS_FILE_LANGUAGE = json[migrationFileLanguageArg] || MIGRATIONS_FILE_LANGUAGE;
     CHECK_ORDER = typeof json[checkOrderArg] !== 'undefined' ? json[checkOrderArg] : CHECK_ORDER;
-    TYPE_SHORTHANDS = json['type-shorthands'] || TYPE_SHORTHANDS;
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
     if (json.url) {
       DATABASE_URL = json.url;
@@ -297,7 +295,6 @@ if (action === 'create') {
     timestamp,
     file: migrationName,
     checkOrder: CHECK_ORDER,
-    typeShorthands: TYPE_SHORTHANDS,
     createSchema: CREATE_SCHEMA,
     createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
     direction,
