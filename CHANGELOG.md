@@ -1,5 +1,13 @@
 # Change Log
 
+## [2.23.0] (2018-02-20)
+
+### Changed
+
+- Updating deps, removing vulnerablity status for peer and optional dependencies [#199](https://github.com/salsita/node-pg-migrate/pull/199)
+- Removing regex [#198](https://github.com/salsita/node-pg-migrate/pull/198)
+- Adding ability to specify database name with 'database' option [#197](https://github.com/salsita/node-pg-migrate/pull/197)
+
 ## [2.22.2] (2018-02-20)
 
 ### Fixed
