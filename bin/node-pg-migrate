@@ -298,6 +298,8 @@ if (action === 'create') {
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
+    create_schema: CREATE_SCHEMA,
+    create_migrations_schema: CREATE_MIGRATIONS_SCHEMA,
     direction,
     noLock,
   });
