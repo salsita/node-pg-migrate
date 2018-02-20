@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.22.1] (2018-02-20)
+
+### Fixed
+
+- Passing props [#194](https://github.com/salsita/node-pg-migrate/pull/194)
+
 ## [2.22.0] (2018-02-20)
 
 ### Added
