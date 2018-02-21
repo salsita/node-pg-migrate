@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.23.1] (2018-02-21)
+
+### Fixed
+
+- Correct handling of multiline constraints [#202](https://github.com/salsita/node-pg-migrate/pull/202)
+
 ## [2.23.0] (2018-02-20)
 
 ### Changed
