@@ -59,11 +59,9 @@ describe('lib/migration', () => {
       return migration
         .applyUp()
         .then(() => {
-          expect(dbMock.query).to.have.callCount(4);
-          expect(dbMock.query.getCall(0).args[0]).to.equal('BEGIN;');
-          expect(dbMock.query.getCall(1).args[0]).to.include('CREATE TABLE');
-          expect(dbMock.query.getCall(2).args[0]).to.include(`INSERT INTO "public"."${migrationsTable}"`);
-          expect(dbMock.query.getCall(3).args[0]).to.equal('COMMIT;');
+          expect(dbMock.query).to.have.callCount(2);
+          expect(dbMock.query.getCall(0).args[0]).to.include('CREATE TABLE');
+          expect(dbMock.query.getCall(1).args[0]).to.include(`INSERT INTO "public"."${migrationsTable}"`);
         });
     });
   });
@@ -98,11 +96,9 @@ describe('lib/migration', () => {
       return migration
         .applyDown()
         .then(() => {
-          expect(dbMock.query).to.have.callCount(4);
-          expect(dbMock.query.getCall(0).args[0]).to.equal('BEGIN;');
-          expect(dbMock.query.getCall(1).args[0]).to.include('DROP TABLE');
-          expect(dbMock.query.getCall(2).args[0]).to.include(`DELETE FROM "public"."${migrationsTable}"`);
-          expect(dbMock.query.getCall(3).args[0]).to.equal('COMMIT;');
+          expect(dbMock.query).to.have.callCount(2);
+          expect(dbMock.query.getCall(0).args[0]).to.include('DROP TABLE');
+          expect(dbMock.query.getCall(1).args[0]).to.include(`DELETE FROM "public"."${migrationsTable}"`);
         });
     });
   });
