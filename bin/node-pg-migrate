@@ -37,6 +37,7 @@ const checkOrderArg = 'check-order';
 const configValueArg = 'config-value';
 const configFileArg = 'config-file';
 const ignorePatternArg = 'ignore-pattern';
+const singleTransactionArg = 'single-transaction';
 const noLockArg = 'no-lock';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
@@ -136,6 +137,12 @@ const argv = yargs
     choices: ['js', 'ts'],
     describe: 'Language of the migration file (Only valid with the create action)',
     type: 'string',
+  })
+
+  .option(singleTransactionArg, {
+    default: false,
+    describe: 'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
+    type: 'boolean',
   })
 
   .option(noLockArg, {
@@ -268,6 +275,8 @@ if (action === 'create') {
     console.log('dry run');
   }
 
+  const singleTransaction = argv[singleTransactionArg];
+
   const noLock = argv[noLockArg];
   if (noLock) {
     console.log('no lock');
@@ -301,6 +310,7 @@ if (action === 'create') {
     create_schema: CREATE_SCHEMA,
     create_migrations_schema: CREATE_MIGRATIONS_SCHEMA,
     direction,
+    single_transaction: singleTransaction,
     noLock,
   });
   const promise = action === 'redo'

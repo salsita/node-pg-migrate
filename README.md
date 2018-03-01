@@ -94,6 +94,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
+* `single-transaction` - When true, combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `false`)
 * `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](#locking))
 
 See all by running `node-pg-migrate --help`.
@@ -160,6 +161,7 @@ which takes options argument with following structure (similar to [command line 
 * `ignorePattern` _[string]_ - Regex pattern for file names to ignore
 * `file` _[string]_ - Run only migration with this name
 * `typeShorthands` _[object]_ - Object with column type shorthands
+* `single_transaction` _[boolean]_ - When true, combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `false`)
 * `noLock` _[boolean]_ - Disables locking mechanism and checks
 * `dryRun` _[boolean]_
 
