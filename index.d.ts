@@ -407,6 +407,7 @@ export interface RunnerOption {
     dryRun?: boolean
     createSchema?: boolean
     createMigrationsSchema?: boolean
+    singleTransaction?: boolean
     noLock?: boolean
 }
 

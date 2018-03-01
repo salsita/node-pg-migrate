@@ -140,7 +140,7 @@ const argv = yargs
   })
 
   .option(singleTransactionArg, {
-    default: false,
+    default: true,
     describe: 'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
     type: 'boolean',
   })
@@ -307,7 +307,7 @@ if (action === 'create') {
     createSchema: CREATE_SCHEMA,
     createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
     direction,
-    single_transaction: singleTransaction,
+    singleTransaction,
     noLock,
   });
   const promise = action === 'redo'
