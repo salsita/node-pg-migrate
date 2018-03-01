@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.24.0] (2018-03-01)
+
+### Added
+
+- Add `--single-transaction` option [#204](https://github.com/salsita/node-pg-migrate/pull/204)
+
 ## [2.23.1] (2018-02-21)
 
 ### Fixed
