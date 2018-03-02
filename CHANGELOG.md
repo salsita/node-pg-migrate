@@ -1,5 +1,46 @@
 # Change Log
 
+## [2.24.0] (2018-03-01)
+
+### Added
+
+- Add `--single-transaction` option [#204](https://github.com/salsita/node-pg-migrate/pull/204)
+
+## [2.23.1] (2018-02-21)
+
+### Fixed
+
+- Correct handling of multiline constraints [#202](https://github.com/salsita/node-pg-migrate/pull/202)
+
+## [2.23.0] (2018-02-20)
+
+### Changed
+
+- Updating deps, removing vulnerablity status for peer and optional dependencies [#199](https://github.com/salsita/node-pg-migrate/pull/199)
+- Removing regex [#198](https://github.com/salsita/node-pg-migrate/pull/198)
+- Adding ability to specify database name with 'database' option [#197](https://github.com/salsita/node-pg-migrate/pull/197)
+
+## [2.22.2] (2018-02-20)
+
+### Fixed
+
+- Role encrypted default [#196](https://github.com/salsita/node-pg-migrate/pull/196)
+- Running queries in order [#195](https://github.com/salsita/node-pg-migrate/pull/195)
+
+## [2.22.1] (2018-02-20)
+
+### Fixed
+
+- Passing props [#194](https://github.com/salsita/node-pg-migrate/pull/194)
+
+## [2.22.0] (2018-02-20)
+
+### Added
+
+- Auto create configured schemas if they don't exist [#192](https://github.com/salsita/node-pg-migrate/pull/192)
+- Add ifNotExists option to create extension [#188](https://github.com/salsita/node-pg-migrate/pull/188)
+- Programmatic API docs [#187](https://github.com/salsita/node-pg-migrate/pull/187)
+
 ## [2.21.0] (2018-02-12)
 
 ### Added

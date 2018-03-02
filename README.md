@@ -2,8 +2,6 @@
 
 [![Dependency Status](https://img.shields.io/david/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate)
 [![devDependency Status](https://img.shields.io/david/dev/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=dev)
-[![peerDependencies Status](https://img.shields.io/david/peer/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=peer)
-[![optionalDependencies Status](https://img.shields.io/david/optional/salsita/node-pg-migrate.svg)](https://david-dm.org/salsita/node-pg-migrate?type=optional)
 [![NPM version](https://img.shields.io/npm/v/node-pg-migrate.svg)](https://www.npmjs.com/package/node-pg-migrate)
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
@@ -25,7 +23,7 @@ You can specify your database connection information using [config](https://www.
 ```json
 // config/default.json
 {
-  "db": "postgres://postgres:password@localhost:5432/name"
+  "db": "postgres://postgres:password@localhost:5432/database"
 }
 ```
 
@@ -39,7 +37,7 @@ or
     "password": "",
     "host": "localhost",
     "port": 5432,
-    "name": "name"
+    "database": "database"
   }
 }
 ```
@@ -47,7 +45,7 @@ or
 You could also specify your database url by setting the environment variable `DATABASE_URL`.
 
 ```
-DATABASE_URL=postgres://postgres@localhost/name node-pg-migrate
+DATABASE_URL=postgres://postgres@localhost/database node-pg-migrate
 ```
 
 You can specify custom JSON file with config (format is same as for `db` entry of [config](https://www.npmjs.com/package/config) file), for example:
@@ -59,7 +57,7 @@ You can specify custom JSON file with config (format is same as for `db` entry o
   "password": "",
   "host": "localhost",
   "port": 5432,
-  "name": "name"
+  "database": "database"
 }
 ```
 
@@ -96,6 +94,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 * `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
                   (There should be no migration with timestamp lesser than last run migration.)
+* `single-transaction` - When true, combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `false`)
 * `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](#locking))
 
 See all by running `node-pg-migrate --help`.
@@ -113,7 +112,7 @@ Available options are:
 
 * `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
 
-* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `name` - for connection details
+* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details
 
 * `type-shorthands` - for column type shorthands
 
@@ -143,6 +142,28 @@ You can use babel or typescript for transpiling migration files. It requires a l
 
     Uncomment/Use either babel or typescript hook and adjust your config for compiler.
     You can then use migration as usual via e.g. `npm run migrate up`. :tada:
+
+
+## Programmatic API
+
+Alongside with command line, you can use `node-pg-migrate` also programmatically. It exports runner function,
+which takes options argument with following structure (similar to [command line arguments](#configuration)):
+
+* `database_url` _[string or object]_ - Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#new-client-config-object-)
+* `migrations_table` _[string]_ - The table storing which migrations have been run
+* `migrations_schema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
+* `schema` _[string]_ - The schema on which migration will be run (defaults to `public`)
+* `dir` _[string]_ - The directory containing your migration files
+* `checkOrder` _[boolean]_ - Check order of migrations before running them
+* `direction` _[enum]_ - `up` or `down`
+* `count` _[number]_ - Number of migration to run
+* `timestamp` _[boolean]_ - Treats `count` as timestamp
+* `ignorePattern` _[string]_ - Regex pattern for file names to ignore
+* `file` _[string]_ - Run only migration with this name
+* `typeShorthands` _[object]_ - Object with column type shorthands
+* `single_transaction` _[boolean]_ - When true, combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `false`)
+* `noLock` _[boolean]_ - Disables locking mechanism and checks
+* `dryRun` _[boolean]_
 
 
 ## Defining Migrations

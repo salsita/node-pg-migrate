@@ -37,6 +37,7 @@ const checkOrderArg = 'check-order';
 const configValueArg = 'config-value';
 const configFileArg = 'config-file';
 const ignorePatternArg = 'ignore-pattern';
+const singleTransactionArg = 'single-transaction';
 const noLockArg = 'no-lock';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
@@ -138,6 +139,12 @@ const argv = yargs
     type: 'string',
   })
 
+  .option(singleTransactionArg, {
+    default: false,
+    describe: 'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
+    type: 'boolean',
+  })
+
   .option(noLockArg, {
     default: false,
     describe: 'Disables locking mechanism and checks',
@@ -190,9 +197,9 @@ function readJson(json) {
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
     if (json.url) {
       DATABASE_URL = json.url;
-    } else if (json.host || json.port || json.name) {
+    } else if (json.host || json.port || json.name || json.database) {
       const creds = `${json.user}${json.password ? `:${json.password}` : ''}`;
-      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name}`;
+      DATABASE_URL = `postgres://${creds ? `${creds}@` : ''}${json.host || 'localhost'}:${json.port || 5432}/${json.name || json.database}`;
     }
   } else {
     DATABASE_URL = json || DATABASE_URL;
@@ -268,6 +275,8 @@ if (action === 'create') {
     console.log('dry run');
   }
 
+  const singleTransaction = argv[singleTransactionArg];
+
   const noLock = argv[noLockArg];
   if (noLock) {
     console.log('no lock');
@@ -298,7 +307,10 @@ if (action === 'create') {
     file: migrationName,
     checkOrder: CHECK_ORDER,
     typeShorthands: TYPE_SHORTHANDS,
+    create_schema: CREATE_SCHEMA,
+    create_migrations_schema: CREATE_MIGRATIONS_SCHEMA,
     direction,
+    single_transaction: singleTransaction,
     noLock,
   });
   const promise = action === 'redo'

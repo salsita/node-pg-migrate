@@ -306,8 +306,8 @@ export interface MigrationBuilder {
     dropIndex(tableName: Name, columns: string | string[], options?: DropIndexOptions): void
 
     // Extensions
-    createExtension(extension: string | string[]): void
-    addExtension(extension: string | string[]): void
+    createExtension(extension: string | string[], options: { ifNotExists?: boolean }): void
+    addExtension(extension: string | string[], options: { ifNotExists?: boolean }): void
     dropExtension(extension: string | string[], dropOptions: DropOptions): void
 
     // Types
@@ -401,10 +401,11 @@ export interface RunnerOption {
     checkOrder?: boolean
     direction: 'up' | 'down'
     count: number
+    timestamp?: boolean
     ignorePattern: string
     file?: string
     dryRun?: boolean
-    typeShorthands?: { [name: string]: string }
+    typeShorthands?: { [name: string]: ColumnDefinition }
     noLock?: boolean
 }
 
