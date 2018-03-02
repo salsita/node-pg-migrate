@@ -445,7 +445,6 @@ export interface RunnerOption {
     createSchema?: boolean
     createMigrationsSchema?: boolean
     singleTransaction?: boolean
-    typeShorthands?: { [name: string]: ColumnDefinition }
     noLock?: boolean
 }
 
