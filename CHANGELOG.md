@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.24.1] (2018-03-05)
+
+### Fixed
+
+- Fix auto create schema [#206](https://github.com/salsita/node-pg-migrate/pull/206)
+
 ## [2.24.0] (2018-03-01)
 
 ### Added
