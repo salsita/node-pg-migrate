@@ -1021,7 +1021,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `unique` _[boolean]_ - set to true to add a unique constraint on this column
 - `primaryKey` _[boolean]_ - set to true to make this column the primary key
 - `notNull` _[boolean]_ - set to true to make this column not null
-- `default` _[string]_ - adds DEFAULT clause for column
+- `default` _[string]_ - adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.
 - `check` _[string]_ - sql for a check constraint for this column
 - `references` _[string]_ - a table name that this column is a foreign key to
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
