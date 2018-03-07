@@ -198,6 +198,7 @@ interface TriggerOptionsEn {
     operation: string | string[]
     constraint?: boolean
     function?: Name
+    functionParams?: Value[],
     level?: 'STATEMENT' | 'ROW'
     condition?: string
     deferrable?: boolean
