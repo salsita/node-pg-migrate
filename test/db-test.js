@@ -51,15 +51,15 @@ describe('lib/db', () => {
     });
 
     it('should call client.connect if this is the first query', () => {
-      client.connect.callsArg(0);
-      client.query.callsArg(1);
+      client.connect.returns(Promise.resolve());
+      client.query.returns(Promise.resolve());
       return db.query('query').then(() => {
         expect(client.connect).to.be.calledOnce;
       });
     });
     it('should not call client.connect on subsequent queries', () => {
-      client.connect.callsArg(0);
-      client.query.callsArg(1);
+      client.connect.returns(Promise.resolve());
+      client.query.returns(Promise.resolve());
       return db.query('query_one')
         .then(() =>
           db.query('query_two')
@@ -69,8 +69,8 @@ describe('lib/db', () => {
         });
     });
     it('should call client.query with query', () => {
-      client.connect.callsArg(0);
-      client.query.callsArg(1);
+      client.connect.returns(Promise.resolve());
+      client.query.returns(Promise.resolve());
       return db.query('query')
         .then(() => {
           expect(client.query.getCall(0).args[0]).to.equal('query');
@@ -78,7 +78,7 @@ describe('lib/db', () => {
     });
     it('should not call client.query if client.connect fails', () => {
       const error = 'error';
-      client.connect.callsArgWith(0, error);
+      client.connect.returns(Promise.reject(error));
       return expect(db.query('query'))
         .to.eventually.be.rejectedWith(error)
         .then(() =>
@@ -86,16 +86,16 @@ describe('lib/db', () => {
         );
     });
     it('should resolve promise if query throws no error', () => {
-      client.connect.callsArg(0);
+      client.connect.returns(Promise.resolve());
       const result = 'result';
-      client.query.callsArgWith(1, null, result);
+      client.query.returns(Promise.resolve(result));
       return expect(db.query('query'))
         .to.eventually.equal(result);
     });
     it('should reject promise if query throws error', () => {
-      client.connect.callsArg(0);
+      client.connect.returns(Promise.resolve());
       const error = 'error';
-      client.query.callsArgWith(1, error);
+      client.query.returns(Promise.reject(error));
       return expect(db.query('query'))
         .to.eventually.be.rejectedWith(error);
     });
