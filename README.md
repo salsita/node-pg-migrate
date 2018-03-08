@@ -1013,6 +1013,17 @@ e.g. `pgm.func('CURRENT_TIMESTAMP')` to use in `default` option for column defin
 
 -----------------------------------------------------
 
+-----------------------------------------------------
+
+#### `pgm.db.query` and `pgm.db.select`
+
+> Allows to run DB queries with same DB connection migration is running
+> See [pg.Client.query](https://node-postgres.com/api/client#client-query)
+
+Returns promise with either result of query or returned rows of query (in case of `select`).
+
+-----------------------------------------------------
+
 ### Column Definitions
 
 The `createTable` and `addColumns` methods both take a `columns` argument that specifies column names and options. It is a object (key/value) where each key is the name of the column, and the value is another object that defines the options for the column.

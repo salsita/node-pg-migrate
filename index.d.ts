@@ -281,6 +281,17 @@ export interface OperatorListDefinition {
     params?: FunctionParam[]
 }
 
+import { QueryConfig, QueryResult } from "pg";
+
+// see ClientBase in @types/pg
+interface DB {
+    query(queryConfig: QueryConfig): Promise<QueryResult>;
+    query(queryText: string, values?: any[]): Promise<QueryResult>;
+
+    select(queryConfig: QueryConfig): Promise<any[]>;
+    select(queryText: string, values?: any[]): Promise<any[]>;
+}
+
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
@@ -370,6 +381,8 @@ export interface MigrationBuilder {
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
     noTransaction(): void
+
+    db: DB
 }
 
 export class PgLiteral {
