@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.25.0] (2018-03-08)
+
+### Fixed
+
+- (No)Transaction handling [#213](https://github.com/salsita/node-pg-migrate/pull/213)
+- Parens around INHERITS clause [#214](https://github.com/salsita/node-pg-migrate/pull/214)
+
+### Added
+
+- Exposing DB [#212](https://github.com/salsita/node-pg-migrate/pull/212)
+
 ## [2.24.1] (2018-03-05)
 
 ### Fixed
