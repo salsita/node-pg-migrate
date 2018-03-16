@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.25.1] (2018-03-16)
+
+### Fixed
+
+- Role inherit fix [#218](https://github.com/salsita/node-pg-migrate/pull/218)
+
 ## [2.25.0] (2018-03-08)
 
 ### Fixed
