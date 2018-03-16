@@ -281,7 +281,7 @@ This is required for some SQL operations that cannot be run within a transaction
 > Alter existing table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
 **Arguments:**
-- `tablename` _[string]_ - name of the table to drop
+- `tablename` _[string]_ - name of the table to alter
 - `options` _[object]_ - options:
   - `levelSecurity` _[string]_ - `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE`
 
