@@ -78,6 +78,10 @@ export interface ColumnDefinitions {
     [name: string]: ColumnDefinition | string
 }
 
+export interface AlterTableOptions {
+    levelSecurity: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE'
+}
+
 // Note these currently don't contain the parameterized types like
 // bit(n), varchar(n) and so on, they have to be specified as strings
 export enum PgType {
@@ -281,6 +285,18 @@ export interface OperatorListDefinition {
     params?: FunctionParam[]
 }
 
+export interface PolicyOptions {
+    role: string | string[]
+    using: string
+    check: string
+}
+
+export interface CreatePolicyOptionsEn {
+    command: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE'
+}
+
+export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions
+
 import { QueryConfig, QueryResult } from "pg";
 
 // see ClientBase in @types/pg
@@ -297,6 +313,7 @@ export interface MigrationBuilder {
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
     dropTable(tableName: Name, dropOptions: DropOptions): void
     renameTable(tableName: Name, newtableName: Name): void
+    alterTable(tableName: Name, alterOptions: AlterTableOptions): void
 
     // Columns
     addColumns(tableName: Name, newColumns: ColumnDefinitions): void
@@ -377,6 +394,12 @@ export interface MigrationBuilder {
     renameOperatorFamily(oldOperatorFamilyName: Name, indexMethod: Name, newOperatorFamilyName: Name): void
     addToOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
     removeFromOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
+
+    // Policies
+    createPolicy(tableName: Name, policyName: string, options: CreatePolicyOptions): void
+    dropPolicy(tableName: Name, policyName: string, options?: IfExistsOption): void
+    alterPolicy(tableName: Name, policyName: string, options: PolicyOptions): void
+    renamePolicy(tableName: Name, policyName: string, newPolicyName: string): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
