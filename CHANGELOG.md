@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.26.0] (2018-03-16)
+
+### Added
+
+- Support for policies [#219](https://github.com/salsita/node-pg-migrate/pull/219)
+
 ## [2.25.1] (2018-03-16)
 
 ### Fixed
