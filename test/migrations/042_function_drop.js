@@ -1,16 +1,11 @@
-const { params } = require('./039_function_create');
+const create = require('./039_function_create');
+const rename = require('./040_function_rename');
 
 exports.up = (pgm) => {
-  pgm.dropFunction('add', params);
+  pgm.dropFunction('add', create.params);
 };
 
 exports.down = (pgm) => {
-  pgm.createFunction('add', params, {
-    returns: 'integer',
-    language: 'plpgsql',
-  }, `
-BEGIN
-  return $1 + arg2;
-END;
-  `);
+  create.up(pgm);
+  rename.up(pgm);
 };

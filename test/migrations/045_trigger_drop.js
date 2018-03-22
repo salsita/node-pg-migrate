@@ -1,18 +1,9 @@
+const trigger = require('./043_trigger_create_rename');
+
 exports.up = (pgm) => {
   pgm.dropTrigger('tt', 'trig');
   pgm.dropFunction('trig', []);
+  pgm.dropTable('tt');
 };
 
-exports.down = (pgm) => {
-  pgm.createTrigger('tt', 'trig', {
-    when: 'before',
-    operation: ['insert', 'update'],
-    level: 'row',
-    language: 'plpgsql',
-  }, `
-BEGIN
-  NEW.a := NEW.a + 1;
-  return NEW;
-END;
-  `);
-};
+exports.down = trigger.up;

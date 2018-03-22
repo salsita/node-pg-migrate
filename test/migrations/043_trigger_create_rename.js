@@ -13,4 +13,6 @@ BEGIN
   return NEW;
 END;
   `);
+  pgm.renameTrigger('tt', 't', 'trig');
+  pgm.renameFunction('t', [], 'trig');
 };

@@ -1,7 +1,11 @@
+const create = require('./035_role_add');
+const rename = require('./037_role_rename');
+
 exports.up = (pgm) => {
   pgm.dropRole('rx');
 };
 
 exports.down = (pgm) => {
-  pgm.createRole('rx', { password: 'p', login: false });
+  create.up(pgm);
+  rename.up(pgm);
 };
