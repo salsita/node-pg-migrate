@@ -3,6 +3,13 @@ jobs:
    build:
      docker:
        - image: circleci/node:4.8.2
+         environment:
+         - NODE_ENV=test
+         - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+       - image: postgres:9.6
+         environment:
+         - POSTGRES_USER=ubuntu
+         - POSTGRES_DB=circle_test
      steps:
        - checkout
        - run:

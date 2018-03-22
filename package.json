@@ -75,7 +75,9 @@
   },
   "scripts": {
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
-    "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
+    "test:mocha": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
+    "test:migration": "node bin/node-pg-migrate -m test/migrations",
+    "test": "npm run test:mocha && npm run test:migration up && npm run test:migration down 0 -- --timestamp",
     "lint": "eslint -c .eslintrc . bin/*",
     "lintfix": "npm run lint -- --fix",
     "prepare": "npm run compile"
