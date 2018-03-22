@@ -1,4 +1,4 @@
-const tables = require('./004_table');
+const table = require('./004_table');
 
 exports.up = pgm =>
   new Promise((resolve, reject) =>
@@ -6,7 +6,7 @@ exports.up = pgm =>
                 FROM pg_class c join pg_namespace n ON (c.relnamespace = n.oid)
                 WHERE c.relname = 't2' and c.relkind = 'r' and n.nspname = 'public'`)
       .then(([{ comment }]) => (
-        comment === tables.comment
+        comment === table.comment
           ? null
           : reject(new Error('Comment not set'))
       ))
