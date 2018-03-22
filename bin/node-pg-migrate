@@ -292,24 +292,28 @@ if (action === 'create') {
     }
   }
 
-  const options = (direction, count = numMigrations, timestamp = TIMESTAMP) => ({
-    dryRun,
-    databaseUrl: DATABASE_URL,
-    dir: MIGRATIONS_DIR,
-    ignorePattern: IGNORE_PATTERN,
-    schema: SCHEMA,
-    migrationsSchema: MIGRATIONS_SCHEMA,
-    migrationsTable: MIGRATIONS_TABLE,
-    count,
-    timestamp,
-    file: migrationName,
-    checkOrder: CHECK_ORDER,
-    createSchema: CREATE_SCHEMA,
-    createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
-    direction,
-    singleTransaction,
-    noLock,
-  });
+  const options = (direction, _count, _timestamp) => {
+    const count = _count === undefined ? numMigrations : _count;
+    const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
+    return {
+      dryRun,
+      databaseUrl: DATABASE_URL,
+      dir: MIGRATIONS_DIR,
+      ignorePattern: IGNORE_PATTERN,
+      schema: SCHEMA,
+      migrationsSchema: MIGRATIONS_SCHEMA,
+      migrationsTable: MIGRATIONS_TABLE,
+      count,
+      timestamp,
+      file: migrationName,
+      checkOrder: CHECK_ORDER,
+      createSchema: CREATE_SCHEMA,
+      createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
+      direction,
+      singleTransaction,
+      noLock,
+    };
+  };
   const promise = action === 'redo'
     ? migrationRunner(options('down')).then(() => migrationRunner(options('up', Infinity, false)))
     : migrationRunner(options(action));
