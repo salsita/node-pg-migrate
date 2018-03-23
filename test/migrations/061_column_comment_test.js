@@ -4,7 +4,7 @@ exports.up = pgm =>
   new Promise((resolve, reject) =>
     pgm.db.select(`SELECT d.description as "comment"
                 FROM pg_description d join information_schema.columns c on (d.objsubid = c.ordinal_position)
-                WHERE c.table_schema = 'circle_test' and c.table_name = 'tcc';`)
+                WHERE c.table_schema = 'test' and c.table_name = 'tcc';`)
       .then(([{ comment }]) => (
         comment === column.comment
           ? null
