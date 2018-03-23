@@ -442,6 +442,9 @@ export interface RunnerOption {
     ignorePattern: string
     file?: string
     dryRun?: boolean
+    create_schema?: boolean
+    create_migrations_schema?: boolean
+    single_transaction?: boolean
     typeShorthands?: { [name: string]: ColumnDefinition }
     noLock?: boolean
 }
