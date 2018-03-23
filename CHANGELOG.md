@@ -1,5 +1,20 @@
 # Change Log
 
+# [3.0.0-rc1] (2018-03-23)
+
+### Breaking changes
+
+- Single transaction as default [#205](https://github.com/salsita/node-pg-migrate/pull/205)
+- Versioning type shorthands [#190](https://github.com/salsita/node-pg-migrate/pull/190)
+(type shorthands were moved from global config to migrations scripts)
+- Using camel case in API [#189](https://github.com/salsita/node-pg-migrate/pull/189)
+- Removed `pg-migrate` script
+(use `node-pg-migrate`)
+
+### Added
+
+- Running test migrations on CircleCI [#221](https://github.com/salsita/node-pg-migrate/pull/221)
+
 ## [2.26.2] (2018-03-23)
 
 ### Fixed
