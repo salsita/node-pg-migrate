@@ -1,6 +1,6 @@
 .idea
 .env
 *.log
-migrations/
-node_modules/
-dist*/**
+/migrations
+/node_modules
+/dist*/**
