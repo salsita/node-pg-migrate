@@ -38,7 +38,7 @@ const configValueArg = 'config-value';
 const configFileArg = 'config-file';
 const ignorePatternArg = 'ignore-pattern';
 const singleTransactionArg = 'single-transaction';
-const noLockArg = 'no-lock';
+const lockArg = 'lock';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 
@@ -145,9 +145,9 @@ const argv = yargs
     type: 'boolean',
   })
 
-  .option(noLockArg, {
-    default: false,
-    describe: 'Disables locking mechanism and checks',
+  .option(lockArg, {
+    default: true,
+    describe: 'When false, disables locking mechanism and checks',
     type: 'boolean',
   })
 
@@ -275,7 +275,7 @@ if (action === 'create') {
 
   const singleTransaction = argv[singleTransactionArg];
 
-  const noLock = argv[noLockArg];
+  const noLock = !argv[lockArg];
   if (noLock) {
     console.log('no lock');
   }
