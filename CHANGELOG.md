@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.26.2] (2018-03-23)
+
+### Fixed
+
+- Fix runner for zero migrations [#224](https://github.com/salsita/node-pg-migrate/pull/224)
+
 ## [2.26.1] (2018-03-23)
 
 ### Fixed
