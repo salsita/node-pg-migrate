@@ -1,7 +1,8 @@
 exports.comment = 'comment on column id';
 
 exports.up = (pgm) => {
-  pgm.createTable({ schema: 'circle_test', name: 'tcc' }, {
+  pgm.createSchema('test');
+  pgm.createTable({ schema: 'test', name: 'tcc' }, {
     id: { type: 'id', comment: exports.comment },
   });
 };
