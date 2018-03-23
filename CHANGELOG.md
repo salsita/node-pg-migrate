@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.26.1] (2018-03-23)
+
+### Fixed
+
+- Fixing altering role [#222](https://github.com/salsita/node-pg-migrate/pull/222)
+- Fixes from 3.0 [#223](https://github.com/salsita/node-pg-migrate/pull/223)
+
 ## [2.26.0] (2018-03-16)
 
 ### Added
