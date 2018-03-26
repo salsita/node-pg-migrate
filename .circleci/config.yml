@@ -5,11 +5,14 @@ jobs:
        - image: circleci/node:4.8.2
          environment:
          - NODE_ENV=test
-         - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+         - DATABASE_URL_POSTGRES=postgres://ubuntu@localhost:5432/circle_test
+         - DATABASE_URL_COCKROACH=postgresql://root@localhost:26257/circle_test
        - image: postgres:9.6
          environment:
          - POSTGRES_USER=ubuntu
          - POSTGRES_DB=circle_test
+       - image: cockroachdb/cockroach:v1.1.6
+         command: ['start', '--insecure', '--host=localhost']
      steps:
        - checkout
        - run:
@@ -27,6 +30,9 @@ jobs:
        - run:
           name: lint
           command: npm run lint
+       - run:
+          name: create-cockroach-db
+          command: node -e '(new require("pg").Pool({connectionString:process.env.DATABASE_URL_COCKROACH})).query("CREATE DATABASE circle_test").then(function(){process.exit(0)})'
        - run:
           name: test
           command: npm test
