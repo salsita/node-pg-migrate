@@ -1,6 +1,18 @@
 # Change Log
 
-# [3.0.0-rc1] (2018-03-23)
+## [3.0.0-rc2] (2018-03-26)
+
+### Fixed
+
+- Fixing setting comments on columns [#228](https://github.com/salsita/node-pg-migrate/pull/228)
+
+## [2.26.3] (2018-03-26)
+
+### Fixed
+
+- Fixing setting comments on columns [#228](https://github.com/salsita/node-pg-migrate/pull/228)
+
+# [3.0.0-rc] (2018-03-23)
 
 ### Breaking changes
 
