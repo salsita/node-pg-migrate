@@ -1,6 +1,6 @@
-import chai from 'chai'; // eslint-disable-line import/no-extraneous-dependencies
-import sinonChai from 'sinon-chai'; // eslint-disable-line import/no-extraneous-dependencies
-import chaiAsPromised from 'chai-as-promised'; // eslint-disable-line import/no-extraneous-dependencies
+import chai from "chai";
+import sinonChai from "sinon-chai";
+import chaiAsPromised from "chai-as-promised";
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);
