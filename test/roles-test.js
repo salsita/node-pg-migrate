@@ -4,7 +4,7 @@ import * as Roles from "../lib/operations/roles";
 describe("lib/operations/roles", () => {
   describe(".create", () => {
     it("check defaults", () => {
-      const sql = Roles.create("role");
+      const sql = Roles.createRole("role");
       expect(sql).to.equal(
         'CREATE ROLE "role" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;'
       );
