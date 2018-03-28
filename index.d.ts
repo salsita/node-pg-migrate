@@ -297,6 +297,22 @@ export interface CreatePolicyOptionsEn {
 
 export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions
 
+export interface CreateViewOptions {
+    temporary?: boolean
+    replace?: boolean
+    recursive?: boolean
+    columns?: string | string[]
+    checkOption?: 'CASCADED' | 'LOCAL'
+}
+
+export interface AlterViewOptions {
+    checkOption?: null | false | 'CASCADED' | 'LOCAL'
+}
+
+export interface AlterViewColumnOptions {
+    default?: Value
+}
+
 import { QueryConfig, QueryResult } from "pg";
 
 // see ClientBase in @types/pg
@@ -400,6 +416,12 @@ export interface MigrationBuilder {
     dropPolicy(tableName: Name, policyName: string, options?: IfExistsOption): void
     alterPolicy(tableName: Name, policyName: string, options: PolicyOptions): void
     renamePolicy(tableName: Name, policyName: string, newPolicyName: string): void
+
+    createView(viewName: string, options: CreateViewOptions, definition: string): void
+    dropView(viewName: string, options?: DropOptions): void
+    alterView(viewName: string, options: AlterViewOptions): void
+    alterViewColumn(viewName: string, options: AlterViewColumnOptions): void
+    renameView(viewName: string, newViewName: string): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
