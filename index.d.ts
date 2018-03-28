@@ -313,6 +313,25 @@ export interface AlterViewColumnOptions {
     default?: Value
 }
 
+export interface CreateMaterializedViewOptions {
+    ifNotExists?: boolean
+    columns?: string | string[]
+    tablespace?: string
+    storageParameters: object
+    data?: boolean
+}
+
+export interface AlterMaterializedViewOptions {
+    cluster?: null | false | string
+    extension?: string
+    storageParameters?: object
+}
+
+export interface RefreshMaterializedViewOptions {
+    concurrently?: boolean
+    data?: boolean
+}
+
 import { QueryConfig, QueryResult } from "pg";
 
 // see ClientBase in @types/pg
@@ -422,6 +441,13 @@ export interface MigrationBuilder {
     alterView(viewName: string, options: AlterViewOptions): void
     alterViewColumn(viewName: string, options: AlterViewColumnOptions): void
     renameView(viewName: string, newViewName: string): void
+
+    createMaterializedView(viewName: string, options: CreateMaterializedViewOptions, definition: string): void
+    dropMaterializedView(viewName: string, options?: DropOptions): void
+    alterMaterializedView(viewName: string, options: AlterMaterializedViewOptions): void
+    renameMaterializedView(viewName: string, newViewName: string): void
+    renameMaterializedViewColumn(viewName: string, columnName: string, newColumnName: string): void
+    refreshMaterializedView(viewName: string, options?: RefreshMaterializedViewOptions): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
