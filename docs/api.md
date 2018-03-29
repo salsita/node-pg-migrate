@@ -14,7 +14,6 @@ which takes options argument with following structure (similar to [command line 
 * `timestamp` _[boolean]_ - Treats `count` as timestamp
 * `ignorePattern` _[string]_ - Regex pattern for file names to ignore
 * `file` _[string]_ - Run only migration with this name
-* `typeShorthands` _[object]_ - Object with column type shorthands
 * `singleTransaction` _[boolean]_ - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`)
 * `createSchema` _[boolean]_ - Creates the configured schema if it doesn't exist
 * `createMigrationsSchema` _[boolean]_ - Creates the configured migration schema if it doesn't exist

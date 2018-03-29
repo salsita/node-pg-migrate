@@ -22,6 +22,68 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 ## Usage
 
+### Quick Example
+
+Add `'migrate': 'node-pg-migrate'` to `scripts` section of `package.json` so you are able to quickly run commands.
+
+Run `npm run migrate create my first migration`. It will create file `xxx_my-first-migration.js` in `migrations` folder.
+Open it and change contents to:
+
+```js
+exports.up = pgm => {
+  pgm.createTable("users", {
+    id: "id",
+    name: { type: "varchar(1000)", notNull: true },
+    createdAt: {
+      type: "timestamp",
+      notNull: true,
+      default: pgm.func("current_timestamp")
+    }
+  });
+  pgm.createTable("posts", {
+    id: "id",
+    userId: {
+      type: "integer",
+      notNull: true,
+      references: '"users"',
+      onDelete: "cascade"
+    },
+    body: { type: "text", notNull: true },
+    createdAt: {
+      type: "",
+      notNull: true,
+      default: pgm.func("current_timestamp")
+    }
+  });
+  pgm.createIndex("posts", "userId");
+};
+```
+
+Save migration file.
+
+Now you should put you DB connection to `DATABASE_URL` environment variable and run `npm run migrate up`.
+(e.g. `DATABASE_URL=postgres://test:test@localhost:5432/test npm run migrate up`)
+
+You should now have two tables in your DB :tada:
+
+If you will want to change your schema later, you can e.g. add lead paragraph to posts:
+
+Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
+
+```js
+exports.up = pgm => {
+  pgm.addColumns("posts", {
+    lead: { type: "text", notNull: true }
+  });
+};
+```
+
+Run `npm run migrate up` and there will be new column in `posts` table :tada: :tada:
+
+Want to know more? Read docs:
+
+### Docs
+
 * [CLI](docs/cli.md)
 * [Programmatic API](docs/api.md)
 * [Defining Migrations](docs/migrations.md)
