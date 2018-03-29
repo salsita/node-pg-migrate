@@ -61,7 +61,7 @@ exports.up = pgm => {
 
 Save migration file.
 
-Now you should put you DB connection to `DATABASE_URL` environment variable and run `npm run migrate up`.
+Now you should put your DB connection string to `DATABASE_URL` environment variable and run `npm run migrate up`.
 (e.g. `DATABASE_URL=postgres://test:test@localhost:5432/test npm run migrate up`)
 
 You should now have two tables in your DB :tada:
