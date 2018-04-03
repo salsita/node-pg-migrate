@@ -498,12 +498,3 @@ export interface RunnerOption {
 }
 
 export default function (options: RunnerOption): Promise<void>
-
-export interface UnlockRunnerOption {
-    databaseUrl: string | ClientConfig
-    migrationsTable: string
-    migrationsSchema?: string
-    schema?: string
-}
-
-export function unlockRunner(options: RunnerOption): Promise<void>
