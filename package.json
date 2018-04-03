@@ -29,7 +29,7 @@
     "programable",
     "api"
   ],
-  "version": "3.0.0-rc2",
+  "version": "3.0.0-rc3",
   "engines": {
     "node": ">=4.0.0"
   },
@@ -84,23 +84,22 @@
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
     "test:mocha": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "babel-node bin/node-pg-migrate",
-    "migrate:postgres": "DATABASE_URL=$DATABASE_URL_POSTGRES npm run migrate -- -m test/migrations",
-    "migrate:cockroach": "DATABASE_URL=$DATABASE_URL_COCKROACH npm run migrate -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock",
-    "test:postgres": "npm run migrate:postgres up && npm run migrate:postgres down 0 -- --timestamps",
-    "test:cockroach": "npm run migrate:cockroach up && npm run migrate:cockroach down 0 -- --timestamp",
-    "test": "npm run test:mocha && npm run test:postgres && npm run test:cockroach",
+    "migrate:postgres":
+      "DATABASE_URL=$DATABASE_URL_POSTGRES npm run migrate -- -m test/migrations",
+    "migrate:cockroach":
+      "DATABASE_URL=$DATABASE_URL_COCKROACH npm run migrate -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock",
+    "test:postgres":
+      "npm run migrate:postgres up && npm run migrate:postgres down 0 -- --timestamps",
+    "test:cockroach":
+      "npm run migrate:cockroach up && npm run migrate:cockroach down 0 -- --timestamp",
+    "test":
+      "npm run test:mocha && npm run test:postgres && npm run test:cockroach",
     "lint": "eslint -c eslintrc.js . bin/*",
     "lintfix": "npm run lint -- --fix",
     "prepare": "npm run compile"
   },
   "lint-staged": {
-    "*.js": [
-      "npm run lintfix",
-      "git add"
-    ],
-    "*.{json,md}": [
-      "prettier --write",
-      "git add"
-    ]
+    "*.js": ["npm run lintfix", "git add"],
+    "*.{json,md}": ["prettier --write", "git add"]
   }
 }
