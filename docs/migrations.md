@@ -64,10 +64,11 @@ CREATE TABLE "my_schema"."my_table_name" (
 
 ### Locking
 
-`node-pg-migrate` automatically checks if no other migration is running. To do so, it locks the migration table and enters comment there.
-There are other options how to do it, but I choose this one (see [#88](https://github.com/salsita/node-pg-migrate/pull/88)).
-In some circumstances it is possible that lock will not be released (Error message - `Error: Unable to fetch migrations: Error: Another migration is already running`).
-In that case you need to run `node-pg-migrate unlock` to release the lock again.
+`node-pg-migrate` automatically checks if no other migration is running. To do so, it uses an
+[advisory lock](https://www.postgresql.org/docs/current/static/explicit-locking.html#id-1.5.12.6.9.2)
+(see [#239](https://github.com/salsita/node-pg-migrate/pull/239)).
+Lock is held for duration of DB session, so if migration scripts hangs up, you need to kill it,
+before running another migration script.
 
 ## Migration methods
 

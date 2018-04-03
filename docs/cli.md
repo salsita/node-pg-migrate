@@ -54,7 +54,6 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 * `node-pg-migrate up {N}` - runs N up migrations from the current state.
 * `node-pg-migrate down` - runs a single down migration.
 * `node-pg-migrate down {N}` - runs N down migrations from the current state.
-* `node-pg-migrate unlock` - unlocks migrations (if previous up/down migration failed and was not automatically unlocked).
 * `node-pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
 * `node-pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
 
