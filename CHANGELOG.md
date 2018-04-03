@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.0.0-rc4](2018-04-03)
+
+### Changed
+
+* Implement failsafe locking [#239](https://github.com/salsita/node-pg-migrate/pull/239)
+* Updated docs about locking [#240](https://github.com/salsita/node-pg-migrate/pull/240)
+
 ## [3.0.0-rc3](2018-04-03)
 
 ### Added
