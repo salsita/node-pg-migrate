@@ -493,7 +493,8 @@ export interface RunnerOption {
     createSchema?: boolean
     createMigrationsSchema?: boolean
     singleTransaction?: boolean
-    noLock?: boolean
+    noLock?: boolean,
+    log?: (msg:string) => void;
 }
 
 export default function (options: RunnerOption): Promise<void>

@@ -19,3 +19,4 @@ which takes options argument with following structure (similar to [command line 
 * `createMigrationsSchema` _[boolean]_ - Creates the configured migration schema if it doesn't exist
 * `noLock` _[boolean]_ - Disables locking mechanism and checks
 * `dryRun` _[boolean]_
+* `log` _[function]_ - Redirect log messages to this function, rather than `console.log`
