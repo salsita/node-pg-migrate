@@ -10,7 +10,6 @@ const Migration = require("../dist/migration").default; // eslint-disable-line i
 const runner = require("../dist/runner"); // eslint-disable-line import/no-unresolved,import/extensions
 
 const migrationRunner = runner.default;
-const unlockRunner = runner.unlockRunner;
 
 process.on("uncaughtException", err => {
   console.log(err.stack);
@@ -43,7 +42,7 @@ const timestampArg = "timestamp";
 const dryRunArg = "dry-run";
 
 const argv = yargs
-  .usage("Usage: $0 [up|down|create|unlock|redo] [migrationName] [options]")
+  .usage("Usage: $0 [up|down|create|redo] [migrationName] [options]")
 
   .option("d", {
     alias: databaseUrlVarArg,
@@ -259,27 +258,6 @@ if (action === "create") {
     MIGRATIONS_FILE_LANGUAGE
   );
   console.log(util.format("Created migration -- %s", migration.path));
-} else if (action === "unlock") {
-  if (!DATABASE_URL) {
-    console.error(
-      `The $${argv[databaseUrlVarArg]} environment variable is not set.`
-    );
-    process.exit(1);
-  }
-  unlockRunner({
-    databaseUrl: DATABASE_URL,
-    schema: SCHEMA,
-    migrationsSchema: MIGRATIONS_SCHEMA,
-    migrationsTable: MIGRATIONS_TABLE
-  })
-    .then(() => {
-      console.log("Unlocked!");
-      process.exit(0);
-    })
-    .catch(err => {
-      console.log(err.stack);
-      process.exit(1);
-    });
 } else if (action === "up" || action === "down" || action === "redo") {
   if (!DATABASE_URL) {
     console.error(
@@ -351,7 +329,7 @@ if (action === "create") {
       process.exit(1);
     });
 } else {
-  console.log("Invalid Action: Must be [up|down|create|unlock|redo].");
+  console.log("Invalid Action: Must be [up|down|create|redo].");
   yargs.showHelp();
   process.exit(1);
 }
