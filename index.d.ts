@@ -44,7 +44,7 @@ export interface ColumnDefinition {
     match?: 'FULL' | 'SIMPLE'
     deferrable?: boolean
     deferred?: boolean
-    comment: string | null
+    comment?: string | null
 }
 
 export interface TableOptions {
@@ -53,7 +53,7 @@ export interface TableOptions {
     inherits?: Name
     like?: Name
     constraints?: ConstraintOptions
-    comment: string | null
+    comment?: string | null
 }
 
 export interface ColumnOptions {
@@ -63,7 +63,7 @@ export interface ColumnOptions {
     allowNull?: boolean
     collation?: string
     using?: string
-    comment: string | null
+    comment?: string | null
 }
 
 export interface CreateIndexOptions {
