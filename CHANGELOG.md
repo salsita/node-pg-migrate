@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.0.0-rc5](2018-04-06)
+
+### Fixed
+
+* Fix comment not being optional [#244](https://github.com/salsita/node-pg-migrate/pull/244)
+* Fix behavior when singleTransaction is not set [#245](https://github.com/salsita/node-pg-migrate/pull/245)
+
 ## [3.0.0-rc4](2018-04-03)
 
 ### Changed
