@@ -134,7 +134,7 @@ const argv = yargs
   .option("j", {
     alias: migrationFileLanguageArg,
     default: "js",
-    choices: ["js", "ts"],
+    choices: ["js", "ts", "sql"],
     describe:
       "Language of the migration file (Only valid with the create action)",
     type: "string"
