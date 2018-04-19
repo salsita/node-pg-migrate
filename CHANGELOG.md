@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.1.0](2018-04-19)
+
+### Added
+
+* Handling SQL files [#246](https://github.com/salsita/node-pg-migrate/pull/246)
+
 ## [3.0.0](2018-04-12)
 
 ## [3.0.0-rc5](2018-04-06)
