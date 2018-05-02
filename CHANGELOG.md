@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.1.1](2018-05-02)
+
+### Fixed
+
+* Fixing optional options in create and drop statements [#250](https://github.com/salsita/node-pg-migrate/pull/250)
+
 ## [3.1.0](2018-04-19)
 
 ### Added
