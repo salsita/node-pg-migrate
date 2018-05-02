@@ -346,22 +346,22 @@ interface DB {
 export interface MigrationBuilder {
     // Tables
     createTable(tableName: Name, columns: ColumnDefinitions, options?: TableOptions): void
-    dropTable(tableName: Name, dropOptions: DropOptions): void
+    dropTable(tableName: Name, dropOptions?: DropOptions): void
     renameTable(tableName: Name, newtableName: Name): void
     alterTable(tableName: Name, alterOptions: AlterTableOptions): void
 
     // Columns
     addColumns(tableName: Name, newColumns: ColumnDefinitions): void
     addColumn(tableName: Name, newColumns: ColumnDefinitions): void
-    dropColumns(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions: DropOptions): void
-    dropColumn(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions: DropOptions): void
+    dropColumns(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
+    dropColumn(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
     renameColumn(tableName: Name, oldColumnName: string, newColumnName: string): void
     alterColumn(tableName: Name, columnName: string, options: ColumnOptions): void
 
     // Constraints
     addConstraint(tableName: Name, constraintName: string | null, expression: string | ConstraintOptions): void
     createConstraint(tableName: Name, constraintName: string | null, expression: string | ConstraintOptions): void
-    dropConstraint(tableName: Name, constraintName: string, options: DropOptions): void
+    dropConstraint(tableName: Name, constraintName: string, options?: DropOptions): void
     renameConstraint(tableName: Name, oldConstraintName: string, newConstraintName: string): void
 
     // Indexes
@@ -370,68 +370,68 @@ export interface MigrationBuilder {
     dropIndex(tableName: Name, columns: string | string[], options?: DropIndexOptions): void
 
     // Extensions
-    createExtension(extension: string | string[], options: { ifNotExists?: boolean }): void
-    addExtension(extension: string | string[], options: { ifNotExists?: boolean }): void
-    dropExtension(extension: string | string[], dropOptions: DropOptions): void
+    createExtension(extension: string | string[], options?: { ifNotExists?: boolean }): void
+    addExtension(extension: string | string[], options?: { ifNotExists?: boolean }): void
+    dropExtension(extension: string | string[], dropOptions?: DropOptions): void
 
     // Types
     createType(typeName: Name, values: Value[] | { [name: string]: Type }): void
     addType(typeName: Name, values: Value[] | { [name: string]: Type }): void
-    dropType(typeName: Name, dropOptions: DropOptions): void
+    dropType(typeName: Name, dropOptions?: DropOptions): void
     renameType(typeName: Name, newTypeName: Name): void
     addTypeAttribute(typeName: Name, attributeName: string, attributeType: Type): void
     dropTypeAttribute(typeName: Name, attributeName: string, options: IfExistsOption): void
     setTypeAttribute(typeName: Name, attributeName: string, attributeType: Type): void
-    addTypeValue(typeName: Name, value: Value, options: { ifNotExists?: boolean, before?: string, after?: string }): void
+    addTypeValue(typeName: Name, value: Value, options?: { ifNotExists?: boolean, before?: string, after?: string }): void
     renameTypeAttribute(typeName: Name, attributeName: string, newAttributeName: string): void
 
     // Roles
-    createRole(roleName: Name, roleOptions: RoleOptions): void
-    dropRole(roleName: Name, options: IfExistsOption): void
+    createRole(roleName: Name, roleOptions?: RoleOptions): void
+    dropRole(roleName: Name, options?: IfExistsOption): void
     alterRole(roleName: Name, roleOptions: RoleOptions): void
     renameRole(oldRoleName: Name, newRoleName: Name): void
 
     // Functions
     createFunction(functionName: Name, functionParams: FunctionParam[], functionOptions: FunctionOptions, definition: Value): void
-    dropFunction(functionName: Name, functionParams: FunctionParam[], dropOptions: DropOptions): void
+    dropFunction(functionName: Name, functionParams: FunctionParam[], dropOptions?: DropOptions): void
     renameFunction(oldFunctionName: Name, functionParams: FunctionParam[], newFunctionName: Name): void
 
     // Triggers
     createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions, definition?: Value): void
-    dropTrigger(tableName: Name, triggerName: Name, dropOptions: DropOptions): void
+    dropTrigger(tableName: Name, triggerName: Name, dropOptions?: DropOptions): void
     renameTrigger(tableName: Name, oldTriggerName: Name, newTriggerName: Name): void
 
     // Schemas
-    createSchema(schemaName: string, schemaOptions: { ifNotExists?: boolean, authorization?: string }): void
-    dropSchema(schemaName: string, dropOptions: DropOptions): void
+    createSchema(schemaName: string, schemaOptions?: { ifNotExists?: boolean, authorization?: string }): void
+    dropSchema(schemaName: string, dropOptions?: DropOptions): void
     renameSchema(oldSchemaName: string, newSchemaName: string): void
 
     // Domains
-    createDomain(domainName: Name, type: Type, domainOptions: DomainOptionsCreate): void
-    dropDomain(domainName: Name, dropOptions: DropOptions): void
+    createDomain(domainName: Name, type: Type, domainOptions?: DomainOptionsCreate): void
+    dropDomain(domainName: Name, dropOptions?: DropOptions): void
     alterDomain(domainName: Name, domainOptions: DomainOptionsAlter): void
     renameDomain(oldDomainName: Name, newDomainName: Name): void
 
     // Sequences
-    createSequence(sequenceName: Name, sequenceOptions: SequenceOptionsCreate): void
-    dropSequence(sequenceName: Name, dropOptions: DropOptions): void
+    createSequence(sequenceName: Name, sequenceOptions?: SequenceOptionsCreate): void
+    dropSequence(sequenceName: Name, dropOptions?: DropOptions): void
     alterSequence(sequenceName: Name, sequenceOptions: SequenceOptionsAlter): void
     renameSequence(oldSequenceName: Name, newSequenceName: Name): void
 
     // Operators
-    createOperator(operatorName: Name, options: CreateOperatorOptions): void
-    dropOperator(operatorName: Name, dropOptions: DropOperatorOptions): void
+    createOperator(operatorName: Name, options?: CreateOperatorOptions): void
+    dropOperator(operatorName: Name, dropOptions?: DropOperatorOptions): void
     createOperatorClass(operatorClassName: Name, type: Type, indexMethod: Name, operatorList: OperatorListDefinition, options: CreateOperatorClassOptions): void
-    dropOperatorClass(operatorClassName: Name, indexMethod: Name, dropOptions: DropOptions): void
+    dropOperatorClass(operatorClassName: Name, indexMethod: Name, dropOptions?: DropOptions): void
     renameOperatorClass(oldOperatorClassName: Name, indexMethod: Name, newOperatorClassName: Name): void
     createOperatorFamily(operatorFamilyName: Name, indexMethod: Name): void
-    dropOperatorFamily(operatorFamilyName: Name, newSchemaName: Name, dropOptions: DropOptions): void
+    dropOperatorFamily(operatorFamilyName: Name, newSchemaName: Name, dropOptions?: DropOptions): void
     renameOperatorFamily(oldOperatorFamilyName: Name, indexMethod: Name, newOperatorFamilyName: Name): void
     addToOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
     removeFromOperatorFamily(operatorFamilyName: Name, indexMethod: Name, operatorList: OperatorListDefinition): void
 
     // Policies
-    createPolicy(tableName: Name, policyName: string, options: CreatePolicyOptions): void
+    createPolicy(tableName: Name, policyName: string, options?: CreatePolicyOptions): void
     dropPolicy(tableName: Name, policyName: string, options?: IfExistsOption): void
     alterPolicy(tableName: Name, policyName: string, options: PolicyOptions): void
     renamePolicy(tableName: Name, policyName: string, newPolicyName: string): void
