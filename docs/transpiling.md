@@ -4,7 +4,7 @@ You can use babel or typescript for transpiling migration files. You have e.g. t
 
 ### Use global configuration
 
-1.  Update `scripts` section in your `package.json` to contain `'migrate': 'babel-node node_modules/node-pg-migrate/bin/node-pg-migrate'`
+1.  Update `scripts` section in your `package.json` to contain `"migrate": "babel-node node_modules/node-pg-migrate/bin/node-pg-migrate"`
 
 ### Use custom configuration
 
