@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.1.2](2018-05-14)
+
+### Fixed
+
+* Using dollar-quoted strings in comments [#255](https://github.com/salsita/node-pg-migrate/pull/255)
+
 ## [3.1.1](2018-05-02)
 
 ### Fixed
