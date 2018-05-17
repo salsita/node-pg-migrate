@@ -7,6 +7,9 @@
 **Arguments:**
 
 * `extension` _[string or array of strings]_ - name(s) of extensions to install
+* `options` _[object]_ - options:
+  * `ifNotExists` _[boolean]_ - default `false`
+  * `schema` _[string]_ - the name of the schema in which to install the extension's objects
 
 **Aliases:** `addExtension`
 **Reverse Operation:** `dropExtension`
@@ -20,3 +23,6 @@
 **Arguments:**
 
 * `extension` _[string or array of strings]_ - name(s) of extensions to install
+* `drop_options` _[object]_ - options:
+  * `ifExists` _[boolean]_ - drops extension only if it exists
+  * `cascade` _[boolean]_ - drops also dependent objects
