@@ -13,6 +13,7 @@
   * `unique` _[boolean]_ - set to true if this is a unique index
   * `where` _[string]_ - raw sql for where clause of index
   * `concurrently` _[boolean]_ - create this index concurrently
+  * `opclass` _[string]_ - name of an operator class to use
   * `method` _[string]_ - btree | hash | gist | spgist | gin
 
 **Aliases:** `addIndex`
