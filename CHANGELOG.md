@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.2.0](2018-05-17)
+
+### Added
+
+* Add support for opclass option in createIndex [#259](https://github.com/salsita/node-pg-migrate/pull/259)
+* Ability to specify extension schema [#260](https://github.com/salsita/node-pg-migrate/pull/260)
+
 ## [3.1.2](2018-05-14)
 
 ### Fixed
