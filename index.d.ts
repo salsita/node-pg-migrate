@@ -71,6 +71,7 @@ export interface CreateIndexOptions {
     unique?: boolean
     where?: string
     concurrently?: boolean
+    opclass?: string
     method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
 }
 
