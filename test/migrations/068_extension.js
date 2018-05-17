@@ -1,5 +1,3 @@
-exports.comment = "comment on table t2";
-
 exports.up = pgm => {
   pgm.createExtension("uuid-ossp", { ifNotExists: true });
   pgm.dropExtension("uuid-ossp");

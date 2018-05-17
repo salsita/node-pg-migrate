@@ -74,6 +74,11 @@ export interface CreateIndexOptions {
     method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
 }
 
+export interface CreateExtensionOptions {
+    ifNotExists?: boolean
+    schema?: string
+}
+
 export interface ColumnDefinitions {
     [name: string]: ColumnDefinition | string
 }
@@ -370,8 +375,8 @@ export interface MigrationBuilder {
     dropIndex(tableName: Name, columns: string | string[], options?: DropIndexOptions): void
 
     // Extensions
-    createExtension(extension: string | string[], options?: { ifNotExists?: boolean }): void
-    addExtension(extension: string | string[], options?: { ifNotExists?: boolean }): void
+    createExtension(extension: string | string[], options?: CreateExtensionOptions): void
+    addExtension(extension: string | string[], options?: CreateExtensionOptions): void
     dropExtension(extension: string | string[], dropOptions?: DropOptions): void
 
     // Types
