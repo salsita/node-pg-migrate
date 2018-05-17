@@ -9,5 +9,17 @@ describe("lib/operations/indexes", () => {
         'CREATE  INDEX  "b_c_d_index" ON "a"."b" ("c", "d");'
       );
     });
+
+    it("add opclass option", () => {
+      const sql = Indexes.createIndex("x", ["y"], {
+        method: "gist",
+        name: "z",
+        opclass: "some_opclass",
+        where: "some condition"
+      });
+      expect(sql).to.equal(
+        'CREATE  INDEX  "z" ON "x" USING gist ("y") some_opclass WHERE some condition;'
+      );
+    });
   });
 });
