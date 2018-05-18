@@ -1,5 +1,5 @@
 {
-  "name": "node-pg-migrate",
+  "name": "node-pg-migrate-2",
   "version": "3.2.0",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
