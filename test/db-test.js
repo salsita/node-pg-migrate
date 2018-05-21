@@ -51,14 +51,14 @@ describe("lib/db", () => {
     });
 
     it("should call client.connect if this is the first query", () => {
-      client.connect.returns(Promise.resolve());
+      client.connect.callsFake(fn => fn());
       client.query.returns(Promise.resolve());
       return db.query("query").then(() => {
         expect(client.connect).to.be.calledOnce;
       });
     });
     it("should not call client.connect on subsequent queries", () => {
-      client.connect.returns(Promise.resolve());
+      client.connect.callsFake(fn => fn());
       client.query.returns(Promise.resolve());
       return db
         .query("query_one")
@@ -68,7 +68,7 @@ describe("lib/db", () => {
         });
     });
     it("should call client.query with query", () => {
-      client.connect.returns(Promise.resolve());
+      client.connect.callsFake(fn => fn());
       client.query.returns(Promise.resolve());
       return db.query("query").then(() => {
         expect(client.query.getCall(0).args[0]).to.equal("query");
@@ -76,19 +76,19 @@ describe("lib/db", () => {
     });
     it("should not call client.query if client.connect fails", () => {
       const error = "error";
-      client.connect.returns(Promise.reject(error));
+      client.connect.callsFake(fn => fn(error));
       return expect(db.query("query"))
         .to.eventually.be.rejectedWith(error)
         .then(() => expect(client.query).to.not.been.called);
     });
     it("should resolve promise if query throws no error", () => {
-      client.connect.returns(Promise.resolve());
+      client.connect.callsFake(fn => fn());
       const result = "result";
       client.query.returns(Promise.resolve(result));
       return expect(db.query("query")).to.eventually.equal(result);
     });
     it("should reject promise if query throws error", () => {
-      client.connect.returns(Promise.resolve());
+      client.connect.callsFake(fn => fn());
       const error = "error";
       client.query.returns(Promise.reject(error));
       return expect(db.query("query")).to.eventually.be.rejectedWith(error);
