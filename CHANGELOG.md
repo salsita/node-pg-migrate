@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.3.0](2018-05-21)
+
+### Fixed
+
+* Promisifying client.connect [#265](https://github.com/salsita/node-pg-migrate/pull/265)
+
 ## [3.2.1](2018-05-21)
 
 ### Fixed
