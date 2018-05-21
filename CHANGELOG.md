@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.2.1](2018-05-21)
+
+### Fixed
+
+* Fix type name issue when the type is not in the default schema [#264](https://github.com/salsita/node-pg-migrate/pull/264)
+
 ## [3.2.0](2018-05-17)
 
 ### Added
