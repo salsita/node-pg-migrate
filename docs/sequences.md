@@ -1,6 +1,6 @@
 # Sequence Operations
 
-### `pgm.createSequence( sequence_name, type, options )`
+### `pgm.createSequence( sequence_name, options )`
 
 > Create a new sequence - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createsequence.html)
 
