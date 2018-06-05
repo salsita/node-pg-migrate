@@ -49,33 +49,33 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 
 **The following are the available commands:**
 
-* `node-pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
-* `node-pg-migrate up` - runs all up migrations from the current state.
-* `node-pg-migrate up {N}` - runs N up migrations from the current state.
-* `node-pg-migrate down` - runs a single down migration.
-* `node-pg-migrate down {N}` - runs N down migrations from the current state.
-* `node-pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
-* `node-pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
+- `node-pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Spaces and underscores will be replaced by dashes and a timestamp is prepended to your file name.
+- `node-pg-migrate up` - runs all up migrations from the current state.
+- `node-pg-migrate up {N}` - runs N up migrations from the current state.
+- `node-pg-migrate down` - runs a single down migration.
+- `node-pg-migrate down {N}` - runs N down migrations from the current state.
+- `node-pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
+- `node-pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
 
 ## Configuration
 
 You can adjust defaults by passing arguments to `node-pg-migrate`:
 
-* `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
-* `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
-* `create-schema` - Create the configured schema if it doesn't exist (defaults to `false`)
-* `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
-* `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
-* `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
-* `create-migrations-schema` - Create the configured migrations schema if it doesn't exist (defaults to `false`)
-* `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
-* `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
-* `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
-* `timestamp` - Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)
-* `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
+- `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
+- `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
+- `create-schema` - Create the configured schema if it doesn't exist (defaults to `false`)
+- `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
+- `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)
+- `migrations-schema` - The schema storing table which migrations have been run (defaults to same value as `schema`)
+- `create-migrations-schema` - Create the configured migrations schema if it doesn't exist (defaults to `false`)
+- `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
+- `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
+- `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
+- `timestamp` - Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)
+- `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on command line).
   (There should be no migration with timestamp lesser than last run migration.)
-* `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on command line).
-* `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
+- `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on command line).
+- `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
 
 See all by running `node-pg-migrate --help`.
 
@@ -90,5 +90,5 @@ You can use [config](https://www.npmjs.com/package/config) or your own json file
 
 Available options are:
 
-* `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
-* either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details
+- `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
+- either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details

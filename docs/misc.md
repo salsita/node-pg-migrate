@@ -6,8 +6,8 @@
 
 **Arguments:**
 
-* `sql` _[string]_ - SQL query to run
-* `args` _[object]_ - (optional) key/val of arguments to replace
+- `sql` _[string]_ - SQL query to run
+- `args` _[object]_ - (optional) key/val of arguments to replace
 
 ---
 
@@ -19,7 +19,7 @@ e.g. `pgm.func('CURRENT_TIMESTAMP')` to use in `default` option for column defin
 
 **Arguments:**
 
-* `sql` _[string]_ - string to not be escaped
+- `sql` _[string]_ - string to not be escaped
 
 ---
 

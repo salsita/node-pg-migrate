@@ -6,10 +6,10 @@
 
 **Arguments:**
 
-* `schema_name` _[string]_ - name of the new schema
-* `schema_options` _[object]_ - options:
-  * `ifNotExists` _[boolean]_ - adds `IF NOT EXISTS` clause
-  * `authorization` _[string]_ - alternative user to own new schema
+- `schema_name` _[string]_ - name of the new schema
+- `schema_options` _[object]_ - options:
+  - `ifNotExists` _[boolean]_ - adds `IF NOT EXISTS` clause
+  - `authorization` _[string]_ - alternative user to own new schema
 
 **Reverse Operation:** `dropSchema`
 
@@ -21,10 +21,10 @@
 
 **Arguments:**
 
-* `schema_name` _[string]_ - name of the schema to drop
-* `drop_options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - drops schema only if it exists
-  * `cascade` _[boolean]_ - drops also dependent objects
+- `schema_name` _[string]_ - name of the schema to drop
+- `drop_options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops schema only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 ---
 
@@ -34,5 +34,5 @@
 
 **Arguments:**
 
-* `old_schema_name` _[string]_ - old name of the schema
-* `new_schema_name` _[string]_ - new name of the schema
+- `old_schema_name` _[string]_ - old name of the schema
+- `new_schema_name` _[string]_ - new name of the schema
