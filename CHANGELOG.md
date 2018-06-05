@@ -1,5 +1,14 @@
 # Change Log
 
+## [3.4.0](2018-06-05)
+
+### Changed
+
+- Constraint name is optional (for backward compatibility) [#268](https://github.com/salsita/node-pg-migrate/pull/268)
+- Updated node and service versions [#269](https://github.com/salsita/node-pg-migrate/pull/269)
+
+!!! Minimal supported node version is now 6 !!!
+
 ## [3.3.0](2018-05-21)
 
 ### Fixed
