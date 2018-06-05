@@ -2,22 +2,28 @@ version: 2
 jobs:
    build:
      docker:
-       - image: circleci/node:4.8.2
+       - image: circleci/node:6
          environment:
          - NODE_ENV=test
          - DATABASE_URL_POSTGRES=postgres://ubuntu@localhost:5432/circle_test
          - DATABASE_URL_COCKROACH=postgresql://root@localhost:26257/circle_test
-       - image: postgres:9.6
+       - image: postgres:10.4-alpine
          environment:
          - POSTGRES_USER=ubuntu
          - POSTGRES_DB=circle_test
-       - image: cockroachdb/cockroach:v1.1.6
+       - image: cockroachdb/cockroach:v1.1.8
          command: ['start', '--insecure', '--host=localhost']
      steps:
        - checkout
        - run:
           name: update-npm
-          command: 'sudo npm install -g npm@5.8.0'
+          command: |
+            mkdir ~/.npm-global
+            npm config set prefix '~/.npm-global'
+            echo 'export NPM_CONFIG_PREFIX=~/.npm-global' >> $BASH_ENV
+            echo 'export PATH=~/.npm-global/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+            npm install -g npm@6.1.0
        - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
        - run:
