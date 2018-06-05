@@ -6,14 +6,14 @@
 
 **Arguments:**
 
-* `viewName` _[string]_ - name of the new view
-* `options` _[object]_ - options:
-  * `temporary` _[boolean]_ - default false
-  * `replace` _[boolean]_ - default false
-  * `recursive` _[boolean]_ - default false
-  * `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
-  * `checkOption` _[string]_ - `CASCADED` or `LOCAL`
-* `definition` _[string]_ - SQL of SELECT statement
+- `viewName` _[string]_ - name of the new view
+- `options` _[object]_ - options:
+  - `temporary` _[boolean]_ - default false
+  - `replace` _[boolean]_ - default false
+  - `recursive` _[boolean]_ - default false
+  - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
+  - `checkOption` _[string]_ - `CASCADED` or `LOCAL`
+- `definition` _[string]_ - SQL of SELECT statement
 
 **Reverse Operation:** `dropView`
 
@@ -25,10 +25,10 @@
 
 **Arguments:**
 
-* `viewName` _[string]_ - name of the view to delete
-* `options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - drops view only if it exists
-  * `cascade` _[boolean]_ - drops also dependent objects
+- `viewName` _[string]_ - name of the view to delete
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops view only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 ---
 
@@ -38,9 +38,9 @@
 
 **Arguments:**
 
-* `viewName` _[string]_ - name of the view to alter
-* `options` _[object]_ - options:
-  * `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to drop
+- `viewName` _[string]_ - name of the view to alter
+- `options` _[object]_ - options:
+  - `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to drop
 
 ---
 
@@ -50,10 +50,10 @@
 
 **Arguments:**
 
-* `viewName` _[string]_ - name of the view to alter
-* `columnName` _[string]_ - name of the column to alter
-* `options` _[object]_ - options:
-  * `default` _[string]_ - default value of column
+- `viewName` _[string]_ - name of the view to alter
+- `columnName` _[string]_ - name of the column to alter
+- `options` _[object]_ - options:
+  - `default` _[string]_ - default value of column
 
 ---
 
@@ -63,5 +63,5 @@
 
 **Arguments:**
 
-* `viewName` _[string]_ - old name of the view
-* `newViewName` _[string]_ - new name of the view
+- `viewName` _[string]_ - old name of the view
+- `newViewName` _[string]_ - new name of the view

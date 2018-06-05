@@ -6,19 +6,19 @@
 
 **Arguments:**
 
-* `table_name` _[string]_ - name of the table where the new trigger will live
-* `trigger_name` _[string]_ - name of the new trigger
-* `trigger_options` _[object]_ - options:
-  * `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
-  * `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
-  * `constraint` _[boolean]_ - creates constraint trigger
-  * `function` _[string]_ - the name of procedure to execute
-  * `functionArgs` _[array]_ - parameters of the procedure
-  * `level` _[string]_ - `STATEMENT`, or `ROW`
-  * `condition` _[string]_ - condition to met to execute trigger
-  * `deferrable` _[boolean]_ - flag for deferrable constraint trigger
-  * `deferred` _[boolean]_ - flag for initially deferred deferrable constraint trigger
-* `definition` _[string]_ - optional definition of function which will be created with same name as trigger
+- `table_name` _[string]_ - name of the table where the new trigger will live
+- `trigger_name` _[string]_ - name of the new trigger
+- `trigger_options` _[object]_ - options:
+  - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
+  - `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
+  - `constraint` _[boolean]_ - creates constraint trigger
+  - `function` _[string]_ - the name of procedure to execute
+  - `functionArgs` _[array]_ - parameters of the procedure
+  - `level` _[string]_ - `STATEMENT`, or `ROW`
+  - `condition` _[string]_ - condition to met to execute trigger
+  - `deferrable` _[boolean]_ - flag for deferrable constraint trigger
+  - `deferred` _[boolean]_ - flag for initially deferred deferrable constraint trigger
+- `definition` _[string]_ - optional definition of function which will be created with same name as trigger
 
 **Reverse Operation:** `dropTrigger`
 
@@ -30,11 +30,11 @@
 
 **Arguments:**
 
-* `table_name` _[string]_ - name of the table where the trigger lives
-* `trigger_name` _[string]_ - name of the trigger to drop
-* `drop_options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - drops trigger only if it exists
-  * `cascade` _[boolean]_ - drops also dependent objects
+- `table_name` _[string]_ - name of the table where the trigger lives
+- `trigger_name` _[string]_ - name of the trigger to drop
+- `drop_options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops trigger only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 ---
 
@@ -44,6 +44,6 @@
 
 **Arguments:**
 
-* `table_name` _[string]_ - name of the table where the trigger lives
-* `old_trigger_name` _[string]_ - old name of the trigger
-* `new_trigger_name` _[string]_ - new name of the trigger
+- `table_name` _[string]_ - name of the table where the trigger lives
+- `old_trigger_name` _[string]_ - old name of the trigger
+- `new_trigger_name` _[string]_ - new name of the trigger

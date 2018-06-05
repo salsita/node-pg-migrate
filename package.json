@@ -69,7 +69,7 @@
     "mocha": "^5.0.0",
     "pg": "^7.3.0",
     "prettier": "^1.11.1",
-    "sinon": "^4.0.0",
+    "sinon": "^5.0.0",
     "sinon-chai": "^3.0.0"
   },
   "peerDependencies": {
@@ -90,7 +90,8 @@
     "test:cockroach": "npm run migrate:cockroach up && npm run migrate:cockroach down 0 -- --timestamp",
     "test": "npm run test:mocha && npm run test:postgres && npm run test:cockroach",
     "lint": "eslint -c eslintrc.js . bin/*",
-    "lintfix": "npm run lint -- --fix",
+    "lintfix":
+      "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run compile"
   },
   "lint-staged": {

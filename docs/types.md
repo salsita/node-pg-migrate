@@ -6,8 +6,8 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the new type
-* `values` _[array of strings or object]_ if an array the contents are possible values for an enum type, if an object names and types for a composite type
+- `type_name` _[string]_ - name of the new type
+- `values` _[array of strings or object]_ if an array the contents are possible values for an enum type, if an object names and types for a composite type
 
 **Aliases:** `addType`
 **Reverse Operation:** `dropType`
@@ -20,7 +20,7 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the new type
+- `type_name` _[string]_ - name of the new type
 
 ---
 
@@ -30,8 +30,8 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type to rename
-* `new_type_name` _[string]_ - name of the new type
+- `type_name` _[string]_ - name of the type to rename
+- `new_type_name` _[string]_ - name of the new type
 
 ---
 
@@ -41,9 +41,9 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type
-* `attribute_name` _[string]_ - name of the attribute to add
-* `attribute_type` _[string]_ - type of the attribute to add
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to add
+- `attribute_type` _[string]_ - type of the attribute to add
 
 ---
 
@@ -53,10 +53,10 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type
-* `attribute_name` _[string]_ - name of the attribute to drop
-* `options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - default false
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to drop
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - default false
 
 ---
 
@@ -66,9 +66,9 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type
-* `attribute_name` _[string]_ - name of the attribute
-* `attribute_type` _[string]_ - new type of the attribute
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute
+- `attribute_type` _[string]_ - new type of the attribute
 
 ---
 
@@ -78,12 +78,12 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type
-* `value` _[string]_ - value to add to list
-* `options` _[object]_ - options:
-  * `ifNotExists` _[boolean]_ - default false
-  * `before` _[string]_ - value before which the new value should be add
-  * `after` _[string]_ - value after which the new value should be add
+- `type_name` _[string]_ - name of the type
+- `value` _[string]_ - value to add to list
+- `options` _[object]_ - options:
+  - `ifNotExists` _[boolean]_ - default false
+  - `before` _[string]_ - value before which the new value should be add
+  - `after` _[string]_ - value after which the new value should be add
 
 ---
 
@@ -93,6 +93,6 @@
 
 **Arguments:**
 
-* `type_name` _[string]_ - name of the type
-* `attribute_name` _[string]_ - name of the attribute to rename
-* `new_attribute_name` _[string]_ - new name of the attribute
+- `type_name` _[string]_ - name of the type
+- `attribute_name` _[string]_ - name of the attribute to rename
+- `new_attribute_name` _[string]_ - new name of the attribute

@@ -6,14 +6,14 @@
 
 **Arguments:**
 
-* `domain_name` _[string]_ - name of the new domain
-* `type` _[string]_ - type of the new domain
-* `options` _[object]_ - options:
-  * `default` _[string]_ - default value of domain
-  * `collation` _[string]_ - collation of data type
-  * `notNull` _[boolean]_ - sets NOT NULL if true ([not recommended](https://www.postgresql.org/docs/10/static/sql-createdomain.html#idm46428678330368))
-  * `check` _[string]_ - sql for a check constraint for this column
-  * `constraintName` _[string]_ - name for constraint
+- `domain_name` _[string]_ - name of the new domain
+- `type` _[string]_ - type of the new domain
+- `options` _[object]_ - options:
+  - `default` _[string]_ - default value of domain
+  - `collation` _[string]_ - collation of data type
+  - `notNull` _[boolean]_ - sets NOT NULL if true ([not recommended](https://www.postgresql.org/docs/10/static/sql-createdomain.html#idm46428678330368))
+  - `check` _[string]_ - sql for a check constraint for this column
+  - `constraintName` _[string]_ - name for constraint
 
 **Reverse Operation:** `dropDomain`
 
@@ -25,10 +25,10 @@
 
 **Arguments:**
 
-* `domain_name` _[string]_ - name of the the domain to drop
-* `drop_options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - drops domain only if it exists
-  * `cascade` _[boolean]_ - drops also dependent objects
+- `domain_name` _[string]_ - name of the the domain to drop
+- `drop_options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops domain only if it exists
+  - `cascade` _[boolean]_ - drops also dependent objects
 
 ---
 
@@ -38,14 +38,14 @@
 
 **Arguments:**
 
-* `domain_name` _[string]_ - name of the new domain
-* `options` _[object]_ - options:
-  * `default` _[string]_ - default value of domain
-  * `collation` _[string]_ - collation of data type
-  * `notNull` _[boolean]_ - sets NOT NULL if true or NULL if false
-  * `allowNull` _[boolean]_ - sets NULL if true (alternative to `notNull`)
-  * `check` _[string]_ - sql for a check constraint for this column
-  * `constraintName` _[string]_ - name for constraint
+- `domain_name` _[string]_ - name of the new domain
+- `options` _[object]_ - options:
+  - `default` _[string]_ - default value of domain
+  - `collation` _[string]_ - collation of data type
+  - `notNull` _[boolean]_ - sets NOT NULL if true or NULL if false
+  - `allowNull` _[boolean]_ - sets NULL if true (alternative to `notNull`)
+  - `check` _[string]_ - sql for a check constraint for this column
+  - `constraintName` _[string]_ - name for constraint
 
 ---
 
@@ -55,5 +55,5 @@
 
 **Arguments:**
 
-* `old_domain_name` _[string]_ - old name of the domain
-* `new_domain_name` _[string]_ - new name of the domain
+- `old_domain_name` _[string]_ - old name of the domain
+- `new_domain_name` _[string]_ - new name of the domain

@@ -6,13 +6,13 @@
 
 **Arguments:**
 
-* `tableName` _[string]_ - name of the table to alter
-* `policyName` _[string]_ - name of the new policy
-* `options` _[object]_ - options:
-  * `command` _[string]_ - `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`
-  * `role` _[string or array]_ - the role(s) to which the policy is to be applied
-  * `using` _[string]_ - SQL conditional expression for visibility check
-  * `check` _[string]_ - SQL conditional expression for insert/update check
+- `tableName` _[string]_ - name of the table to alter
+- `policyName` _[string]_ - name of the new policy
+- `options` _[object]_ - options:
+  - `command` _[string]_ - `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`
+  - `role` _[string or array]_ - the role(s) to which the policy is to be applied
+  - `using` _[string]_ - SQL conditional expression for visibility check
+  - `check` _[string]_ - SQL conditional expression for insert/update check
 
 **Reverse Operation:** `dropPolicy`
 
@@ -24,10 +24,10 @@
 
 **Arguments:**
 
-* `tableName` _[string]_ - name of the table where the policy is
-* `policyName` _[string]_ - name of the policy to delete
-* `options` _[object]_ - options:
-  * `ifExists` _[boolean]_ - drops policy only if it exists
+- `tableName` _[string]_ - name of the table where the policy is
+- `policyName` _[string]_ - name of the policy to delete
+- `options` _[object]_ - options:
+  - `ifExists` _[boolean]_ - drops policy only if it exists
 
 ---
 
@@ -37,12 +37,12 @@
 
 **Arguments:**
 
-* `tableName` _[string]_ - name of the table where the policy is
-* `policyName` _[string]_ - name of the policy to alter
-* `options` _[object]_ - options:
-  * `role` _[string or array]_ - the role(s) to which the policy is to be applied
-  * `using` _[string]_ - SQL conditional expression for visibility check
-  * `check` _[string]_ - SQL conditional expression for insert/update check
+- `tableName` _[string]_ - name of the table where the policy is
+- `policyName` _[string]_ - name of the policy to alter
+- `options` _[object]_ - options:
+  - `role` _[string or array]_ - the role(s) to which the policy is to be applied
+  - `using` _[string]_ - SQL conditional expression for visibility check
+  - `check` _[string]_ - SQL conditional expression for insert/update check
 
 ---
 
@@ -52,6 +52,6 @@
 
 **Arguments:**
 
-* `tableName` _[string]_ - name of the table where the policy is
-* `policyName` _[string]_ - old name of the policy
-* `newPolicyName` _[string]_ - new name of the policy
+- `tableName` _[string]_ - name of the table where the policy is
+- `policyName` _[string]_ - old name of the policy
+- `newPolicyName` _[string]_ - new name of the policy

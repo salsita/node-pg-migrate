@@ -6,15 +6,15 @@
 
 **Arguments:**
 
-* `tablename` _[string]_ - name of the table to alter
-* `columns` _[string or array of strings]_ - columns to add to the index
-* `options` _[index options]_ - optional options:
-  * `name` _[string]_ - name for the index (one will be inferred from table/columns if undefined)
-  * `unique` _[boolean]_ - set to true if this is a unique index
-  * `where` _[string]_ - raw sql for where clause of index
-  * `concurrently` _[boolean]_ - create this index concurrently
-  * `opclass` _[string]_ - name of an operator class to use
-  * `method` _[string]_ - btree | hash | gist | spgist | gin
+- `tablename` _[string]_ - name of the table to alter
+- `columns` _[string or array of strings]_ - columns to add to the index
+- `options` _[index options]_ - optional options:
+  - `name` _[string]_ - name for the index (one will be inferred from table/columns if undefined)
+  - `unique` _[boolean]_ - set to true if this is a unique index
+  - `where` _[string]_ - raw sql for where clause of index
+  - `concurrently` _[boolean]_ - create this index concurrently
+  - `opclass` _[string]_ - name of an operator class to use
+  - `method` _[string]_ - btree | hash | gist | spgist | gin
 
 **Aliases:** `addIndex`
 **Reverse Operation:** `dropIndex`
@@ -27,7 +27,7 @@
 
 **Arguments:**
 
-* `tablename` _[string]_ - name of the table to alter
-* `columns` _[string or array of strings]_ - column names, used only to infer an index name
-* `options` _[index options]_ - optional options:
-  * `name` _[string]_ - name of the index to drop
+- `tablename` _[string]_ - name of the table to alter
+- `columns` _[string or array of strings]_ - column names, used only to infer an index name
+- `options` _[index options]_ - optional options:
+  - `name` _[string]_ - name of the index to drop
