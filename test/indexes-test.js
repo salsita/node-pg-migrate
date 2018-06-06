@@ -18,7 +18,7 @@ describe("lib/operations/indexes", () => {
         where: "some condition"
       });
       expect(sql).to.equal(
-        'CREATE  INDEX  "z" ON "x" USING gist ("y") some_opclass WHERE some condition;'
+        'CREATE  INDEX  "z" ON "x" USING gist ("y" some_opclass) WHERE some condition;'
       );
     });
   });
