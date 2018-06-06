@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.4.1](2018-06-06)
+
+### Fixed
+
+- opclass parens typo [#270](https://github.com/salsita/node-pg-migrate/pull/270)
+
 ## [3.4.0](2018-06-05)
 
 ### Changed
