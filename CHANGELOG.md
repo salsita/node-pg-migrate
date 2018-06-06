@@ -1,5 +1,15 @@
 # Change Log
 
+## [3.5.0](2018-06-06)
+
+### Fixed
+
+- Added id column to order by clause of select migrations [#272](https://github.com/salsita/node-pg-migrate/pull/272)
+
+### Added
+
+- Adding primary key on pgmigrations table [#274](https://github.com/salsita/node-pg-migrate/pull/274)
+
 ## [3.4.1](2018-06-06)
 
 ### Fixed
