@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.5.1](2018-06-20)
+
+### Fixed
+
+- Respect configured logger [#277](https://github.com/salsita/node-pg-migrate/pull/277)
+
 ## [3.5.0](2018-06-06)
 
 ### Fixed
