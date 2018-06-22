@@ -59,7 +59,7 @@
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
     "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-airbnb-base": "^13.0.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-prettier": "^2.6.0",
@@ -69,7 +69,7 @@
     "mocha": "^5.0.0",
     "pg": "^7.3.0",
     "prettier": "^1.11.1",
-    "sinon": "^5.0.0",
+    "sinon": "^6.0.0",
     "sinon-chai": "^3.0.0"
   },
   "peerDependencies": {
