@@ -59,7 +59,7 @@
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
     "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-airbnb-base": "^13.0.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-prettier": "^2.6.0",
@@ -69,7 +69,7 @@
     "mocha": "^5.0.0",
     "pg": "^7.3.0",
     "prettier": "^1.11.1",
-    "sinon": "^5.0.0",
+    "sinon": "^6.0.0",
     "sinon-chai": "^3.0.0"
   },
   "peerDependencies": {
@@ -82,18 +82,8 @@
   "scripts": {
     "precommit": "lint-staged",
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
-    "test:mocha": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
+    "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "babel-node bin/node-pg-migrate",
-    "migrate:postgres":
-      "DATABASE_URL=$DATABASE_URL_POSTGRES npm run migrate -- -m test/migrations",
-    "migrate:cockroach":
-      "DATABASE_URL=$DATABASE_URL_COCKROACH npm run migrate -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock",
-    "test:postgres":
-      "npm run migrate:postgres up && npm run migrate:postgres down 0 -- --timestamps",
-    "test:cockroach":
-      "npm run migrate:cockroach up && npm run migrate:cockroach down 0 -- --timestamp",
-    "test":
-      "npm run test:mocha && npm run test:postgres && npm run test:cockroach",
     "lint": "eslint -c eslintrc.js . bin/*",
     "lintfix":
       "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
