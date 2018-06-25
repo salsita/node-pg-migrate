@@ -58,7 +58,7 @@
     "config": ">=1.0.0",
     "cross-env": "^5.0.0",
     "dotenv": ">=1.0.0",
-    "eslint": "^4.8.0",
+    "eslint": "^5.0.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-import": "^2.7.0",
