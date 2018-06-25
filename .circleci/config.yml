@@ -36,10 +36,11 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-greenkeeper
+          name: greenkeeper
           command: |
             npm install -g greenkeeper-lockfile
             greenkeeper-lockfile-update
+            greenkeeper-lockfile-upload
       - run: npm i
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -87,13 +88,6 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
-  finish:
-    docker:
-      - <<: *node-image
-    steps:
-      - <<: *restore
-      - <<: *set-npm-global
-      - run: greenkeeper-lockfile-upload
 
 workflows:
   version: 2
@@ -112,9 +106,3 @@ workflows:
       - test-cocroach:
           requires:
             - install
-      - finish:
-          requires:
-            - lint
-            - test
-            - test-pg
-            - test-cocroach
