@@ -6,10 +6,8 @@
 const util = require("util");
 const path = require("path");
 const yargs = require("yargs");
-const Migration = require("../dist/migration").default; // eslint-disable-line import/no-unresolved,import/extensions
-const runner = require("../dist/runner"); // eslint-disable-line import/no-unresolved,import/extensions
-
-const migrationRunner = runner.default;
+const { default: Migration } = require("../dist/migration"); // eslint-disable-line import/no-unresolved,import/extensions
+const { default: migrationRunner } = require("../dist/runner"); // eslint-disable-line import/no-unresolved,import/extensions
 
 process.on("uncaughtException", err => {
   console.log(err.stack);
