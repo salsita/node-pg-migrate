@@ -73,7 +73,7 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
-  test-cocroach:
+  test-cocroach-1:
     docker:
       - <<: *node-image
         environment:
@@ -88,6 +88,21 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
+  test-cocroach-2:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
+      - image: cockroachdb/cockroach:v2.0.3
+        command: ['start', '--insecure', '--host=localhost']
+    steps:
+      - <<: *restore
+      - run:
+          name: create-cockroach-db
+          command: node -e '(new require("pg").Pool({connectionString:process.env.DATABASE_URL})).query("CREATE DATABASE circle_test").then(function(){process.exit(0)})'
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-6:
     docker:
       - image: circleci/node:6
@@ -117,7 +132,10 @@ workflows:
       - test-pg:
           requires:
             - install
-      - test-cocroach:
+      - test-cocroach-1:
+          requires:
+            - install
+      - test-cocroach-2:
           requires:
             - install
       - test-node-6:
