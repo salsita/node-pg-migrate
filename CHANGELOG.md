@@ -1,5 +1,22 @@
 # Change Log
 
+## [3.6.0](2018-06-29)
+
+### Fixed
+
+- Ability to name references constraint [#290](https://github.com/salsita/node-pg-migrate/pull/290)
+- Alter column comment [#292](https://github.com/salsita/node-pg-migrate/pull/292)
+
+### Changed
+
+- Update dependencies to enable Greenkeeper [#278](https://github.com/salsita/node-pg-migrate/pull/278)
+- Update CI config [#281](https://github.com/salsita/node-pg-migrate/pull/281)
+- Using async/await [#282](https://github.com/salsita/node-pg-migrate/pull/282)
+- Using 'function' keyword [#283](https://github.com/salsita/node-pg-migrate/pull/283)
+- Using code directly for node >= 8 [#288](https://github.com/salsita/node-pg-migrate/pull/288)
+- Added cocroach v2 to tests [#289](https://github.com/salsita/node-pg-migrate/pull/289)
+- Using tests without babel [#291](https://github.com/salsita/node-pg-migrate/pull/291)
+
 ## [3.5.1](2018-06-20)
 
 ### Fixed
