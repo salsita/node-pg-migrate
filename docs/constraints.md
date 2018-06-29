@@ -18,6 +18,7 @@
   - `foreignKeys` _[object or array of objects]_ - foreign keys specification
     - `columns` _[string or array of strings]_ - names of columns
     - `references` _[string]_ - names of foreign table and column names
+    - `referencesConstraintName` _[string]_ - name of the created constraint
     - `onDelete` _[string]_ - action to perform on delete
     - `onUpdate` _[string]_ - action to perform on update
     - `match` _[string]_ - `FULL` or `SIMPLE`
