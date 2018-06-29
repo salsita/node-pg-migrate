@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-/* eslint-disable strict,prefer-destructuring */
+/* eslint-disable strict */
 
 "use strict";
 
 const util = require("util");
 const path = require("path");
 const yargs = require("yargs");
-const { default: Migration } = require("../dist/migration"); // eslint-disable-line import/no-unresolved,import/extensions
-const { default: migrationRunner } = require("../dist/runner"); // eslint-disable-line import/no-unresolved,import/extensions
+const migrationRunner = require("../index");
+
+const { Migration } = migrationRunner;
 
 process.on("uncaughtException", err => {
   console.log(err.stack);
@@ -39,7 +40,7 @@ const lockArg = "lock";
 const timestampArg = "timestamp";
 const dryRunArg = "dry-run";
 
-const argv = yargs
+const { argv } = yargs
   .usage("Usage: $0 [up|down|create|redo] [migrationName] [options]")
 
   .option("d", {
@@ -157,7 +158,7 @@ const argv = yargs
     type: "boolean"
   })
 
-  .help().argv;
+  .help();
 
 if (argv.version) {
   console.log(module.exports.version);

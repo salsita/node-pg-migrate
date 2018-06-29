@@ -1,6 +1,5 @@
 .*
 *.log
 migrations/
-lib/
 test/
 mocha*
