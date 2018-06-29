@@ -8,4 +8,5 @@ exports.up = pgm => {
       referencesConstraintName: "my_constraint_name"
     }
   });
+  pgm.renameConstraint("ft2", "my_constraint_name", "better_constraint_name");
 };
