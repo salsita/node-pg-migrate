@@ -1,11 +1,10 @@
 exports.comment = "comment on column id";
+const schema = "test";
+exports.table = { schema: "test", name: "tcc" };
 
 exports.up = pgm => {
-  pgm.createSchema("test");
-  pgm.createTable(
-    { schema: "test", name: "tcc" },
-    {
-      id: { type: "id", comment: exports.comment }
-    }
-  );
+  pgm.createSchema(schema);
+  pgm.createTable(exports.table, {
+    id: { type: "id", comment: exports.comment }
+  });
 };
