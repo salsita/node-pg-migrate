@@ -14,6 +14,7 @@ export type Type = string | { type: string }
 
 export interface ForeignKeyOptions {
     columns: Name | Name[]
+    referencesConstraintName?: string
     references?: Name
     onDelete?: string
     onUpdate?: string
