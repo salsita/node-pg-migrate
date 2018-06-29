@@ -9,7 +9,7 @@
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
   },
-  "main": "dist/runner.js",
+  "main": "index.js",
   "types": "index.d.ts",
   "keywords": [
     "db",
