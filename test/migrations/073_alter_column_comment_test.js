@@ -1,7 +1,7 @@
 const {
-  comment,
-  table: { schema, name }
-} = require("./060_column_comment");
+  table: { schema, name },
+  comment
+} = require("./072_alter_column_comment");
 
 exports.up = pgm =>
   new Promise((resolve, reject) =>
