@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import * as Tables from "../lib/operations/tables";
+const { expect } = require("chai");
+const Tables = require("../lib/operations/tables");
 
 describe("lib/operations/tables", () => {
   describe(".create", () => {

@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { escapeValue, PgLiteral } from "../lib/utils";
+const { expect } = require("chai");
+const { escapeValue, PgLiteral } = require("../lib/utils");
 
 describe("lib/utils", () => {
   describe(".escapeValue", () => {

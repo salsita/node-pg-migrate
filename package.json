@@ -50,9 +50,8 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.0.0",
-    "babel-plugin-rewire": "^1.1.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
-    "babel-preset-stage-3": "^6.24.0",
     "chai": "^4.1.0",
     "chai-as-promised": "^7.1.0",
     "config": ">=1.0.0",
@@ -69,6 +68,7 @@
     "mocha": "^5.0.0",
     "pg": "^7.3.0",
     "prettier": "^1.11.1",
+    "proxyquire": "^2.0.1",
     "sinon": "^6.0.0",
     "sinon-chai": "^3.0.0"
   },

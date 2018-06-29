@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import * as Roles from "../lib/operations/roles";
+const { expect } = require("chai");
+const Roles = require("../lib/operations/roles");
 
 describe("lib/operations/roles", () => {
   describe(".create", () => {
