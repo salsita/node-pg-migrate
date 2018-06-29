@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import * as Indexes from "../lib/operations/indexes";
+const { expect } = require("chai");
+const Indexes = require("../lib/operations/indexes");
 
 describe("lib/operations/indexes", () => {
   describe(".create", () => {

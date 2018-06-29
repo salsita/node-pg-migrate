@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
-import sinon from "sinon";
-import { expect } from "chai";
-import Migration from "../lib/migration";
+const sinon = require("sinon");
+const { expect } = require("chai");
+const Migration = require("../lib/migration");
 
 const callbackMigration = "1414549381268_names.js";
 const promiseMigration = "1414549381268_names_promise.js";

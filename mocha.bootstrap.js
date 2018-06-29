@@ -1,6 +1,6 @@
-import chai from "chai";
-import sinonChai from "sinon-chai";
-import chaiAsPromised from "chai-as-promised";
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+const chaiAsPromised = require("chai-as-promised");
 
 chai.use(sinonChai);
 chai.use(chaiAsPromised);

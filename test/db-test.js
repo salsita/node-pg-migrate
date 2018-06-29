@@ -1,17 +1,15 @@
 /* eslint-disable no-unused-expressions */
-import sinon from "sinon";
-import { expect } from "chai";
-import Db, { __RewireAPI__ as DbRewireAPI } from "../lib/db"; // eslint-disable-line import/named
+const sinon = require("sinon");
+const { expect } = require("chai");
+const proxyquire = require("proxyquire");
+
+const pgMock = {};
+const Db = proxyquire("../lib/db", { pg: pgMock });
 
 describe("lib/db", () => {
   let sandbox;
-  const pgMock = {};
   const log = () => null;
   let client;
-
-  before(() => {
-    DbRewireAPI.__Rewire__("pg", pgMock);
-  });
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create();

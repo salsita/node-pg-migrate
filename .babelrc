@@ -7,8 +7,10 @@
           "node": 6
         }
       }
-    ],
-    "stage-3"
+    ]
+  ],
+  "plugins": [
+    "babel-plugin-transform-object-rest-spread"
   ],
   "env": {
     "test": {
