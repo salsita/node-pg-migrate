@@ -1,5 +1,17 @@
 # Change Log
 
+## [3.6.1](2018-07-09)
+
+### Fixed
+
+- Workaround for transpilers [#299](https://github.com/salsita/node-pg-migrate/pull/299)
+- Interface for references [#297](https://github.com/salsita/node-pg-migrate/pull/297)
+
+### Changed
+
+- Updates to installation and licence [#298](https://github.com/salsita/node-pg-migrate/pull/298)
+- Update readme [#296](https://github.com/salsita/node-pg-migrate/pull/296)
+
 ## [3.6.0](2018-06-29)
 
 ### Fixed
