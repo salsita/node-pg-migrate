@@ -17,9 +17,11 @@ see [v2 branch](https://github.com/salsita/node-pg-migrate/tree/v2).
 
 ## Installation
 
-    $ npm install node-pg-migrate
+    $ npm install node-pg-migrate pg
 
 Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
+
+It will also install [`pg`](https://node-postgres.com/) library as it is peer dependency used for migrations.
 
 ## Usage
 
@@ -119,9 +121,9 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Jan Dolezel &lt;dolezel.jan@gmail.com&gt;
+Copyright (c) 2016-2018 Jan Dolezel &lt;dolezel.jan@gmail.com&gt;
 
-Copyright (c) 2014 Theo Ephraim
+Copyright (c) 2014-2016 Theo Ephraim
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
