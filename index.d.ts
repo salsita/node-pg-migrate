@@ -12,13 +12,16 @@ export type Name = string | { schema?: string, name: string }
 
 export type Type = string | { type: string }
 
-export interface ForeignKeyOptions {
-    columns: Name | Name[]
+export interface ReferencesOptions {
     referencesConstraintName?: string
     references?: Name
     onDelete?: string
     onUpdate?: string
     match?: 'FULL' | 'SIMPLE'
+}
+
+export interface ForeignKeyOptions extends ReferencesOptions {
+    columns: Name | Name[]
 }
 
 export interface ConstraintOptions {
@@ -31,7 +34,7 @@ export interface ConstraintOptions {
     deferred?: boolean
 }
 
-export interface ColumnDefinition {
+export interface ColumnDefinition extends ReferencesOptions {
     type: string
     collation?: string
     unique?: boolean
@@ -39,10 +42,6 @@ export interface ColumnDefinition {
     notNull?: boolean
     default?: Value
     check?: string
-    references?: Name
-    onDelete?: string
-    onUpdate?: string
-    match?: 'FULL' | 'SIMPLE'
     deferrable?: boolean
     deferred?: boolean
     comment?: string | null
