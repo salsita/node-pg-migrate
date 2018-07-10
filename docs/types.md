@@ -96,3 +96,15 @@
 - `type_name` _[string]_ - name of the type
 - `attribute_name` _[string]_ - name of the attribute to rename
 - `new_attribute_name` _[string]_ - new name of the attribute
+
+---
+
+### `pgm.renameTypeValue( type_name, value, new_value )`
+
+> Rename a value of enum data type - [postgres docs](https://www.postgresql.org/docs/current/static/sql-altertype.html)
+
+**Arguments:**
+
+- `type_name` _[string]_ - name of the type
+- `value` _[string]_ - value to rename
+- `new_value` _[string]_ - new value
