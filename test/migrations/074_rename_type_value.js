@@ -1,4 +1,4 @@
 exports.up = pgm => {
-  pgm.createType("list", ["a", "d", "c"]);
-  pgm.renameTypeValue("list", "d", "b");
+  pgm.createType("list2", ["a", "d", "c"]);
+  pgm.renameTypeValue("list2", "d", "b");
 };
