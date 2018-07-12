@@ -3,6 +3,7 @@
 // Definitions by: Bradley Ayers <https://github.com/bradleyayers>
 // Definitions by: Sam Grönblom <https://github.com/sgronblo>
 // Definitions by: Jan Doležel <https://github.com/dolezel>
+// Definitions by: Christopher Quadflieg <https://github.com/Shinigami92>
 
 interface ValueArray extends Array<Value> {}
 
@@ -390,6 +391,7 @@ export interface MigrationBuilder {
     setTypeAttribute(typeName: Name, attributeName: string, attributeType: Type): void
     addTypeValue(typeName: Name, value: Value, options?: { ifNotExists?: boolean, before?: string, after?: string }): void
     renameTypeAttribute(typeName: Name, attributeName: string, newAttributeName: string): void
+    renameTypeValue(typeName: Name, value: string, newValue: string): void
 
     // Roles
     createRole(roleName: Name, roleOptions?: RoleOptions): void

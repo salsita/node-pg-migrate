@@ -4,7 +4,8 @@
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
   "contributors": [
-    "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)"
+    "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)",
+    "Christopher Quadflieg <chrissi92@hotmail.de>"
   ],
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
