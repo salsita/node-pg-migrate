@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.7.0](2018-07-12)
+
+### Added
+
+- Renaming of enum values [#293](https://github.com/salsita/node-pg-migrate/pull/293)
+
 ## [3.6.1](2018-07-09)
 
 ### Fixed
