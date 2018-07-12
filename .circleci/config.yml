@@ -18,7 +18,6 @@ save: &save
     key: code-{{ .Revision }}
     paths:
       - .
-      - ".git"
       - "~/.npm-global"
 
 restore: &restore
@@ -84,7 +83,14 @@ jobs:
       - <<: *restore
       - run:
           name: create-cockroach-db
-          command: node -e '(new require("pg").Pool({connectionString:process.env.DATABASE_URL})).query("CREATE DATABASE circle_test").then(function(){process.exit(0)})'
+          command: |
+            node -e '
+              (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
+                .query(
+                  "CREATE DATABASE circle_test",
+                  err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
+                )
+            '
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
@@ -99,7 +105,14 @@ jobs:
       - <<: *restore
       - run:
           name: create-cockroach-db
-          command: node -e '(new require("pg").Pool({connectionString:process.env.DATABASE_URL})).query("CREATE DATABASE circle_test").then(function(){process.exit(0)})'
+          command: |
+            node -e '
+              (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
+                .query(
+                  "CREATE DATABASE circle_test",
+                  err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
+                )
+            '
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
