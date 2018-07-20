@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.8.0](2018-07-20)
+
+### Added
+
+- Ignoring dotfiles by default [#305](https://github.com/salsita/node-pg-migrate/pull/305)
+- Encoding special characters in db config [#304](https://github.com/salsita/node-pg-migrate/pull/304)
+
 ## [3.7.0](2018-07-12)
 
 ### Added
