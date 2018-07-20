@@ -130,6 +130,60 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+  test-config:
+    docker:
+      - <<: *node-image
+      - image: postgres:10.4-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            mkdir -p config
+            cat > config/default.json << 'EOF'
+            {
+              "db": {
+                "user": "ubuntu",
+                "host": "localhost",
+                "port": "5432",
+                "database": "circle_test"
+              }
+            }
+            EOF
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+  test-password:
+    docker:
+      - <<: *node-image
+      - image: postgres:10.4-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            mkdir -p config
+            cat > config/default.json << 'EOF'
+            {
+              "db": {
+                "user": "ubuntu",
+                "password": "@#$%123456abcdefghABCDEFGH{}[]()/`~,;:.<>",
+                "host": "localhost",
+                "port": "5432",
+                "database": "circle_test"
+              }
+            }
+            EOF
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
 
 workflows:
   version: 2
@@ -152,5 +206,11 @@ workflows:
           requires:
             - install
       - test-node-6:
+          requires:
+            - install
+      - test-config:
+          requires:
+            - install
+      - test-password:
           requires:
             - install

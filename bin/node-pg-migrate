@@ -201,12 +201,14 @@ function readJson(json) {
     if (json.url) {
       DATABASE_URL = json.url;
     } else if (json.host || json.port || json.name || json.database) {
-      const password = json.password ? `:${json.password}` : "";
-      const credentials = `${json.user}${password}`;
-      const creds = credentials ? `${credentials}@` : "";
+      const password = json.password
+        ? `:${encodeURIComponent(json.password)}`
+        : "";
+      const user = json.user ? encodeURIComponent(json.user) : "";
+      const creds = user || password ? `${user}${password}@` : "";
       const host = json.host || "localhost";
       const port = json.port || 5432;
-      const db = json.name || json.database;
+      const db = encodeURIComponent(json.name || json.database);
       DATABASE_URL = `postgres://${creds}${host}:${port}/${db}`;
     }
   } else {
