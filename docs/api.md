@@ -12,7 +12,7 @@ which takes options argument with following structure (similar to [command line 
 - `direction` _[enum]_ - `up` or `down`
 - `count` _[number]_ - Number of migration to run
 - `timestamp` _[boolean]_ - Treats `count` as timestamp
-- `ignorePattern` _[string]_ - Regex pattern for file names to ignore
+- `ignorePattern` _[string]_ - Regex pattern for file names to ignore (ignores files starting with `.` by default)
 - `file` _[string]_ - Run only migration with this name
 - `singleTransaction` _[boolean]_ - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`)
 - `createSchema` _[boolean]_ - Creates the configured schema if it doesn't exist
