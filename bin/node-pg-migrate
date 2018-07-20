@@ -205,8 +205,7 @@ function readJson(json) {
         ? `:${encodeURIComponent(json.password)}`
         : "";
       const user = json.user ? encodeURIComponent(json.user) : "";
-      const credentials = `${user}${password}`;
-      const creds = credentials ? `${credentials}@` : "";
+      const creds = user || password ? `${user}${password}@` : "";
       const host = json.host || "localhost";
       const port = json.port || 5432;
       const db = encodeURIComponent(json.name || json.database);
