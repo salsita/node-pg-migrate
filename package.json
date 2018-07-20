@@ -4,7 +4,7 @@
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
   "contributors": [
-    "Jan Doležel <dolezel.jan@gmail.com> (http://www.eithel.net/)",
+    "Salsita Software <jando@salsitasoft.com>",
     "Christopher Quadflieg <chrissi92@hotmail.de>"
   ],
   "bin": {
