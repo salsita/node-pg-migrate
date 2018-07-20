@@ -105,7 +105,7 @@ const { argv } = yargs
   })
 
   .option(ignorePatternArg, {
-    default: "",
+    default: "\\..*",
     describe: "Regex pattern for file names to ignore",
     type: "string"
   })
