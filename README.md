@@ -27,7 +27,7 @@ It will also install [`pg`](https://node-postgres.com/) library as it is peer de
 
 ### Quick Example
 
-Add `'migrate': 'node-pg-migrate'` to `scripts` section of `package.json` so you are able to quickly run commands.
+Add `"migrate": "node-pg-migrate"` to `scripts` section of `package.json` so you are able to quickly run commands.
 
 Run `npm run migrate create my first migration`. It will create file `xxx_my-first-migration.js` in `migrations` folder.
 Open it and change contents to:
