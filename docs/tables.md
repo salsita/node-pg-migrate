@@ -1,12 +1,18 @@
 # Table Operations
 
+### Types
+
+```ts
+type TableName = string | { schema: string, name: string }
+```
+
 ### `pgm.createTable( tablename, columns, options )`
 
 > Create a new table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createtable.html)
 
 **Arguments:**
 
-- `tablename` _[string]_ - name for the new table
+- `tablename` _[[TableName](#types)]_ - name for the new table
 - `columns` _[object]_ - column names / options -- see [column definitions section](columns.md#column-definitions)
 - `options` _[object]_ - table options (optional)
   - `temporary` _[bool]_ - default false
@@ -26,7 +32,7 @@
 
 **Arguments:**
 
-- `tablename` _[string]_ - name of the table to drop
+- `tablename` _[[TableName](#types)]_ - name of the table to drop
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops table only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -39,7 +45,7 @@
 
 **Arguments:**
 
-- `tablename` _[string]_ - name of the table to rename
+- `tablename` _[[TableName](#types)]_ - name of the table to rename
 - `new_table` _[object]_ - new name of the table
 
 **Reverse Operation:** same operation in opposite direction
@@ -52,6 +58,6 @@
 
 **Arguments:**
 
-- `tablename` _[string]_ - name of the table to alter
+- `tablename` _[[TableName](#types)]_ - name of the table to alter
 - `options` _[object]_ - options:
   - `levelSecurity` _[string]_ - `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE`
