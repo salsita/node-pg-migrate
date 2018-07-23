@@ -40,7 +40,7 @@
 **Arguments:**
 
 - `tablename` _[string]_ - name of the table to rename
-- `new_table` _[object]_ - new name of the table
+- `new_table` _[string]_ - new name of the table
 
 **Reverse Operation:** same operation in opposite direction
 
