@@ -1,5 +1,15 @@
 # Change Log
 
+## [3.8.1](2018-07-23)
+
+### Changed
+
+- Removing default value for parallel clause [#308](https://github.com/salsita/node-pg-migrate/pull/308)
+
+### Fixed
+
+- Fix JSON quotes for script [#307](https://github.com/salsita/node-pg-migrate/pull/307)
+
 ## [3.8.0](2018-07-20)
 
 ### Added
