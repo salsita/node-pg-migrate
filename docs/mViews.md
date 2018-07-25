@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the new materialized view
+- `viewName` _[[Name](migrations.md#type)]_ - name of the new materialized view
 - `options` _[object]_ - options:
   - `ifNotExists` _[boolean]_ - default false
   - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
@@ -25,7 +25,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the view to delete
+- `viewName` _[[Name](migrations.md#type)]_ - name of the view to delete
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops view only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -38,7 +38,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the view to alter
+- `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
 - `options` _[object]_ - options:
   - `cluster` _[string]_ - index name for clustering
   - `extension` _[string]_ - name of extension view is dependent on
@@ -52,8 +52,8 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - old name of the view
-- `newViewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - new name of the view
+- `viewName` _[[Name](migrations.md#type)]_ - old name of the view
+- `newViewName` _[[Name](migrations.md#type)]_ - new name of the view
 
 ---
 
@@ -63,7 +63,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the view to alter
+- `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
 - `columnName` _[string]_ - current column name
 - `newColumnName` _[string]_ - new column name
 
@@ -75,7 +75,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - old name of the view
+- `viewName` _[[Name](migrations.md#type)]_ - old name of the view
 - `options` _[object]_ - options:
   - `concurrently` _[boolean]_ - default false
   - `data` _[boolean]_ - default undefined
