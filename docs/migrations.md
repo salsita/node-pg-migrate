@@ -52,7 +52,7 @@ exports.up = function(pgm) {
 
 Instead of passing string as name to `pgm` functions, you can pass an object with keys `schema` and `name`. E.g.
 
-`pgm.createTable( {schema: 'my_schema', name: 'my_table_name'}, {id: 'serial'});`
+`pgm.createTable({ schema: 'my_schema', name: 'my_table_name' }, { id: 'serial' });`
 
 will generate
 
