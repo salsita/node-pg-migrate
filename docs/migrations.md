@@ -48,6 +48,14 @@ exports.up = function(pgm) {
 };
 ```
 
+or
+
+```javascript
+exports.up = async pgm => {
+  // doSomethingAsync
+};
+```
+
 ### Using schemas
 
 Instead of passing string as name to `pgm` functions, you can pass an object with keys `schema` and `name`. E.g.
