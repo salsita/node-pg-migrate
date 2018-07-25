@@ -11,7 +11,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `notNull` _[boolean]_ - set to true to make this column not null
 - `default` _[string]_ - adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.
 - `check` _[string]_ - sql for a check constraint for this column
-- `references` _[string or object]_ - a table name that this column is a foreign key to
+- `references` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - a table name that this column is a foreign key to
 - `referencesConstraintName` _[string]_ - name of the created constraint
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
@@ -45,7 +45,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `new_columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
 
 **Aliases:** `addColumn`
@@ -59,7 +59,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `columns` _[array of strings or object]_ - columns to drop (if object, uses keys)
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops column only if it exists
@@ -75,7 +75,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `old_column_name` _[string]_ - current column name
 - `new_column_name` _[string]_ - new column name
 
@@ -89,7 +89,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `column_name` _[string]_ - column to alter
 - `column_options` _[object]_ - optional new column options
   - `default` _[string or null]_ - null, string

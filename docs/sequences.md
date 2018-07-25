@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `sequence_name` _[string or object]_ - name of the new sequence
+- `sequence_name` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the new sequence
 - `options` _[object]_ - options:
   - `temporary` _[boolean]_ - adds `TEMPORARY` clause
   - `ifNotExists` _[boolean]_ - adds `IF NOT EXISTS` clause
@@ -29,7 +29,7 @@
 
 **Arguments:**
 
-- `sequence_name` _[string or object]_ - name of the the sequence to drop
+- `sequence_name` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the the sequence to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops sequence only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -42,7 +42,7 @@
 
 **Arguments:**
 
-- `sequence_name` _[string or object]_ - name of the new sequence
+- `sequence_name` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the new sequence
 - `options` _[object]_ - options:
   - `type` _[string]_ - type of the sequence
   - `increment` _[number]_ - sets first value of sequence
@@ -62,5 +62,5 @@
 
 **Arguments:**
 
-- `old_sequence_name` _[string or object]_ - old name of the sequence
-- `new_sequence_name` _[string or object]_ - new name of the sequence
+- `old_sequence_name` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - old name of the sequence
+- `new_sequence_name` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - new name of the sequence

@@ -6,14 +6,14 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name for the new table
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name for the new table
 - `columns` _[object]_ - column names / options -- see [column definitions section](columns.md#column-definitions)
 - `options` _[object]_ - table options (optional)
   - `temporary` _[bool]_ - default false
   - `ifNotExists` _[bool]_ - default false
-  - `inherits` _[string or object]_ - table(s) to inherit from
+  - `inherits` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - table(s) to inherit from
   - `constraints` _[object]_ - table constraints see [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-)
-  - `like` _[string or object]_ - table(s) to inherit from
+  - `like` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - table(s) to inherit from
   - `comment` _[string]_ - adds comment on table
 
 **Reverse Operation:** `dropTable`
@@ -26,7 +26,7 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to drop
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to drop
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops table only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -39,8 +39,8 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to rename
-- `new_table` _[string or object]_ - new name of the table
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to rename
+- `new_table` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - new name of the table
 
 **Reverse Operation:** same operation in opposite direction
 
@@ -52,6 +52,6 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `options` _[object]_ - options:
   - `levelSecurity` _[string]_ - `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE`

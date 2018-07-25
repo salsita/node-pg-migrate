@@ -6,18 +6,18 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
 - `expression` _[string or object]_ - constraint expression (raw sql) or definition:
   - `check` _[string]_ - sql for a check constraint
-  - `unique` _[string or array of strings or array of array of strings]_ - names of unique columns
-  - `primaryKey` _[string or array of strings]_ - names of primary columns
+  - `unique` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type) or array of [Names](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type) or array of arrays of [Names](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - names of unique columns
+  - `primaryKey` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type) or array of [Names](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - names of primary columns
   - `exclude` _[string]_ - sql for an exclude constraint
   - `deferrable` _[boolean]_ - flag for deferrable table constraint
   - `deferred` _[boolean]_ - flag for initially deferred deferrable table constraint
   - `foreignKeys` _[object or array of objects]_ - foreign keys specification
-    - `columns` _[string or array of strings]_ - names of columns
-    - `references` _[string or object]_ - names of foreign table and column names
+    - `columns` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type) or array of [Names](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - names of columns
+    - `references` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - names of foreign table and column names
     - `referencesConstraintName` _[string]_ - name of the created constraint
     - `onDelete` _[string]_ - action to perform on delete
     - `onUpdate` _[string]_ - action to perform on update
@@ -34,7 +34,7 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops constraint only if it exists
@@ -48,7 +48,7 @@
 
 **Arguments:**
 
-- `tablename` _[string or object]_ - name of the table to alter
+- `tablename` _[[Name](https://github.com/salsita/node-pg-migrate/blob/master/docs/migrations.md#Type)]_ - name of the table to alter
 - `old_constraint_name` _[string]_ - current constraint name
 - `new_constraint_name` _[string]_ - new constraint name
 

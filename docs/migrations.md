@@ -62,6 +62,12 @@ CREATE TABLE "my_schema"."my_table_name" (
 );
 ```
 
+#### Type
+
+```ts
+type Name = string | { schema: string; name: string };
+```
+
 ### Locking
 
 `node-pg-migrate` automatically checks if no other migration is running. To do so, it uses an
