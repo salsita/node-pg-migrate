@@ -444,18 +444,18 @@ export interface MigrationBuilder {
     alterPolicy(tableName: Name, policyName: string, options: PolicyOptions): void
     renamePolicy(tableName: Name, policyName: string, newPolicyName: string): void
 
-    createView(viewName: string, options: CreateViewOptions, definition: string): void
-    dropView(viewName: string, options?: DropOptions): void
-    alterView(viewName: string, options: AlterViewOptions): void
-    alterViewColumn(viewName: string, options: AlterViewColumnOptions): void
-    renameView(viewName: string, newViewName: string): void
+    createView(viewName: Name, options: CreateViewOptions, definition: string): void
+    dropView(viewName: Name, options?: DropOptions): void
+    alterView(viewName: Name, options: AlterViewOptions): void
+    alterViewColumn(viewName: Name, options: AlterViewColumnOptions): void
+    renameView(viewName: Name, newViewName: Name): void
 
-    createMaterializedView(viewName: string, options: CreateMaterializedViewOptions, definition: string): void
-    dropMaterializedView(viewName: string, options?: DropOptions): void
-    alterMaterializedView(viewName: string, options: AlterMaterializedViewOptions): void
-    renameMaterializedView(viewName: string, newViewName: string): void
-    renameMaterializedViewColumn(viewName: string, columnName: string, newColumnName: string): void
-    refreshMaterializedView(viewName: string, options?: RefreshMaterializedViewOptions): void
+    createMaterializedView(viewName: Name, options: CreateMaterializedViewOptions, definition: string): void
+    dropMaterializedView(viewName: Name, options?: DropOptions): void
+    alterMaterializedView(viewName: Name, options: AlterMaterializedViewOptions): void
+    renameMaterializedView(viewName: Name, newViewName: Name): void
+    renameMaterializedViewColumn(viewName: Name, columnName: string, newColumnName: string): void
+    refreshMaterializedView(viewName: Name, options?: RefreshMaterializedViewOptions): void
 
     sql(sql: string, args?: object): void
     func(sql: string): PgLiteral
