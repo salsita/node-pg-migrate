@@ -7,6 +7,7 @@
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
 [![Known Vulnerabilities](https://snyk.io/test/github/salsita/node-pg-migrate/badge.svg)](https://snyk.io/test/github/salsita/node-pg-migrate)
 [![Greenkeeper badge](https://badges.greenkeeper.io/salsita/node-pg-migrate.svg)](https://greenkeeper.io/)
+![CircleCI](https://img.shields.io/circleci/project/github/salsita/node-pg-migrate.svg)
 
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
 Started by [Theo Ephraim](https://github.com/theoephraim/), now maintained by [Salsita Software](https://www.salsitasoft.com/).
