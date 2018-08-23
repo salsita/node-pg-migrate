@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.9.0](2018-08-23)
+
+### Changed
+
+- Do not construct connection string [#316](https://github.com/salsita/node-pg-migrate/pull/316)
+
+# Change Log
+
 ## [3.8.1](2018-07-23)
 
 ### Changed
