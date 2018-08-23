@@ -171,7 +171,7 @@ if (argv.help || argv._.length === 0) {
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
-let DATABASE_URL = process.env[argv[databaseUrlVarArg]];
+let DB_CONNECTION = process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
 let SCHEMA = argv[schemaArg];
 let CREATE_SCHEMA = argv[createSchemaArg];
@@ -199,20 +199,18 @@ function readJson(json) {
         : CHECK_ORDER;
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
     if (json.url) {
-      DATABASE_URL = json.url;
+      DB_CONNECTION = json.url;
     } else if (json.host || json.port || json.name || json.database) {
-      const password = json.password
-        ? `:${encodeURIComponent(json.password)}`
-        : "";
-      const user = json.user ? encodeURIComponent(json.user) : "";
-      const creds = user || password ? `${user}${password}@` : "";
-      const host = json.host || "localhost";
-      const port = json.port || 5432;
-      const db = encodeURIComponent(json.name || json.database);
-      DATABASE_URL = `postgres://${creds}${host}:${port}/${db}`;
+      DB_CONNECTION = {
+        user: json.user,
+        host: json.host || "localhost",
+        database: json.name || json.database,
+        password: json.password,
+        port: json.port || 5432
+      };
     }
   } else {
-    DATABASE_URL = json || DATABASE_URL;
+    DB_CONNECTION = json || DB_CONNECTION;
   }
 }
 
@@ -260,7 +258,7 @@ if (action === "create") {
   );
   console.log(util.format("Created migration -- %s", migration.path));
 } else if (action === "up" || action === "down" || action === "redo") {
-  if (!DATABASE_URL) {
+  if (!DB_CONNECTION) {
     console.error(
       `The $${argv[databaseUrlVarArg]} environment variable is not set.`
     );
@@ -297,7 +295,7 @@ if (action === "create") {
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
     return {
       dryRun,
-      databaseUrl: DATABASE_URL,
+      databaseUrl: DB_CONNECTION,
       dir: MIGRATIONS_DIR,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
