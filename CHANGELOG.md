@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.10.0](2018-09-02)
+
+### Changed
+
+- Using default libpq env vars [#319](https://github.com/salsita/node-pg-migrate/pull/319)
+
 ## [3.9.0](2018-08-23)
 
 ### Changed
