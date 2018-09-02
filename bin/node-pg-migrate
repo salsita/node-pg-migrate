@@ -6,6 +6,7 @@
 const util = require("util");
 const path = require("path");
 const yargs = require("yargs");
+const ConnectionParameters = require("pg/lib/connection-parameters");
 const migrationRunner = require("../index");
 
 const { Migration } = migrationRunner;
@@ -259,10 +260,14 @@ if (action === "create") {
   console.log(util.format("Created migration -- %s", migration.path));
 } else if (action === "up" || action === "down" || action === "redo") {
   if (!DB_CONNECTION) {
-    console.error(
-      `The $${argv[databaseUrlVarArg]} environment variable is not set.`
-    );
-    process.exit(1);
+    const cp = new ConnectionParameters();
+    if (!cp.host && !cp.port && !cp.database) {
+      console.error(
+        `The $${argv[databaseUrlVarArg]} environment variable is not set.`
+      );
+      process.exit(1);
+    }
+    DB_CONNECTION = cp;
   }
 
   const dryRun = argv[dryRunArg];
