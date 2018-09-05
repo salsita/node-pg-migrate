@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.10.1](2018-09-05)
+
+### Fixed
+
+- Fix dropping index in another schema [#322](https://github.com/salsita/node-pg-migrate/pull/322)
+
 ## [3.10.0](2018-09-02)
 
 ### Changed
