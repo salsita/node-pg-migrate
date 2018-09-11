@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.11.0](2018-09-11)
+
+### Added
+
+- Ability to mark migrations as run [#324](https://github.com/salsita/node-pg-migrate/pull/324)
+
 ## [3.10.1](2018-09-05)
 
 ### Fixed
