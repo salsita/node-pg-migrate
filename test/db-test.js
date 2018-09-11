@@ -12,7 +12,7 @@ describe("lib/db", () => {
   let client;
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
     client = {
       end: () => null
     };

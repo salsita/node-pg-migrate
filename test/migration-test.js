@@ -29,7 +29,7 @@ describe("lib/migration", () => {
         options,
         log
       );
-      return migration.applyUp().then(() => {
+      return migration.apply("up").then(() => {
         expect(dbMock.query).to.be.called;
       });
     });
@@ -42,7 +42,7 @@ describe("lib/migration", () => {
         options,
         log
       );
-      return migration.applyUp().then(() => {
+      return migration.apply("up").then(() => {
         expect(dbMock.query).to.be.called;
       });
     });
@@ -55,7 +55,7 @@ describe("lib/migration", () => {
         { ...options, dryRun: true },
         log
       );
-      return migration.applyUp().then(() => {
+      return migration.apply("up").then(() => {
         expect(dbMock.query).to.not.be.called;
       });
     });
@@ -68,7 +68,7 @@ describe("lib/migration", () => {
         options,
         log
       );
-      return migration.applyUp().then(() => {
+      return migration.apply("up").then(() => {
         expect(dbMock.query).to.have.callCount(4);
         expect(dbMock.query.getCall(0).args[0]).to.equal("BEGIN;");
         expect(dbMock.query.getCall(1).args[0]).to.include("CREATE TABLE");
@@ -89,7 +89,7 @@ describe("lib/migration", () => {
         options,
         log
       );
-      return migration.applyDown().then(() => {
+      return migration.apply("down").then(() => {
         expect(dbMock.query).to.be.called;
       });
     });
@@ -102,7 +102,7 @@ describe("lib/migration", () => {
         { ...options, dryRun: true },
         log
       );
-      return migration.applyDown().then(() => {
+      return migration.apply("down").then(() => {
         expect(dbMock.query).to.not.be.called;
       });
     });
@@ -115,7 +115,7 @@ describe("lib/migration", () => {
         options,
         log
       );
-      return migration.applyDown().then(() => {
+      return migration.apply("down").then(() => {
         expect(dbMock.query).to.have.callCount(4);
         expect(dbMock.query.getCall(0).args[0]).to.equal("BEGIN;");
         expect(dbMock.query.getCall(1).args[0]).to.include("DROP TABLE");
