@@ -502,6 +502,7 @@ export interface RunnerOption {
     createMigrationsSchema?: boolean
     singleTransaction?: boolean
     noLock?: boolean,
+    fake?: boolean,
     log?: (msg:string) => void;
 }
 

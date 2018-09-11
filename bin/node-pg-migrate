@@ -40,6 +40,7 @@ const singleTransactionArg = "single-transaction";
 const lockArg = "lock";
 const timestampArg = "timestamp";
 const dryRunArg = "dry-run";
+const fakeArg = "fake";
 
 const { argv } = yargs
   .usage("Usage: $0 [up|down|create|redo] [migrationName] [options]")
@@ -109,6 +110,12 @@ const { argv } = yargs
     default: "\\..*",
     describe: "Regex pattern for file names to ignore",
     type: "string"
+  })
+
+  .option(fakeArg, {
+    default: false,
+    describe: "Marks migrations as run",
+    type: "boolean"
   })
 
   .option("i", {
@@ -181,7 +188,6 @@ let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
 let CHECK_ORDER = argv[checkOrderArg];
-const TIMESTAMP = argv[timestampArg];
 
 function readJson(json) {
   if (typeof json === "object") {
@@ -276,6 +282,8 @@ if (action === "create") {
   }
 
   const singleTransaction = argv[singleTransactionArg];
+  const fake = argv[fakeArg];
+  const TIMESTAMP = argv[timestampArg];
 
   const noLock = !argv[lockArg];
   if (noLock) {
@@ -314,7 +322,8 @@ if (action === "create") {
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
       direction,
       singleTransaction,
-      noLock
+      noLock,
+      fake
     };
   };
   const promise =
