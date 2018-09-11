@@ -24,6 +24,16 @@ restore: &restore
   restore_cache:
     key: code-{{ .Revision }}
 
+db-wait: &db-wait
+  run:
+    name: Wait for DB
+    command: dockerize -wait tcp://127.0.0.1:5432 -timeout 120s
+
+test-db: &test-db
+  run:
+    name: test
+    command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+
 jobs:
   install:
     docker:
@@ -69,9 +79,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+      - <<: *db-wait
+      - <<: *test-db
   test-cocroach-1:
     docker:
       - <<: *node-image
@@ -81,6 +90,9 @@ jobs:
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
       - run:
           name: create-cockroach-db
           command: |
@@ -103,6 +115,9 @@ jobs:
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
       - run:
           name: create-cockroach-db
           command: |
@@ -127,9 +142,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+      - <<: *db-wait
+      - <<: *test-db
   test-config:
     docker:
       - <<: *node-image
@@ -153,9 +167,8 @@ jobs:
               }
             }
             EOF
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+      - <<: *db-wait
+      - <<: *test-db
   test-password:
     docker:
       - <<: *node-image
@@ -181,9 +194,8 @@ jobs:
               }
             }
             EOF
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+      - <<: *db-wait
+      - <<: *test-db
   test-env-vars:
     docker:
     - <<: *node-image
@@ -197,10 +209,9 @@ jobs:
         - POSTGRES_PASSWORD=ubuntu-pass
         - POSTGRES_DB=circle_test
     steps:
-    - <<: *restore
-    - run:
-        name: test
-        command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
 
 workflows:
   version: 2
