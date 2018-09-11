@@ -76,7 +76,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
   (There should be no migration with timestamp lesser than last run migration.)
 - `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on command line).
 - `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
-- `fake` - Mark migrations as run without actual performing them (use with caution!)
+- `fake` - Mark migrations as run without actually performing them (use with caution!)
 
 See all by running `node-pg-migrate --help`.
 
