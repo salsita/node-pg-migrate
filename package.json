@@ -68,7 +68,7 @@
     "lint-staged": "7.2.2",
     "mocha": "5.2.0",
     "pg": "7.4.3",
-    "prettier": "1.14.2",
+    "prettier": "1.14.3",
     "proxyquire": "2.1.0",
     "sinon": "6.2.0",
     "sinon-chai": "3.2.0"
