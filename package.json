@@ -84,7 +84,7 @@
   "scripts": {
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
-    "migrate": "babel-node bin/node-pg-migrate",
+    "migrate": "node bin/node-pg-migrate",
     "lint": "eslint . bin/*",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run compile"
