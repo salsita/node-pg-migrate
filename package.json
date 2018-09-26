@@ -53,24 +53,24 @@
     "babel-eslint": "10.0.0",
     "babel-plugin-transform-object-rest-spread": "6.26.0",
     "babel-preset-env": "1.7.0",
-    "chai": "4.1.2",
+    "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "config": ">=1.0.0",
     "cross-env": "5.2.0",
     "dotenv": ">=1.0.0",
-    "eslint": "5.5.0",
+    "eslint": "5.6.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "3.1.0",
     "eslint-plugin-import": "2.14.0",
     "eslint-plugin-prettier": "2.6.2",
     "eslint-plugin-security": "1.4.0",
-    "husky": "0.14.3",
+    "husky": "1.0.0",
     "lint-staged": "7.3.0",
     "mocha": "5.2.0",
     "pg": "7.4.3",
     "prettier": "1.14.3",
     "proxyquire": "2.1.0",
-    "sinon": "6.2.0",
+    "sinon": "6.3.4",
     "sinon-chai": "3.2.0"
   },
   "peerDependencies": {
@@ -81,13 +81,17 @@
     "dotenv": ">=1.0.0"
   },
   "scripts": {
-    "precommit": "lint-staged",
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "babel-node bin/node-pg-migrate",
     "lint": "eslint -c eslintrc.js . bin/*",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run compile"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "lint-staged": {
     "*.js": ["npm run lintfix", "git add"],
