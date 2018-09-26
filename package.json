@@ -49,10 +49,11 @@
     "yargs": "~12.0.1"
   },
   "devDependencies": {
-    "babel-cli": "6.26.0",
+    "@babel/cli": "7.1.0",
+    "@babel/core": "7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "7.0.0",
+    "@babel/preset-env": "7.1.0",
     "babel-eslint": "10.0.0",
-    "babel-plugin-transform-object-rest-spread": "6.26.0",
-    "babel-preset-env": "1.7.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "config": ">=1.0.0",
@@ -84,7 +85,7 @@
     "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "babel-node bin/node-pg-migrate",
-    "lint": "eslint -c eslintrc.js . bin/*",
+    "lint": "eslint . bin/*",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run compile"
   },
