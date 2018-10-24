@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { escapeValue, PgLiteral } = require("../lib/utils");
+const { escapeValue, PgLiteral, applyType } = require("../lib/utils");
 
 describe("lib/utils", () => {
   describe(".escapeValue", () => {
@@ -47,6 +47,46 @@ describe("lib/utils", () => {
       const value = undefined;
 
       expect(escapeValue(value)).to.equal("");
+    });
+  });
+
+  describe(".applyType", () => {
+    it("convert string", () => {
+      const type = "type";
+
+      expect(applyType(type)).to.eql({ type });
+    });
+
+    it("apply id shorthand", () => {
+      expect(applyType("id")).to.eql({ type: "serial", primaryKey: true });
+    });
+
+    it("apply shorthand", () => {
+      const shorthandName = "type";
+      const shorthandDefinition = { type: "integer", defaultValue: 1 };
+      expect(
+        applyType(shorthandName, { [shorthandName]: shorthandDefinition })
+      ).to.eql(shorthandDefinition);
+    });
+
+    it("apply recursive shorthand", () => {
+      const shorthands = {
+        ref: { type: `integer`, onDelete: `cascade` },
+        user: { type: `ref`, references: `users` }
+      };
+      expect(applyType("user", shorthands)).to.eql({
+        type: `integer`,
+        onDelete: `cascade`,
+        references: `users`
+      });
+    });
+
+    it("detect cycle in recursive shorthand", () => {
+      const shorthands = {
+        ref: { type: `user`, onDelete: `cascade` },
+        user: { type: `ref`, references: `users` }
+      };
+      expect(() => applyType("user", shorthands)).to.throw();
     });
   });
 });
