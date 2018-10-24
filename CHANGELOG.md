@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.12.0](2018-10-24)
+
+### Added
+
+- Shorthand can reference other shorthands [#346](https://github.com/salsita/node-pg-migrate/pull/346)
+
 ## [3.11.0](2018-09-11)
 
 ### Added
