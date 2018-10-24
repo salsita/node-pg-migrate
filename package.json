@@ -59,7 +59,7 @@
     "config": ">=1.0.0",
     "cross-env": "5.2.0",
     "dotenv": ">=1.0.0",
-    "eslint": "5.6.0",
+    "eslint": "5.7.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "3.1.0",
     "eslint-plugin-import": "2.14.0",
@@ -71,7 +71,7 @@
     "pg": "7.5.0",
     "prettier": "1.14.3",
     "proxyquire": "2.1.0",
-    "sinon": "6.3.4",
+    "sinon": "7.0.0",
     "sinon-chai": "3.2.0"
   },
   "peerDependencies": {
