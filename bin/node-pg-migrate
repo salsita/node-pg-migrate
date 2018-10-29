@@ -250,7 +250,7 @@ if (action === "create") {
   // replaces spaces with dashes - should help fix some errors
   let newMigrationName = argv._.length ? argv._.join("-") : "";
   // forces use of dashes in names - keep thing clean
-  newMigrationName = newMigrationName.replace(/_ /g, "-");
+  newMigrationName = newMigrationName.replace(/_/g, "-");
 
   if (!newMigrationName) {
     console.log("'migrationName' is required.");
