@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.13.0](2018-11-02)
+
+### Changed
+
+- Better migration name fix [#353](https://github.com/salsita/node-pg-migrate/pull/353)
+- Fix migration name substitution [#348](https://github.com/salsita/node-pg-migrate/pull/348)
+
 ## [3.12.0](2018-10-24)
 
 ### Added
