@@ -14,9 +14,8 @@ exports.up = pgm =>
             join pg_namespace n ON (t.relnamespace = n.oid and n.nspname = c.table_schema)
             WHERE c.column_name = 'id' and c.table_schema = '${schema}' and c.table_name = '${name}';`
       )
-      .then(
-        ([{ description }]) =>
-          description === comment ? null : reject(new Error("Comment not set"))
+      .then(([{ description }]) =>
+        description === comment ? null : reject(new Error("Comment not set"))
       )
       .then(resolve)
   );
