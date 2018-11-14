@@ -8,11 +8,8 @@ exports.up = pgm =>
                 FROM pg_class c join pg_namespace n ON (c.relnamespace = n.oid)
                 WHERE c.relname = 't2' and c.relkind = 'r' and n.nspname = 'public'`
       )
-      .then(
-        ([{ comment }]) =>
-          comment === table.comment
-            ? null
-            : reject(new Error("Comment not set"))
+      .then(([{ comment }]) =>
+        comment === table.comment ? null : reject(new Error("Comment not set"))
       )
       .then(() => pgm.db.query("SAVEPOINT sp_reference;"))
       .then(() => pgm.db.query("INSERT INTO t2(id2) VALUES (1);"))
