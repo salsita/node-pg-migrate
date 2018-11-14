@@ -13,11 +13,13 @@ export type Name = string | { schema?: string, name: string }
 
 export type Type = string | { type: string }
 
+export type Action = 'NO ACTION' | 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'SET DEFAULT'
+
 export interface ReferencesOptions {
     referencesConstraintName?: string
     references?: Name
-    onDelete?: string
-    onUpdate?: string
+    onDelete?: Action
+    onUpdate?: Action
     match?: 'FULL' | 'SIMPLE'
 }
 
