@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.14.0](2018-11-14)
+
+### Changed
+
+- Add ForeignKey Reference Action [#357](https://github.com/salsita/node-pg-migrate/pull/357)
+
 ## [3.13.0](2018-11-02)
 
 ### Changed
