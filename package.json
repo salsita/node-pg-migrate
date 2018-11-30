@@ -1,6 +1,6 @@
 {
   "name": "node-pg-migrate",
-  "version": "3.14.0",
+  "version": "3.14.1",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
   "contributors": [
