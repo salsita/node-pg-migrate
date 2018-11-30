@@ -6,7 +6,7 @@
 ![Downloads](https://img.shields.io/npm/dm/node-pg-migrate.svg?style=flat)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
 [![Known Vulnerabilities](https://snyk.io/test/github/salsita/node-pg-migrate/badge.svg)](https://snyk.io/test/github/salsita/node-pg-migrate)
-[![Greenkeeper badge](https://badges.greenkeeper.io/salsita/node-pg-migrate.svg)](https://greenkeeper.io/)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 [![CircleCI](https://img.shields.io/circleci/project/github/salsita/node-pg-migrate.svg)](https://circleci.com/gh/salsita/workflows/node-pg-migrate)
 
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
