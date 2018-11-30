@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.14.1](2018-11-30)
+
+### Fixed
+
+- Pass all params to pg query [#361](https://github.com/salsita/node-pg-migrate/pull/361)
+
 ## [3.14.0](2018-11-14)
 
 ### Changed
