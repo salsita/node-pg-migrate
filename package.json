@@ -65,14 +65,14 @@
     "eslint-plugin-import": "2.14.0",
     "eslint-plugin-prettier": "3.0.0",
     "eslint-plugin-security": "1.4.0",
-    "husky": "1.1.4",
-    "lint-staged": "8.0.4",
+    "husky": "1.2.0",
+    "lint-staged": "8.1.0",
     "mocha": "5.2.0",
-    "pg": "7.6.1",
-    "prettier": "1.15.2",
+    "pg": "7.7.1",
+    "prettier": "1.15.3",
     "proxyquire": "2.1.0",
     "sinon": "7.1.1",
-    "sinon-chai": "3.2.0"
+    "sinon-chai": "3.3.0"
   },
   "peerDependencies": {
     "pg": ">=4.3.0 <8.0.0"
