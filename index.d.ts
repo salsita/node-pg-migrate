@@ -346,10 +346,10 @@ import { QueryConfig, QueryResult } from "pg";
 // see ClientBase in @types/pg
 interface DB {
     query(queryConfig: QueryConfig): Promise<QueryResult>;
-    query(queryText: string, values?: any[]): Promise<QueryResult>;
+    query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>;
 
     select(queryConfig: QueryConfig): Promise<any[]>;
-    select(queryText: string, values?: any[]): Promise<any[]>;
+    select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>;
 }
 
 export interface MigrationBuilder {
