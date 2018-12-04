@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.14.2](2018-12-04)
+
+### Fixed
+
+- Exporting PgType [#368](https://github.com/salsita/node-pg-migrate/pull/368)
+
 ## [3.14.1](2018-11-30)
 
 ### Fixed
