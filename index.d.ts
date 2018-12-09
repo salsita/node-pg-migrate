@@ -198,7 +198,7 @@ export type FunctionParam = string | FunctionParamType
 
 export interface FunctionOptions {
     returns?: string
-    language: string
+    language: 'internal' | 'c' | 'sql' | 'plpgsql'
     replace?: boolean
     window?: boolean
     behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE'
