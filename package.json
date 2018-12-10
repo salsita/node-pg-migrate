@@ -58,7 +58,7 @@
     "chai-as-promised": "7.1.1",
     "config": "3.0.0",
     "cross-env": "5.2.0",
-    "dotenv": "6.1.0",
+    "dotenv": "6.2.0",
     "eslint": "5.9.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "3.3.0",
