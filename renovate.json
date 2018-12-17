@@ -3,6 +3,7 @@
     "config:base",
     ":automergeMinor",
     ":automergeLinters",
-    "schedule:weekly"
+    "schedule:weekly",
+    "group:allNonMajor"
   ]
 }
