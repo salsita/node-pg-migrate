@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.15.0](2019-01-28)
+
+### Added
+
+- Infering migration language [#391](https://github.com/salsita/node-pg-migrate/pull/391)
+
 ## [3.14.2](2018-12-04)
 
 ### Fixed
