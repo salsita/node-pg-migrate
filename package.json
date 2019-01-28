@@ -61,7 +61,7 @@
     "dotenv": "6.2.0",
     "eslint": "5.12.1",
     "eslint-config-airbnb-base": "13.1.0",
-    "eslint-config-prettier": "3.6.0",
+    "eslint-config-prettier": "4.0.0",
     "eslint-plugin-import": "2.15.0",
     "eslint-plugin-prettier": "3.0.1",
     "eslint-plugin-security": "1.4.0",
