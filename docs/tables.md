@@ -13,7 +13,13 @@
   - `ifNotExists` _[bool]_ - default false
   - `inherits` _[[Name](migrations.md#type)]_ - table(s) to inherit from
   - `constraints` _[object]_ - table constraints see [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-)
-  - `like` _[[Name](migrations.md#type)]_ - table(s) to inherit from
+  - `like` either:
+    - _[[Name](migrations.md#type)]_ - table(s) to inherit from
+    - or _[object]_
+      - `table` _[[Name](migrations.md#type)]_ - table(s) to inherit from
+      - `options` _[object]_ - like options (optional)
+        - `including` _[string or array of strings]_ - 'COMMENTS', 'CONSTRAINTS', 'DEFAULTS', 'IDENTITY', 'INDEXES', 'STATISTICS', 'STORAGE', 'ALL'
+        - `excluding` _[string or array of strings]_ - 'COMMENTS', 'CONSTRAINTS', 'DEFAULTS', 'IDENTITY', 'INDEXES', 'STATISTICS', 'STORAGE', 'ALL'
   - `comment` _[string]_ - adds comment on table
 
 **Reverse Operation:** `dropTable`

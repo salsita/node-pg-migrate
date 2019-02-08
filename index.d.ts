@@ -50,11 +50,18 @@ export interface ColumnDefinition extends ReferencesOptions {
     comment?: string | null
 }
 
+export type Like = 'COMMENTS' | 'CONSTRAINTS' | 'DEFAULTS' | 'IDENTITY' | 'INDEXES' | 'STATISTICS' | 'STORAGE' | 'ALL'
+
+export interface LikeOptions {
+    including?: Like | Like[]
+    excluding?: Like | Like[]
+}
+
 export interface TableOptions {
     temporary?: boolean
     ifNotExists?: boolean
     inherits?: Name
-    like?: Name
+    like?: Name | { table: Name, options?: LikeOptions }
     constraints?: ConstraintOptions
     comment?: string | null
 }
