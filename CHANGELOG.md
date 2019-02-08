@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.16.0](2019-02-08)
+
+### Added
+
+- Adding LIKE options when creating table [#394](https://github.com/salsita/node-pg-migrate/pull/394)
+
 ## [3.15.0](2019-01-28)
 
 ### Added
