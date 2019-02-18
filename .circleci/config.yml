@@ -67,7 +67,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.6-alpine
+      - image: postgres:10.7-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
