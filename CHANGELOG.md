@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.16.1](2019-02-25)
+
+### Fixed
+
+- Fix empty migration files [#400](https://github.com/salsita/node-pg-migrate/pull/400)
+
 ## [3.16.0](2019-02-08)
 
 ### Added
