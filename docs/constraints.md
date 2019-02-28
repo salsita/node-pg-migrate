@@ -9,7 +9,7 @@
 - `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
 - `constraint_name` _[string]_ - name for the constraint
 - `expression` _[string or object]_ - constraint expression (raw sql) or definition:
-  - `check` _[string]_ - sql for a check constraint
+  - `check` _[string or array]_ - sql for a check constraint(s)
   - `unique` _[[Name](migrations.md#type) or array of [Names](migrations.md#type) or array of arrays of [Names](migrations.md#type)]_ - names of unique columns
   - `primaryKey` _[[Name](migrations.md#type) or array of [Names](migrations.md#type)]_ - names of primary columns
   - `exclude` _[string]_ - sql for an exclude constraint
