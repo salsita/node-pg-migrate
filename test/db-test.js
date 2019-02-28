@@ -1,29 +1,41 @@
-/* eslint-disable no-unused-expressions */
 const sinon = require("sinon");
 const { expect } = require("chai");
 const proxyquire = require("proxyquire");
 
-const pgMock = {};
+class Client {
+  /* eslint-disable */
+  constructor() {}
+
+  connect() {}
+
+  query() {}
+
+  end() {}
+  /* eslint-enable */
+}
+
+/* eslint-disable no-unused-expressions */
+
+const pgMock = {
+  Client
+};
+
 const Db = proxyquire("../lib/db", { pg: pgMock });
 
 describe("lib/db", () => {
   let sandbox;
   const log = () => null;
-  let client;
+  const client = new Client();
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-    client = {
-      end: () => null
-    };
-    pgMock.Client = sandbox.mock().returns(client);
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  describe(".constructor( connection_string )", () => {
+  describe(".constructor( connection )", () => {
     let db;
     afterEach(() => {
       if (db) {
@@ -31,18 +43,30 @@ describe("lib/db", () => {
       }
     });
 
-    it("pg.Client should be called with connection_string", () => {
+    it("pg.Client should be called with connection string", () => {
+      sandbox.stub(pgMock, "Client");
       db = Db("connection_string");
       expect(pgMock.Client).to.be.calledWith("connection_string");
+    });
+
+    it("should use external client", () => {
+      const mockClient = new pgMock.Client();
+      sandbox.stub(mockClient, "query").returns(Promise.resolve());
+
+      db = Db(mockClient, log);
+      return db.query("query").then(() => {
+        expect(mockClient.query.getCall(0).args[0]).to.equal("query");
+      });
     });
   });
 
   describe(".query( query )", () => {
     let db;
     beforeEach(() => {
+      sandbox.stub(pgMock, "Client").returns(client);
+      sandbox.stub(client, "connect").returns(Promise.resolve());
+      sandbox.stub(client, "query").returns(Promise.resolve());
       db = Db(undefined, log);
-      client.connect = sandbox.stub();
-      client.query = sandbox.stub();
     });
     afterEach(() => {
       db.close();
@@ -96,6 +120,8 @@ describe("lib/db", () => {
   describe(".close()", () => {
     let db;
     beforeEach(() => {
+      sandbox.stub(pgMock, "Client").returns(client);
+      sandbox.stub(client, "end").returns(Promise.resolve());
       db = Db();
     });
     afterEach(() => {
@@ -103,7 +129,6 @@ describe("lib/db", () => {
     });
 
     it("should call client.end", () => {
-      client.end = sinon.spy();
       return db.close().then(() => expect(client.end).to.be.calledOnce);
     });
   });

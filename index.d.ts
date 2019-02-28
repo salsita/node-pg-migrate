@@ -348,7 +348,7 @@ export interface RefreshMaterializedViewOptions {
     data?: boolean
 }
 
-import { QueryConfig, QueryResult } from "pg";
+import { QueryConfig, QueryResult, Client } from "pg";
 
 // see ClientBase in @types/pg
 interface DB {
@@ -494,8 +494,15 @@ export interface ClientConfig extends ConnectionConfig {
     ssl?: boolean | TlsOptions;
 }
 
-export interface RunnerOption {
+export interface RunnerOptionUrl {
     databaseUrl: string | ClientConfig
+}
+
+export interface RunnerOptionClient {
+    dbClient: Client
+}
+
+export interface RunnerOptionConfig {
     migrationsTable: string
     migrationsSchema?: string
     schema?: string
@@ -514,5 +521,7 @@ export interface RunnerOption {
     fake?: boolean,
     log?: (msg:string) => void;
 }
+
+export type RunnerOption = RunnerOptionConfig & (RunnerOptionClient | RunnerOptionUrl)
 
 export default function (options: RunnerOption): Promise<void>

@@ -4,6 +4,7 @@ Alongside with command line, you can use `node-pg-migrate` also programmatically
 which takes options argument with following structure (similar to [command line arguments](cli.md#configuration)):
 
 - `databaseUrl` _[string or object]_ - Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#new-client-config-object-)
+- or `dbClient` _[pg.Client]_ - instance of [new pg.Client](https://node-postgres.com/api/client). Instance should be connected to DB and after finishing migration, user is responsible to close connection
 - `migrationsTable` _[string]_ - The table storing which migrations have been run
 - `migrationsSchema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
 - `schema` _[string]_ - The schema on which migration will be run (defaults to `public`)
