@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.17.0](2019-03-05)
+
+### Added
+
+- Allow user to specify multiple check constraints when creating table [#408](https://github.com/salsita/node-pg-migrate/pull/408)
+- Allow user to pass db client to migration runner [#407](https://github.com/salsita/node-pg-migrate/pull/407)
+
 ## [3.16.1](2019-02-25)
 
 ### Fixed
