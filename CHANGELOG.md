@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.18.0](2019-03-07)
+
+### Added
+
+- Returning list of run migrations [#411](https://github.com/salsita/node-pg-migrate/pull/411)
+
 ## [3.17.0](2019-03-05)
 
 ### Added
