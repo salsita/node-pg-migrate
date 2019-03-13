@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.18.1](2019-03-13)
+
+### Fixed
+
+- Do not use alias function name [#414](https://github.com/salsita/node-pg-migrate/pull/414)
+
 ## [3.18.0](2019-03-07)
 
 ### Added
