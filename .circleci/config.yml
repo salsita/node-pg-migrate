@@ -105,7 +105,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v2.1.5
+      - image: cockroachdb/cockroach:v2.1.6
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -130,7 +130,7 @@ jobs:
       - image: circleci/node:6
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.6-alpine
+      - image: postgres:10.7-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -141,7 +141,7 @@ jobs:
   test-config:
     docker:
       - <<: *node-image
-      - image: postgres:10.6-alpine
+      - image: postgres:10.7-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -166,7 +166,7 @@ jobs:
   test-password:
     docker:
       - <<: *node-image
-      - image: postgres:10.6-alpine
+      - image: postgres:10.7-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>
@@ -197,7 +197,7 @@ jobs:
         - PGUSER=ubuntu
         - PGPASSWORD=ubuntu-pass
         - PGDATABASE=circle_test
-    - image: postgres:10.6-alpine
+    - image: postgres:10.7-alpine
       environment:
         - POSTGRES_USER=ubuntu
         - POSTGRES_PASSWORD=ubuntu-pass
