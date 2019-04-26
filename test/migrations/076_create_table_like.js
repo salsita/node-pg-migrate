@@ -7,7 +7,7 @@ exports.up = pgm => {
         table: "t1",
         options: {
           including: ["COMMENTS", "CONSTRAINTS"],
-          excluding: ["STATISTICS", "STORAGE"]
+          excluding: ["INDEXES", "STORAGE"]
         }
       }
     }
