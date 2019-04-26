@@ -6,11 +6,11 @@ const getMajorVersion = pgm =>
       return Number(major);
     });
 
-const isSupportedVerion = major => major >= 10;
+const isSupportedVersion = major => major >= 10;
 
 exports.up = pgm =>
   getMajorVersion(pgm).then(major => {
-    if (isSupportedVerion(major)) {
+    if (isSupportedVersion(major)) {
       pgm.createType("list2", ["a", "d", "c"]);
       pgm.renameTypeValue("list2", "d", "b");
     }
@@ -18,7 +18,7 @@ exports.up = pgm =>
 
 exports.down = pgm =>
   getMajorVersion(pgm).then(major => {
-    if (isSupportedVerion(major)) {
+    if (isSupportedVersion(major)) {
       pgm.dropType("list2");
     }
   });
