@@ -25,6 +25,8 @@
     "postgre",
     "postgres",
     "postgresql",
+    "cockroach",
+    "cockroachdb",
     "extensible",
     "expandable",
     "programatic",
