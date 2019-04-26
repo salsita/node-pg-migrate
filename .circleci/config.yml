@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:8
+  image: circleci/node:10
 
 set-npm-global: &set-npm-global
   run:
@@ -62,12 +62,38 @@ jobs:
     steps:
       - <<: *restore
       - run: npm test
-  test-pg:
+  test-pg-9:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:9.6-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-pg-10:
     docker:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-pg-11:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:11.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -128,6 +154,32 @@ jobs:
   test-node-6:
     docker:
       - image: circleci/node:6
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-node-8:
+    docker:
+      - image: circleci/node:8
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-node-12:
+    docker:
+      - image: circleci/node:12
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.7-alpine
@@ -218,7 +270,13 @@ workflows:
       - test:
           requires:
             - install
-      - test-pg:
+      - test-pg-9:
+          requires:
+            - install
+      - test-pg-10:
+          requires:
+            - install
+      - test-pg-11:
           requires:
             - install
       - test-cocroach-1:
@@ -228,6 +286,12 @@ workflows:
           requires:
             - install
       - test-node-6:
+          requires:
+            - install
+      - test-node-8:
+          requires:
+            - install
+      - test-node-12:
           requires:
             - install
       - test-config:
