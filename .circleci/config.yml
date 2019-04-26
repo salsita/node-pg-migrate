@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:8
+  image: circleci/node:10
 
 set-npm-global: &set-npm-global
   run:
@@ -138,6 +138,32 @@ jobs:
       - <<: *restore
       - <<: *db-wait
       - <<: *test-db
+  test-node-8:
+    docker:
+      - image: circleci/node:8
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-node-12:
+    docker:
+      - image: circleci/node:12
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
   test-config:
     docker:
       - <<: *node-image
@@ -228,6 +254,12 @@ workflows:
           requires:
             - install
       - test-node-6:
+          requires:
+            - install
+      - test-node-8:
+          requires:
+            - install
+      - test-node-12:
           requires:
             - install
       - test-config:
