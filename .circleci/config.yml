@@ -62,12 +62,38 @@ jobs:
     steps:
       - <<: *restore
       - run: npm test
-  test-pg:
+  test-pg-9:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:9.6-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-pg-10:
     docker:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.7-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-pg-11:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:11.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -244,7 +270,13 @@ workflows:
       - test:
           requires:
             - install
-      - test-pg:
+      - test-pg-9:
+          requires:
+            - install
+      - test-pg-10:
+          requires:
+            - install
+      - test-pg-11:
           requires:
             - install
       - test-cocroach-1:
