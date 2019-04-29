@@ -101,7 +101,7 @@ jobs:
       - <<: *restore
       - <<: *db-wait
       - <<: *test-db
-  test-cocroach-1:
+  test-cockroach-1:
     docker:
       - <<: *node-image
         environment:
@@ -126,7 +126,7 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
-  test-cocroach-2:
+  test-cockroach-2:
     docker:
       - <<: *node-image
         environment:
@@ -279,10 +279,10 @@ workflows:
       - test-pg-11:
           requires:
             - install
-      - test-cocroach-1:
+      - test-cockroach-1:
           requires:
             - install
-      - test-cocroach-2:
+      - test-cockroach-2:
           requires:
             - install
       - test-node-6:

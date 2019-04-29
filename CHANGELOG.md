@@ -143,7 +143,7 @@
 - Using async/await [#282](https://github.com/salsita/node-pg-migrate/pull/282)
 - Using 'function' keyword [#283](https://github.com/salsita/node-pg-migrate/pull/283)
 - Using code directly for node >= 8 [#288](https://github.com/salsita/node-pg-migrate/pull/288)
-- Added cocroach v2 to tests [#289](https://github.com/salsita/node-pg-migrate/pull/289)
+- Added cockroach v2 to tests [#289](https://github.com/salsita/node-pg-migrate/pull/289)
 - Using tests without babel [#291](https://github.com/salsita/node-pg-migrate/pull/291)
 
 ## [3.5.1](2018-06-20)
