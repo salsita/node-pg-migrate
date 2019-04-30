@@ -19,6 +19,9 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `deferrable` _[boolean]_ - flag for deferrable column constraint
 - `deferred` _[boolean]_ - flag for initially deferred deferrable column constraint
 - `comment` _[string]_ - adds comment on column
+- `generated` _[object]_ - creates identity column
+  - sequence options -- see [sequence options section](sequences.md#sequence-options)
+  - `precedence` _[string]_ - `ALWAYS` or `BY DEFAULT`
 
 ## Data types & Convenience Shorthand
 
@@ -99,3 +102,6 @@ is equivalent to
   - `using` _[string]_ - adds USING clause to change values in column
   - `collation` _[string]_ - adds COLLATE clause to change values in column
   - `comment` _[string]_ - adds comment on column
+  - `generated` _[object or null]_ - sets or drops identity column
+    - sequence options -- see [sequence options section](sequences.md#sequence-options)
+    - `precedence` _[string]_ - `ALWAYS` or `BY DEFAULT`

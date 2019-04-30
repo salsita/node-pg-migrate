@@ -48,6 +48,7 @@ export interface ColumnDefinition extends ReferencesOptions {
     deferrable?: boolean
     deferred?: boolean
     comment?: string | null
+    generated?: { precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions
 }
 
 export type Like = 'COMMENTS' | 'CONSTRAINTS' | 'DEFAULTS' | 'IDENTITY' | 'INDEXES' | 'STATISTICS' | 'STORAGE' | 'ALL'
@@ -66,7 +67,7 @@ export interface TableOptions {
     comment?: string | null
 }
 
-export interface ColumnOptions {
+export interface AlterColumnOptions {
     type?: string
     default?: Value
     notNull?: boolean
@@ -74,6 +75,7 @@ export interface ColumnOptions {
     collation?: string
     using?: string
     comment?: string | null
+    generated?: null | false | ({ precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions)
 }
 
 export interface CreateIndexOptions {
@@ -372,7 +374,7 @@ export interface MigrationBuilder {
     dropColumns(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
     dropColumn(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
     renameColumn(tableName: Name, oldColumnName: string, newColumnName: string): void
-    alterColumn(tableName: Name, columnName: string, options: ColumnOptions): void
+    alterColumn(tableName: Name, columnName: string, options: AlterColumnOptions): void
 
     // Constraints
     addConstraint(tableName: Name, constraintName: string | null, expression: string | ConstraintOptions): void
