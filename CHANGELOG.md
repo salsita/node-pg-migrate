@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.19.0](2019-04-30)
+
+### Added
+
+- Generated option for column [#426](https://github.com/salsita/node-pg-migrate/pull/426)
+- Testing node version 6,8,10,12, postgres 9,10,11, cockroach 1,2 [#423](https://github.com/salsita/node-pg-migrate/pull/423)
+
 ## [3.18.1](2019-03-13)
 
 ### Fixed
