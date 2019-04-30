@@ -6,12 +6,12 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 - `type` _[string]_ - type of the sequence
 - `increment` _[number]_ - sets first value of sequence
-- `minvalue` _[number or boolean]_ - sets minimum value of sequence or `NO MINVALUE` (on false or null value)
-- `maxvalue` _[number or boolean]_ - sets maximum value of sequencee or `NO MAXVALUE` (on false or null value)
+- `minvalue` _[number or boolean]_ - sets minimum value of sequence or `NO MINVALUE` (if value is false or null)
+- `maxvalue` _[number or boolean]_ - sets maximum value of sequencee or `NO MAXVALUE` (if value is false or null)
 - `start` _[number]_ - sets first value of sequence
 - `cache` _[number]_ - sets how many sequence numbers should be preallocated
 - `cycle` _[boolean]_ - adds `CYCLE` or `NO CYCLE` clause if option is present
-- `owner` _[string or boolean]_ - sets owner of sequence or no owner (on false or null value)
+- `owner` _[string or boolean]_ - sets owner of sequence or no owner (if value is false or null)
 
 ### `pgm.createSequence( sequence_name, options )`
 
