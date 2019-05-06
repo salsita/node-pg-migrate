@@ -42,7 +42,7 @@ is equivalent to
 
 ## Methods
 
-### `pgm.addColumns( tablename, new_columns )`
+### `pgm.addColumns( tablename, new_columns, options )`
 
 > Add columns to an existing table - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertable.html)
 
@@ -50,6 +50,8 @@ is equivalent to
 
 - `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
 - `new_columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
+- `options` _[object]_ - options:
+  - `ifNotExists` _[boolean]_ adds column only if it does not exist
 
 **Aliases:** `addColumn`
 **Reverse Operation:** `dropColumns`

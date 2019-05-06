@@ -183,10 +183,15 @@ export interface IfExistsOption {
     ifExists?: boolean
 }
 
+export interface IfNotExistsOption {
+    ifNotExists?: boolean
+}
+
 export interface CascadeOption {
     cascade?: boolean
 }
 
+export type AddOptions = IfNotExistsOption
 export type DropOptions = IfExistsOption & CascadeOption
 
 interface DropIndexOptionsEn {
@@ -369,8 +374,8 @@ export interface MigrationBuilder {
     alterTable(tableName: Name, alterOptions: AlterTableOptions): void
 
     // Columns
-    addColumns(tableName: Name, newColumns: ColumnDefinitions): void
-    addColumn(tableName: Name, newColumns: ColumnDefinitions): void
+    addColumns(tableName: Name, newColumns: ColumnDefinitions, addOptions?: AddOptions): void
+    addColumn(tableName: Name, newColumns: ColumnDefinitions, addOptions?: AddOptions): void
     dropColumns(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
     dropColumn(tableName: Name, columns: string | string[] | { [name: string]: any }, dropOptions?: DropOptions): void
     renameColumn(tableName: Name, oldColumnName: string, newColumnName: string): void
