@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.19.0](2019-05-06)
+
+### Added
+
+- Add ifNotExists to addColumns [#427](https://github.com/salsita/node-pg-migrate/pull/427)
+
 ## [3.19.0](2019-04-30)
 
 ### Added
