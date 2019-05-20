@@ -131,7 +131,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v2.1.6
+      - image: cockroachdb/cockroach:v2.1.7
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
