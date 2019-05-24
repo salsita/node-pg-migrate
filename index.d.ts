@@ -5,6 +5,8 @@
 // Definitions by: Jan Doležel <https://github.com/dolezel>
 // Definitions by: Christopher Quadflieg <https://github.com/Shinigami92>
 
+type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
+
 interface ValueArray extends Array<Value> {}
 
 export type Value = null | boolean | string | number | PgLiteral | ValueArray
@@ -86,6 +88,53 @@ export interface CreateIndexOptions {
     opclass?: string
     method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
 }
+
+export type Extension =
+	| 'adminpack'
+	| 'amcheck'
+	| 'auth_delay'
+	| 'auto_explain'
+	| 'bloom'
+	| 'btree_gin'
+	| 'btree_gist'
+	| 'citext'
+	| 'cube'
+	| 'dblink'
+	| 'dict_int'
+	| 'dict_xsyn'
+	| 'earthdistance'
+	| 'file_fdw'
+	| 'fuzzystrmatch'
+	| 'hstore'
+	| 'intagg'
+	| 'intarray'
+	| 'isn'
+	| 'lo'
+	| 'ltree'
+	| 'pageinspect'
+	| 'passwordcheck'
+	| 'pg_buffercache'
+	| 'pgcrypto'
+	| 'pg_freespacemap'
+	| 'pg_prewarm'
+	| 'pgrowlocks'
+	| 'pg_stat_statements'
+	| 'pgstattuple'
+	| 'pg_trgm'
+	| 'pg_visibility'
+	| 'postgres_fdw'
+	| 'seg'
+	| 'sepgsql'
+	| 'spi'
+	| 'sslinfo'
+	| 'tablefunc'
+	| 'tcn'
+	| 'test_decoding'
+	| 'tsm_system_rows'
+	| 'tsm_system_time'
+	| 'unaccent'
+	| 'uuid-ossp'
+	| 'xml2';
 
 export interface CreateExtensionOptions {
     ifNotExists?: boolean
@@ -393,9 +442,9 @@ export interface MigrationBuilder {
     dropIndex(tableName: Name, columns: string | string[], options?: DropIndexOptions): void
 
     // Extensions
-    createExtension(extension: string | string[], options?: CreateExtensionOptions): void
-    addExtension(extension: string | string[], options?: CreateExtensionOptions): void
-    dropExtension(extension: string | string[], dropOptions?: DropOptions): void
+    createExtension(extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>, options?: CreateExtensionOptions): void
+    addExtension(extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>, options?: CreateExtensionOptions): void
+    dropExtension(extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>, dropOptions?: DropOptions): void
 
     // Types
     createType(typeName: Name, values: Value[] | { [name: string]: Type }): void
