@@ -1,6 +1,12 @@
 # Change Log
 
-## [3.19.0](2019-05-06)
+## [3.21.0](2019-05-27)
+
+### Added
+
+- Implement LiteralUnion for Extension [#434](https://github.com/salsita/node-pg-migrate/pull/434)
+
+## [3.20.0](2019-05-06)
 
 ### Added
 
