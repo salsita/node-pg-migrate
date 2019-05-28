@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.21.1](2019-05-28)
+
+### Fixed
+
+- Drop index when schema and index name is specified [#437](https://github.com/salsita/node-pg-migrate/pull/437)
+
 ## [3.21.0](2019-05-27)
 
 ### Added
