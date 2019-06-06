@@ -221,7 +221,7 @@ jobs:
       - image: postgres:10.8-alpine
         environment:
           - POSTGRES_USER=ubuntu
-          - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>
+          - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>\"
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -233,7 +233,7 @@ jobs:
             {
               "db": {
                 "user": "ubuntu",
-                "password": "@#$%123456abcdefghABCDEFGH{}[]()/`~,;:.<>",
+                "password": "@#$%123456abcdefghABCDEFGH{}[]()/`~,;:.<>\"",
                 "host": "localhost",
                 "port": "5432",
                 "database": "circle_test"
