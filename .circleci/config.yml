@@ -215,7 +215,20 @@ jobs:
             EOF
       - <<: *db-wait
       - <<: *test-db
-  test-password:
+  test-password-1:
+    docker:
+      - <<: *node-image
+      - image: postgres:10.8-alpine
+        environment:
+          - DATABASE_URL=postgres://ubuntu:@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>\"@localhost:5432/circle_test
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>\"
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *db-wait
+      - <<: *test-db
+  test-password-2:
     docker:
       - <<: *node-image
       - image: postgres:10.8-alpine
@@ -297,7 +310,10 @@ workflows:
       - test-config:
           requires:
             - install
-      - test-password:
+      - test-password-1:
+          requires:
+            - install
+      - test-password-2:
           requires:
             - install
       - test-env-vars:
