@@ -24,16 +24,30 @@ restore: &restore
   restore_cache:
     key: code-{{ .Revision }}
 
-db-wait: &db-wait
+postgres-wait: &postgres-wait
   run:
     name: Wait for DB
     command: dockerize -wait tcp://127.0.0.1:5432 -timeout 120s
 
-test-db: &test-db
+test-postgres: &test-postgres
   run:
     name: test
     command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
 
+cockroach-wait: &cockroach-wait
+  run:
+    name: Wait for DB
+    command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
+  run:
+    name: create-cockroach-db
+    command: |
+      node -e '
+        (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
+          .query(
+            "CREATE DATABASE circle_test",
+            err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
+          )
+      '
 jobs:
   install:
     docker:
@@ -73,8 +87,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-pg-10:
     docker:
       - <<: *node-image
@@ -86,8 +100,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-pg-11:
     docker:
       - <<: *node-image
@@ -99,8 +113,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-cockroach-1:
     docker:
       - <<: *node-image
@@ -110,19 +124,7 @@ jobs:
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
-      - run:
-          name: Wait for DB
-          command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
-      - run:
-          name: create-cockroach-db
-          command: |
-            node -e '
-              (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
-                .query(
-                  "CREATE DATABASE circle_test",
-                  err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
-                )
-            '
+      - <<: *cockroach-wait
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
@@ -135,19 +137,7 @@ jobs:
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
-      - run:
-          name: Wait for DB
-          command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
-      - run:
-          name: create-cockroach-db
-          command: |
-            node -e '
-              (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
-                .query(
-                  "CREATE DATABASE circle_test",
-                  err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
-                )
-            '
+      - <<: *cockroach-wait
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
@@ -162,8 +152,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-node-8:
     docker:
       - image: circleci/node:8
@@ -175,8 +165,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-node-12:
     docker:
       - image: circleci/node:12
@@ -188,8 +178,8 @@ jobs:
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-config:
     docker:
       - <<: *node-image
@@ -213,15 +203,30 @@ jobs:
               }
             }
             EOF
-      - <<: *db-wait
-      - <<: *test-db
-  test-password:
+      - <<: *postgres-wait
+      - <<: *test-postgres
+  test-password-1:
+    docker:
+      - <<: *node-image
+        environment:
+          # can't use characters `!@#"'?/\
+          - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.\;:\|@localhost:5432/circle_test
+      - image: postgres:10.8-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.\;:\|
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - <<: *test-postgres
+  test-password-2:
     docker:
       - <<: *node-image
       - image: postgres:10.8-alpine
         environment:
           - POSTGRES_USER=ubuntu
-          - POSTGRES_PASSWORD=@#$%123456abcdefghABCDEFGH{}[]\(\)/\`~,\;:.\<\>\"
+          - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -233,31 +238,31 @@ jobs:
             {
               "db": {
                 "user": "ubuntu",
-                "password": "@#$%123456abcdefghABCDEFGH{}[]()/`~,;:.<>\"",
+                "password": "123456abcdefghABCDEFGH~`!@#$%^&*-_=+{}[]()<>,.;:\"'?|/\\",
                 "host": "localhost",
                 "port": "5432",
                 "database": "circle_test"
               }
             }
             EOF
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-env-vars:
     docker:
     - <<: *node-image
       environment:
         - PGUSER=ubuntu
-        - PGPASSWORD=ubuntu-pass
+        - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - PGDATABASE=circle_test
     - image: postgres:10.8-alpine
       environment:
         - POSTGRES_USER=ubuntu
-        - POSTGRES_PASSWORD=ubuntu-pass
+        - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
-      - <<: *db-wait
-      - <<: *test-db
+      - <<: *postgres-wait
+      - <<: *test-postgres
 
 workflows:
   version: 2
@@ -297,7 +302,10 @@ workflows:
       - test-config:
           requires:
             - install
-      - test-password:
+      - test-password-1:
+          requires:
+            - install
+      - test-password-2:
           requires:
             - install
       - test-env-vars:
