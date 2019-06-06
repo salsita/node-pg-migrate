@@ -209,11 +209,12 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.@localhost:5432/circle_test
+          # can't use characters `!@#"'?/\
+          - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.\;:\|@localhost:5432/circle_test
       - image: postgres:10.8-alpine
         environment:
           - POSTGRES_USER=ubuntu
-          - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.
+          - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~$%^\&*-_=+{}[]\(\)\<\>,.\;:\|
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -251,12 +252,12 @@ jobs:
     - <<: *node-image
       environment:
         - PGUSER=ubuntu
-        - PGPASSWORD=ubuntu-pass
+        - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - PGDATABASE=circle_test
     - image: postgres:10.8-alpine
       environment:
         - POSTGRES_USER=ubuntu
-        - POSTGRES_PASSWORD=ubuntu-pass
+        - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -268,45 +269,45 @@ workflows:
   main_workflow:
     jobs:
       - install
-      # - lint:
-      #     requires:
-      #       - install
-      # - test:
-      #     requires:
-      #       - install
-      # - test-pg-9:
-      #     requires:
-      #       - install
-      # - test-pg-10:
-      #     requires:
-      #       - install
-      # - test-pg-11:
-      #     requires:
-      #       - install
-      # - test-cockroach-1:
-      #     requires:
-      #       - install
-      # - test-cockroach-2:
-      #     requires:
-      #       - install
-      # - test-node-6:
-      #     requires:
-      #       - install
-      # - test-node-8:
-      #     requires:
-      #       - install
-      # - test-node-12:
-      #     requires:
-      #       - install
-      # - test-config:
-      #     requires:
-      #       - install
+      - lint:
+          requires:
+            - install
+      - test:
+          requires:
+            - install
+      - test-pg-9:
+          requires:
+            - install
+      - test-pg-10:
+          requires:
+            - install
+      - test-pg-11:
+          requires:
+            - install
+      - test-cockroach-1:
+          requires:
+            - install
+      - test-cockroach-2:
+          requires:
+            - install
+      - test-node-6:
+          requires:
+            - install
+      - test-node-8:
+          requires:
+            - install
+      - test-node-12:
+          requires:
+            - install
+      - test-config:
+          requires:
+            - install
       - test-password-1:
           requires:
             - install
       - test-password-2:
           requires:
             - install
-      # - test-env-vars:
-      #     requires:
-      #     - install
+      - test-env-vars:
+          requires:
+          - install
