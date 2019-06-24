@@ -94,7 +94,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -107,7 +107,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:11.3-alpine
+      - image: postgres:11.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -146,7 +146,7 @@ jobs:
       - image: circleci/node:6
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -159,7 +159,7 @@ jobs:
       - image: circleci/node:8
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -172,7 +172,7 @@ jobs:
       - image: circleci/node:12
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -183,7 +183,7 @@ jobs:
   test-config:
     docker:
       - <<: *node-image
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -211,7 +211,7 @@ jobs:
         environment:
           # can't use characters @#?/ in password - they have special meaning in url
           - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/circle_test
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
@@ -223,7 +223,7 @@ jobs:
   test-password-2:
     docker:
       - <<: *node-image
-      - image: postgres:10.8-alpine
+      - image: postgres:10.9-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
@@ -254,7 +254,7 @@ jobs:
         - PGUSER=ubuntu
         - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - PGDATABASE=circle_test
-    - image: postgres:10.8-alpine
+    - image: postgres:10.9-alpine
       environment:
         - POSTGRES_USER=ubuntu
         - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
