@@ -73,7 +73,7 @@
     "pg": "7.12.0",
     "prettier": "1.18.2",
     "proxyquire": "2.1.1",
-    "sinon": "7.4.0",
+    "sinon": "7.3.2",
     "sinon-chai": "3.3.0"
   },
   "peerDependencies": {
