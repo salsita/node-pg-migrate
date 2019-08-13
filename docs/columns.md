@@ -11,7 +11,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `notNull` _[boolean]_ - set to true to make this column not null
 - `default` _[string]_ - adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.
 - `check` _[string]_ - sql for a check constraint for this column
-- `references` _[[Name](migrations.md#type)]_ - a table name that this column is a foreign key to
+- `references` _[[Name](migrations.md#type) or string]_ - a table name that this column is a foreign key to
 - `referencesConstraintName` _[string]_ - name of the created constraint
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column

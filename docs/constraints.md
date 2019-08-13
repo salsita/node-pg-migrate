@@ -18,7 +18,7 @@
   - `foreignKeys` _[object or array of objects]_ - foreign keys specification
     - `columns` _[[Name](migrations.md#type) or array of [Names](migrations.md#type)]_ - names of columns
     - `references` _[[Name](migrations.md#type)]_ - names of foreign table and column names
-    - `referencesConstraintName` _[string]_ - name of the created constraint
+    - `referencesConstraintName` _[string]_ - name of the created constraint (only necessary when creating multiple constraints)
     - `onDelete` _[string]_ - action to perform on delete
     - `onUpdate` _[string]_ - action to perform on update
     - `match` _[string]_ - `FULL` or `SIMPLE`
