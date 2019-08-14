@@ -1,14 +1,14 @@
 exports.up = pgm => {
-  pgm.createType("complex", {
-    r: "integer",
-    i: "integer"
+  pgm.createType('complex', {
+    r: 'integer',
+    i: 'integer'
   });
   pgm.createFunction(
-    "complex_add",
-    ["complex", "complex"],
+    'complex_add',
+    ['complex', 'complex'],
     {
-      returns: "complex",
-      language: "plpgsql"
+      returns: 'complex',
+      language: 'plpgsql'
     },
     `
 BEGIN
@@ -16,10 +16,10 @@ BEGIN
 END;
   `
   );
-  pgm.createOperator("+", {
-    left: "complex",
-    right: "complex",
-    procedure: "complex_add",
-    commutator: "+"
+  pgm.createOperator('+', {
+    left: 'complex',
+    right: 'complex',
+    procedure: 'complex_add',
+    commutator: '+'
   });
 };

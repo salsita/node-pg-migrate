@@ -1,3 +1,3 @@
 exports.up = pgm => {
-  pgm.renameRole("r", "rx");
+  pgm.renameRole('r', 'rx');
 };

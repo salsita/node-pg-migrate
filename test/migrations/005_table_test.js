@@ -1,6 +1,6 @@
-const table = require("./004_table");
+const table = require('./004_table');
 
-const schema = process.env.SCHEMA || "public";
+const schema = process.env.SCHEMA || 'public';
 
 exports.up = pgm =>
   new Promise((resolve, reject) =>
@@ -11,23 +11,23 @@ exports.up = pgm =>
                 WHERE c.relname = 't2' and c.relkind = 'r' and n.nspname = '${schema}'`
       )
       .then(([{ comment }]) =>
-        comment === table.comment ? null : reject(new Error("Comment not set"))
+        comment === table.comment ? null : reject(new Error('Comment not set'))
       )
       .then(() =>
         pgm.db
-          .query("SAVEPOINT sp_reference;")
-          .then(() => pgm.db.query("INSERT INTO t2(id2) VALUES (1);"))
-          .then(() => reject(new Error("Missing reference clause")))
-          .catch(() => pgm.db.query("ROLLBACK TO SAVEPOINT sp_reference;"))
+          .query('SAVEPOINT sp_reference;')
+          .then(() => pgm.db.query('INSERT INTO t2(id2) VALUES (1);'))
+          .then(() => reject(new Error('Missing reference clause')))
+          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_reference;'))
       )
       .then(() =>
         pgm.db
-          .query("SAVEPOINT sp_not_null;")
+          .query('SAVEPOINT sp_not_null;')
           .then(() =>
-            pgm.db.query("INSERT INTO t1(created) VALUES (current_timestamp); ")
+            pgm.db.query('INSERT INTO t1(created) VALUES (current_timestamp); ')
           )
-          .then(() => reject(new Error("Missing not null clause")))
-          .catch(() => pgm.db.query("ROLLBACK TO SAVEPOINT sp_not_null;"))
+          .then(() => reject(new Error('Missing not null clause')))
+          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_not_null;'))
       )
       .then(() =>
         pgm.db.query(
@@ -41,6 +41,6 @@ exports.up = pgm =>
   );
 
 exports.down = pgm => {
-  pgm.sql("DELETE from t2");
-  pgm.sql("DELETE from t1");
+  pgm.sql('DELETE from t2');
+  pgm.sql('DELETE from t1');
 };

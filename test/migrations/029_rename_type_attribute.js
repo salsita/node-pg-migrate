@@ -1,3 +1,3 @@
 exports.up = pgm => {
-  pgm.renameTypeAttribute("obj", "string", "str");
+  pgm.renameTypeAttribute('obj', 'string', 'str');
 };

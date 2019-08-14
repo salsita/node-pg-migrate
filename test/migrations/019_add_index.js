@@ -1,3 +1,3 @@
 exports.up = pgm => {
-  pgm.createIndex("t1", ["nmbr"], { unique: true });
+  pgm.createIndex('t1', ['nmbr'], { unique: true });
 };

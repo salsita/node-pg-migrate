@@ -1,14 +1,15 @@
 module.exports = {
   printWidth: 80,
-  parser: "babel",
+  parser: 'babel',
+  singleQuote: true,
   overrides: [
     {
-      files: "*.json",
-      options: { parser: "json" }
+      files: '*.json',
+      options: { parser: 'json' }
     },
     {
-      files: "*.md",
-      options: { parser: "markdown" }
+      files: '*.md',
+      options: { parser: 'markdown' }
     }
   ]
 };
