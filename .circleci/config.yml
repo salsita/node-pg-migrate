@@ -256,6 +256,8 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          # used in tests
+          - SCHEMA=myschema
       - image: postgres:10.10-alpine
         environment:
           - POSTGRES_USER=ubuntu
@@ -271,6 +273,8 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          # used in tests
+          - SCHEMA=myschema
       - image: postgres:10.10-alpine
         environment:
           - POSTGRES_USER=ubuntu
