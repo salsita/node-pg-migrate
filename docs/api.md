@@ -7,7 +7,7 @@ which takes options argument with following structure (similar to [command line 
 - or `dbClient` _[pg.Client]_ - instance of [new pg.Client](https://node-postgres.com/api/client). Instance should be connected to DB and after finishing migration, user is responsible to close connection
 - `migrationsTable` _[string]_ - The table storing which migrations have been run
 - `migrationsSchema` _[string]_ - The schema storing table which migrations have been run (defaults to same value as `schema`)
-- `schema` _[string]_ - The schema on which migration will be run (defaults to `public`)
+- `schema` _[string or array of strings]_ - The schema on which migration will be run (defaults to `public`)
 - `dir` _[string]_ - The directory containing your migration files
 - `checkOrder` _[boolean]_ - Check order of migrations before running them
 - `direction` _[enum]_ - `up` or `down`
