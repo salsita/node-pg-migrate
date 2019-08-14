@@ -1,10 +1,11 @@
 const { expect } = require('chai');
 const Tables = require('../lib/operations/tables');
+const { options } = require('./utils');
 
 describe('lib/operations/tables', () => {
   describe('.create', () => {
     it('check schemas can be used', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         { schema: 'my_schema', name: 'my_table_name' },
         { id: 'serial' }
       );
@@ -14,7 +15,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check shorthands work', () => {
-      const sql = Tables.createTable()('my_table_name', { id: 'id' });
+      const sql = Tables.createTable(options)('my_table_name', { id: 'id' });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "id" serial PRIMARY KEY
 );`);
@@ -22,7 +23,11 @@ describe('lib/operations/tables', () => {
 
     it('check custom shorthands can be used', () => {
       const sql = Tables.createTable({
-        id: { type: 'uuid', primaryKey: true }
+        ...options,
+        typeShorthands: {
+          ...options.typeShorthands,
+          id: { type: 'uuid', primaryKey: true }
+        }
       })('my_table_name', { id: 'id' });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
   "id" uuid PRIMARY KEY
@@ -30,7 +35,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check schemas can be used for foreign keys', () => {
-      const sql = Tables.createTable()('my_table_name', {
+      const sql = Tables.createTable(options)('my_table_name', {
         parent_id: {
           type: 'integer',
           references: { schema: 'a', name: 'b' }
@@ -42,7 +47,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check match clause can be used for foreign keys', () => {
-      const sql = Tables.createTable()('my_table_name', {
+      const sql = Tables.createTable(options)('my_table_name', {
         parent_id: {
           type: 'integer',
           references: { schema: 'a', name: 'b' },
@@ -55,7 +60,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check defining column can be used for foreign keys', () => {
-      const sql = Tables.createTable()('my_table_name', {
+      const sql = Tables.createTable(options)('my_table_name', {
         parent_id: { type: 'integer', references: 'a.b(id)' }
       });
       expect(sql).to.equal(`CREATE TABLE "my_table_name" (
@@ -64,7 +69,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check multicolumn primary key name does not include schema', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         { schema: 's', name: 'my_table_name' },
         {
           a: { type: 'integer', primaryKey: true },
@@ -79,7 +84,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table references work correctly', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         'my_table_name',
         {
           a: { type: 'integer' },
@@ -104,7 +109,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table unique constraint work correctly', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         'my_table_name',
         {
           a: { type: 'integer' },
@@ -124,7 +129,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table unique constraint work correctly for array of arrays', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         'my_table_name',
         {
           a: { type: 'integer' },
@@ -147,7 +152,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('creates comments on foreign keys', () => {
-      const sql = Tables.createTable()(
+      const sql = Tables.createTable(options)(
         'my_table_name',
         {
           a: { type: 'integer' }
@@ -170,7 +175,7 @@ COMMENT ON CONSTRAINT "my_table_name_fk_a" ON "my_table_name" IS $pg1$example co
     });
 
     it('creates comments on column foreign keys', () => {
-      const sql = Tables.createTable()('my_table_name', {
+      const sql = Tables.createTable(options)('my_table_name', {
         a: {
           type: 'integer',
           references: 'other_table (a)',
@@ -193,7 +198,7 @@ COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
 
     it('creates no comments on unnamed constraints', () => {
       expect(() =>
-        Tables.createTable()(
+        Tables.createTable(options)(
           'my_table_name',
           {
             a: { type: 'integer' }
@@ -211,7 +216,7 @@ COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
 
   describe('.dropColumns', () => {
     it('check multiple columns can be dropped', () => {
-      const sql = Tables.dropColumns('my_table_name', ['c1', 'c2']);
+      const sql = Tables.dropColumns(options)('my_table_name', ['c1', 'c2']);
       expect(sql).to.equal(`ALTER TABLE "my_table_name"
   DROP "c1",
   DROP "c2";`);
@@ -220,7 +225,7 @@ COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
 
   describe('.addConstraint', () => {
     it('works with strings', () => {
-      const sql = Tables.addConstraint(
+      const sql = Tables.addConstraint(options)(
         'my_table',
         'my_constraint_name',
         'CHECK name IS NOT NULL'
@@ -230,10 +235,14 @@ COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
     });
 
     it('can create comments', () => {
-      const sql = Tables.addConstraint('my_table', 'my_constraint_name', {
-        primaryKey: 'a',
-        comment: 'this is an important primary key'
-      });
+      const sql = Tables.addConstraint(options)(
+        'my_table',
+        'my_constraint_name',
+        {
+          primaryKey: 'a',
+          comment: 'this is an important primary key'
+        }
+      );
       expect(sql).to.equal(`ALTER TABLE "my_table"
   ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("a");
 COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table" IS $pg1$this is an important primary key$pg1$;`);

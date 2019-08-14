@@ -41,6 +41,7 @@ const lockArg = 'lock';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
+const decamelizeArg = 'decamelize';
 
 const { argv } = yargs
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -119,6 +120,12 @@ const { argv } = yargs
     type: 'boolean'
   })
 
+  .option(decamelizeArg, {
+    default: false,
+    describe: 'Runs decamelize on table/columns/etc names',
+    type: 'boolean'
+  })
+
   .option('i', {
     alias: 'version',
     default: false,
@@ -189,6 +196,7 @@ let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
 let CHECK_ORDER = argv[checkOrderArg];
+let DECAMELIZE = argv[decamelizeArg];
 
 function readJson(json) {
   if (typeof json === 'object') {
@@ -206,6 +214,10 @@ function readJson(json) {
         ? json[checkOrderArg]
         : CHECK_ORDER;
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN;
+    DECAMELIZE =
+      typeof json[decamelizeArg] !== 'undefined'
+        ? json[decamelizeArg]
+        : DECAMELIZE;
     if (json.url) {
       DB_CONNECTION = json.url;
     } else if (json.host || json.port || json.name || json.database) {
@@ -332,7 +344,8 @@ if (action === 'create') {
       direction,
       singleTransaction,
       noLock,
-      fake
+      fake,
+      decamelize: DECAMELIZE
     };
   };
   const promise =
