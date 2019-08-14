@@ -48,6 +48,7 @@ cockroach-wait: &cockroach-wait
             err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
           )
       '
+
 jobs:
   install:
     docker:
@@ -250,6 +251,36 @@ jobs:
       - <<: *restore
       - <<: *postgres-wait
       - <<: *test-postgres
+  test-schema:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.10-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: npm run migrate up -- -s myschema --create-schema -m test/migrations && npm run migrate down 0 -- -s myschema -m test/migrations --timestamps
+  test-schemas:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.10-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: npm run migrate up -- -s myschema public --create-schema -m test/migrations && npm run migrate down 0 -- -s myschema public -m test/migrations --timestamps
 
 workflows:
   version: 2
@@ -293,5 +324,11 @@ workflows:
           requires:
             - install
       - test-env-vars:
+          requires:
+          - install
+      - test-schema:
+          requires:
+          - install
+      - test-schemas:
           requires:
           - install
