@@ -13,6 +13,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `check` _[string]_ - sql for a check constraint for this column
 - `references` _[[Name](migrations.md#type) or string]_ - a table name that this column is a foreign key to
 - `referencesConstraintName` _[string]_ - name of the created constraint
+- `referencesConstraintComment` _[string]_ - comment on the created constraint
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
 - `onUpdate` _[string]_ - adds ON UPDATE constraint for a reference column
 - `match` _[string]_ - `FULL` or `SIMPLE`
