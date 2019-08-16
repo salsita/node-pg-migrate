@@ -561,7 +561,7 @@ export interface RunnerOptionClient {
 export interface RunnerOptionConfig {
     migrationsTable: string
     migrationsSchema?: string
-    schema?: string
+    schema?: string | string[]
     dir: string
     checkOrder?: boolean
     direction: 'up' | 'down'

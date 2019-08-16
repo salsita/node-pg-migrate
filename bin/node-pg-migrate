@@ -72,7 +72,8 @@ const { argv } = yargs
     default: "public",
     describe:
       "The schema on which migration will be run (defaults to `public`)",
-    type: "string"
+    type: "string",
+    array: true
   })
 
   .option(createSchemaArg, {

@@ -62,7 +62,7 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 - `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
-- `schema` (`s`) - The schema on which migration will be run (defaults to `public`)
+- `schema` (`s`) - The schema(s) on which migration will be run (defaults to `public`, used to set `search_path`)
 - `create-schema` - Create the configured schema if it doesn't exist (defaults to `false`)
 - `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
 - `migrations-dir` (`m`) - The directory containing your migration files (defaults to `migrations`)

@@ -1,3 +1,5 @@
+const schema = process.env.SCHEMA || "public";
+
 exports.up = pgm => {
   pgm.createTable("tp", {
     user_name: "varchar(20)"
@@ -22,8 +24,8 @@ exports.up = pgm => {
     using: "current_user = user_name",
     check: "current_user = user_name"
   });
-  pgm.sql('GRANT SELECT, INSERT, UPDATE, DELETE ON "tp" TO "admin"');
-  pgm.sql('GRANT SELECT, INSERT, UPDATE, DELETE ON "tp" TO public');
+  pgm.sql(`GRANT USAGE ON SCHEMA "${schema}" TO PUBLIC`);
+  pgm.sql('GRANT ALL ON "tp" TO PUBLIC');
 };
 
 exports.down = pgm => {
