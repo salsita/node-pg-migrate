@@ -19,6 +19,7 @@ export type Action = 'NO ACTION' | 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'SET DE
 
 export interface ReferencesOptions {
     referencesConstraintName?: string
+    referencesConstraintComment?: string
     references?: Name
     onDelete?: Action
     onUpdate?: Action
@@ -37,6 +38,7 @@ export interface ConstraintOptions {
     exclude?: string
     deferrable?: boolean
     deferred?: boolean
+    comment?: string
 }
 
 export interface ColumnDefinition extends ReferencesOptions {
