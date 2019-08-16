@@ -12,7 +12,7 @@
   - `temporary` _[bool]_ - default false
   - `ifNotExists` _[bool]_ - default false
   - `inherits` _[[Name](migrations.md#type)]_ - table(s) to inherit from
-  - `constraints` _[object]_ - table constraints see [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-)
+  - `constraints` _[object]_ - table constraints see `expression` of [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-)
   - `like` either:
     - _[[Name](migrations.md#type)]_ - table(s) to inherit from
     - or _[object]_

@@ -15,10 +15,12 @@
   - `exclude` _[string]_ - sql for an exclude constraint
   - `deferrable` _[boolean]_ - flag for deferrable table constraint
   - `deferred` _[boolean]_ - flag for initially deferred deferrable table constraint
+  - `comment` _[string]_ - comment on a singular, named constraint
   - `foreignKeys` _[object or array of objects]_ - foreign keys specification
     - `columns` _[[Name](migrations.md#type) or array of [Names](migrations.md#type)]_ - names of columns
     - `references` _[[Name](migrations.md#type)]_ - names of foreign table and column names
-    - `referencesConstraintName` _[string]_ - name of the created constraint
+    - `referencesConstraintName` _[string]_ - name of the created constraint (only necessary when creating multiple constraints)
+    - `referencesConstraintComment` _[string]_ - comment on the individual foreign key constraint
     - `onDelete` _[string]_ - action to perform on delete
     - `onUpdate` _[string]_ - action to perform on update
     - `match` _[string]_ - `FULL` or `SIMPLE`

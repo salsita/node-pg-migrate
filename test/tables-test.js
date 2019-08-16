@@ -145,6 +145,68 @@ describe("lib/operations/tables", () => {
   CONSTRAINT "my_table_name_uniq_c" UNIQUE ("c")
 );`);
     });
+
+    it("creates comments on foreign keys", () => {
+      const sql = Tables.createTable()(
+        "my_table_name",
+        {
+          a: { type: "integer" }
+        },
+        {
+          constraints: {
+            foreignKeys: {
+              columns: ["a"],
+              references: "other_table",
+              referencesConstraintComment: "example comment"
+            }
+          }
+        }
+      );
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "a" integer,
+  CONSTRAINT "my_table_name_fk_a" FOREIGN KEY ("a") REFERENCES "other_table"
+);
+COMMENT ON CONSTRAINT "my_table_name_fk_a" ON "my_table_name" IS $pg1$example comment$pg1$;`);
+    });
+
+    it("creates comments on column foreign keys", () => {
+      const sql = Tables.createTable()("my_table_name", {
+        a: {
+          type: "integer",
+          references: "other_table (a)",
+          referencesConstraintComment: "fk a comment"
+        },
+        b: {
+          type: "integer",
+          references: "other_table_two",
+          referencesConstraintName: "fk_b",
+          referencesConstraintComment: "fk b comment"
+        }
+      });
+      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
+  "a" integer CONSTRAINT "my_table_name_fk_a" REFERENCES other_table (a),
+  "b" integer CONSTRAINT "fk_b" REFERENCES "other_table_two"
+);
+COMMENT ON CONSTRAINT "my_table_name_fk_a" ON "my_table_name" IS $pg1$fk a comment$pg1$;
+COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
+    });
+
+    it("creates no comments on unnamed constraints", () => {
+      expect(() =>
+        Tables.createTable()(
+          "my_table_name",
+          {
+            a: { type: "integer" }
+          },
+          {
+            constraints: {
+              primaryKey: "a",
+              comment: "example comment"
+            }
+          }
+        )
+      ).to.throw("cannot comment on unspecified constraints");
+    });
   });
 
   describe(".dropColumns", () => {
@@ -153,6 +215,18 @@ describe("lib/operations/tables", () => {
       expect(sql).to.equal(`ALTER TABLE "my_table_name"
   DROP "c1",
   DROP "c2";`);
+    });
+  });
+
+  describe(".addConstraint", () => {
+    it("can create comments", () => {
+      const sql = Tables.addConstraint("my_table", "my_constraint_name", {
+        primaryKey: "a",
+        comment: "this is an important primary key"
+      });
+      expect(sql).to.equal(`ALTER TABLE "my_table"
+  ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("a");
+COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table" IS $pg1$this is an important primary key$pg1$;`);
     });
   });
 });
