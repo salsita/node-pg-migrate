@@ -1,5 +1,14 @@
 # Change Log
 
+## [3.22.0](2019-08-19)
+
+### Added
+
+- Multiple schemas [#475](https://github.com/salsita/node-pg-migrate/pull/475)
+- Constraints - naming and comments [#474](https://github.com/salsita/node-pg-migrate/pull/474)
+- Update template files [#473](https://github.com/salsita/node-pg-migrate/pull/473)
+- Tests for passwords [#440](https://github.com/salsita/node-pg-migrate/pull/440), [#441](https://github.com/salsita/node-pg-migrate/pull/441), [#442](https://github.com/salsita/node-pg-migrate/pull/442)
+
 ## [3.21.1](2019-05-28)
 
 ### Fixed
