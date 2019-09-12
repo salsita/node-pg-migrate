@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.22.1](2019-09-12)
+
+### Fixed
+
+- Fix create constraint by string [#482](https://github.com/salsita/node-pg-migrate/pull/482)
+
 ## [3.22.0](2019-08-19)
 
 ### Added
