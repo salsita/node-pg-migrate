@@ -219,6 +219,16 @@ COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
   });
 
   describe(".addConstraint", () => {
+    it("works with strings", () => {
+      const sql = Tables.addConstraint(
+        "my_table",
+        "my_constraint_name",
+        "CHECK name IS NOT NULL"
+      );
+      expect(sql).to.equal(`ALTER TABLE "my_table"
+  ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`);
+    });
+
     it("can create comments", () => {
       const sql = Tables.addConstraint("my_table", "my_constraint_name", {
         primaryKey: "a",
