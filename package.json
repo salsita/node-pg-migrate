@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@types/pg": "^7.4.0",
+    "decamelize": "^3.2.0",
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.0",
     "yargs": "~14.0.0"

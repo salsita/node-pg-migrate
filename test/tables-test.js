@@ -1,242 +1,362 @@
-const { expect } = require("chai");
-const Tables = require("../lib/operations/tables");
+const { expect } = require('chai');
+const Tables = require('../lib/operations/tables');
+const { options1, options2 } = require('./utils');
 
-describe("lib/operations/tables", () => {
-  describe(".create", () => {
-    it("check schemas can be used", () => {
-      const sql = Tables.createTable()(
-        { schema: "my_schema", name: "my_table_name" },
-        { id: "serial" }
-      );
-      expect(sql).to.equal(`CREATE TABLE "my_schema"."my_table_name" (
-  "id" serial
+describe('lib/operations/tables', () => {
+  describe('.create', () => {
+    it('check schemas can be used', () => {
+      const args = [
+        { schema: 'mySchema', name: 'myTableName' },
+        { idColumn: 'serial' }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
+  "idColumn" serial
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_schema"."my_table_name" (
+  "id_column" serial
 );`);
     });
 
-    it("check shorthands work", () => {
-      const sql = Tables.createTable()("my_table_name", { id: "id" });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "id" serial PRIMARY KEY
+    it('check shorthands work', () => {
+      const args = ['myTableName', { idColumn: 'id' }];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "idColumn" serial PRIMARY KEY
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "id_column" serial PRIMARY KEY
 );`);
     });
 
-    it("check custom shorthands can be used", () => {
-      const sql = Tables.createTable({
-        id: { type: "uuid", primaryKey: true }
-      })("my_table_name", { id: "id" });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "id" uuid PRIMARY KEY
-);`);
-    });
-
-    it("check schemas can be used for foreign keys", () => {
-      const sql = Tables.createTable()("my_table_name", {
-        parent_id: {
-          type: "integer",
-          references: { schema: "a", name: "b" }
+    it('check custom shorthands can be used', () => {
+      const args = ['myTableName', { idColumn: 'idTest' }];
+      const sql1 = Tables.createTable({
+        ...options1,
+        typeShorthands: {
+          ...options1.typeShorthands,
+          idTest: { type: 'uuid', primaryKey: true }
         }
-      });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES "a"."b"
-);`);
-    });
-
-    it("check match clause can be used for foreign keys", () => {
-      const sql = Tables.createTable()("my_table_name", {
-        parent_id: {
-          type: "integer",
-          references: { schema: "a", name: "b" },
-          match: "SIMPLE"
+      })(...args);
+      const sql2 = Tables.createTable({
+        ...options2,
+        typeShorthands: {
+          ...options2.typeShorthands,
+          idTest: { type: 'uuid', primaryKey: true }
         }
-      });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES "a"."b" MATCH SIMPLE
+      })(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "idColumn" uuid PRIMARY KEY
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "id_column" uuid PRIMARY KEY
 );`);
     });
 
-    it("check defining column can be used for foreign keys", () => {
-      const sql = Tables.createTable()("my_table_name", {
-        parent_id: { type: "integer", references: "a.b(id)" }
-      });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES a.b(id)
-);`);
-    });
-
-    it("check multicolumn primary key name does not include schema", () => {
-      const sql = Tables.createTable()(
-        { schema: "s", name: "my_table_name" },
+    it('check schemas can be used for foreign keys', () => {
+      const args = [
+        'myTableName',
         {
-          a: { type: "integer", primaryKey: true },
-          b: { type: "varchar", primaryKey: true }
+          parentId: {
+            type: 'integer',
+            references: { schema: 'schemaA', name: 'tableB' }
+          }
         }
-      );
-      expect(sql).to.equal(`CREATE TABLE "s"."my_table_name" (
-  "a" integer,
-  "b" varchar,
-  CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("a", "b")
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "parentId" integer REFERENCES "schemaA"."tableB"
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES "schema_a"."table_b"
 );`);
     });
 
-    it("check table references work correctly", () => {
-      const sql = Tables.createTable()(
-        "my_table_name",
+    it('check match clause can be used for foreign keys', () => {
+      const args = [
+        'myTableName',
         {
-          a: { type: "integer" },
-          b: { type: "varchar" }
+          parentId: {
+            type: 'integer',
+            references: { schema: 'schemaA', name: 'tableB' },
+            match: 'SIMPLE'
+          }
+        }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "parentId" integer REFERENCES "schemaA"."tableB" MATCH SIMPLE
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES "schema_a"."table_b" MATCH SIMPLE
+);`);
+    });
+
+    it('check defining column can be used for foreign keys', () => {
+      const args = [
+        'myTableName',
+        {
+          parentId: { type: 'integer', references: 'schemaA.tableB(idColumn)' }
+        }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "parentId" integer REFERENCES schemaA.tableB(idColumn)
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES schemaA.tableB(idColumn)
+);`);
+    });
+
+    it('check multicolumn primary key name does not include schema', () => {
+      const args = [
+        { schema: 'mySchema', name: 'myTableName' },
+        {
+          colA: { type: 'integer', primaryKey: true },
+          colB: { type: 'varchar', primaryKey: true }
+        }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
+  "colA" integer,
+  "colB" varchar,
+  CONSTRAINT "myTableName_pkey" PRIMARY KEY ("colA", "colB")
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_schema"."my_table_name" (
+  "col_a" integer,
+  "col_b" varchar,
+  CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("col_a", "col_b")
+);`);
+    });
+
+    it('check table references work correctly', () => {
+      const args = [
+        'myTableName',
+        {
+          colA: { type: 'integer' },
+          colB: { type: 'varchar' }
         },
         {
           constraints: {
             foreignKeys: [
               {
-                columns: ["a", "b"],
-                references: "otherTable (A, B)"
+                columns: ['colA', 'colB'],
+                references: 'otherTable (A, B)'
               }
             ]
           }
         }
-      );
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "a" integer,
-  "b" varchar,
-  CONSTRAINT "my_table_name_fk_a_b" FOREIGN KEY ("a", "b") REFERENCES otherTable (A, B)
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer,
+  "colB" varchar,
+  CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B)
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer,
+  "col_b" varchar,
+  CONSTRAINT "my_table_name_fk_col_a_col_b" FOREIGN KEY ("col_a", "col_b") REFERENCES otherTable (A, B)
 );`);
     });
 
-    it("check table unique constraint work correctly", () => {
-      const sql = Tables.createTable()(
-        "my_table_name",
+    it('check table unique constraint work correctly', () => {
+      const args = [
+        'myTableName',
         {
-          a: { type: "integer" },
-          b: { type: "varchar" }
+          colA: { type: 'integer' },
+          colB: { type: 'varchar' }
         },
         {
           constraints: {
-            unique: ["a", "b"]
+            unique: ['colA', 'colB']
           }
         }
-      );
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "a" integer,
-  "b" varchar,
-  CONSTRAINT "my_table_name_uniq_a_b" UNIQUE ("a", "b")
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer,
+  "colB" varchar,
+  CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB")
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer,
+  "col_b" varchar,
+  CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b")
 );`);
     });
 
-    it("check table unique constraint work correctly for array of arrays", () => {
-      const sql = Tables.createTable()(
-        "my_table_name",
+    it('check table unique constraint work correctly for array of arrays', () => {
+      const args = [
+        'myTableName',
         {
-          a: { type: "integer" },
-          b: { type: "varchar" },
-          c: { type: "varchar" }
+          colA: { type: 'integer' },
+          colB: { type: 'varchar' },
+          colC: { type: 'varchar' }
         },
         {
           constraints: {
-            unique: [["a", "b"], "c"]
+            unique: [['colA', 'colB'], 'colC']
           }
         }
-      );
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "a" integer,
-  "b" varchar,
-  "c" varchar,
-  CONSTRAINT "my_table_name_uniq_a_b" UNIQUE ("a", "b"),
-  CONSTRAINT "my_table_name_uniq_c" UNIQUE ("c")
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer,
+  "colB" varchar,
+  "colC" varchar,
+  CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"),
+  CONSTRAINT "myTableName_uniq_colC" UNIQUE ("colC")
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer,
+  "col_b" varchar,
+  "col_c" varchar,
+  CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"),
+  CONSTRAINT "my_table_name_uniq_col_c" UNIQUE ("col_c")
 );`);
     });
 
-    it("creates comments on foreign keys", () => {
-      const sql = Tables.createTable()(
-        "my_table_name",
+    it('creates comments on foreign keys', () => {
+      const args = [
+        'myTableName',
         {
-          a: { type: "integer" }
+          colA: { type: 'integer' }
         },
         {
           constraints: {
             foreignKeys: {
-              columns: ["a"],
-              references: "other_table",
-              referencesConstraintComment: "example comment"
+              columns: ['colA'],
+              references: 'otherTable',
+              referencesConstraintComment: 'example comment'
             }
           }
         }
-      );
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "a" integer,
-  CONSTRAINT "my_table_name_fk_a" FOREIGN KEY ("a") REFERENCES "other_table"
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer,
+  CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable"
 );
-COMMENT ON CONSTRAINT "my_table_name_fk_a" ON "my_table_name" IS $pg1$example comment$pg1$;`);
+COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pg1$example comment$pg1$;`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer,
+  CONSTRAINT "my_table_name_fk_col_a" FOREIGN KEY ("col_a") REFERENCES "other_table"
+);
+COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$example comment$pg1$;`);
     });
 
-    it("creates comments on column foreign keys", () => {
-      const sql = Tables.createTable()("my_table_name", {
-        a: {
-          type: "integer",
-          references: "other_table (a)",
-          referencesConstraintComment: "fk a comment"
-        },
-        b: {
-          type: "integer",
-          references: "other_table_two",
-          referencesConstraintName: "fk_b",
-          referencesConstraintComment: "fk b comment"
-        }
-      });
-      expect(sql).to.equal(`CREATE TABLE "my_table_name" (
-  "a" integer CONSTRAINT "my_table_name_fk_a" REFERENCES other_table (a),
-  "b" integer CONSTRAINT "fk_b" REFERENCES "other_table_two"
-);
-COMMENT ON CONSTRAINT "my_table_name_fk_a" ON "my_table_name" IS $pg1$fk a comment$pg1$;
-COMMENT ON CONSTRAINT "fk_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
-    });
-
-    it("creates no comments on unnamed constraints", () => {
-      expect(() =>
-        Tables.createTable()(
-          "my_table_name",
-          {
-            a: { type: "integer" }
+    it('creates comments on column foreign keys', () => {
+      const args = [
+        'myTableName',
+        {
+          colA: {
+            type: 'integer',
+            references: 'otherTable (a)',
+            referencesConstraintComment: 'fk a comment'
           },
-          {
-            constraints: {
-              primaryKey: "a",
-              comment: "example comment"
-            }
+          colB: {
+            type: 'integer',
+            references: 'otherTableTwo',
+            referencesConstraintName: 'fkColB',
+            referencesConstraintComment: 'fk b comment'
           }
-        )
-      ).to.throw("cannot comment on unspecified constraints");
+        }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a),
+  "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo"
+);
+COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pg1$fk a comment$pg1$;
+COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pg1$fk b comment$pg1$;`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer CONSTRAINT "my_table_name_fk_col_a" REFERENCES otherTable (a),
+  "col_b" integer CONSTRAINT "fk_col_b" REFERENCES "other_table_two"
+);
+COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$fk a comment$pg1$;
+COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`);
     });
-  });
 
-  describe(".dropColumns", () => {
-    it("check multiple columns can be dropped", () => {
-      const sql = Tables.dropColumns("my_table_name", ["c1", "c2"]);
-      expect(sql).to.equal(`ALTER TABLE "my_table_name"
-  DROP "c1",
-  DROP "c2";`);
-    });
-  });
-
-  describe(".addConstraint", () => {
-    it("works with strings", () => {
-      const sql = Tables.addConstraint(
-        "my_table",
-        "my_constraint_name",
-        "CHECK name IS NOT NULL"
+    it('creates no comments on unnamed constraints', () => {
+      const args = [
+        'myTableName',
+        {
+          colA: { type: 'integer' }
+        },
+        {
+          constraints: {
+            primaryKey: 'colA',
+            comment: 'example comment'
+          }
+        }
+      ];
+      expect(() => Tables.createTable(options1)(...args)).to.throw(
+        'cannot comment on unspecified constraints'
       );
-      expect(sql).to.equal(`ALTER TABLE "my_table"
+      expect(() => Tables.createTable(options2)(...args)).to.throw(
+        'cannot comment on unspecified constraints'
+      );
+    });
+  });
+
+  describe('.dropColumns', () => {
+    it('check multiple columns can be dropped', () => {
+      const args = ['myTableName', ['colC1', 'colC2']];
+      const sql1 = Tables.dropColumns(options1)(...args);
+      const sql2 = Tables.dropColumns(options2)(...args);
+      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+  DROP "colC1",
+  DROP "colC2";`);
+      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+  DROP "col_c1",
+  DROP "col_c2";`);
+    });
+  });
+
+  describe('.addConstraint', () => {
+    it('works with strings', () => {
+      const args = [
+        'myTableName',
+        'myConstraintName',
+        'CHECK name IS NOT NULL'
+      ];
+      const sql1 = Tables.addConstraint(options1)(...args);
+      const sql2 = Tables.addConstraint(options2)(...args);
+      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+  ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`);
+      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
   ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`);
     });
 
-    it("can create comments", () => {
-      const sql = Tables.addConstraint("my_table", "my_constraint_name", {
-        primaryKey: "a",
-        comment: "this is an important primary key"
-      });
-      expect(sql).to.equal(`ALTER TABLE "my_table"
-  ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("a");
-COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table" IS $pg1$this is an important primary key$pg1$;`);
+    it('can create comments', () => {
+      const args = [
+        'myTableName',
+        'myConstraintName',
+        {
+          primaryKey: 'colA',
+          comment: 'this is an important primary key'
+        }
+      ];
+      const sql1 = Tables.addConstraint(options1)(...args);
+      const sql2 = Tables.addConstraint(options2)(...args);
+      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+  ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
+COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pg1$this is an important primary key$pg1$;`);
+      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+  ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
+COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pg1$this is an important primary key$pg1$;`);
     });
   });
 });

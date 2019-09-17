@@ -1,19 +1,19 @@
 exports.up = pgm => {
   pgm.noTransaction();
-  pgm.createTable("tv", {
-    id: "id",
-    string: { type: "text", notNull: true },
+  pgm.createTable('tv', {
+    id: 'id',
+    string: { type: 'text', notNull: true },
     created: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("current_timestamp")
+      default: pgm.func('current_timestamp')
     }
   });
   pgm.createView(
-    "v",
+    'v',
     {
-      columns: ["id", "str"]
+      columns: ['id', 'str']
     },
-    "SELECT id, string FROM tv"
+    'SELECT id, string FROM tv'
   );
 };

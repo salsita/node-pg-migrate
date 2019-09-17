@@ -35,31 +35,31 @@ Open it and change contents to:
 
 ```js
 exports.up = pgm => {
-  pgm.createTable("users", {
-    id: "id",
-    name: { type: "varchar(1000)", notNull: true },
+  pgm.createTable('users', {
+    id: 'id',
+    name: { type: 'varchar(1000)', notNull: true },
     createdAt: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("current_timestamp")
+      default: pgm.func('current_timestamp')
     }
   });
-  pgm.createTable("posts", {
-    id: "id",
+  pgm.createTable('posts', {
+    id: 'id',
     userId: {
-      type: "integer",
+      type: 'integer',
       notNull: true,
       references: '"users"',
-      onDelete: "cascade"
+      onDelete: 'cascade'
     },
-    body: { type: "text", notNull: true },
+    body: { type: 'text', notNull: true },
     createdAt: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("current_timestamp")
+      default: pgm.func('current_timestamp')
     }
   });
-  pgm.createIndex("posts", "userId");
+  pgm.createIndex('posts', 'userId');
 };
 ```
 
@@ -76,8 +76,8 @@ Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
 
 ```js
 exports.up = pgm => {
-  pgm.addColumns("posts", {
-    lead: { type: "text", notNull: true }
+  pgm.addColumns('posts', {
+    lead: { type: 'text', notNull: true }
   });
 };
 ```

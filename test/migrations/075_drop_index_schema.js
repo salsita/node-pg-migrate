@@ -1,16 +1,16 @@
 exports.up = pgm => {
-  const schema = "foo";
-  const tableName = { schema, name: "bar" };
-  const columnName = "baz";
+  const schema = 'foo';
+  const tableName = { schema, name: 'bar' };
+  const columnName = 'baz';
 
   pgm.createSchema(schema);
   pgm.createTable(tableName, {
     foo_id: {
-      type: "serial",
+      type: 'serial',
       primaryKey: true
     },
     [columnName]: {
-      type: "integer",
+      type: 'integer',
       notNull: true
     }
   });

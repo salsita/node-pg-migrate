@@ -1,3 +1,3 @@
 exports.up = pgm => {
-  pgm.renameColumn("t1", "nr", "nmbr");
+  pgm.renameColumn('t1', 'nr', 'nmbr');
 };

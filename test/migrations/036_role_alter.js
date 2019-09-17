@@ -1,7 +1,7 @@
 exports.up = pgm => {
-  pgm.alterRole("r", { login: false });
+  pgm.alterRole('r', { login: false });
 };
 
 exports.down = pgm => {
-  pgm.alterRole("r", { login: true });
+  pgm.alterRole('r', { login: true });
 };

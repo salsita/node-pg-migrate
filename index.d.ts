@@ -577,6 +577,7 @@ export interface RunnerOptionConfig {
     singleTransaction?: boolean
     noLock?: boolean,
     fake?: boolean,
+    decamelize?: boolean,
     log?: (msg:string) => void;
 }
 
