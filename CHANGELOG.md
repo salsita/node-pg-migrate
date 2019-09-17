@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.23.0](2019-09-17)
+
+### Added
+
+- Decamelize (experimental - it may happen some names are not decamelized) [#472](https://github.com/salsita/node-pg-migrate/pull/472)
+
 ## [3.22.1](2019-09-12)
 
 ### Fixed
