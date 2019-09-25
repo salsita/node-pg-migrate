@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.23.1](2019-09-25)
+
+### Fixed
+
+- Fixing constraint name not optional [#486](https://github.com/salsita/node-pg-migrate/pull/486)
+
 ## [3.23.0](2019-09-17)
 
 ### Added
