@@ -340,6 +340,16 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
   ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`);
     });
 
+    it('does not add contraint name if not defined', () => {
+      const args = ['myTableName', null, 'CHECK name IS NOT NULL'];
+      const sql1 = Tables.addConstraint(options1)(...args);
+      const sql2 = Tables.addConstraint(options2)(...args);
+      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+  ADD CHECK name IS NOT NULL;`);
+      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+  ADD CHECK name IS NOT NULL;`);
+    });
+
     it('can create comments', () => {
       const args = [
         'myTableName',
