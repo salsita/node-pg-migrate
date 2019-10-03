@@ -10,8 +10,8 @@
 - `options` _[object]_ - options:
   - `ifNotExists` _[boolean]_ - default false
   - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
-  - `tablespace` _[string]_
-  - `storageParameters` _[object]_ - key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
+  - `tablespace` _[string]_ - optional
+  - `storageParameters` _[object]_ - optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
   - `data` _[boolean]_ - default undefined
 - `definition` _[string]_ - SQL of SELECT statement
 
@@ -40,9 +40,9 @@
 
 - `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
 - `options` _[object]_ - options:
-  - `cluster` _[string]_ - index name for clustering
-  - `extension` _[string]_ - name of extension view is dependent on
-  - `storageParameters` _[object]_ - key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
+  - `cluster` _[string]_ - optional index name for clustering
+  - `extension` _[string]_ - optional name of extension view is dependent on
+  - `storageParameters` _[object]_ - optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
 
 ---
 
