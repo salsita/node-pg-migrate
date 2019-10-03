@@ -391,7 +391,7 @@ export interface CreateMaterializedViewOptions {
     ifNotExists?: boolean
     columns?: string | string[]
     tablespace?: string
-    storageParameters: object
+    storageParameters?: object
     data?: boolean
 }
 
