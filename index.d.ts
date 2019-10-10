@@ -271,7 +271,7 @@ export interface FunctionOptions {
     parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE'
 }
 
-interface TriggerOptionsEn {
+interface TriggerOptions {
     when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
     operation: string | string[]
     constraint?: boolean
@@ -282,8 +282,6 @@ interface TriggerOptionsEn {
     deferrable?: boolean
     deferred?: boolean
 }
-
-export type TriggerOptions = TriggerOptionsEn & FunctionOptions
 
 interface DomainOptions {
     default?: Value
@@ -472,7 +470,8 @@ export interface MigrationBuilder {
     renameFunction(oldFunctionName: Name, functionParams: FunctionParam[], newFunctionName: Name): void
 
     // Triggers
-    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions, definition?: Value): void
+    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions): void
+    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions & FunctionOptions, definition: Value): void
     dropTrigger(tableName: Name, triggerName: Name, dropOptions?: DropOptions): void
     renameTrigger(tableName: Name, oldTriggerName: Name, newTriggerName: Name): void
 
