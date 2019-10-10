@@ -1,10 +1,16 @@
 # Change Log
 
+## [3.23.3](2019-10-10)
+
+### Fixed
+
+- Fixing `createTrigger` TS type [#494](https://github.com/salsita/node-pg-migrate/pull/494)
+
 ## [3.23.2](2019-10-03)
 
 ### Fixed
 
-- Marking storageParameters of materialized view as optional [#490](https://github.com/salsita/node-pg-migrate/pull/490)
+- Marking `storageParameters` of materialized view as optional [#490](https://github.com/salsita/node-pg-migrate/pull/490)
 
 ## [3.23.1](2019-09-25)
 
