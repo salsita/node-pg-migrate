@@ -67,6 +67,16 @@ export default class Migration {
     return new Migration(null, newFile);
   }
 
+  public readonly db: any;
+  public readonly path: any;
+  public readonly name: string;
+  public readonly timestamp: number;
+  public readonly up: any;
+  public down: any;
+  public readonly options: {};
+  public readonly typeShorthands: any;
+  public readonly log: (message?: any, ...optionalParams: any[]) => void;
+
   constructor(
     db,
     migrationPath,

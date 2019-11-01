@@ -7,6 +7,8 @@ export class PgLiteral {
     return new PgLiteral(str);
   }
 
+  private readonly _str: string;
+
   constructor(str) {
     this._str = str;
   }
