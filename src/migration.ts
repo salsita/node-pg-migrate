@@ -43,7 +43,7 @@ const getLastSuffix = async (dir, ignorePattern) => {
   }
 };
 
-export default class Migration {
+export class Migration {
   // class method that creates a new migration file by cloning the migration template
   static async create(name, directory, language, ignorePattern) {
     // ensure the migrations directory exists
@@ -189,3 +189,5 @@ export default class Migration {
     return this.db.query(this._getMarkAsRun(this._getAction(direction)));
   }
 }
+
+module.exports = Migration;
