@@ -6,9 +6,9 @@
 
  */
 
-import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
-import * as path from 'path';
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import path from 'path';
 
 import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
 import { getMigrationTableSchema, promisify } from './utils';

@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { Client } from 'pg';
 import { TlsOptions } from 'tls';
 import Db, { DB } from './db';

@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { applyType, escapeValue } from '../utils';
 
 export function dropType(mOptions) {
