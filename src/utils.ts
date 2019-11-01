@@ -21,8 +21,11 @@ export class PgLiteral {
 const identity = v => v;
 const quote = str => `"${str}"`;
 
-export const createSchemalize = (shouldDecamelize, shouldQuote) => {
-  const transform = [
+export const createSchemalize = (
+  shouldDecamelize: boolean,
+  shouldQuote: boolean
+) => {
+  const transform: (v: any) => any = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity
   ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))));
