@@ -295,4 +295,4 @@ runner.default = runner; // workaround for transpilers
 runner.PgLiteral = PgLiteral;
 runner.Migration = Migration;
 
-export default runner;
+module.exports = runner;
