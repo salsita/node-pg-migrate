@@ -11,5 +11,5 @@
     "strict": false
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "dist", "bin"]
+  "exclude": ["src/migration-template.*", "node_modules", "lib", "dist", "bin"]
 }
