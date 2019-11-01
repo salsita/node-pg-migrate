@@ -8,6 +8,7 @@ import { Client, QueryConfig, QueryResult } from 'pg';
 
 // see ClientBase in @types/pg
 export interface DB {
+  createConnection(): Promise<void>;
   query(queryConfig: QueryConfig): Promise<QueryResult>;
   query(
     queryTextOrConfig: string | QueryConfig,
@@ -19,9 +20,10 @@ export interface DB {
     queryTextOrConfig: string | QueryConfig,
     values?: any[]
   ): Promise<any[]>;
+  close(): Promise<void>;
 }
 
-export default (connection, log = console.error) => {
+export default (connection, log = console.error): DB => {
   const isExternalClient = connection instanceof Client;
   let clientActive = false;
 
@@ -29,7 +31,7 @@ export default (connection, log = console.error) => {
 
   const beforeCloseListeners = [];
 
-  const createConnection = () =>
+  const createConnection: () => Promise<void> = () =>
     new Promise((resolve, reject) =>
       clientActive || isExternalClient
         ? resolve()

@@ -2,8 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Client } from 'pg';
 import { TlsOptions } from 'tls';
-import Db from './db';
+import Db, { DB } from './db';
+import { ColumnDefinitions } from './definitions';
 import Migration, { loadMigrationFiles } from './migration';
+import { MigrationBuilderActions } from './migration-builder';
 import {
   createSchemalize,
   getMigrationTableSchema,
@@ -15,19 +17,19 @@ import {
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964;
 
-const readFile = promisify(fs.readFile); // eslint-disable-line security/detect-non-literal-fs-filename
+const readFile = promisify<string>(fs.readFile); // eslint-disable-line security/detect-non-literal-fs-filename
 
 const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-const loadMigrations = async (db, options, log) => {
+const loadMigrations = async (db: DB, options, log) => {
   try {
-    let shorthands = {};
+    let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
     return files.map(file => {
       const filePath = `${options.dir}/${file}`;
-      const actions =
+      const actions: MigrationBuilderActions =
         path.extname(filePath) === '.sql'
           ? // eslint-disable-next-line security/detect-non-literal-fs-filename
             { up: async pgm => pgm.sql(await readFile(filePath, 'utf8')) }
@@ -209,7 +211,11 @@ export type RunnerOption = RunnerOptionConfig &
 
 const runner = async (options: RunnerOption): Promise<void> => {
   const log = options.log || console.log;
-  const db = Db(options.dbClient || options.databaseUrl, log);
+  const db = Db(
+    (options as RunnerOptionClient).dbClient ||
+      (options as RunnerOptionUrl).databaseUrl,
+    log
+  );
   try {
     await db.createConnection();
     if (options.schema) {

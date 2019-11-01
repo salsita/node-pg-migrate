@@ -10,15 +10,17 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 
-import MigrationBuilder from './migration-builder';
+import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
 import { getMigrationTableSchema, promisify } from './utils';
+import { DB } from './db';
+import { ColumnDefinitions } from './definitions';
 
-const readdir = promisify(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
-const lstat = promisify(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
+const readdir = promisify<string[]>(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
+const lstat = promisify<fs.Stats>(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
 
 const SEPARATOR = '_';
 
-export const loadMigrationFiles = async (dir, ignorePattern) => {
+export const loadMigrationFiles = async (dir: string, ignorePattern) => {
   const dirContent = await readdir(`${dir}/`);
   const files = await Promise.all(
     dirContent.map(async file => {
@@ -67,8 +69,8 @@ export default class Migration {
     return new Migration(null, newFile);
   }
 
-  public readonly db: any;
-  public readonly path: any;
+  public readonly db: DB;
+  public readonly path: string;
   public readonly name: string;
   public readonly timestamp: number;
   public readonly up: any;
@@ -78,11 +80,11 @@ export default class Migration {
   public readonly log: (message?: any, ...optionalParams: any[]) => void;
 
   constructor(
-    db,
-    migrationPath,
-    { up, down } = {},
+    db: DB | null,
+    migrationPath: string,
+    { up, down }: MigrationBuilderActions = {},
     options = {},
-    typeShorthands,
+    typeShorthands?: ColumnDefinitions,
     log = console.log
   ) {
     this.db = db;

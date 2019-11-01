@@ -66,6 +66,12 @@ import * as types from './operations/types';
 import * as views from './operations/views';
 import * as mViews from './operations/viewsMaterialized';
 
+export interface MigrationBuilderActions {
+  up?: (pgm: MigrationBuilder) => Promise<void>;
+  down?: (pgm: MigrationBuilder) => Promise<void>;
+  shorthands?: ColumnDefinitions;
+}
+
 /* eslint-disable security/detect-non-literal-fs-filename */
 export default class MigrationBuilder {
   public readonly createExtension: (

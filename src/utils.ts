@@ -171,9 +171,11 @@ export const formatLines = (lines, replace = '  ', separator = ',') =>
     .join(`${separator}\n`)
     .replace(/^/gm, replace);
 
-export const promisify = fn => (...args) =>
-  new Promise((resolve, reject) =>
-    fn.call(this, ...args, (err, ...result) =>
-      err ? reject(err) : resolve(...result)
-    )
-  );
+export function promisify<R>(fn: (...args) => any): (...args) => Promise<R> {
+  return (...args) =>
+    new Promise<R>((resolve, reject) =>
+      fn.call(this, ...args, (err, ...result) =>
+        err ? reject(err) : resolve(...result)
+      )
+    );
+}
