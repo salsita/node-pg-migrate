@@ -6,12 +6,12 @@
 
  */
 
-const fs = require('fs');
-const mkdirp = require('mkdirp');
-const path = require('path');
+import * as fs from 'fs';
+import mkdirp from 'mkdirp';
+import * as path from 'path';
 
-const MigrationBuilder = require('./migration-builder');
-const { getMigrationTableSchema, promisify } = require('./utils');
+import MigrationBuilder from './migration-builder';
+import { getMigrationTableSchema, promisify } from './utils';
 
 const readdir = promisify(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
 const lstat = promisify(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename

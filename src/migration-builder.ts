@@ -28,7 +28,7 @@ import * as mViews from './operations/viewsMaterialized';
 import * as other from './operations/other';
 
 /* eslint-disable security/detect-non-literal-fs-filename */
-module.exports = class MigrationBuilder {
+export default class MigrationBuilder {
   constructor(db, typeShorthands, shouldDecamelize) {
     this._steps = [];
     this._REVERSE_MODE = false;
@@ -198,5 +198,5 @@ module.exports = class MigrationBuilder {
     // in reverse mode, we flip the order of the statements
     return this._REVERSE_MODE ? this._steps.slice().reverse() : this._steps;
   }
-};
+}
 /* eslint-enable security/detect-non-literal-fs-filename */
