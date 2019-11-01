@@ -18,7 +18,7 @@ const lstat = promisify(fs.lstat); // eslint-disable-line security/detect-non-li
 
 const SEPARATOR = '_';
 
-const loadMigrationFiles = async (dir, ignorePattern) => {
+export const loadMigrationFiles = async (dir, ignorePattern) => {
   const dirContent = await readdir(`${dir}/`);
   const files = await Promise.all(
     dirContent.map(async file => {
@@ -41,7 +41,7 @@ const getLastSuffix = async (dir, ignorePattern) => {
   }
 };
 
-module.exports = class Migration {
+export default class Migration {
   // class method that creates a new migration file by cloning the migration template
   static async create(name, directory, language, ignorePattern) {
     // ensure the migrations directory exists
@@ -176,6 +176,4 @@ module.exports = class Migration {
   markAsRun(direction) {
     return this.db.query(this._getMarkAsRun(this._getAction(direction)));
   }
-};
-
-module.exports.loadMigrationFiles = loadMigrationFiles;
+}

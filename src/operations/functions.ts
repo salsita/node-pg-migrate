@@ -1,6 +1,6 @@
-const { escapeValue, formatParams } = require('../utils');
+import { escapeValue, formatParams } from '../utils';
 
-function dropFunction(mOptions) {
+export function dropFunction(mOptions) {
   const _drop = (
     functionName,
     functionParams = [],
@@ -15,7 +15,7 @@ function dropFunction(mOptions) {
   return _drop;
 }
 
-function createFunction(mOptions) {
+export function createFunction(mOptions) {
   const _create = (
     functionName,
     functionParams = [],
@@ -65,7 +65,7 @@ function createFunction(mOptions) {
   return _create;
 }
 
-function renameFunction(mOptions) {
+export function renameFunction(mOptions) {
   const _rename = (oldFunctionName, functionParams = [], newFunctionName) => {
     const paramsStr = formatParams(functionParams, mOptions);
     const oldFunctionNameStr = mOptions.literal(oldFunctionName);
@@ -76,9 +76,3 @@ function renameFunction(mOptions) {
     _rename(newFunctionName, functionParams, oldFunctionName);
   return _rename;
 }
-
-module.exports = {
-  createFunction,
-  dropFunction,
-  renameFunction
-};

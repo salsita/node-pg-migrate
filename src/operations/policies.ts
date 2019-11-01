@@ -13,7 +13,7 @@ const makeClauses = ({ role, using, check }) => {
   return clauses;
 };
 
-function dropPolicy(mOptions) {
+export function dropPolicy(mOptions) {
   const _drop = (tableName, policyName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const policyNameStr = mOptions.literal(policyName);
@@ -23,7 +23,7 @@ function dropPolicy(mOptions) {
   return _drop;
 }
 
-function createPolicy(mOptions) {
+export function createPolicy(mOptions) {
   const _create = (tableName, policyName, options = {}) => {
     const createOptions = {
       ...options,
@@ -42,7 +42,7 @@ function createPolicy(mOptions) {
   return _create;
 }
 
-function alterPolicy(mOptions) {
+export function alterPolicy(mOptions) {
   const _alter = (tableName, policyName, options = {}) => {
     const clausesStr = makeClauses(options).join(' ');
     const policyNameStr = mOptions.literal(policyName);
@@ -52,7 +52,7 @@ function alterPolicy(mOptions) {
   return _alter;
 }
 
-function renamePolicy(mOptions) {
+export function renamePolicy(mOptions) {
   const _rename = (tableName, policyName, newPolicyName) => {
     const policyNameStr = mOptions.literal(policyName);
     const newPolicyNameStr = mOptions.literal(newPolicyName);
@@ -63,10 +63,3 @@ function renamePolicy(mOptions) {
     _rename(tableName, newPolicyName, policyName);
   return _rename;
 }
-
-module.exports = {
-  createPolicy,
-  dropPolicy,
-  alterPolicy,
-  renamePolicy
-};

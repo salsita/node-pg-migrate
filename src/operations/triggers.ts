@@ -1,8 +1,8 @@
-const { isArray } = require('lodash');
-const { escapeValue } = require('../utils');
-const { createFunction, dropFunction } = require('./functions');
+import { isArray } from 'lodash';
+import { escapeValue } from '../utils';
+import { createFunction, dropFunction } from './functions';
 
-function dropTrigger(mOptions) {
+export function dropTrigger(mOptions) {
   const _drop = (tableName, triggerName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -13,7 +13,7 @@ function dropTrigger(mOptions) {
   return _drop;
 }
 
-function createTrigger(mOptions) {
+export function createTrigger(mOptions) {
   const _create = (tableName, triggerName, triggerOptions = {}, definition) => {
     const {
       constraint,
@@ -101,7 +101,7 @@ function createTrigger(mOptions) {
   return _create;
 }
 
-function renameTrigger(mOptions) {
+export function renameTrigger(mOptions) {
   const _rename = (tableName, oldTriggerName, newTriggerName) => {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName);
     const tableNameStr = mOptions.literal(tableName);
@@ -112,9 +112,3 @@ function renameTrigger(mOptions) {
     _rename(tableName, newTriggerName, oldTriggerName);
   return _rename;
 }
-
-module.exports = {
-  createTrigger,
-  dropTrigger,
-  renameTrigger
-};

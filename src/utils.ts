@@ -1,8 +1,8 @@
-const decamelize = require('decamelize');
+import decamelize from 'decamelize';
 
 // This is used to create unescaped strings
 // exposed in the migrations via pgm.func
-class PgLiteral {
+export class PgLiteral {
   static create(str) {
     return new PgLiteral(str);
   }
@@ -19,7 +19,7 @@ class PgLiteral {
 const identity = v => v;
 const quote = str => `"${str}"`;
 
-const createSchemalize = (shouldDecamelize, shouldQuote) => {
+export const createSchemalize = (shouldDecamelize, shouldQuote) => {
   const transform = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity
@@ -33,13 +33,13 @@ const createSchemalize = (shouldDecamelize, shouldQuote) => {
   };
 };
 
-const createTransformer = literal => (s, d) =>
+export const createTransformer = literal => (s, d) =>
   Object.keys(d || {}).reduce(
     (str, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
     s
   );
 
-const escapeValue = val => {
+export const escapeValue = val => {
   if (val === null) {
     return 'NULL';
   }
@@ -71,14 +71,14 @@ const escapeValue = val => {
   return '';
 };
 
-const getSchemas = schema => {
+export const getSchemas = schema => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
     s => typeof s === 'string' && s.length > 0
   );
   return schemas.length > 0 ? schemas : ['public'];
 };
 
-const getMigrationTableSchema = options =>
+export const getMigrationTableSchema = options =>
   options.migrationsSchema !== undefined
     ? options.migrationsSchema
     : getSchemas(options.schema)[0];
@@ -97,10 +97,10 @@ const defaultTypeShorthands = {
 };
 
 // some convenience adapters -- see above
-const applyTypeAdapters = type =>
+export const applyTypeAdapters = type =>
   typeAdapters[type] ? typeAdapters[type] : type;
 
-const applyType = (type, extendingTypeShorthands = {}) => {
+export const applyType = (type, extendingTypeShorthands = {}) => {
   const typeShorthands = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
@@ -152,38 +152,23 @@ const formatParam = mOptions => param => {
   return options.join(' ');
 };
 
-const formatParams = (params = [], mOptions) =>
+export const formatParams = (params = [], mOptions) =>
   `(${params.map(formatParam(mOptions)).join(', ')})`;
 
-const comment = (object, name, text) => {
+export const comment = (object, name, text) => {
   const cmt = escapeValue(text || null);
   return `COMMENT ON ${object} ${name} IS ${cmt};`;
 };
 
-const formatLines = (lines, replace = '  ', separator = ',') =>
+export const formatLines = (lines, replace = '  ', separator = ',') =>
   lines
     .map(line => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
     .replace(/^/gm, replace);
 
-const promisify = fn => (...args) =>
+export const promisify = fn => (...args) =>
   new Promise((resolve, reject) =>
     fn.call(this, ...args, (err, ...result) =>
       err ? reject(err) : resolve(...result)
     )
   );
-
-module.exports = {
-  PgLiteral,
-  createSchemalize,
-  createTransformer,
-  escapeValue,
-  getSchemas,
-  getMigrationTableSchema,
-  applyTypeAdapters,
-  applyType,
-  formatParams,
-  comment,
-  formatLines,
-  promisify
-};

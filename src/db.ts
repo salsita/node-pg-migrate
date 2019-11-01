@@ -2,11 +2,11 @@
  This file just manages the database connection and provides a query method
  */
 
-const pg = require('pg');
+import * as pg from 'pg';
 // or native libpq bindings
 // const pg = require('pg/native');
 
-module.exports = (connection, log = console.error) => {
+export default (connection, log = console.error) => {
   const isExternalClient = connection instanceof pg.Client;
   let clientActive = false;
 

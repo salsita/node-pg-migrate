@@ -1,4 +1,4 @@
-const { formatLines } = require('../utils');
+import { formatLines } from '../utils';
 
 const dataClause = data =>
   data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '';
@@ -8,7 +8,7 @@ const storageParameterStr = storageParameters => key => {
   return `${key}${value}`;
 };
 
-function dropMaterializedView(mOptions) {
+export function dropMaterializedView(mOptions) {
   const _drop = (viewName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -18,7 +18,7 @@ function dropMaterializedView(mOptions) {
   return _drop;
 }
 
-function createMaterializedView(mOptions) {
+export function createMaterializedView(mOptions) {
   const _create = (viewName, options, definition) => {
     const {
       ifNotExists,
@@ -48,7 +48,7 @@ function createMaterializedView(mOptions) {
   return _create;
 }
 
-function alterMaterializedView(mOptions) {
+export function alterMaterializedView(mOptions) {
   const _alter = (viewName, options) => {
     const { cluster, extension, storageParameters = {} } = options;
     const clauses = [];
@@ -82,7 +82,7 @@ function alterMaterializedView(mOptions) {
   return _alter;
 }
 
-function renameMaterializedView(mOptions) {
+export function renameMaterializedView(mOptions) {
   const _rename = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
@@ -92,7 +92,7 @@ function renameMaterializedView(mOptions) {
   return _rename;
 }
 
-function renameMaterializedViewColumn(mOptions) {
+export function renameMaterializedViewColumn(mOptions) {
   const _rename = (viewName, columnName, newColumnName) => {
     const viewNameStr = mOptions.literal(viewName);
     const columnNameStr = mOptions.literal(columnName);
@@ -104,7 +104,7 @@ function renameMaterializedViewColumn(mOptions) {
   return _rename;
 }
 
-function refreshMaterializedView(mOptions) {
+export function refreshMaterializedView(mOptions) {
   const _refresh = (viewName, { concurrently, data } = {}) => {
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
     const dataStr = dataClause(data);
@@ -114,12 +114,3 @@ function refreshMaterializedView(mOptions) {
   _refresh.reverse = _refresh;
   return _refresh;
 }
-
-module.exports = {
-  createMaterializedView,
-  dropMaterializedView,
-  alterMaterializedView,
-  renameMaterializedView,
-  renameMaterializedViewColumn,
-  refreshMaterializedView
-};

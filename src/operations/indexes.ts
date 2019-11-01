@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 function generateIndexName(table, columns, options) {
   if (options.name) {
@@ -32,7 +32,7 @@ function generateColumnsString(columns, literal) {
     : generateColumnString(columns, literal);
 }
 
-function dropIndex(mOptions) {
+export function dropIndex(mOptions) {
   const _drop = (tableName, columns, options = {}) => {
     const { concurrently, ifExists, cascade } = options;
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
@@ -46,7 +46,7 @@ function dropIndex(mOptions) {
   return _drop;
 }
 
-function createIndex(mOptions) {
+export function createIndex(mOptions) {
   const _create = (tableName, columns, options = {}) => {
     /*
     columns - the column, columns, or expression to create the index on
@@ -80,8 +80,3 @@ function createIndex(mOptions) {
   _create.reverse = dropIndex(mOptions);
   return _create;
 }
-
-module.exports = {
-  createIndex,
-  dropIndex
-};

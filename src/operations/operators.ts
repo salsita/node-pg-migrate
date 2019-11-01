@@ -1,6 +1,6 @@
-const { formatParams, applyType } = require('../utils');
+import { formatParams, applyType } from '../utils';
 
-function dropOperator(mOptions) {
+export function dropOperator(mOptions) {
   const _drop = (operatorName, options = {}) => {
     const { ifExists, cascade, left, right } = options;
 
@@ -16,7 +16,7 @@ function dropOperator(mOptions) {
   return _drop;
 }
 
-function createOperator(mOptions) {
+export function createOperator(mOptions) {
   const _create = (operatorName, options = {}) => {
     const {
       procedure,
@@ -63,7 +63,7 @@ function createOperator(mOptions) {
   return _create;
 }
 
-function dropOperatorFamily(mOptions) {
+export function dropOperatorFamily(mOptions) {
   const _drop = (
     operatorFamilyName,
     indexMethod,
@@ -77,7 +77,7 @@ function dropOperatorFamily(mOptions) {
   return _drop;
 }
 
-function createOperatorFamily(mOptions) {
+export function createOperatorFamily(mOptions) {
   const _create = (operatorFamilyName, indexMethod) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     return `CREATE OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod};`;
@@ -121,13 +121,13 @@ const changeOperatorFamily = (op, reverse) => mOptions => {
   return method;
 };
 
-const removeFromOperatorFamily = changeOperatorFamily('DROP');
-const addToOperatorFamily = changeOperatorFamily(
+export const removeFromOperatorFamily = changeOperatorFamily('DROP');
+export const addToOperatorFamily = changeOperatorFamily(
   'ADD',
   removeFromOperatorFamily
 );
 
-function renameOperatorFamily(mOptions) {
+export function renameOperatorFamily(mOptions) {
   const _rename = (
     oldOperatorFamilyName,
     indexMethod,
@@ -146,7 +146,7 @@ function renameOperatorFamily(mOptions) {
   return _rename;
 }
 
-function dropOperatorClass(mOptions) {
+export function dropOperatorClass(mOptions) {
   const _drop = (
     operatorClassName,
     indexMethod,
@@ -161,7 +161,7 @@ function dropOperatorClass(mOptions) {
   return _drop;
 }
 
-function createOperatorClass(mOptions) {
+export function createOperatorClass(mOptions) {
   const _create = (
     operatorClassName,
     type,
@@ -192,7 +192,7 @@ function createOperatorClass(mOptions) {
   return _create;
 }
 
-function renameOperatorClass(mOptions) {
+export function renameOperatorClass(mOptions) {
   const _rename = (oldOperatorClassName, indexMethod, newOperatorClassName) => {
     const oldOperatorClassNameStr = mOptions.literal(oldOperatorClassName);
     const newOperatorClassNameStr = mOptions.literal(newOperatorClassName);
@@ -203,16 +203,3 @@ function renameOperatorClass(mOptions) {
     _rename(newOperatorClassName, indexMethod, oldOperatorClassName);
   return _rename;
 }
-
-module.exports = {
-  createOperator,
-  dropOperator,
-  createOperatorFamily,
-  dropOperatorFamily,
-  removeFromOperatorFamily,
-  addToOperatorFamily,
-  renameOperatorFamily,
-  dropOperatorClass,
-  createOperatorClass,
-  renameOperatorClass
-};

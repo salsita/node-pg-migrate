@@ -1,6 +1,6 @@
-const { escapeValue } = require('../utils');
+import { escapeValue } from '../utils';
 
-function dropView(mOptions) {
+export function dropView(mOptions) {
   const _drop = (viewName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -10,7 +10,7 @@ function dropView(mOptions) {
   return _drop;
 }
 
-function createView(mOptions) {
+export function createView(mOptions) {
   const _create = (viewName, options, definition) => {
     const {
       temporary,
@@ -36,7 +36,7 @@ function createView(mOptions) {
   return _create;
 }
 
-function alterView(mOptions) {
+export function alterView(mOptions) {
   const _alter = (viewName, options) => {
     const { checkOption } = options;
     const clauses = [];
@@ -54,7 +54,7 @@ function alterView(mOptions) {
   return _alter;
 }
 
-function alterViewColumn(mOptions) {
+export function alterViewColumn(mOptions) {
   const _alter = (viewName, columnName, options) => {
     const { default: defaultValue } = options;
     const actions = [];
@@ -75,7 +75,7 @@ function alterViewColumn(mOptions) {
   return _alter;
 }
 
-function renameView(mOptions) {
+export function renameView(mOptions) {
   const _rename = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
@@ -84,11 +84,3 @@ function renameView(mOptions) {
   _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
   return _rename;
 }
-
-module.exports = {
-  createView,
-  dropView,
-  alterView,
-  alterViewColumn,
-  renameView
-};

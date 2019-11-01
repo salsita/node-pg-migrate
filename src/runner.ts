@@ -1,14 +1,14 @@
-const path = require('path');
-const fs = require('fs');
-const Db = require('./db');
-const Migration = require('./migration');
-const {
+import * as path from 'path';
+import * as fs from 'fs';
+import Db from './db';
+import Migration, { loadMigrationFiles } from './migration';
+import {
   getSchemas,
   getMigrationTableSchema,
   promisify,
   PgLiteral,
   createSchemalize
-} = require('./utils');
+} from './utils';
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964;
@@ -22,10 +22,7 @@ const runOnColumn = 'run_on';
 const loadMigrations = async (db, options, log) => {
   try {
     let shorthands = {};
-    const files = await Migration.loadMigrationFiles(
-      options.dir,
-      options.ignorePattern
-    );
+    const files = await loadMigrationFiles(options.dir, options.ignorePattern);
     return files.map(file => {
       const filePath = `${options.dir}/${file}`;
       const actions =

@@ -1,12 +1,12 @@
-const _ = require('lodash');
-const {
+import * as _ from 'lodash';
+import {
   escapeValue,
   applyType,
   applyTypeAdapters,
   comment,
   formatLines
-} = require('../utils');
-const { parseSequenceOptions } = require('./sequences');
+} from '../utils';
+import { parseSequenceOptions } from './sequences';
 
 const parseReferences = (options, literal) => {
   const { references, match, onDelete, onUpdate } = options;
@@ -262,7 +262,7 @@ const parseLike = (like, literal) => {
 };
 
 // TABLE
-function dropTable(mOptions) {
+export function dropTable(mOptions) {
   const _drop = (tableName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -272,7 +272,7 @@ function dropTable(mOptions) {
   return _drop;
 }
 
-function createTable(mOptions) {
+export function createTable(mOptions) {
   const _create = (tableName, columns, options = {}) => {
     const {
       temporary,
@@ -331,7 +331,7 @@ ${formatLines(tableDefinition)}
   return _create;
 }
 
-function alterTable(mOptions) {
+export function alterTable(mOptions) {
   const _alter = (tableName, options) => {
     const alterDefinition = [];
     if (options.levelSecurity) {
@@ -344,7 +344,7 @@ function alterTable(mOptions) {
 }
 
 // COLUMNS
-function dropColumns(mOptions) {
+export function dropColumns(mOptions) {
   const _drop = (tableName, columns, { ifExists, cascade } = {}) => {
     if (typeof columns === 'string') {
       columns = [columns]; // eslint-disable-line no-param-reassign
@@ -362,7 +362,7 @@ ${columnsStr};`;
   return _drop;
 }
 
-function addColumns(mOptions) {
+export function addColumns(mOptions) {
   const _add = (tableName, columns, { ifNotExists } = {}) => {
     const {
       columns: columnLines,
@@ -382,7 +382,7 @@ function addColumns(mOptions) {
   return _add;
 }
 
-function alterColumn(mOptions) {
+export function alterColumn(mOptions) {
   return (tableName, columnName, options) => {
     const {
       default: defaultValue,
@@ -450,7 +450,7 @@ function alterColumn(mOptions) {
   };
 }
 
-function renameTable(mOptions) {
+export function renameTable(mOptions) {
   const _rename = (tableName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const newNameStr = mOptions.literal(newName);
@@ -460,7 +460,7 @@ function renameTable(mOptions) {
   return _rename;
 }
 
-function renameColumn(mOptions) {
+export function renameColumn(mOptions) {
   const _rename = (tableName, columnName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const columnNameStr = mOptions.literal(columnName);
@@ -472,7 +472,7 @@ function renameColumn(mOptions) {
   return _rename;
 }
 
-function renameConstraint(mOptions) {
+export function renameConstraint(mOptions) {
   const _rename = (tableName, constraintName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const constraintNameStr = mOptions.literal(constraintName);
@@ -484,7 +484,7 @@ function renameConstraint(mOptions) {
   return _rename;
 }
 
-function dropConstraint(mOptions) {
+export function dropConstraint(mOptions) {
   const _drop = (tableName, constraintName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -494,7 +494,7 @@ function dropConstraint(mOptions) {
   };
   return _drop;
 }
-function addConstraint(mOptions) {
+export function addConstraint(mOptions) {
   const _add = (tableName, constraintName, expression) => {
     const { constraints, comments } =
       typeof expression === 'string'
@@ -523,17 +523,3 @@ function addConstraint(mOptions) {
   _add.reverse = dropConstraint(mOptions);
   return _add;
 }
-
-module.exports = {
-  createTable,
-  dropTable,
-  alterTable,
-  renameTable,
-  addColumns,
-  dropColumns,
-  alterColumn,
-  renameColumn,
-  addConstraint,
-  dropConstraint,
-  renameConstraint
-};

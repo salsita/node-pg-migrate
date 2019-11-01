@@ -1,6 +1,6 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 
-function dropExtension(mOptions) {
+export function dropExtension(mOptions) {
   const _drop = (extensions, { ifExists, cascade } = {}) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -13,7 +13,7 @@ function dropExtension(mOptions) {
   return _drop;
 }
 
-function createExtension(mOptions) {
+export function createExtension(mOptions) {
   const _create = (extensions, { ifNotExists, schema } = {}) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -26,8 +26,3 @@ function createExtension(mOptions) {
   _create.reverse = dropExtension(mOptions);
   return _create;
 }
-
-module.exports = {
-  createExtension,
-  dropExtension
-};

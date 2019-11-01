@@ -1,5 +1,5 @@
-const { isArray } = require('lodash');
-const { escapeValue } = require('../utils');
+import { isArray } from 'lodash';
+import { escapeValue } from '../utils';
 
 const formatRoleOptions = (roleOptions = {}) => {
   const options = [];
@@ -60,7 +60,7 @@ const formatRoleOptions = (roleOptions = {}) => {
   return options.join(' ');
 };
 
-function dropRole(mOptions) {
+export function dropRole(mOptions) {
   const _drop = (roleName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const roleNameStr = mOptions.literal(roleName);
@@ -69,7 +69,7 @@ function dropRole(mOptions) {
   return _drop;
 }
 
-function createRole(mOptions) {
+export function createRole(mOptions) {
   const _create = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions({
       ...roleOptions,
@@ -87,7 +87,7 @@ function createRole(mOptions) {
   return _create;
 }
 
-function alterRole(mOptions) {
+export function alterRole(mOptions) {
   const _alter = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions(roleOptions);
     return options
@@ -97,7 +97,7 @@ function alterRole(mOptions) {
   return _alter;
 }
 
-function renameRole(mOptions) {
+export function renameRole(mOptions) {
   const _rename = (oldRoleName, newRoleName) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName);
     const newRoleNameStr = mOptions.literal(newRoleName);
@@ -107,10 +107,3 @@ function renameRole(mOptions) {
     _rename(newRoleName, oldRoleName);
   return _rename;
 }
-
-module.exports = {
-  createRole,
-  dropRole,
-  alterRole,
-  renameRole
-};

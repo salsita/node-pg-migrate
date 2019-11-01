@@ -1,6 +1,6 @@
-const { createTransformer } = require('../utils');
+import { createTransformer } from '../utils';
 
-function sql(mOptions) {
+export function sql(mOptions) {
   const t = createTransformer(mOptions.literal);
   return (...args) => {
     // applies some very basic templating using the utils.p
@@ -12,7 +12,3 @@ function sql(mOptions) {
     return s;
   };
 }
-
-module.exports = {
-  sql
-};

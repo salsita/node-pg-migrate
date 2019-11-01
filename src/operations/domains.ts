@@ -1,6 +1,6 @@
-const { applyType, escapeValue } = require('../utils');
+import { applyType, escapeValue } from '../utils';
 
-function dropDomain(mOptions) {
+export function dropDomain(mOptions) {
   const _drop = (domainName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -10,7 +10,7 @@ function dropDomain(mOptions) {
   return _drop;
 }
 
-function createDomain(mOptions) {
+export function createDomain(mOptions) {
   const _create = (domainName, type, options = {}) => {
     const {
       default: defaultValue,
@@ -53,7 +53,7 @@ function createDomain(mOptions) {
   return _create;
 }
 
-function alterDomain(mOptions) {
+export function alterDomain(mOptions) {
   const _alter = (domainName, options) => {
     const {
       default: defaultValue,
@@ -90,7 +90,7 @@ function alterDomain(mOptions) {
   return _alter;
 }
 
-function renameDomain(mOptions) {
+export function renameDomain(mOptions) {
   const _rename = (domainName, newDomainName) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);
@@ -100,10 +100,3 @@ function renameDomain(mOptions) {
     _rename(newDomainName, domainName);
   return _rename;
 }
-
-module.exports = {
-  dropDomain,
-  createDomain,
-  alterDomain,
-  renameDomain
-};

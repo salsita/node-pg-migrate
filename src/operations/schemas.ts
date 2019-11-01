@@ -1,4 +1,4 @@
-function dropSchema(mOptions) {
+export function dropSchema(mOptions) {
   const _drop = (schemaName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -8,7 +8,7 @@ function dropSchema(mOptions) {
   return _drop;
 }
 
-function createSchema(mOptions) {
+export function createSchema(mOptions) {
   const _create = (schemaName, { ifNotExists, authorization } = {}) => {
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaNameStr = mOptions.literal(schemaName);
@@ -21,7 +21,7 @@ function createSchema(mOptions) {
   return _create;
 }
 
-function renameSchema(mOptions) {
+export function renameSchema(mOptions) {
   const _rename = (schemaName, newSchemaName) => {
     const schemaNameStr = mOptions.literal(schemaName);
     const newSchemaNameStr = mOptions.literal(newSchemaName);
@@ -31,9 +31,3 @@ function renameSchema(mOptions) {
     _rename(newSchemaName, schemaName);
   return _rename;
 }
-
-module.exports = {
-  createSchema,
-  dropSchema,
-  renameSchema
-};

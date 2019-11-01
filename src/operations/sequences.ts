@@ -1,6 +1,6 @@
-const { applyType } = require('../utils');
+import { applyType } from '../utils';
 
-const parseSequenceOptions = (typeShorthands, options) => {
+export const parseSequenceOptions = (typeShorthands, options) => {
   const {
     type,
     increment,
@@ -47,7 +47,7 @@ const parseSequenceOptions = (typeShorthands, options) => {
   return clauses;
 };
 
-function dropSequence(mOptions) {
+export function dropSequence(mOptions) {
   const _drop = (sequenceName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -57,7 +57,7 @@ function dropSequence(mOptions) {
   return _drop;
 }
 
-function createSequence(mOptions) {
+export function createSequence(mOptions) {
   const _create = (sequenceName, options = {}) => {
     const { temporary, ifNotExists } = options;
     const temporaryStr = temporary ? ' TEMPORARY' : '';
@@ -74,7 +74,7 @@ function createSequence(mOptions) {
   return _create;
 }
 
-function alterSequence(mOptions) {
+export function alterSequence(mOptions) {
   return (sequenceName, options) => {
     const { restart } = options;
     const clauses = parseSequenceOptions(mOptions.typeShorthands, options);
@@ -90,7 +90,7 @@ function alterSequence(mOptions) {
   };
 }
 
-function renameSequence(mOptions) {
+export function renameSequence(mOptions) {
   const _rename = (sequenceName, newSequenceName) => {
     const sequenceNameStr = mOptions.literal(sequenceName);
     const newSequenceNameStr = mOptions.literal(newSequenceName);
@@ -100,11 +100,3 @@ function renameSequence(mOptions) {
     _rename(newSequenceName, sequenceName);
   return _rename;
 }
-
-module.exports = {
-  createSequence,
-  dropSequence,
-  alterSequence,
-  renameSequence,
-  parseSequenceOptions
-};
