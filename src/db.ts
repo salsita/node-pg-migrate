@@ -2,15 +2,30 @@
  This file just manages the database connection and provides a query method
  */
 
-import * as pg from 'pg';
+import { Client, QueryConfig, QueryResult } from 'pg';
 // or native libpq bindings
 // const pg = require('pg/native');
 
+// see ClientBase in @types/pg
+export interface DB {
+  query(queryConfig: QueryConfig): Promise<QueryResult>;
+  query(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<QueryResult>;
+
+  select(queryConfig: QueryConfig): Promise<any[]>;
+  select(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<any[]>;
+}
+
 export default (connection, log = console.error) => {
-  const isExternalClient = connection instanceof pg.Client;
+  const isExternalClient = connection instanceof Client;
   let clientActive = false;
 
-  const client = isExternalClient ? connection : new pg.Client(connection);
+  const client = isExternalClient ? connection : new Client(connection);
 
   const beforeCloseListeners = [];
 
