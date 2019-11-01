@@ -430,13 +430,17 @@ export default class MigrationBuilder {
 
   public readonly sql: (sql: string, args?: object) => void;
   public readonly func: (sql: string) => PgLiteral;
-  public readonly db: DB;
+  public readonly db: Partial<DB>;
 
-  private _steps: any[];
+  private _steps: string[];
   private _REVERSE_MODE: boolean;
   private _use_transaction: boolean;
 
-  constructor(db: DB, typeShorthands, shouldDecamelize: boolean) {
+  constructor(
+    db: DB,
+    typeShorthands: ColumnDefinitions,
+    shouldDecamelize: boolean
+  ) {
     this._steps = [];
     this._REVERSE_MODE = false;
     // by default, all migrations are wrapped in a transaction
@@ -583,7 +587,7 @@ export default class MigrationBuilder {
     };
   }
 
-  enableReverseMode() {
+  enableReverseMode(): this {
     this._REVERSE_MODE = true;
     return this;
   }
@@ -593,15 +597,15 @@ export default class MigrationBuilder {
     return this;
   }
 
-  isUsingTransaction() {
+  isUsingTransaction(): boolean {
     return this._use_transaction;
   }
 
-  getSql() {
+  getSql(): string {
     return `${this.getSqlSteps().join('\n')}\n`;
   }
 
-  getSqlSteps() {
+  getSqlSteps(): string[] {
     // in reverse mode, we flip the order of the statements
     return this._REVERSE_MODE ? this._steps.slice().reverse() : this._steps;
   }
