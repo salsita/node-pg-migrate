@@ -1,3 +1,15 @@
+export interface PolicyOptions {
+  role: string | string[];
+  using: string;
+  check: string;
+}
+
+export interface CreatePolicyOptionsEn {
+  command: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE';
+}
+
+export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions;
+
 const makeClauses = ({ role, using, check }) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');
   const clauses = [];

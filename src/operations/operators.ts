@@ -1,4 +1,37 @@
 import { formatParams, applyType } from '../utils';
+import { FunctionParam } from './functions';
+import { Name } from '../definitions';
+
+export interface CreateOperatorOptions {
+  procedure: Name;
+  left?: Name;
+  right?: Name;
+  commutator?: Name;
+  negator?: Name;
+  restrict?: Name;
+  join?: Name;
+  hashes?: boolean;
+  merges?: boolean;
+}
+
+export interface DropOperatorOptions {
+  left?: Name;
+  right?: Name;
+  ifExists?: boolean;
+  cascade?: boolean;
+}
+
+export interface CreateOperatorClassOptions {
+  default?: boolean;
+  family?: string;
+}
+
+export interface OperatorListDefinition {
+  type: 'function' | 'operator';
+  number: number;
+  name: Name;
+  params?: FunctionParam[];
+}
 
 export function dropOperator(mOptions) {
   const _drop = (operatorName, options = {}) => {

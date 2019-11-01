@@ -1,4 +1,21 @@
 import { escapeValue } from '../utils';
+import { Value } from '../definitions';
+
+export interface CreateViewOptions {
+  temporary?: boolean;
+  replace?: boolean;
+  recursive?: boolean;
+  columns?: string | string[];
+  checkOption?: 'CASCADED' | 'LOCAL';
+}
+
+export interface AlterViewOptions {
+  checkOption?: null | false | 'CASCADED' | 'LOCAL';
+}
+
+export interface AlterViewColumnOptions {
+  default?: Value;
+}
 
 export function dropView(mOptions) {
   const _drop = (viewName, { ifExists, cascade } = {}) => {

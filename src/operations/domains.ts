@@ -1,4 +1,24 @@
 import { applyType, escapeValue } from '../utils';
+import { Value } from '../definitions';
+
+export interface DomainOptions {
+  default?: Value;
+  notNull?: boolean;
+  check?: string;
+  constraintName?: string;
+}
+
+export interface DomainOptionsCreateEn {
+  collation?: string;
+}
+
+export type DomainOptionsCreate = DomainOptionsCreateEn & DomainOptions;
+
+export interface DomainOptionsAlterEn {
+  allowNull?: boolean;
+}
+
+export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions;
 
 export function dropDomain(mOptions) {
   const _drop = (domainName, { ifExists, cascade } = {}) => {

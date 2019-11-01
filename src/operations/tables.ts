@@ -7,6 +7,35 @@ import {
   formatLines
 } from '../utils';
 import { parseSequenceOptions } from './sequences';
+import { Name, Value, LikeOptions, ReferencesOptions } from '../definitions';
+
+export interface ForeignKeyOptions extends ReferencesOptions {
+  columns: Name | Name[];
+}
+
+export interface ConstraintOptions {
+  check?: string | string[];
+  unique?: Name[] | Name[][];
+  primaryKey?: Name | Name[];
+  foreignKeys?: ForeignKeyOptions | ForeignKeyOptions[];
+  exclude?: string;
+  deferrable?: boolean;
+  deferred?: boolean;
+  comment?: string;
+}
+
+export interface TableOptions {
+  temporary?: boolean;
+  ifNotExists?: boolean;
+  inherits?: Name;
+  like?: Name | { table: Name; options?: LikeOptions };
+  constraints?: ConstraintOptions;
+  comment?: string | null;
+}
+
+export interface AlterTableOptions {
+  levelSecurity: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE';
+}
 
 const parseReferences = (options, literal) => {
   const { references, match, onDelete, onUpdate } = options;
@@ -344,6 +373,20 @@ export function alterTable(mOptions) {
 }
 
 // COLUMNS
+export interface AlterColumnOptions {
+  type?: string;
+  default?: Value;
+  notNull?: boolean;
+  allowNull?: boolean;
+  collation?: string;
+  using?: string;
+  comment?: string | null;
+  generated?:
+    | null
+    | false
+    | ({ precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions);
+}
+
 export function dropColumns(mOptions) {
   const _drop = (tableName, columns, { ifExists, cascade } = {}) => {
     if (typeof columns === 'string') {

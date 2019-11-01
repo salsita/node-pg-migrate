@@ -1,5 +1,23 @@
 import { isArray } from 'lodash';
 import { escapeValue } from '../utils';
+import { Value } from '../definitions';
+
+export interface RoleOptions {
+  superuser?: boolean;
+  createdb?: boolean;
+  createrole?: boolean;
+  inherit?: boolean;
+  login?: boolean;
+  replication?: boolean;
+  bypassrls?: boolean;
+  limit?: number;
+  password?: Value;
+  encrypted?: boolean;
+  valid?: Value;
+  inRole?: string | string[];
+  role?: string | string[];
+  admin?: string | string[];
+}
 
 const formatRoleOptions = (roleOptions = {}) => {
   const options = [];

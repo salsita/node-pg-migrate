@@ -1,5 +1,24 @@
 import { formatLines } from '../utils';
 
+export interface CreateMaterializedViewOptions {
+  ifNotExists?: boolean;
+  columns?: string | string[];
+  tablespace?: string;
+  storageParameters?: object;
+  data?: boolean;
+}
+
+export interface AlterMaterializedViewOptions {
+  cluster?: null | false | string;
+  extension?: string;
+  storageParameters?: object;
+}
+
+export interface RefreshMaterializedViewOptions {
+  concurrently?: boolean;
+  data?: boolean;
+}
+
 const dataClause = data =>
   data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '';
 const storageParameterStr = storageParameters => key => {

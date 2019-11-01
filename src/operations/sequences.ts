@@ -1,4 +1,29 @@
 import { applyType } from '../utils';
+import { Type } from '../definitions';
+
+export interface SequenceOptions {
+  type?: Type;
+  increment?: number;
+  minvalue?: number | null | false;
+  maxvalue?: number | null | false;
+  start?: number;
+  cache?: number;
+  cycle?: boolean;
+  owner?: string | null | false;
+}
+
+export interface SequenceOptionsCreateEn {
+  temporary?: boolean;
+  ifNotExists?: boolean;
+}
+
+export interface SequenceOptionsAlterEn {
+  restart?: number | true;
+}
+
+export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions;
+
+export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions;
 
 export const parseSequenceOptions = (typeShorthands, options) => {
   const {

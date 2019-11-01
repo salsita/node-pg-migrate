@@ -1,6 +1,19 @@
 import { isArray } from 'lodash';
 import { escapeValue } from '../utils';
 import { createFunction, dropFunction } from './functions';
+import { Name, Value } from '../definitions';
+
+export interface TriggerOptions {
+  when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+  operation: string | string[];
+  constraint?: boolean;
+  function?: Name;
+  functionParams?: Value[];
+  level?: 'STATEMENT' | 'ROW';
+  condition?: string;
+  deferrable?: boolean;
+  deferred?: boolean;
+}
 
 export function dropTrigger(mOptions) {
   const _drop = (tableName, triggerName, { ifExists, cascade } = {}) => {

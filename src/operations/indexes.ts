@@ -1,4 +1,21 @@
 import * as _ from 'lodash';
+import { DropOptions } from '../definitions';
+
+export interface CreateIndexOptions {
+  name?: string;
+  unique?: boolean;
+  where?: string;
+  concurrently?: boolean;
+  opclass?: string;
+  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
+}
+
+export interface DropIndexOptionsEn {
+  name?: string;
+  concurrently?: boolean;
+}
+
+export type DropIndexOptions = DropIndexOptionsEn & DropOptions;
 
 function generateIndexName(table, columns, options) {
   if (options.name) {

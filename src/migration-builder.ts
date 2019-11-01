@@ -11,6 +11,50 @@
 
 import { PgLiteral, createSchemalize } from './utils';
 
+import {
+  Name,
+  ColumnDefinitions,
+  DropOptions,
+  LiteralUnion,
+  AddOptions,
+  Value,
+  Type,
+  IfExistsOption
+} from './definitions';
+import {
+  TableOptions,
+  AlterTableOptions,
+  AlterColumnOptions,
+  ConstraintOptions
+} from './operations/tables';
+import { Extension, CreateExtensionOptions } from './operations/extensions';
+import { RoleOptions } from './operations/roles';
+import { FunctionParam, FunctionOptions } from './operations/functions';
+import { TriggerOptions } from './operations/triggers';
+import { DomainOptionsCreate, DomainOptionsAlter } from './operations/domains';
+import {
+  SequenceOptionsCreate,
+  SequenceOptionsAlter
+} from './operations/sequences';
+import {
+  CreateOperatorOptions,
+  DropOperatorOptions,
+  OperatorListDefinition,
+  CreateOperatorClassOptions
+} from './operations/operators';
+import { PolicyOptions, CreatePolicyOptions } from './operations/policies';
+import {
+  AlterViewColumnOptions,
+  AlterViewOptions,
+  CreateViewOptions
+} from './operations/views';
+import {
+  AlterMaterializedViewOptions,
+  RefreshMaterializedViewOptions,
+  CreateMaterializedViewOptions
+} from './operations/viewsMaterialized';
+import { CreateIndexOptions, DropIndexOptions } from './operations/indexes';
+
 import * as extensions from './operations/extensions';
 import * as indexes from './operations/indexes';
 import * as tables from './operations/tables';
@@ -27,96 +71,388 @@ import * as views from './operations/views';
 import * as mViews from './operations/viewsMaterialized';
 import * as other from './operations/other';
 
+import { QueryConfig, QueryResult } from 'pg';
+
+// see ClientBase in @types/pg
+export interface DB {
+  query(queryConfig: QueryConfig): Promise<QueryResult>;
+  query(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<QueryResult>;
+
+  select(queryConfig: QueryConfig): Promise<any[]>;
+  select(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<any[]>;
+}
+
 /* eslint-disable security/detect-non-literal-fs-filename */
 export default class MigrationBuilder {
-  public readonly createExtension: (...args: any[]) => void;
-  public readonly dropExtension: (...args: any[]) => void;
-  public readonly addExtension: any;
-  public readonly createTable: (...args: any[]) => void;
-  public readonly dropTable: (...args: any[]) => void;
-  public readonly renameTable: (...args: any[]) => void;
-  public readonly alterTable: (...args: any[]) => void;
-  public readonly addColumns: (...args: any[]) => void;
-  public readonly dropColumns: (...args: any[]) => void;
-  public readonly renameColumn: (...args: any[]) => void;
-  public readonly alterColumn: (...args: any[]) => void;
-  public readonly addColumn: any;
-  public readonly dropColumn: any;
-  public readonly addConstraint: (...args: any[]) => void;
-  public readonly dropConstraint: (...args: any[]) => void;
-  public readonly renameConstraint: (...args: any[]) => void;
-  public readonly createConstraint: any;
-  public readonly createType: (...args: any[]) => void;
-  public readonly dropType: (...args: any[]) => void;
-  public readonly addType: any;
-  public readonly renameType: (...args: any[]) => void;
-  public readonly renameTypeAttribute: (...args: any[]) => void;
-  public readonly renameTypeValue: (...args: any[]) => void;
-  public readonly addTypeAttribute: (...args: any[]) => void;
-  public readonly dropTypeAttribute: (...args: any[]) => void;
-  public readonly setTypeAttribute: (...args: any[]) => void;
-  public readonly addTypeValue: (...args: any[]) => void;
-  public readonly createIndex: (...args: any[]) => void;
-  public readonly dropIndex: (...args: any[]) => void;
-  public readonly addIndex: any;
-  public readonly createRole: (...args: any[]) => void;
-  public readonly dropRole: (...args: any[]) => void;
-  public readonly alterRole: (...args: any[]) => void;
-  public readonly renameRole: (...args: any[]) => void;
-  public readonly createFunction: (...args: any[]) => void;
-  public readonly dropFunction: (...args: any[]) => void;
-  public readonly renameFunction: (...args: any[]) => void;
-  public readonly createTrigger: (...args: any[]) => void;
-  public readonly dropTrigger: (...args: any[]) => void;
-  public readonly renameTrigger: (...args: any[]) => void;
-  public readonly createSchema: (...args: any[]) => void;
-  public readonly dropSchema: (...args: any[]) => void;
-  public readonly renameSchema: (...args: any[]) => void;
-  public readonly createDomain: (...args: any[]) => void;
-  public readonly dropDomain: (...args: any[]) => void;
-  public readonly alterDomain: (...args: any[]) => void;
-  public readonly renameDomain: (...args: any[]) => void;
-  public readonly createSequence: (...args: any[]) => void;
-  public readonly dropSequence: (...args: any[]) => void;
-  public readonly alterSequence: (...args: any[]) => void;
-  public readonly renameSequence: (...args: any[]) => void;
-  public readonly createOperator: (...args: any[]) => void;
-  public readonly dropOperator: (...args: any[]) => void;
-  public readonly createOperatorClass: (...args: any[]) => void;
-  public readonly dropOperatorClass: (...args: any[]) => void;
-  public readonly renameOperatorClass: (...args: any[]) => void;
-  public readonly createOperatorFamily: (...args: any[]) => void;
-  public readonly dropOperatorFamily: (...args: any[]) => void;
-  public readonly renameOperatorFamily: (...args: any[]) => void;
-  public readonly addToOperatorFamily: (...args: any[]) => void;
-  public readonly removeFromOperatorFamily: (...args: any[]) => void;
-  public readonly createPolicy: (...args: any[]) => void;
-  public readonly dropPolicy: (...args: any[]) => void;
-  public readonly alterPolicy: (...args: any[]) => void;
-  public readonly renamePolicy: (...args: any[]) => void;
-  public readonly createView: (...args: any[]) => void;
-  public readonly dropView: (...args: any[]) => void;
-  public readonly alterView: (...args: any[]) => void;
-  public readonly alterViewColumn: (...args: any[]) => void;
-  public readonly renameView: (...args: any[]) => void;
-  public readonly createMaterializedView: (...args: any[]) => void;
-  public readonly dropMaterializedView: (...args: any[]) => void;
-  public readonly alterMaterializedView: (...args: any[]) => void;
-  public readonly renameMaterializedView: (...args: any[]) => void;
-  public readonly renameMaterializedViewColumn: (...args: any[]) => void;
-  public readonly refreshMaterializedView: (...args: any[]) => void;
-  public readonly sql: (...args: any[]) => void;
-  public readonly func: (str: any) => PgLiteral;
-  public readonly db: {
-    query: (...args: any[]) => any;
-    select: (...args: any[]) => any;
-  };
+  public readonly createExtension: (
+    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+    options?: CreateExtensionOptions
+  ) => void;
+  public readonly dropExtension: (
+    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly addExtension: (
+    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+    options?: CreateExtensionOptions
+  ) => void;
+
+  public readonly createTable: (
+    tableName: Name,
+    columns: ColumnDefinitions,
+    options?: TableOptions
+  ) => void;
+  public readonly dropTable: (
+    tableName: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameTable: (tableName: Name, newtableName: Name) => void;
+  public readonly alterTable: (
+    tableName: Name,
+    alterOptions: AlterTableOptions
+  ) => void;
+
+  public readonly addColumns: (
+    tableName: Name,
+    newColumns: ColumnDefinitions,
+    addOptions?: AddOptions
+  ) => void;
+  public readonly dropColumns: (
+    tableName: Name,
+    columns: string | string[] | { [name: string]: any },
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameColumn: (
+    tableName: Name,
+    oldColumnName: string,
+    newColumnName: string
+  ) => void;
+  public readonly alterColumn: (
+    tableName: Name,
+    columnName: string,
+    options: AlterColumnOptions
+  ) => void;
+  public readonly addColumn: (
+    tableName: Name,
+    newColumns: ColumnDefinitions,
+    addOptions?: AddOptions
+  ) => void;
+  public readonly dropColumn: (
+    tableName: Name,
+    columns: string | string[] | { [name: string]: any },
+    dropOptions?: DropOptions
+  ) => void;
+
+  public readonly addConstraint: (
+    tableName: Name,
+    constraintName: string | null,
+    expression: string | ConstraintOptions
+  ) => void;
+  public readonly dropConstraint: (
+    tableName: Name,
+    constraintName: string,
+    options?: DropOptions
+  ) => void;
+  public readonly renameConstraint: (
+    tableName: Name,
+    oldConstraintName: string,
+    newConstraintName: string
+  ) => void;
+  public readonly createConstraint: (
+    tableName: Name,
+    constraintName: string | null,
+    expression: string | ConstraintOptions
+  ) => void;
+
+  public readonly createType: (
+    typeName: Name,
+    values: Value[] | { [name: string]: Type }
+  ) => void;
+  public readonly dropType: (typeName: Name, dropOptions?: DropOptions) => void;
+  public readonly addType: (
+    typeName: Name,
+    values: Value[] | { [name: string]: Type }
+  ) => void;
+  public readonly renameType: (typeName: Name, newTypeName: Name) => void;
+  public readonly renameTypeAttribute: (
+    typeName: Name,
+    attributeName: string,
+    newAttributeName: string
+  ) => void;
+  public readonly renameTypeValue: (
+    typeName: Name,
+    value: string,
+    newValue: string
+  ) => void;
+  public readonly addTypeAttribute: (
+    typeName: Name,
+    attributeName: string,
+    attributeType: Type
+  ) => void;
+  public readonly dropTypeAttribute: (
+    typeName: Name,
+    attributeName: string,
+    options: IfExistsOption
+  ) => void;
+  public readonly setTypeAttribute: (
+    typeName: Name,
+    attributeName: string,
+    attributeType: Type
+  ) => void;
+  public readonly addTypeValue: (
+    typeName: Name,
+    value: Value,
+    options?: {
+      ifNotExists?: boolean;
+      before?: string;
+      after?: string;
+    }
+  ) => void;
+
+  public readonly createIndex: (
+    tableName: Name,
+    columns: string | string[],
+    options?: CreateIndexOptions
+  ) => void;
+  public readonly dropIndex: (
+    tableName: Name,
+    columns: string | string[],
+    options?: DropIndexOptions
+  ) => void;
+  public readonly addIndex: (
+    tableName: Name,
+    columns: string | string[],
+    options?: CreateIndexOptions
+  ) => void;
+
+  public readonly createRole: (
+    roleName: Name,
+    roleOptions?: RoleOptions
+  ) => void;
+  public readonly dropRole: (roleName: Name, options?: IfExistsOption) => void;
+  public readonly alterRole: (roleName: Name, roleOptions: RoleOptions) => void;
+  public readonly renameRole: (oldRoleName: Name, newRoleName: Name) => void;
+
+  public readonly createFunction: (
+    functionName: Name,
+    functionParams: FunctionParam[],
+    functionOptions: FunctionOptions,
+    definition: Value
+  ) => void;
+  public readonly dropFunction: (
+    functionName: Name,
+    functionParams: FunctionParam[],
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameFunction: (
+    oldFunctionName: Name,
+    functionParams: FunctionParam[],
+    newFunctionName: Name
+  ) => void;
+
+  public readonly createTrigger:
+    | ((
+        tableName: Name,
+        triggerName: Name,
+        triggerOptions: TriggerOptions
+      ) => void)
+    | ((
+        tableName: Name,
+        triggerName: Name,
+        triggerOptions: TriggerOptions & FunctionOptions,
+        definition: Value
+      ) => void);
+  public readonly dropTrigger: (
+    tableName: Name,
+    triggerName: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameTrigger: (
+    tableName: Name,
+    oldTriggerName: Name,
+    newTriggerName: Name
+  ) => void;
+
+  public readonly createSchema: (
+    schemaName: string,
+    schemaOptions?: {
+      ifNotExists?: boolean;
+      authorization?: string;
+    }
+  ) => void;
+  public readonly dropSchema: (
+    schemaName: string,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameSchema: (
+    oldSchemaName: string,
+    newSchemaName: string
+  ) => void;
+
+  public readonly createDomain: (
+    domainName: Name,
+    type: Type,
+    domainOptions?: DomainOptionsCreate
+  ) => void;
+  public readonly dropDomain: (
+    domainName: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly alterDomain: (
+    domainName: Name,
+    domainOptions: DomainOptionsAlter
+  ) => void;
+  public readonly renameDomain: (
+    oldDomainName: Name,
+    newDomainName: Name
+  ) => void;
+
+  public readonly createSequence: (
+    sequenceName: Name,
+    sequenceOptions?: SequenceOptionsCreate
+  ) => void;
+  public readonly dropSequence: (
+    sequenceName: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly alterSequence: (
+    sequenceName: Name,
+    sequenceOptions: SequenceOptionsAlter
+  ) => void;
+  public readonly renameSequence: (
+    oldSequenceName: Name,
+    newSequenceName: Name
+  ) => void;
+
+  public readonly createOperator: (
+    operatorName: Name,
+    options?: CreateOperatorOptions
+  ) => void;
+  public readonly dropOperator: (
+    operatorName: Name,
+    dropOptions?: DropOperatorOptions
+  ) => void;
+  public readonly createOperatorClass: (
+    operatorClassName: Name,
+    type: Type,
+    indexMethod: Name,
+    operatorList: OperatorListDefinition,
+    options: CreateOperatorClassOptions
+  ) => void;
+  public readonly dropOperatorClass: (
+    operatorClassName: Name,
+    indexMethod: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameOperatorClass: (
+    oldOperatorClassName: Name,
+    indexMethod: Name,
+    newOperatorClassName: Name
+  ) => void;
+  public readonly createOperatorFamily: (
+    operatorFamilyName: Name,
+    indexMethod: Name
+  ) => void;
+  public readonly dropOperatorFamily: (
+    operatorFamilyName: Name,
+    newSchemaName: Name,
+    dropOptions?: DropOptions
+  ) => void;
+  public readonly renameOperatorFamily: (
+    oldOperatorFamilyName: Name,
+    indexMethod: Name,
+    newOperatorFamilyName: Name
+  ) => void;
+  public readonly addToOperatorFamily: (
+    operatorFamilyName: Name,
+    indexMethod: Name,
+    operatorList: OperatorListDefinition
+  ) => void;
+  public readonly removeFromOperatorFamily: (
+    operatorFamilyName: Name,
+    indexMethod: Name,
+    operatorList: OperatorListDefinition
+  ) => void;
+
+  public readonly createPolicy: (
+    tableName: Name,
+    policyName: string,
+    options?: CreatePolicyOptions
+  ) => void;
+  public readonly dropPolicy: (
+    tableName: Name,
+    policyName: string,
+    options?: IfExistsOption
+  ) => void;
+  public readonly alterPolicy: (
+    tableName: Name,
+    policyName: string,
+    options: PolicyOptions
+  ) => void;
+  public readonly renamePolicy: (
+    tableName: Name,
+    policyName: string,
+    newPolicyName: string
+  ) => void;
+
+  public readonly createView: (
+    viewName: Name,
+    options: CreateViewOptions,
+    definition: string
+  ) => void;
+  public readonly dropView: (viewName: Name, options?: DropOptions) => void;
+  public readonly alterView: (
+    viewName: Name,
+    options: AlterViewOptions
+  ) => void;
+  public readonly alterViewColumn: (
+    viewName: Name,
+    options: AlterViewColumnOptions
+  ) => void;
+  public readonly renameView: (viewName: Name, newViewName: Name) => void;
+
+  public readonly createMaterializedView: (
+    viewName: Name,
+    options: CreateMaterializedViewOptions,
+    definition: string
+  ) => void;
+  public readonly dropMaterializedView: (
+    viewName: Name,
+    options?: DropOptions
+  ) => void;
+  public readonly alterMaterializedView: (
+    viewName: Name,
+    options: AlterMaterializedViewOptions
+  ) => void;
+  public readonly renameMaterializedView: (
+    viewName: Name,
+    newViewName: Name
+  ) => void;
+  public readonly renameMaterializedViewColumn: (
+    viewName: Name,
+    columnName: string,
+    newColumnName: string
+  ) => void;
+  public readonly refreshMaterializedView: (
+    viewName: Name,
+    options?: RefreshMaterializedViewOptions
+  ) => void;
+
+  public readonly sql: (sql: string, args?: object) => void;
+  public readonly func: (sql: string) => PgLiteral;
+  public readonly db: DB;
 
   private _steps: any[];
   private _REVERSE_MODE: boolean;
   private _use_transaction: boolean;
 
-  constructor(db, typeShorthands, shouldDecamelize) {
+  constructor(db: DB, typeShorthands, shouldDecamelize: boolean) {
     this._steps = [];
     this._REVERSE_MODE = false;
     // by default, all migrations are wrapped in a transaction
@@ -268,7 +604,7 @@ export default class MigrationBuilder {
     return this;
   }
 
-  noTransaction() {
+  public noTransaction(): this {
     this._use_transaction = false;
     return this;
   }
