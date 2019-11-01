@@ -7,7 +7,7 @@
  */
 
 import * as fs from 'fs';
-import mkdirp from 'mkdirp';
+import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 
 import MigrationBuilder from './migration-builder';

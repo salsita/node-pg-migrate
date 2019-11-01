@@ -57,6 +57,7 @@
     "@babel/plugin-proposal-object-rest-spread": "7.6.2",
     "@babel/preset-env": "7.6.3",
     "@types/lodash": "4.14.144",
+    "@types/mkdirp": "0.5.2",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
