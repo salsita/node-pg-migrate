@@ -1,13 +1,15 @@
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+import { Client } from 'pg';
+import { TlsOptions } from 'tls';
 import Db from './db';
 import Migration, { loadMigrationFiles } from './migration';
 import {
-  getSchemas,
+  createSchemalize,
   getMigrationTableSchema,
-  promisify,
+  getSchemas,
   PgLiteral,
-  createSchemalize
+  promisify
 } from './utils';
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
@@ -160,7 +162,52 @@ const runMigrations = (toRun, method, direction) =>
     Promise.resolve()
   );
 
-const runner = async options => {
+export interface RunnerOptionConfig {
+  migrationsTable: string;
+  migrationsSchema?: string;
+  schema?: string | string[];
+  dir: string;
+  checkOrder?: boolean;
+  direction: 'up' | 'down';
+  count: number;
+  timestamp?: boolean;
+  ignorePattern: string;
+  file?: string;
+  dryRun?: boolean;
+  createSchema?: boolean;
+  createMigrationsSchema?: boolean;
+  singleTransaction?: boolean;
+  noLock?: boolean;
+  fake?: boolean;
+  decamelize?: boolean;
+  log?: (msg: string) => void;
+}
+
+export interface ConnectionConfig {
+  user?: string;
+  database?: string;
+  password?: string;
+  port?: number;
+  host?: string;
+  connectionString?: string;
+}
+
+export interface ClientConfig extends ConnectionConfig {
+  ssl?: boolean | TlsOptions;
+}
+
+export interface RunnerOptionUrl {
+  databaseUrl: string | ClientConfig;
+}
+
+export interface RunnerOptionClient {
+  dbClient: Client;
+}
+
+export type RunnerOption = RunnerOptionConfig &
+  (RunnerOptionClient | RunnerOptionUrl);
+
+const runner = async (options: RunnerOption): Promise<void> => {
   const log = options.log || console.log;
   const db = Db(options.dbClient || options.databaseUrl, log);
   try {
