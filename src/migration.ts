@@ -75,8 +75,8 @@ export class Migration {
   public readonly timestamp: number;
   public readonly up: any;
   public down: any;
-  public readonly options: {};
-  public readonly typeShorthands: any;
+  public readonly options: any;
+  public readonly typeShorthands: ColumnDefinitions;
   public readonly log: (message?: any, ...optionalParams: any[]) => void;
 
   constructor(
@@ -114,7 +114,7 @@ export class Migration {
     }
   }
 
-  async _apply(action, pgm) {
+  async _apply(action, pgm: MigrationBuilder) {
     if (action.length === 2) {
       await new Promise(resolve => action(pgm, resolve));
     } else {
@@ -190,4 +190,5 @@ export class Migration {
   }
 }
 
+export default Migration;
 module.exports = Migration;

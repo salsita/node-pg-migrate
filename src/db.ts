@@ -23,7 +23,7 @@ export interface DB {
   close(): Promise<void>;
 }
 
-module.exports = (connection, log = console.error): DB => {
+const db = (connection, log = console.error): DB => {
   const isExternalClient = connection instanceof Client;
   let clientActive = false;
 
@@ -104,3 +104,6 @@ ${err}
     }
   };
 };
+
+export default db;
+module.exports = db;
