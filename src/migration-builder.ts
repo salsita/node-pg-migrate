@@ -9,84 +9,62 @@
  and it makes inference of down migrations possible.
  */
 
-import { PgLiteral, createSchemalize } from './utils';
-
+import { DB } from './db';
 import {
-  Name,
+  AddOptions,
   ColumnDefinitions,
   DropOptions,
+  IfExistsOption,
   LiteralUnion,
-  AddOptions,
-  Value,
+  Name,
   Type,
-  IfExistsOption
+  Value
 } from './definitions';
+import { DomainOptionsAlter, DomainOptionsCreate } from './operations/domains';
+import { CreateExtensionOptions, Extension } from './operations/extensions';
+import { FunctionOptions, FunctionParam } from './operations/functions';
+import { CreateIndexOptions, DropIndexOptions } from './operations/indexes';
 import {
-  TableOptions,
-  AlterTableOptions,
-  AlterColumnOptions,
-  ConstraintOptions
-} from './operations/tables';
-import { Extension, CreateExtensionOptions } from './operations/extensions';
-import { RoleOptions } from './operations/roles';
-import { FunctionParam, FunctionOptions } from './operations/functions';
-import { TriggerOptions } from './operations/triggers';
-import { DomainOptionsCreate, DomainOptionsAlter } from './operations/domains';
-import {
-  SequenceOptionsCreate,
-  SequenceOptionsAlter
-} from './operations/sequences';
-import {
+  CreateOperatorClassOptions,
   CreateOperatorOptions,
   DropOperatorOptions,
-  OperatorListDefinition,
-  CreateOperatorClassOptions
+  OperatorListDefinition
 } from './operations/operators';
-import { PolicyOptions, CreatePolicyOptions } from './operations/policies';
+import { CreatePolicyOptions, PolicyOptions } from './operations/policies';
+import { RoleOptions } from './operations/roles';
+import {
+  SequenceOptionsAlter,
+  SequenceOptionsCreate
+} from './operations/sequences';
+import {
+  AlterColumnOptions,
+  AlterTableOptions,
+  ConstraintOptions,
+  TableOptions
+} from './operations/tables';
+import { TriggerOptions } from './operations/triggers';
 import {
   AlterViewColumnOptions,
   AlterViewOptions,
   CreateViewOptions
 } from './operations/views';
-import {
-  AlterMaterializedViewOptions,
-  RefreshMaterializedViewOptions,
-  CreateMaterializedViewOptions
-} from './operations/viewsMaterialized';
-import { CreateIndexOptions, DropIndexOptions } from './operations/indexes';
+import { createSchemalize, PgLiteral } from './utils';
 
-import * as extensions from './operations/extensions';
-import * as indexes from './operations/indexes';
-import * as tables from './operations/tables';
-import * as types from './operations/types';
-import * as roles from './operations/roles';
-import * as functions from './operations/functions';
-import * as triggers from './operations/triggers';
-import * as schemas from './operations/schemas';
 import * as domains from './operations/domains';
-import * as sequences from './operations/sequences';
+import * as extensions from './operations/extensions';
+import * as functions from './operations/functions';
+import * as indexes from './operations/indexes';
 import * as operators from './operations/operators';
+import * as other from './operations/other';
 import * as policies from './operations/policies';
+import * as roles from './operations/roles';
+import * as schemas from './operations/schemas';
+import * as sequences from './operations/sequences';
+import * as tables from './operations/tables';
+import * as triggers from './operations/triggers';
+import * as types from './operations/types';
 import * as views from './operations/views';
 import * as mViews from './operations/viewsMaterialized';
-import * as other from './operations/other';
-
-import { QueryConfig, QueryResult } from 'pg';
-
-// see ClientBase in @types/pg
-export interface DB {
-  query(queryConfig: QueryConfig): Promise<QueryResult>;
-  query(
-    queryTextOrConfig: string | QueryConfig,
-    values?: any[]
-  ): Promise<QueryResult>;
-
-  select(queryConfig: QueryConfig): Promise<any[]>;
-  select(
-    queryTextOrConfig: string | QueryConfig,
-    values?: any[]
-  ): Promise<any[]>;
-}
 
 /* eslint-disable security/detect-non-literal-fs-filename */
 export default class MigrationBuilder {
@@ -419,7 +397,7 @@ export default class MigrationBuilder {
 
   public readonly createMaterializedView: (
     viewName: Name,
-    options: CreateMaterializedViewOptions,
+    options: mViews.CreateMaterializedViewOptions,
     definition: string
   ) => void;
   public readonly dropMaterializedView: (
@@ -428,7 +406,7 @@ export default class MigrationBuilder {
   ) => void;
   public readonly alterMaterializedView: (
     viewName: Name,
-    options: AlterMaterializedViewOptions
+    options: mViews.AlterMaterializedViewOptions
   ) => void;
   public readonly renameMaterializedView: (
     viewName: Name,
@@ -441,7 +419,7 @@ export default class MigrationBuilder {
   ) => void;
   public readonly refreshMaterializedView: (
     viewName: Name,
-    options?: RefreshMaterializedViewOptions
+    options?: mViews.RefreshMaterializedViewOptions
   ) => void;
 
   public readonly sql: (sql: string, args?: object) => void;
