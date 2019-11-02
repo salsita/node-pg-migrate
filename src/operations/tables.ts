@@ -4,6 +4,7 @@ import {
   ColumnDefinition,
   ColumnDefinitions,
   DropOptions,
+  Like,
   LikeOptions,
   Name,
   ReferencesOptions,
@@ -47,9 +48,12 @@ export interface AlterTableOptions {
   levelSecurity: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE';
 }
 
-const parseReferences = (options, literal) => {
+const parseReferences = (
+  options: ReferencesOptions,
+  literal: (v: Name) => string
+) => {
   const { references, match, onDelete, onUpdate } = options;
-  const clauses = [];
+  const clauses: string[] = [];
   clauses.push(
     typeof references === 'string' &&
       (references.startsWith('"') || references.endsWith(')'))
@@ -68,7 +72,7 @@ const parseReferences = (options, literal) => {
   return clauses.join(' ');
 };
 
-const parseDeferrable = options =>
+const parseDeferrable = (options: { deferred?: boolean }) =>
   `DEFERRABLE INITIALLY ${options.deferred ? 'DEFERRED' : 'IMMEDIATE'}`;
 
 const parseColumns = (
@@ -201,7 +205,12 @@ const parseColumns = (
   };
 };
 
-const parseConstraints = (table, options, optionName, literal) => {
+const parseConstraints = (
+  table: Name,
+  options: ConstraintOptions,
+  optionName: string,
+  literal: (v: Name) => string
+) => {
   const {
     check,
     unique,
@@ -210,7 +219,7 @@ const parseConstraints = (table, options, optionName, literal) => {
     exclude,
     deferrable,
     comment: optionComment
-  } = options;
+  }: ConstraintOptions = options;
   const tableName = typeof table === 'object' ? table.name : table;
   let constraints = [];
   const comments = [];
@@ -299,8 +308,14 @@ const parseConstraints = (table, options, optionName, literal) => {
   };
 };
 
-const parseLike = (like, literal) => {
-  const formatOptions = (name, options) =>
+const parseLike = (
+  like: Name | { table: Name; options?: LikeOptions },
+  literal: (v: Name) => string
+) => {
+  const formatOptions = (
+    name: 'INCLUDING' | 'EXCLUDING',
+    options: Like | Like[]
+  ) =>
     (_.isArray(options) ? options : [options])
       .map(option => ` ${name} ${option}`)
       .join('');
@@ -339,7 +354,7 @@ export function createTable(mOptions: MigrationOptions) {
       like,
       constraints: optionsConstraints = {},
       comment: tableComment
-    } = options;
+    }: TableOptions = options;
     const {
       columns: columnLines,
       constraints: crossColumnConstraints,
@@ -356,7 +371,7 @@ export function createTable(mOptions: MigrationOptions) {
       );
     }
 
-    const constraints = {
+    const constraints: ConstraintOptions = {
       ...optionsConstraints,
       ...crossColumnConstraints
     };
