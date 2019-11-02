@@ -14,6 +14,7 @@ import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
 import { getMigrationTableSchema, promisify } from './utils';
 import { DB } from './db';
 import { ColumnDefinitions } from './definitions';
+import { MigrationDirection } from './runner';
 
 const readdir = promisify<string[]>(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
 const lstat = promisify<fs.Stats>(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
@@ -147,7 +148,7 @@ export class Migration {
     );
   }
 
-  _getAction(direction) {
+  _getAction(direction: MigrationDirection) {
     if (direction === 'down') {
       if (this.down === false) {
         throw new Error(
@@ -169,7 +170,7 @@ export class Migration {
     return action;
   }
 
-  apply(direction) {
+  apply(direction: MigrationDirection) {
     const pgm = new MigrationBuilder(
       this.db,
       this.typeShorthands,
@@ -185,7 +186,7 @@ export class Migration {
     return this._apply(action, pgm);
   }
 
-  markAsRun(direction) {
+  markAsRun(direction: MigrationDirection) {
     return this.db.query(this._getMarkAsRun(this._getAction(direction)));
   }
 }

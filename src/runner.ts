@@ -161,7 +161,9 @@ const checkOrder = (runNames, migrations) => {
   }
 };
 
-const runMigrations = (toRun, method, direction) =>
+export type MigrationDirection = 'up' | 'down';
+
+const runMigrations = (toRun, method, direction: MigrationDirection) =>
   toRun.reduce(
     (promise, migration) => promise.then(() => migration[method](direction)),
     Promise.resolve()
@@ -173,7 +175,7 @@ export interface RunnerOptionConfig {
   schema?: string | string[];
   dir: string;
   checkOrder?: boolean;
-  direction: 'up' | 'down';
+  direction: MigrationDirection;
   count: number;
   timestamp?: boolean;
   ignorePattern: string;
