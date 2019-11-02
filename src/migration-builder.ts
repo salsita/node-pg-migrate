@@ -331,23 +331,23 @@ export default class MigrationBuilder {
   public readonly createOperatorClass: (
     operatorClassName: Name,
     type: Type,
-    indexMethod: Name,
+    indexMethod: string,
     operatorList: OperatorListDefinition[],
     options: CreateOperatorClassOptions
   ) => void;
   public readonly dropOperatorClass: (
     operatorClassName: Name,
-    indexMethod: Name,
+    indexMethod: string,
     dropOptions?: DropOptions
   ) => void;
   public readonly renameOperatorClass: (
     oldOperatorClassName: Name,
-    indexMethod: Name,
+    indexMethod: string,
     newOperatorClassName: Name
   ) => void;
   public readonly createOperatorFamily: (
     operatorFamilyName: Name,
-    indexMethod: Name
+    indexMethod: string
   ) => void;
   public readonly dropOperatorFamily: (
     operatorFamilyName: Name,
@@ -356,17 +356,17 @@ export default class MigrationBuilder {
   ) => void;
   public readonly renameOperatorFamily: (
     oldOperatorFamilyName: Name,
-    indexMethod: Name,
+    indexMethod: string,
     newOperatorFamilyName: Name
   ) => void;
   public readonly addToOperatorFamily: (
     operatorFamilyName: Name,
-    indexMethod: Name,
+    indexMethod: string,
     operatorList: OperatorListDefinition[]
   ) => void;
   public readonly removeFromOperatorFamily: (
     operatorFamilyName: Name,
-    indexMethod: Name,
+    indexMethod: string,
     operatorList: OperatorListDefinition[]
   ) => void;
 
