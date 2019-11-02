@@ -44,7 +44,13 @@ const getLastSuffix = async (dir, ignorePattern) => {
   }
 };
 
-export class Migration {
+export interface RunMigration {
+  readonly path: string;
+  readonly name: string;
+  readonly timestamp: number;
+}
+
+export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
   static async create(name, directory, language, ignorePattern) {
     // ensure the migrations directory exists

@@ -4,7 +4,7 @@ import { Client } from 'pg';
 import { TlsOptions } from 'tls';
 import Db, { DB } from './db';
 import { ColumnDefinitions } from './definitions';
-import Migration, { loadMigrationFiles } from './migration';
+import Migration, { loadMigrationFiles, RunMigration } from './migration';
 import { MigrationBuilderActions } from './migration-builder';
 import {
   createSchemalize,
@@ -111,9 +111,13 @@ const getRunMigrations = async (db: DB, options: RunnerOption) => {
   );
 };
 
-const getMigrationsToRun = (options, runNames, migrations) => {
+const getMigrationsToRun = (
+  options: RunnerOption,
+  runNames: string[],
+  migrations: Migration[]
+): Migration[] => {
   if (options.direction === 'down') {
-    const downMigrations = runNames
+    const downMigrations: Migration[] = runNames
       .filter(migrationName => !options.file || options.file === migrationName)
       .map(
         migrationName =>
@@ -214,7 +218,7 @@ export interface RunnerOptionClient {
 export type RunnerOption = RunnerOptionConfig &
   (RunnerOptionClient | RunnerOptionUrl);
 
-const runner = async (options: RunnerOption): Promise<void> => {
+const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
   const log = options.log || console.log;
   const db = Db(
     (options as RunnerOptionClient).dbClient ||
@@ -257,7 +261,11 @@ const runner = async (options: RunnerOption): Promise<void> => {
       checkOrder(runNames, migrations);
     }
 
-    const toRun = getMigrationsToRun(options, runNames, migrations);
+    const toRun: Migration[] = getMigrationsToRun(
+      options,
+      runNames,
+      migrations
+    );
 
     if (!toRun.length) {
       log('No migrations to run!');
