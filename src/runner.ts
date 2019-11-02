@@ -52,7 +52,7 @@ const loadMigrations = async (db: DB, options, log) => {
   }
 };
 
-const lock = async db => {
+const lock = async (db: DB): Promise<void> => {
   const {
     rows: [lockObtained]
   } = await db.query(
@@ -63,7 +63,10 @@ const lock = async db => {
   }
 };
 
-const ensureMigrationsTable = async (db, options) => {
+const ensureMigrationsTable = async (
+  db: DB,
+  options: RunnerOption
+): Promise<void> => {
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
@@ -95,7 +98,7 @@ const ensureMigrationsTable = async (db, options) => {
   }
 };
 
-const getRunMigrations = async (db, options) => {
+const getRunMigrations = async (db: DB, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options);
   const { migrationsTable } = options;
   const fullTableName = createSchemalize(options.decamelize, true)({

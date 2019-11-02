@@ -1,4 +1,6 @@
 import decamelize from 'decamelize';
+import { ColumnDefinitions, Name, Type, Value } from './definitions';
+import { RunnerOption } from './runner';
 
 // This is used to create unescaped strings
 // exposed in the migrations via pgm.func
@@ -25,11 +27,11 @@ export const createSchemalize = (
   shouldDecamelize: boolean,
   shouldQuote: boolean
 ) => {
-  const transform: (v: any) => any = [
+  const transform: (v: Name) => string = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity
   ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))));
-  return v => {
+  return (v: Name) => {
     if (typeof v === 'object') {
       const { schema, name } = v;
       return (schema ? `${transform(schema)}.` : '') + transform(name);
@@ -38,13 +40,16 @@ export const createSchemalize = (
   };
 };
 
-export const createTransformer = literal => (s, d) =>
+export const createTransformer = (literal: (v: Name) => string) => (
+  s: string,
+  d
+) =>
   Object.keys(d || {}).reduce(
-    (str, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
+    (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
     s
   );
 
-export const escapeValue = val => {
+export const escapeValue = (val: Value): string | number => {
   if (val === null) {
     return 'NULL';
   }
@@ -76,14 +81,14 @@ export const escapeValue = val => {
   return '';
 };
 
-export const getSchemas = schema => {
+export const getSchemas = (schema: string | string[]): string[] => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
     s => typeof s === 'string' && s.length > 0
   );
   return schemas.length > 0 ? schemas : ['public'];
 };
 
-export const getMigrationTableSchema = options =>
+export const getMigrationTableSchema = (options: RunnerOption): string =>
   options.migrationsSchema !== undefined
     ? options.migrationsSchema
     : getSchemas(options.schema)[0];
@@ -97,22 +102,25 @@ const typeAdapters = {
   bool: 'boolean'
 };
 
-const defaultTypeShorthands = {
+const defaultTypeShorthands: ColumnDefinitions = {
   id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
 };
 
 // some convenience adapters -- see above
-export const applyTypeAdapters = type =>
+export const applyTypeAdapters = (type: string): string =>
   typeAdapters[type] ? typeAdapters[type] : type;
 
-export const applyType = (type, extendingTypeShorthands = {}) => {
-  const typeShorthands = {
+export const applyType = (
+  type: Type,
+  extendingTypeShorthands: ColumnDefinitions = {}
+) => {
+  const typeShorthands: ColumnDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
   };
   const options = typeof type === 'string' ? { type } : type;
   let ext = null;
-  const types = [options.type];
+  const types: string[] = [options.type];
   while (typeShorthands[types[types.length - 1]]) {
     if (ext) {
       delete ext.type;

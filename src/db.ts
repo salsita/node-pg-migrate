@@ -14,12 +14,13 @@ export interface DB {
     queryTextOrConfig: string | QueryConfig,
     values?: any[]
   ): Promise<QueryResult>;
-
   select(queryConfig: QueryConfig): Promise<any[]>;
   select(
     queryTextOrConfig: string | QueryConfig,
     values?: any[]
   ): Promise<any[]>;
+  column(columnName: 'name', ...args: string[]): Promise<any>;
+  addBeforeCloseListener: (listener: any) => number;
   close(): Promise<void>;
 }
 
