@@ -2,9 +2,9 @@ import { isArray } from 'lodash';
 import { DropOptions, Name, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
-import { createFunction, dropFunction } from './functions';
+import { createFunction, dropFunction, FunctionOptions } from './functions';
 
-export interface TriggerOptions {
+export interface TriggerOptions extends FunctionOptions {
   when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
   operation: string | string[];
   constraint?: boolean;
@@ -35,7 +35,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   const _create = (
     tableName: Name,
     triggerName: Name,
-    triggerOptions = {},
+    triggerOptions: TriggerOptions = {},
     definition?: Value
   ) => {
     const {
@@ -45,7 +45,7 @@ export function createTrigger(mOptions: MigrationOptions) {
       deferrable,
       deferred,
       functionArgs = []
-    } = triggerOptions;
+    }: TriggerOptions = triggerOptions;
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
     const operations = isArray(operation) ? operation.join(' OR ') : operation;
     if (constraint) {
@@ -103,7 +103,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   _create.reverse = (
     tableName: Name,
     triggerName: Name,
-    triggerOptions = {},
+    triggerOptions: Partial<TriggerOptions> & DropOptions = {},
     definition?: Value
   ) => {
     const triggerSQL = dropTrigger(mOptions)(
