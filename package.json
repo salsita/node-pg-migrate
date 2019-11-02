@@ -94,7 +94,7 @@
     "migrate": "node bin/node-pg-migrate",
     "lint": "eslint . bin/*",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
-    "prepare": "npm run compile"
+    "prepare": "npm run build && npm run compile"
   },
   "husky": {
     "hooks": {
