@@ -9,19 +9,21 @@
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-
-import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
-import { getMigrationTableSchema, promisify } from './utils';
 import { DB } from './db';
 import { ColumnDefinitions } from './definitions';
-import { MigrationDirection } from './runner';
+import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
+import { MigrationDirection, RunnerOption } from './runner';
+import { getMigrationTableSchema, promisify } from './utils';
 
 const readdir = promisify<string[]>(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
 const lstat = promisify<fs.Stats>(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
 
 const SEPARATOR = '_';
 
-export const loadMigrationFiles = async (dir: string, ignorePattern) => {
+export const loadMigrationFiles = async (
+  dir: string,
+  ignorePattern: string
+) => {
   const dirContent = await readdir(`${dir}/`);
   const files = await Promise.all(
     dirContent.map(async file => {
@@ -33,7 +35,7 @@ export const loadMigrationFiles = async (dir: string, ignorePattern) => {
   return files.filter(i => i && !filter.test(i)).sort();
 };
 
-const getLastSuffix = async (dir, ignorePattern) => {
+const getLastSuffix = async (dir: string, ignorePattern: string) => {
   try {
     const files = await loadMigrationFiles(dir, ignorePattern);
     return files.length > 0
@@ -52,7 +54,12 @@ export interface RunMigration {
 
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
-  static async create(name, directory, language, ignorePattern) {
+  static async create(
+    name: string,
+    directory: string,
+    language: 'js' | 'ts' | 'sql',
+    ignorePattern: string
+  ) {
     // ensure the migrations directory exists
     mkdirp.sync(directory);
 
@@ -80,17 +87,17 @@ export class Migration implements RunMigration {
   public readonly path: string;
   public readonly name: string;
   public readonly timestamp: number;
-  public readonly up: any;
-  public down: any;
-  public readonly options: any;
+  public readonly up: (pgm: MigrationBuilder) => Promise<void>;
+  public down?: ((pgm: MigrationBuilder) => Promise<void>) | false;
+  public readonly options: RunnerOption;
   public readonly typeShorthands: ColumnDefinitions;
-  public readonly log: (message?: any, ...optionalParams: any[]) => void;
+  public readonly log: typeof console.log;
 
   constructor(
     db: DB | null,
     migrationPath: string,
     { up, down }: MigrationBuilderActions = {},
-    options = {},
+    options: RunnerOption = {},
     typeShorthands?: ColumnDefinitions,
     log = console.log
   ) {
@@ -105,7 +112,7 @@ export class Migration implements RunMigration {
     this.log = log;
   }
 
-  _getMarkAsRun(action) {
+  _getMarkAsRun(action: (pgm: MigrationBuilder) => Promise<void>) {
     const schema = getMigrationTableSchema(this.options);
     const { migrationsTable } = this.options;
     const { name } = this;
@@ -121,7 +128,10 @@ export class Migration implements RunMigration {
     }
   }
 
-  async _apply(action, pgm: MigrationBuilder) {
+  async _apply(
+    action: (pgm: MigrationBuilder, value?: unknown) => Promise<void>,
+    pgm: MigrationBuilder
+  ) {
     if (action.length === 2) {
       await new Promise(resolve => action(pgm, resolve));
     } else {
@@ -167,7 +177,9 @@ export class Migration implements RunMigration {
       }
     }
 
-    const action = this[direction];
+    const action: ((pgm: MigrationBuilder) => Promise<void>) | false = this[
+      direction
+    ];
 
     if (typeof action !== 'function') {
       throw new Error(`Unknown value for direction: ${direction}`);

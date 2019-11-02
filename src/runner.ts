@@ -23,7 +23,11 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-const loadMigrations = async (db: DB, options, log) => {
+const loadMigrations = async (
+  db: DB,
+  options: RunnerOption,
+  log: typeof console.log
+) => {
   try {
     let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
@@ -152,7 +156,7 @@ const getMigrationsToRun = (
       );
 };
 
-const checkOrder = (runNames, migrations) => {
+const checkOrder = (runNames: string[], migrations: Migration[]) => {
   const len = Math.min(runNames.length, migrations.length);
   for (let i = 0; i < len; i += 1) {
     const runName = runNames[i];
@@ -167,7 +171,11 @@ const checkOrder = (runNames, migrations) => {
 
 export type MigrationDirection = 'up' | 'down';
 
-const runMigrations = (toRun, method, direction: MigrationDirection) =>
+const runMigrations = (
+  toRun: Migration[],
+  method: 'markAsRun' | 'apply',
+  direction: MigrationDirection
+) =>
   toRun.reduce(
     (promise, migration) => promise.then(() => migration[method](direction)),
     Promise.resolve()

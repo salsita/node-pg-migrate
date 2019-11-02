@@ -108,7 +108,7 @@ const typeAdapters = {
   double: 'double precision',
   datetime: 'timestamp',
   bool: 'boolean'
-};
+} as const;
 
 const defaultTypeShorthands: ColumnDefinitions = {
   id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
@@ -197,10 +197,12 @@ export const formatLines = (
     .join(`${separator}\n`)
     .replace(/^/gm, replace);
 
-export function promisify<R>(fn: (...args) => any): (...args) => Promise<R> {
+export function promisify<R>(
+  fn: (...args: any[]) => any
+): (...args: any[]) => Promise<R> {
   return (...args) =>
     new Promise<R>((resolve, reject) =>
-      fn.call(this, ...args, (err, ...result) =>
+      fn.call(this, ...args, (err: any, ...result: any[]) =>
         err ? reject(err) : resolve(...result)
       )
     );

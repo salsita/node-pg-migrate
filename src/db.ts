@@ -2,7 +2,13 @@
  This file just manages the database connection and provides a query method
  */
 
-import { Client, QueryConfig, QueryResult } from 'pg';
+import {
+  Client,
+  ClientConfig,
+  QueryArrayResult,
+  QueryConfig,
+  QueryResult
+} from 'pg';
 // or native libpq bindings
 // const pg = require('pg/native');
 
@@ -24,13 +30,18 @@ export interface DB {
   close(): Promise<void>;
 }
 
-const db = (connection, log = console.error): DB => {
+const db = (
+  connection: Client | string | ClientConfig,
+  log = console.error
+): DB => {
   const isExternalClient = connection instanceof Client;
   let clientActive = false;
 
-  const client = isExternalClient ? connection : new Client(connection);
+  const client: Client = isExternalClient
+    ? (connection as Client)
+    : new Client(connection as string | ClientConfig);
 
-  const beforeCloseListeners = [];
+  const beforeCloseListeners: any[] = [];
 
   const createConnection: () => Promise<void> = () =>
     new Promise((resolve, reject) =>
@@ -46,13 +57,15 @@ const db = (connection, log = console.error): DB => {
           })
     );
 
-  const query = async (...args) => {
+  const query = async <R extends any[] = any[]>(
+    ...args: any[]
+  ): Promise<QueryArrayResult<R>> => {
     await createConnection();
     try {
       return await client.query(...args);
     } catch (err) {
-      const { message, position } = err;
-      const string = args[0].text || args[0];
+      const { message, position }: { message: string; position: number } = err;
+      const string: string = args[0].text || args[0];
       if (message && position >= 1) {
         const endLineWrapIndexOf = string.indexOf('\n', position);
         const endLineWrapPos =
@@ -77,12 +90,12 @@ ${err}
     }
   };
 
-  const select = async (...args) => {
+  const select = async <T>(...args: T[]) => {
     const { rows } = await query(...args);
     return rows;
   };
-  const column = async (columnName, ...args) =>
-    (await select(...args)).map(r => r[columnName]);
+  const column = async (columnName: string, ...args: string[]) =>
+    (await select(...args)).map((r: { [key: string]: any }) => r[columnName]);
 
   return {
     createConnection,
@@ -95,7 +108,7 @@ ${err}
     close: async () => {
       await beforeCloseListeners.reduce(
         (promise, listener) =>
-          promise.then(listener).catch(err => log(err.stack || err)),
+          promise.then(listener).catch((err: any) => log(err.stack || err)),
         Promise.resolve()
       );
       if (!isExternalClient) {

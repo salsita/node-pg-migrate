@@ -452,10 +452,17 @@ export default class MigrationBuilder {
     // by default, all migrations are wrapped in a transaction
     this._use_transaction = true;
 
+    type WrapOperation<R extends string | string[]> = {
+      (...args: any[]): R;
+      reverse?: (...args: any[]) => R;
+    };
+
     // this function wraps each operation within a function that either
     // calls the operation or its reverse, and appends the result (array of sql statements)
     // to the  steps array
-    const wrap = operation => (...args) => {
+    const wrap = <R extends string | string[]>(operation: WrapOperation<R>) => (
+      ...args: any[]
+    ) => {
       if (this._REVERSE_MODE && typeof operation.reverse !== 'function') {
         const name = `pgm.${operation.name}()`;
         throw new Error(
@@ -581,7 +588,7 @@ export default class MigrationBuilder {
     this.func = PgLiteral.create;
 
     // expose DB so we can access database within transaction
-    const wrapDB = operation => (...args) => {
+    const wrapDB = <T, R>(operation: (...args: T[]) => R) => (...args: T[]) => {
       if (this._REVERSE_MODE) {
         throw new Error('Impossible to automatically infer down migration');
       }
