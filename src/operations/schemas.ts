@@ -1,5 +1,9 @@
-import { DropOptions, Name } from '../definitions';
+import { DropOptions, IfNotExistsOption, Name } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
+
+export interface CreateSchemaOptions extends IfNotExistsOption {
+  authorization?: string;
+}
 
 export function dropSchema(mOptions: MigrationOptions) {
   const _drop = (
@@ -17,13 +21,7 @@ export function dropSchema(mOptions: MigrationOptions) {
 export function createSchema(mOptions: MigrationOptions) {
   const _create = (
     schemaName: string,
-    {
-      ifNotExists,
-      authorization
-    }: {
-      ifNotExists?: boolean;
-      authorization?: string;
-    } = {}
+    { ifNotExists, authorization }: CreateSchemaOptions = {}
   ) => {
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaNameStr = mOptions.literal(schemaName);

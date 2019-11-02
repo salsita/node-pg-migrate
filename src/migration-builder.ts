@@ -32,6 +32,7 @@ import {
 } from './operations/operators';
 import { CreatePolicyOptions, PolicyOptions } from './operations/policies';
 import { RoleOptions } from './operations/roles';
+import { CreateSchemaOptions } from './operations/schemas';
 import {
   SequenceOptionsAlter,
   SequenceOptionsCreate
@@ -271,10 +272,7 @@ export default class MigrationBuilder {
 
   public readonly createSchema: (
     schemaName: string,
-    schemaOptions?: {
-      ifNotExists?: boolean;
-      authorization?: string;
-    }
+    schemaOptions?: CreateSchemaOptions
   ) => void;
   public readonly dropSchema: (
     schemaName: string,
