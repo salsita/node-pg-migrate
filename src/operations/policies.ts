@@ -13,9 +13,9 @@ export interface CreatePolicyOptionsEn {
 
 export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions;
 
-const makeClauses = ({ role, using, check }) => {
+const makeClauses = ({ role, using, check }: PolicyOptions) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');
-  const clauses = [];
+  const clauses: string[] = [];
   if (roles) {
     clauses.push(`TO ${roles}`);
   }
@@ -83,7 +83,7 @@ export function renamePolicy(mOptions: MigrationOptions) {
   const _rename = (
     tableName: Name,
     policyName: string,
-    newPolicyName: Name
+    newPolicyName: string
   ) => {
     const policyNameStr = mOptions.literal(policyName);
     const newPolicyNameStr = mOptions.literal(newPolicyName);
@@ -93,7 +93,7 @@ export function renamePolicy(mOptions: MigrationOptions) {
   _rename.reverse = (
     tableName: Name,
     policyName: string,
-    newPolicyName: Name
+    newPolicyName: string
   ) => _rename(tableName, newPolicyName, policyName);
   return _rename;
 }

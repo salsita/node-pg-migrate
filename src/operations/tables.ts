@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {
   AddOptions,
+  ColumnDefinition,
   ColumnDefinitions,
   DropOptions,
   LikeOptions,
@@ -70,14 +71,24 @@ const parseReferences = (options, literal) => {
 const parseDeferrable = options =>
   `DEFERRABLE INITIALLY ${options.deferred ? 'DEFERRED' : 'IMMEDIATE'}`;
 
-const parseColumns = (tableName, columns, mOptions: MigrationOptions) => {
+const parseColumns = (
+  tableName: Name,
+  columns: ColumnDefinitions,
+  mOptions: MigrationOptions
+): {
+  columns: string[];
+  constraints: { primaryKey?: string[] };
+  comments: string[];
+} => {
   const extendingTypeShorthands = mOptions.typeShorthands;
   let columnsWithOptions = _.mapValues(columns, column =>
     applyType(column, extendingTypeShorthands)
   );
 
   const primaryColumns = _.chain(columnsWithOptions)
-    .map((options, columnName) => (options.primaryKey ? columnName : null))
+    .map((options: ColumnDefinition, columnName) =>
+      options.primaryKey ? columnName : null
+    )
     .filter()
     .value();
   const multiplePrimaryColumns = primaryColumns.length > 1;
@@ -89,9 +100,9 @@ const parseColumns = (tableName, columns, mOptions: MigrationOptions) => {
     }));
   }
 
-  const comments = _.chain(columnsWithOptions)
+  const comments: string[] = _.chain(columnsWithOptions)
     .map(
-      (options, columnName) =>
+      (options: ColumnDefinition, columnName) =>
         typeof options.comment !== 'undefined' &&
         comment(
           'COLUMN',
@@ -103,83 +114,88 @@ const parseColumns = (tableName, columns, mOptions: MigrationOptions) => {
     .value();
 
   return {
-    columns: _.map(columnsWithOptions, (options, columnName) => {
-      const {
-        type,
-        collation,
-        default: defaultValue,
-        unique,
-        primaryKey,
-        notNull,
-        check,
-        references,
-        referencesConstraintName,
-        referencesConstraintComment,
-        deferrable,
-        generated
-      } = options;
-      const constraints = [];
-      if (collation) {
-        constraints.push(`COLLATE ${collation}`);
-      }
-      if (defaultValue !== undefined) {
-        constraints.push(`DEFAULT ${escapeValue(defaultValue)}`);
-      }
-      if (unique) {
-        constraints.push('UNIQUE');
-      }
-      if (primaryKey) {
-        constraints.push('PRIMARY KEY');
-      }
-      if (notNull) {
-        constraints.push('NOT NULL');
-      }
-      if (check) {
-        constraints.push(`CHECK (${check})`);
-      }
-      if (references) {
-        const name =
-          referencesConstraintName ||
-          (referencesConstraintComment ? `${tableName}_fk_${columnName}` : '');
-        const constraintName = name
-          ? `CONSTRAINT ${mOptions.literal(name)} `
-          : '';
-        constraints.push(
-          `${constraintName}${parseReferences(options, mOptions.literal)}`
-        );
-        if (referencesConstraintComment) {
-          comments.push(
-            comment(
-              `CONSTRAINT ${mOptions.literal(name)} ON`,
-              mOptions.literal(tableName),
-              referencesConstraintComment
-            )
+    columns: _.map(
+      columnsWithOptions,
+      (options: ColumnDefinition, columnName) => {
+        const {
+          type,
+          collation,
+          default: defaultValue,
+          unique,
+          primaryKey,
+          notNull,
+          check,
+          references,
+          referencesConstraintName,
+          referencesConstraintComment,
+          deferrable,
+          generated
+        }: ColumnDefinition = options;
+        const constraints: string[] = [];
+        if (collation) {
+          constraints.push(`COLLATE ${collation}`);
+        }
+        if (defaultValue !== undefined) {
+          constraints.push(`DEFAULT ${escapeValue(defaultValue)}`);
+        }
+        if (unique) {
+          constraints.push('UNIQUE');
+        }
+        if (primaryKey) {
+          constraints.push('PRIMARY KEY');
+        }
+        if (notNull) {
+          constraints.push('NOT NULL');
+        }
+        if (check) {
+          constraints.push(`CHECK (${check})`);
+        }
+        if (references) {
+          const name =
+            referencesConstraintName ||
+            (referencesConstraintComment
+              ? `${tableName}_fk_${columnName}`
+              : '');
+          const constraintName = name
+            ? `CONSTRAINT ${mOptions.literal(name)} `
+            : '';
+          constraints.push(
+            `${constraintName}${parseReferences(options, mOptions.literal)}`
+          );
+          if (referencesConstraintComment) {
+            comments.push(
+              comment(
+                `CONSTRAINT ${mOptions.literal(name)} ON`,
+                mOptions.literal(tableName),
+                referencesConstraintComment
+              )
+            );
+          }
+        }
+        if (deferrable) {
+          constraints.push(parseDeferrable(options));
+        }
+        if (generated) {
+          const sequenceOptions = parseSequenceOptions(
+            extendingTypeShorthands,
+            generated
+          ).join(' ');
+          constraints.push(
+            `GENERATED ${generated.precedence} AS IDENTITY${
+              sequenceOptions ? ` (${sequenceOptions})` : ''
+            }`
           );
         }
-      }
-      if (deferrable) {
-        constraints.push(parseDeferrable(options));
-      }
-      if (generated) {
-        const sequenceOptions = parseSequenceOptions(
-          extendingTypeShorthands,
-          generated
-        ).join(' ');
-        constraints.push(
-          `GENERATED ${generated.precedence} AS IDENTITY${
-            sequenceOptions ? ` (${sequenceOptions})` : ''
-          }`
-        );
-      }
 
-      const constraintsStr = constraints.length
-        ? ` ${constraints.join(' ')}`
-        : '';
+        const constraintsStr = constraints.length
+          ? ` ${constraints.join(' ')}`
+          : '';
 
-      const sType = typeof type === 'object' ? mOptions.literal(type) : type;
+        const sType = typeof type === 'object' ? mOptions.literal(type) : type;
 
-      return `${mOptions.literal(columnName)} ${sType}${constraintsStr}`;
-    }),
+        return `${mOptions.literal(columnName)} ${sType}${constraintsStr}`;
+      }
+    ),
     constraints: multiplePrimaryColumns ? { primaryKey: primaryColumns } : {},
     comments
   };

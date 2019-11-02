@@ -1,7 +1,13 @@
 import decamelize from 'decamelize';
-import { ColumnDefinitions, Name, Type, Value } from './definitions';
+import {
+  ColumnDefinition,
+  ColumnDefinitions,
+  Name,
+  Type,
+  Value
+} from './definitions';
 import { MigrationOptions } from './migration-builder';
-import { FunctionParamType } from './operations/functions';
+import { FunctionParam, FunctionParamType } from './operations/functions';
 import { RunnerOption } from './runner';
 
 // This is used to create unescaped strings
@@ -115,7 +121,7 @@ export const applyTypeAdapters = (type: string): string =>
 export const applyType = (
   type: Type,
   extendingTypeShorthands: ColumnDefinitions = {}
-): FunctionParamType => {
+): ColumnDefinition & FunctionParamType => {
   const typeShorthands: ColumnDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
@@ -172,7 +178,7 @@ const formatParam = (mOptions: MigrationOptions) => (
 };
 
 export const formatParams = (
-  params: FunctionParamType[] = [],
+  params: FunctionParam[] = [],
   mOptions: MigrationOptions
 ) => `(${params.map(formatParam(mOptions)).join(', ')})`;
 
