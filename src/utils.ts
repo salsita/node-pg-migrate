@@ -28,8 +28,8 @@ export class PgLiteral {
   }
 }
 
-const identity = v => v;
-const quote = str => `"${str}"`;
+const identity = <T>(v: T) => v;
+const quote = (str: string) => `"${str}"`;
 
 export const createSchemalize = (
   shouldDecamelize: boolean,
