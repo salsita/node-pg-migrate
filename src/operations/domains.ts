@@ -1,5 +1,6 @@
-import { applyType, escapeValue } from '../utils';
 import { Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { applyType, escapeValue } from '../utils';
 
 export interface DomainOptions {
   default?: Value;
@@ -20,7 +21,7 @@ export interface DomainOptionsAlterEn {
 
 export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions;
 
-export function dropDomain(mOptions) {
+export function dropDomain(mOptions: MigrationOptions) {
   const _drop = (domainName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -30,7 +31,7 @@ export function dropDomain(mOptions) {
   return _drop;
 }
 
-export function createDomain(mOptions) {
+export function createDomain(mOptions: MigrationOptions) {
   const _create = (domainName, type, options = {}) => {
     const {
       default: defaultValue,
@@ -73,7 +74,7 @@ export function createDomain(mOptions) {
   return _create;
 }
 
-export function alterDomain(mOptions) {
+export function alterDomain(mOptions: MigrationOptions) {
   const _alter = (domainName, options) => {
     const {
       default: defaultValue,
@@ -110,7 +111,7 @@ export function alterDomain(mOptions) {
   return _alter;
 }
 
-export function renameDomain(mOptions) {
+export function renameDomain(mOptions: MigrationOptions) {
   const _rename = (domainName, newDomainName) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);

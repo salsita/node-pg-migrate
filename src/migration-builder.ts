@@ -72,6 +72,12 @@ export interface MigrationBuilderActions {
   shorthands?: ColumnDefinitions;
 }
 
+export interface MigrationOptions {
+  typeShorthands: ColumnDefinitions;
+  schemalize: (v: Name) => string;
+  literal: (v: Name) => string;
+}
+
 /* eslint-disable security/detect-non-literal-fs-filename */
 export default class MigrationBuilder {
   public readonly createExtension: (
@@ -461,7 +467,7 @@ export default class MigrationBuilder {
       );
     };
 
-    const options = {
+    const options: MigrationOptions = {
       typeShorthands,
       schemalize: createSchemalize(shouldDecamelize, false),
       literal: createSchemalize(shouldDecamelize, true)

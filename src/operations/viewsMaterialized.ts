@@ -1,3 +1,4 @@
+import { MigrationOptions } from '../migration-builder';
 import { formatLines } from '../utils';
 
 export interface CreateMaterializedViewOptions {
@@ -27,7 +28,7 @@ const storageParameterStr = storageParameters => key => {
   return `${key}${value}`;
 };
 
-export function dropMaterializedView(mOptions) {
+export function dropMaterializedView(mOptions: MigrationOptions) {
   const _drop = (viewName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -37,7 +38,7 @@ export function dropMaterializedView(mOptions) {
   return _drop;
 }
 
-export function createMaterializedView(mOptions) {
+export function createMaterializedView(mOptions: MigrationOptions) {
   const _create = (viewName, options, definition) => {
     const {
       ifNotExists,
@@ -67,7 +68,7 @@ export function createMaterializedView(mOptions) {
   return _create;
 }
 
-export function alterMaterializedView(mOptions) {
+export function alterMaterializedView(mOptions: MigrationOptions) {
   const _alter = (viewName, options) => {
     const { cluster, extension, storageParameters = {} } = options;
     const clauses = [];
@@ -101,7 +102,7 @@ export function alterMaterializedView(mOptions) {
   return _alter;
 }
 
-export function renameMaterializedView(mOptions) {
+export function renameMaterializedView(mOptions: MigrationOptions) {
   const _rename = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
@@ -111,7 +112,7 @@ export function renameMaterializedView(mOptions) {
   return _rename;
 }
 
-export function renameMaterializedViewColumn(mOptions) {
+export function renameMaterializedViewColumn(mOptions: MigrationOptions) {
   const _rename = (viewName, columnName, newColumnName) => {
     const viewNameStr = mOptions.literal(viewName);
     const columnNameStr = mOptions.literal(columnName);
@@ -123,7 +124,7 @@ export function renameMaterializedViewColumn(mOptions) {
   return _rename;
 }
 
-export function refreshMaterializedView(mOptions) {
+export function refreshMaterializedView(mOptions: MigrationOptions) {
   const _refresh = (viewName, { concurrently, data } = {}) => {
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
     const dataStr = dataClause(data);

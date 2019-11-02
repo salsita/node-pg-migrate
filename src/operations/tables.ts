@@ -1,13 +1,14 @@
 import _ from 'lodash';
+import { LikeOptions, Name, ReferencesOptions, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
 import {
-  escapeValue,
   applyType,
   applyTypeAdapters,
   comment,
+  escapeValue,
   formatLines
 } from '../utils';
 import { parseSequenceOptions } from './sequences';
-import { Name, Value, LikeOptions, ReferencesOptions } from '../definitions';
 
 export interface ForeignKeyOptions extends ReferencesOptions {
   columns: Name | Name[];
@@ -61,7 +62,7 @@ const parseReferences = (options, literal) => {
 const parseDeferrable = options =>
   `DEFERRABLE INITIALLY ${options.deferred ? 'DEFERRED' : 'IMMEDIATE'}`;
 
-const parseColumns = (tableName, columns, mOptions) => {
+const parseColumns = (tableName, columns, mOptions: MigrationOptions) => {
   const extendingTypeShorthands = mOptions.typeShorthands;
   let columnsWithOptions = _.mapValues(columns, column =>
     applyType(column, extendingTypeShorthands)
@@ -291,7 +292,7 @@ const parseLike = (like, literal) => {
 };
 
 // TABLE
-export function dropTable(mOptions) {
+export function dropTable(mOptions: MigrationOptions) {
   const _drop = (tableName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -301,7 +302,7 @@ export function dropTable(mOptions) {
   return _drop;
 }
 
-export function createTable(mOptions) {
+export function createTable(mOptions: MigrationOptions) {
   const _create = (tableName, columns, options = {}) => {
     const {
       temporary,
@@ -327,7 +328,10 @@ export function createTable(mOptions) {
       );
     }
 
-    const constraints = { ...optionsConstraints, ...crossColumnConstraints };
+    const constraints = {
+      ...optionsConstraints,
+      ...crossColumnConstraints
+    };
     const {
       constraints: constraintLines,
       comments: constraintComments
@@ -360,7 +364,7 @@ ${formatLines(tableDefinition)}
   return _create;
 }
 
-export function alterTable(mOptions) {
+export function alterTable(mOptions: MigrationOptions) {
   const _alter = (tableName, options) => {
     const alterDefinition = [];
     if (options.levelSecurity) {
@@ -387,7 +391,7 @@ export interface AlterColumnOptions {
     | ({ precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions);
 }
 
-export function dropColumns(mOptions) {
+export function dropColumns(mOptions: MigrationOptions) {
   const _drop = (tableName, columns, { ifExists, cascade } = {}) => {
     if (typeof columns === 'string') {
       columns = [columns]; // eslint-disable-line no-param-reassign
@@ -405,7 +409,7 @@ ${columnsStr};`;
   return _drop;
 }
 
-export function addColumns(mOptions) {
+export function addColumns(mOptions: MigrationOptions) {
   const _add = (tableName, columns, { ifNotExists } = {}) => {
     const {
       columns: columnLines,
@@ -425,7 +429,7 @@ export function addColumns(mOptions) {
   return _add;
 }
 
-export function alterColumn(mOptions) {
+export function alterColumn(mOptions: MigrationOptions) {
   return (tableName, columnName, options) => {
     const {
       default: defaultValue,
@@ -493,7 +497,7 @@ export function alterColumn(mOptions) {
   };
 }
 
-export function renameTable(mOptions) {
+export function renameTable(mOptions: MigrationOptions) {
   const _rename = (tableName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const newNameStr = mOptions.literal(newName);
@@ -503,7 +507,7 @@ export function renameTable(mOptions) {
   return _rename;
 }
 
-export function renameColumn(mOptions) {
+export function renameColumn(mOptions: MigrationOptions) {
   const _rename = (tableName, columnName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const columnNameStr = mOptions.literal(columnName);
@@ -515,7 +519,7 @@ export function renameColumn(mOptions) {
   return _rename;
 }
 
-export function renameConstraint(mOptions) {
+export function renameConstraint(mOptions: MigrationOptions) {
   const _rename = (tableName, constraintName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const constraintNameStr = mOptions.literal(constraintName);
@@ -527,7 +531,7 @@ export function renameConstraint(mOptions) {
   return _rename;
 }
 
-export function dropConstraint(mOptions) {
+export function dropConstraint(mOptions: MigrationOptions) {
   const _drop = (tableName, constraintName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -537,7 +541,7 @@ export function dropConstraint(mOptions) {
   };
   return _drop;
 }
-export function addConstraint(mOptions) {
+export function addConstraint(mOptions: MigrationOptions) {
   const _add = (tableName, constraintName, expression) => {
     const { constraints, comments } =
       typeof expression === 'string'

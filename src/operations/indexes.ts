@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { DropOptions } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
 
 export interface CreateIndexOptions {
   name?: string;
@@ -49,7 +50,7 @@ function generateColumnsString(columns, literal) {
     : generateColumnString(columns, literal);
 }
 
-export function dropIndex(mOptions) {
+export function dropIndex(mOptions: MigrationOptions) {
   const _drop = (tableName, columns, options = {}) => {
     const { concurrently, ifExists, cascade } = options;
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
@@ -63,7 +64,7 @@ export function dropIndex(mOptions) {
   return _drop;
 }
 
-export function createIndex(mOptions) {
+export function createIndex(mOptions: MigrationOptions) {
   const _create = (tableName, columns, options = {}) => {
     /*
     columns - the column, columns, or expression to create the index on

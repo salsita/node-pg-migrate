@@ -1,6 +1,7 @@
 import { isArray } from 'lodash';
-import { escapeValue } from '../utils';
 import { Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { escapeValue } from '../utils';
 
 export interface RoleOptions {
   superuser?: boolean;
@@ -78,7 +79,7 @@ const formatRoleOptions = (roleOptions = {}) => {
   return options.join(' ');
 };
 
-export function dropRole(mOptions) {
+export function dropRole(mOptions: MigrationOptions) {
   const _drop = (roleName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const roleNameStr = mOptions.literal(roleName);
@@ -87,7 +88,7 @@ export function dropRole(mOptions) {
   return _drop;
 }
 
-export function createRole(mOptions) {
+export function createRole(mOptions: MigrationOptions) {
   const _create = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions({
       ...roleOptions,
@@ -105,7 +106,7 @@ export function createRole(mOptions) {
   return _create;
 }
 
-export function alterRole(mOptions) {
+export function alterRole(mOptions: MigrationOptions) {
   const _alter = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions(roleOptions);
     return options
@@ -115,7 +116,7 @@ export function alterRole(mOptions) {
   return _alter;
 }
 
-export function renameRole(mOptions) {
+export function renameRole(mOptions: MigrationOptions) {
   const _rename = (oldRoleName, newRoleName) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName);
     const newRoleNameStr = mOptions.literal(newRoleName);

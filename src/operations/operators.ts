@@ -1,6 +1,7 @@
-import { formatParams, applyType } from '../utils';
-import { FunctionParam } from './functions';
 import { Name } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { applyType, formatParams } from '../utils';
+import { FunctionParam } from './functions';
 
 export interface CreateOperatorOptions {
   procedure: Name;
@@ -33,8 +34,8 @@ export interface OperatorListDefinition {
   params?: FunctionParam[];
 }
 
-export function dropOperator(mOptions) {
-  const _drop = (operatorName, options = {}) => {
+export function dropOperator(mOptions: MigrationOptions) {
+  const _drop = (operatorName, options: DropOperatorOptions = {}) => {
     const { ifExists, cascade, left, right } = options;
 
     const operatorNameStr = mOptions.schemalize(operatorName);
@@ -49,8 +50,8 @@ export function dropOperator(mOptions) {
   return _drop;
 }
 
-export function createOperator(mOptions) {
-  const _create = (operatorName, options = {}) => {
+export function createOperator(mOptions: MigrationOptions) {
+  const _create = (operatorName, options: CreateOperatorOptions = {}) => {
     const {
       procedure,
       left,
@@ -96,7 +97,7 @@ export function createOperator(mOptions) {
   return _create;
 }
 
-export function dropOperatorFamily(mOptions) {
+export function dropOperatorFamily(mOptions: MigrationOptions) {
   const _drop = (
     operatorFamilyName,
     indexMethod,
@@ -110,7 +111,7 @@ export function dropOperatorFamily(mOptions) {
   return _drop;
 }
 
-export function createOperatorFamily(mOptions) {
+export function createOperatorFamily(mOptions: MigrationOptions) {
   const _create = (operatorFamilyName, indexMethod) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     return `CREATE OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod};`;
@@ -119,7 +120,12 @@ export function createOperatorFamily(mOptions) {
   return _create;
 }
 
-const operatorMap = mOptions => ({ type = '', number, name, params = [] }) => {
+const operatorMap = (mOptions: MigrationOptions) => ({
+  type = '',
+  number,
+  name,
+  params = []
+}) => {
   const nameStr = mOptions.literal(name);
   if (String(type).toLowerCase() === 'function') {
     if (params.length > 2) {
@@ -138,7 +144,10 @@ const operatorMap = mOptions => ({ type = '', number, name, params = [] }) => {
   throw new Error('Operator "type" must be either "function" or "operator"');
 };
 
-const changeOperatorFamily = (op, reverse) => mOptions => {
+const changeOperatorFamily = (
+  op,
+  reverse?: (mOptions: MigrationOptions) => any
+) => (mOptions: MigrationOptions) => {
   const method = (operatorFamilyName, indexMethod, operatorList) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const operatorListStr = operatorList
@@ -160,7 +169,7 @@ export const addToOperatorFamily = changeOperatorFamily(
   removeFromOperatorFamily
 );
 
-export function renameOperatorFamily(mOptions) {
+export function renameOperatorFamily(mOptions: MigrationOptions) {
   const _rename = (
     oldOperatorFamilyName,
     indexMethod,
@@ -179,7 +188,7 @@ export function renameOperatorFamily(mOptions) {
   return _rename;
 }
 
-export function dropOperatorClass(mOptions) {
+export function dropOperatorClass(mOptions: MigrationOptions) {
   const _drop = (
     operatorClassName,
     indexMethod,
@@ -194,7 +203,7 @@ export function dropOperatorClass(mOptions) {
   return _drop;
 }
 
-export function createOperatorClass(mOptions) {
+export function createOperatorClass(mOptions: MigrationOptions) {
   const _create = (
     operatorClassName,
     type,
@@ -225,7 +234,7 @@ export function createOperatorClass(mOptions) {
   return _create;
 }
 
-export function renameOperatorClass(mOptions) {
+export function renameOperatorClass(mOptions: MigrationOptions) {
   const _rename = (oldOperatorClassName, indexMethod, newOperatorClassName) => {
     const oldOperatorClassNameStr = mOptions.literal(oldOperatorClassName);
     const newOperatorClassNameStr = mOptions.literal(newOperatorClassName);

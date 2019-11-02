@@ -1,5 +1,6 @@
-import { escapeValue, formatParams } from '../utils';
 import { Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { escapeValue, formatParams } from '../utils';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
@@ -20,7 +21,7 @@ export interface FunctionOptions {
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
 }
 
-export function dropFunction(mOptions) {
+export function dropFunction(mOptions: MigrationOptions) {
   const _drop = (
     functionName,
     functionParams = [],
@@ -35,7 +36,7 @@ export function dropFunction(mOptions) {
   return _drop;
 }
 
-export function createFunction(mOptions) {
+export function createFunction(mOptions: MigrationOptions) {
   const _create = (
     functionName,
     functionParams = [],
@@ -85,7 +86,7 @@ export function createFunction(mOptions) {
   return _create;
 }
 
-export function renameFunction(mOptions) {
+export function renameFunction(mOptions: MigrationOptions) {
   const _rename = (oldFunctionName, functionParams = [], newFunctionName) => {
     const paramsStr = formatParams(functionParams, mOptions);
     const oldFunctionNameStr = mOptions.literal(oldFunctionName);

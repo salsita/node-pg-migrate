@@ -1,7 +1,8 @@
 import { isArray } from 'lodash';
+import { Name, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
 import { createFunction, dropFunction } from './functions';
-import { Name, Value } from '../definitions';
 
 export interface TriggerOptions {
   when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
@@ -15,7 +16,7 @@ export interface TriggerOptions {
   deferred?: boolean;
 }
 
-export function dropTrigger(mOptions) {
+export function dropTrigger(mOptions: MigrationOptions) {
   const _drop = (tableName, triggerName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -26,7 +27,7 @@ export function dropTrigger(mOptions) {
   return _drop;
 }
 
-export function createTrigger(mOptions) {
+export function createTrigger(mOptions: MigrationOptions) {
   const _create = (tableName, triggerName, triggerOptions = {}, definition) => {
     const {
       constraint,
@@ -114,7 +115,7 @@ export function createTrigger(mOptions) {
   return _create;
 }
 
-export function renameTrigger(mOptions) {
+export function renameTrigger(mOptions: MigrationOptions) {
   const _rename = (tableName, oldTriggerName, newTriggerName) => {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName);
     const tableNameStr = mOptions.literal(tableName);

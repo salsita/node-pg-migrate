@@ -1,3 +1,5 @@
+import { MigrationOptions } from '../migration-builder';
+
 export interface PolicyOptions {
   role: string | string[];
   using: string;
@@ -25,7 +27,7 @@ const makeClauses = ({ role, using, check }) => {
   return clauses;
 };
 
-export function dropPolicy(mOptions) {
+export function dropPolicy(mOptions: MigrationOptions) {
   const _drop = (tableName, policyName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const policyNameStr = mOptions.literal(policyName);
@@ -35,7 +37,7 @@ export function dropPolicy(mOptions) {
   return _drop;
 }
 
-export function createPolicy(mOptions) {
+export function createPolicy(mOptions: MigrationOptions) {
   const _create = (tableName, policyName, options = {}) => {
     const createOptions = {
       ...options,
@@ -54,7 +56,7 @@ export function createPolicy(mOptions) {
   return _create;
 }
 
-export function alterPolicy(mOptions) {
+export function alterPolicy(mOptions: MigrationOptions) {
   const _alter = (tableName, policyName, options = {}) => {
     const clausesStr = makeClauses(options).join(' ');
     const policyNameStr = mOptions.literal(policyName);
@@ -64,7 +66,7 @@ export function alterPolicy(mOptions) {
   return _alter;
 }
 
-export function renamePolicy(mOptions) {
+export function renamePolicy(mOptions: MigrationOptions) {
   const _rename = (tableName, policyName, newPolicyName) => {
     const policyNameStr = mOptions.literal(policyName);
     const newPolicyNameStr = mOptions.literal(newPolicyName);

@@ -1,4 +1,6 @@
-export function dropSchema(mOptions) {
+import { MigrationOptions } from '../migration-builder';
+
+export function dropSchema(mOptions: MigrationOptions) {
   const _drop = (schemaName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -8,7 +10,7 @@ export function dropSchema(mOptions) {
   return _drop;
 }
 
-export function createSchema(mOptions) {
+export function createSchema(mOptions: MigrationOptions) {
   const _create = (schemaName, { ifNotExists, authorization } = {}) => {
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaNameStr = mOptions.literal(schemaName);
@@ -21,7 +23,7 @@ export function createSchema(mOptions) {
   return _create;
 }
 
-export function renameSchema(mOptions) {
+export function renameSchema(mOptions: MigrationOptions) {
   const _rename = (schemaName, newSchemaName) => {
     const schemaNameStr = mOptions.literal(schemaName);
     const newSchemaNameStr = mOptions.literal(newSchemaName);

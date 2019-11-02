@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { MigrationOptions } from '../migration-builder';
 
 export type Extension =
   | 'adminpack'
@@ -52,7 +53,7 @@ export interface CreateExtensionOptions {
   schema?: string;
 }
 
-export function dropExtension(mOptions) {
+export function dropExtension(mOptions: MigrationOptions) {
   const _drop = (extensions, { ifExists, cascade } = {}) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -65,7 +66,7 @@ export function dropExtension(mOptions) {
   return _drop;
 }
 
-export function createExtension(mOptions) {
+export function createExtension(mOptions: MigrationOptions) {
   const _create = (extensions, { ifNotExists, schema } = {}) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';

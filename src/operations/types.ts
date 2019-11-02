@@ -1,7 +1,8 @@
 import _ from 'lodash';
+import { MigrationOptions } from '../migration-builder';
 import { applyType, escapeValue } from '../utils';
 
-export function dropType(mOptions) {
+export function dropType(mOptions: MigrationOptions) {
   const _drop = (typeName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -11,7 +12,7 @@ export function dropType(mOptions) {
   return _drop;
 }
 
-export function createType(mOptions) {
+export function createType(mOptions: MigrationOptions) {
   const _create = (typeName, options) => {
     if (_.isArray(options)) {
       const optionsStr = options.map(escapeValue).join(', ');
@@ -28,7 +29,7 @@ export function createType(mOptions) {
   return _create;
 }
 
-export function dropTypeAttribute(mOptions) {
+export function dropTypeAttribute(mOptions: MigrationOptions) {
   const _drop = (typeName, attributeName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const typeNameStr = mOptions.literal(typeName);
@@ -38,7 +39,7 @@ export function dropTypeAttribute(mOptions) {
   return _drop;
 }
 
-export function addTypeAttribute(mOptions) {
+export function addTypeAttribute(mOptions: MigrationOptions) {
   const _alterAttributeAdd = (typeName, attributeName, attributeType) => {
     const typeStr = applyType(attributeType, mOptions.typeShorthands).type;
     const typeNameStr = mOptions.literal(typeName);
@@ -50,7 +51,7 @@ export function addTypeAttribute(mOptions) {
   return _alterAttributeAdd;
 }
 
-export function setTypeAttribute(mOptions) {
+export function setTypeAttribute(mOptions: MigrationOptions) {
   return (typeName, attributeName, attributeType) => {
     const typeStr = applyType(attributeType, mOptions.typeShorthands).type;
     const typeNameStr = mOptions.literal(typeName);
@@ -60,7 +61,7 @@ export function setTypeAttribute(mOptions) {
   };
 }
 
-export function addTypeValue(mOptions) {
+export function addTypeValue(mOptions: MigrationOptions) {
   const _add = (typeName, value, options = {}) => {
     const { ifNotExists, before, after } = options;
 
@@ -78,7 +79,7 @@ export function addTypeValue(mOptions) {
   return _add;
 }
 
-export function renameType(mOptions) {
+export function renameType(mOptions: MigrationOptions) {
   const _rename = (typeName, newTypeName) => {
     const typeNameStr = mOptions.literal(typeName);
     const newTypeNameStr = mOptions.literal(newTypeName);
@@ -88,7 +89,7 @@ export function renameType(mOptions) {
   return _rename;
 }
 
-export function renameTypeAttribute(mOptions) {
+export function renameTypeAttribute(mOptions: MigrationOptions) {
   const _rename = (typeName, attributeName, newAttributeName) => {
     const typeNameStr = mOptions.literal(typeName);
     const attributeNameStr = mOptions.literal(attributeName);
@@ -100,7 +101,7 @@ export function renameTypeAttribute(mOptions) {
   return _rename;
 }
 
-export function renameTypeValue(mOptions) {
+export function renameTypeValue(mOptions: MigrationOptions) {
   const _rename = (typeName, value, newValue) => {
     const valueStr = escapeValue(value);
     const newValueStr = escapeValue(newValue);
