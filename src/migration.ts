@@ -199,3 +199,4 @@ export class Migration implements RunMigration {
 
 export default Migration;
 module.exports = Migration;
+module.exports.loadMigrationFiles = loadMigrationFiles;
