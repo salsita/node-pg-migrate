@@ -21,9 +21,9 @@ export interface RefreshMaterializedViewOptions {
   data?: boolean;
 }
 
-const dataClause = data =>
+const dataClause = (data?: boolean) =>
   data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '';
-const storageParameterStr = storageParameters => key => {
+const storageParameterStr = <T>(storageParameters: T) => (key: keyof T) => {
   const value =
     storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`;
   return `${key}${value}`;
@@ -75,7 +75,11 @@ export function createMaterializedView(mOptions: MigrationOptions) {
 
 export function alterMaterializedView(mOptions: MigrationOptions) {
   const _alter = (viewName: Name, options: AlterMaterializedViewOptions) => {
-    const { cluster, extension, storageParameters = {} } = options;
+    const {
+      cluster,
+      extension,
+      storageParameters = {}
+    }: AlterMaterializedViewOptions = options;
     const clauses = [];
     if (cluster !== undefined) {
       if (cluster) {
