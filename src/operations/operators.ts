@@ -1,4 +1,4 @@
-import { Name } from '../definitions';
+import { Name, DropOptions, Type } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { applyType, formatParams } from '../utils';
 import { FunctionParam } from './functions';
@@ -35,7 +35,7 @@ export interface OperatorListDefinition {
 }
 
 export function dropOperator(mOptions: MigrationOptions) {
-  const _drop = (operatorName, options: DropOperatorOptions = {}) => {
+  const _drop = (operatorName: Name, options: DropOperatorOptions = {}) => {
     const { ifExists, cascade, left, right } = options;
 
     const operatorNameStr = mOptions.schemalize(operatorName);
@@ -51,7 +51,7 @@ export function dropOperator(mOptions: MigrationOptions) {
 }
 
 export function createOperator(mOptions: MigrationOptions) {
-  const _create = (operatorName, options: CreateOperatorOptions = {}) => {
+  const _create = (operatorName: Name, options: CreateOperatorOptions = {}) => {
     const {
       procedure,
       left,
@@ -99,9 +99,9 @@ export function createOperator(mOptions: MigrationOptions) {
 
 export function dropOperatorFamily(mOptions: MigrationOptions) {
   const _drop = (
-    operatorFamilyName,
+    operatorFamilyName: Name,
     indexMethod,
-    { ifExists, cascade } = {}
+    { ifExists, cascade }: DropOptions = {}
   ) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -112,7 +112,7 @@ export function dropOperatorFamily(mOptions: MigrationOptions) {
 }
 
 export function createOperatorFamily(mOptions: MigrationOptions) {
-  const _create = (operatorFamilyName, indexMethod) => {
+  const _create = (operatorFamilyName: Name, indexMethod) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     return `CREATE OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod};`;
   };
@@ -125,7 +125,7 @@ const operatorMap = (mOptions: MigrationOptions) => ({
   number,
   name,
   params = []
-}) => {
+}: OperatorListDefinition) => {
   const nameStr = mOptions.literal(name);
   if (String(type).toLowerCase() === 'function') {
     if (params.length > 2) {
@@ -148,7 +148,11 @@ const changeOperatorFamily = (
   op,
   reverse?: (mOptions: MigrationOptions) => any
 ) => (mOptions: MigrationOptions) => {
-  const method = (operatorFamilyName, indexMethod, operatorList) => {
+  const method = (
+    operatorFamilyName: Name,
+    indexMethod,
+    operatorList: OperatorListDefinition[]
+  ) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const operatorListStr = operatorList
       .map(operatorMap(mOptions))
@@ -171,9 +175,9 @@ export const addToOperatorFamily = changeOperatorFamily(
 
 export function renameOperatorFamily(mOptions: MigrationOptions) {
   const _rename = (
-    oldOperatorFamilyName,
+    oldOperatorFamilyName: Name,
     indexMethod,
-    newOperatorFamilyName
+    newOperatorFamilyName: Name
   ) => {
     const oldOperatorFamilyNameStr = mOptions.literal(oldOperatorFamilyName);
     const newOperatorFamilyNameStr = mOptions.literal(newOperatorFamilyName);
@@ -181,18 +185,18 @@ export function renameOperatorFamily(mOptions: MigrationOptions) {
     return `ALTER OPERATOR FAMILY ${oldOperatorFamilyNameStr} USING ${indexMethod} RENAME TO ${newOperatorFamilyNameStr};`;
   };
   _rename.reverse = (
-    oldOperatorFamilyName,
+    oldOperatorFamilyName: Name,
     indexMethod,
-    newOperatorFamilyName
+    newOperatorFamilyName: Name
   ) => _rename(newOperatorFamilyName, indexMethod, oldOperatorFamilyName);
   return _rename;
 }
 
 export function dropOperatorClass(mOptions: MigrationOptions) {
   const _drop = (
-    operatorClassName,
+    operatorClassName: Name,
     indexMethod,
-    { ifExists, cascade } = {}
+    { ifExists, cascade }: DropOptions = {}
   ) => {
     const operatorClassNameStr = mOptions.literal(operatorClassName);
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -205,11 +209,11 @@ export function dropOperatorClass(mOptions: MigrationOptions) {
 
 export function createOperatorClass(mOptions: MigrationOptions) {
   const _create = (
-    operatorClassName,
-    type,
+    operatorClassName: Name,
+    type: Type,
     indexMethod,
-    operatorList,
-    options
+    operatorList: OperatorListDefinition[],
+    options: CreateOperatorClassOptions
   ) => {
     const { default: isDefault, family } = options;
     const operatorClassNameStr = mOptions.literal(operatorClassName);
@@ -225,23 +229,30 @@ export function createOperatorClass(mOptions: MigrationOptions) {
   ${operatorListStr};`;
   };
   _create.reverse = (
-    operatorClassName,
-    type,
+    operatorClassName: Name,
+    type: Type,
     indexMethod,
-    operatorList,
-    options
+    operatorList: OperatorListDefinition[],
+    options: DropOptions
   ) => dropOperatorClass(mOptions)(operatorClassName, indexMethod, options);
   return _create;
 }
 
 export function renameOperatorClass(mOptions: MigrationOptions) {
-  const _rename = (oldOperatorClassName, indexMethod, newOperatorClassName) => {
+  const _rename = (
+    oldOperatorClassName: Name,
+    indexMethod,
+    newOperatorClassName: Name
+  ) => {
     const oldOperatorClassNameStr = mOptions.literal(oldOperatorClassName);
     const newOperatorClassNameStr = mOptions.literal(newOperatorClassName);
 
     return `ALTER OPERATOR CLASS ${oldOperatorClassNameStr} USING ${indexMethod} RENAME TO ${newOperatorClassNameStr};`;
   };
-  _rename.reverse = (oldOperatorClassName, indexMethod, newOperatorClassName) =>
-    _rename(newOperatorClassName, indexMethod, oldOperatorClassName);
+  _rename.reverse = (
+    oldOperatorClassName: Name,
+    indexMethod,
+    newOperatorClassName: Name
+  ) => _rename(newOperatorClassName, indexMethod, oldOperatorClassName);
   return _rename;
 }

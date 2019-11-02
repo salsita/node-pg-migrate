@@ -1,4 +1,4 @@
-import { Type } from '../definitions';
+import { ColumnDefinitions, DropOptions, Name, Type } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { applyType } from '../utils';
 
@@ -26,7 +26,10 @@ export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions;
 
 export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions;
 
-export const parseSequenceOptions = (typeShorthands, options) => {
+export const parseSequenceOptions = (
+  typeShorthands: ColumnDefinitions,
+  options
+) => {
   const {
     type,
     increment,
@@ -74,7 +77,10 @@ export const parseSequenceOptions = (typeShorthands, options) => {
 };
 
 export function dropSequence(mOptions: MigrationOptions) {
-  const _drop = (sequenceName, { ifExists, cascade } = {}) => {
+  const _drop = (
+    sequenceName: Name,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const sequenceNameStr = mOptions.literal(sequenceName);
@@ -84,7 +90,7 @@ export function dropSequence(mOptions: MigrationOptions) {
 }
 
 export function createSequence(mOptions: MigrationOptions) {
-  const _create = (sequenceName, options = {}) => {
+  const _create = (sequenceName: Name, options: SequenceOptionsCreate = {}) => {
     const { temporary, ifNotExists } = options;
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -101,7 +107,7 @@ export function createSequence(mOptions: MigrationOptions) {
 }
 
 export function alterSequence(mOptions: MigrationOptions) {
-  return (sequenceName, options) => {
+  return (sequenceName: Name, options: SequenceOptionsAlter) => {
     const { restart } = options;
     const clauses = parseSequenceOptions(mOptions.typeShorthands, options);
     if (restart) {
@@ -117,12 +123,12 @@ export function alterSequence(mOptions: MigrationOptions) {
 }
 
 export function renameSequence(mOptions: MigrationOptions) {
-  const _rename = (sequenceName, newSequenceName) => {
+  const _rename = (sequenceName: Name, newSequenceName: Name) => {
     const sequenceNameStr = mOptions.literal(sequenceName);
     const newSequenceNameStr = mOptions.literal(newSequenceName);
     return `ALTER SEQUENCE ${sequenceNameStr} RENAME TO ${newSequenceNameStr};`;
   };
-  _rename.reverse = (sequenceName, newSequenceName) =>
+  _rename.reverse = (sequenceName: Name, newSequenceName: Name) =>
     _rename(newSequenceName, sequenceName);
   return _rename;
 }

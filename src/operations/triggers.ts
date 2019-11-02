@@ -1,5 +1,5 @@
 import { isArray } from 'lodash';
-import { Name, Value } from '../definitions';
+import { DropOptions, Name, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
 import { createFunction, dropFunction } from './functions';
@@ -17,7 +17,11 @@ export interface TriggerOptions {
 }
 
 export function dropTrigger(mOptions: MigrationOptions) {
-  const _drop = (tableName, triggerName, { ifExists, cascade } = {}) => {
+  const _drop = (
+    tableName: Name,
+    triggerName: Name,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const triggerNameStr = mOptions.literal(triggerName);
@@ -28,7 +32,12 @@ export function dropTrigger(mOptions: MigrationOptions) {
 }
 
 export function createTrigger(mOptions: MigrationOptions) {
-  const _create = (tableName, triggerName, triggerOptions = {}, definition) => {
+  const _create = (
+    tableName: Name,
+    triggerName: Name,
+    triggerOptions = {},
+    definition?: Value
+  ) => {
     const {
       constraint,
       condition,
@@ -92,10 +101,10 @@ export function createTrigger(mOptions: MigrationOptions) {
   };
 
   _create.reverse = (
-    tableName,
-    triggerName,
+    tableName: Name,
+    triggerName: Name,
     triggerOptions = {},
-    definition
+    definition?: Value
   ) => {
     const triggerSQL = dropTrigger(mOptions)(
       tableName,
@@ -116,13 +125,20 @@ export function createTrigger(mOptions: MigrationOptions) {
 }
 
 export function renameTrigger(mOptions: MigrationOptions) {
-  const _rename = (tableName, oldTriggerName, newTriggerName) => {
+  const _rename = (
+    tableName: Name,
+    oldTriggerName: Name,
+    newTriggerName: Name
+  ) => {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName);
     const tableNameStr = mOptions.literal(tableName);
     const newTriggerNameStr = mOptions.literal(newTriggerName);
     return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`;
   };
-  _rename.reverse = (tableName, oldTriggerName, newTriggerName) =>
-    _rename(tableName, newTriggerName, oldTriggerName);
+  _rename.reverse = (
+    tableName: Name,
+    oldTriggerName: Name,
+    newTriggerName: Name
+  ) => _rename(tableName, newTriggerName, oldTriggerName);
   return _rename;
 }

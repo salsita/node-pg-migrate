@@ -1,4 +1,4 @@
-import { Value } from '../definitions';
+import { DropOptions, Name, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { escapeValue, formatParams } from '../utils';
 
@@ -23,9 +23,9 @@ export interface FunctionOptions {
 
 export function dropFunction(mOptions: MigrationOptions) {
   const _drop = (
-    functionName,
-    functionParams = [],
-    { ifExists, cascade } = {}
+    functionName: Name,
+    functionParams: FunctionParam[] = [],
+    { ifExists, cascade }: DropOptions = {}
   ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -38,10 +38,10 @@ export function dropFunction(mOptions: MigrationOptions) {
 
 export function createFunction(mOptions: MigrationOptions) {
   const _create = (
-    functionName,
-    functionParams = [],
-    functionOptions = {},
-    definition
+    functionName: Name,
+    functionParams: FunctionParam[] = [],
+    functionOptions: FunctionOptions = {},
+    definition: Value
   ) => {
     const {
       replace,
@@ -87,13 +87,20 @@ export function createFunction(mOptions: MigrationOptions) {
 }
 
 export function renameFunction(mOptions: MigrationOptions) {
-  const _rename = (oldFunctionName, functionParams = [], newFunctionName) => {
+  const _rename = (
+    oldFunctionName: Name,
+    functionParams: FunctionParam[] = [],
+    newFunctionName: Name
+  ) => {
     const paramsStr = formatParams(functionParams, mOptions);
     const oldFunctionNameStr = mOptions.literal(oldFunctionName);
     const newFunctionNameStr = mOptions.literal(newFunctionName);
     return `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`;
   };
-  _rename.reverse = (oldFunctionName, functionParams, newFunctionName) =>
-    _rename(newFunctionName, functionParams, oldFunctionName);
+  _rename.reverse = (
+    oldFunctionName: Name,
+    functionParams: FunctionParam[],
+    newFunctionName: Name
+  ) => _rename(newFunctionName, functionParams, oldFunctionName);
   return _rename;
 }

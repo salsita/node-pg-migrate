@@ -1,4 +1,4 @@
-import { Value } from '../definitions';
+import { DropOptions, Name, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
 
@@ -19,7 +19,7 @@ export interface AlterViewColumnOptions {
 }
 
 export function dropView(mOptions: MigrationOptions) {
-  const _drop = (viewName, { ifExists, cascade } = {}) => {
+  const _drop = (viewName: Name, { ifExists, cascade }: DropOptions = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const viewNameStr = mOptions.literal(viewName);
@@ -29,7 +29,11 @@ export function dropView(mOptions: MigrationOptions) {
 }
 
 export function createView(mOptions: MigrationOptions) {
-  const _create = (viewName, options, definition) => {
+  const _create = (
+    viewName: Name,
+    options: CreateViewOptions,
+    definition: string
+  ) => {
     const {
       temporary,
       replace,
@@ -55,7 +59,7 @@ export function createView(mOptions: MigrationOptions) {
 }
 
 export function alterView(mOptions: MigrationOptions) {
-  const _alter = (viewName, options) => {
+  const _alter = (viewName: Name, options: AlterViewOptions) => {
     const { checkOption } = options;
     const clauses = [];
     if (checkOption !== undefined) {
@@ -73,7 +77,11 @@ export function alterView(mOptions: MigrationOptions) {
 }
 
 export function alterViewColumn(mOptions: MigrationOptions) {
-  const _alter = (viewName, columnName, options) => {
+  const _alter = (
+    viewName: Name,
+    columnName: Name,
+    options: AlterViewColumnOptions
+  ) => {
     const { default: defaultValue } = options;
     const actions = [];
     if (defaultValue === null) {
@@ -94,11 +102,12 @@ export function alterViewColumn(mOptions: MigrationOptions) {
 }
 
 export function renameView(mOptions: MigrationOptions) {
-  const _rename = (viewName, newViewName) => {
+  const _rename = (viewName: Name, newViewName: Name) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
     return `ALTER VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`;
   };
-  _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
+  _rename.reverse = (viewName: Name, newViewName: Name) =>
+    _rename(newViewName, viewName);
   return _rename;
 }

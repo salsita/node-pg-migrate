@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { DropOptions, LiteralUnion } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 
 export type Extension =
@@ -54,7 +55,10 @@ export interface CreateExtensionOptions {
 }
 
 export function dropExtension(mOptions: MigrationOptions) {
-  const _drop = (extensions, { ifExists, cascade } = {}) => {
+  const _drop = (
+    extensions: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -67,7 +71,10 @@ export function dropExtension(mOptions: MigrationOptions) {
 }
 
 export function createExtension(mOptions: MigrationOptions) {
-  const _create = (extensions, { ifNotExists, schema } = {}) => {
+  const _create = (
+    extensions: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+    { ifNotExists, schema }: CreateExtensionOptions = {}
+  ) => {
     if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : '';

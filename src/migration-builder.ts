@@ -332,7 +332,7 @@ export default class MigrationBuilder {
     operatorClassName: Name,
     type: Type,
     indexMethod: Name,
-    operatorList: OperatorListDefinition,
+    operatorList: OperatorListDefinition[],
     options: CreateOperatorClassOptions
   ) => void;
   public readonly dropOperatorClass: (
@@ -362,12 +362,12 @@ export default class MigrationBuilder {
   public readonly addToOperatorFamily: (
     operatorFamilyName: Name,
     indexMethod: Name,
-    operatorList: OperatorListDefinition
+    operatorList: OperatorListDefinition[]
   ) => void;
   public readonly removeFromOperatorFamily: (
     operatorFamilyName: Name,
     indexMethod: Name,
-    operatorList: OperatorListDefinition
+    operatorList: OperatorListDefinition[]
   ) => void;
 
   public readonly createPolicy: (

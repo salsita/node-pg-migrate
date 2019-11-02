@@ -1,5 +1,5 @@
 import { isArray } from 'lodash';
-import { Value } from '../definitions';
+import { IfExistsOption, Name, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
 
@@ -20,7 +20,7 @@ export interface RoleOptions {
   admin?: string | string[];
 }
 
-const formatRoleOptions = (roleOptions = {}) => {
+const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
   const options = [];
   if (roleOptions.superuser !== undefined) {
     options.push(roleOptions.superuser ? 'SUPERUSER' : 'NOSUPERUSER');
@@ -80,7 +80,7 @@ const formatRoleOptions = (roleOptions = {}) => {
 };
 
 export function dropRole(mOptions: MigrationOptions) {
-  const _drop = (roleName, { ifExists } = {}) => {
+  const _drop = (roleName: Name, { ifExists }: IfExistsOption = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const roleNameStr = mOptions.literal(roleName);
     return `DROP ROLE${ifExistsStr} ${roleNameStr};`;
@@ -89,7 +89,7 @@ export function dropRole(mOptions: MigrationOptions) {
 }
 
 export function createRole(mOptions: MigrationOptions) {
-  const _create = (roleName, roleOptions = {}) => {
+  const _create = (roleName: Name, roleOptions: RoleOptions = {}) => {
     const options = formatRoleOptions({
       ...roleOptions,
       superuser: roleOptions.superuser || false,
@@ -107,7 +107,7 @@ export function createRole(mOptions: MigrationOptions) {
 }
 
 export function alterRole(mOptions: MigrationOptions) {
-  const _alter = (roleName, roleOptions = {}) => {
+  const _alter = (roleName: Name, roleOptions: RoleOptions = {}) => {
     const options = formatRoleOptions(roleOptions);
     return options
       ? `ALTER ROLE ${mOptions.literal(roleName)} WITH ${options};`
@@ -117,12 +117,12 @@ export function alterRole(mOptions: MigrationOptions) {
 }
 
 export function renameRole(mOptions: MigrationOptions) {
-  const _rename = (oldRoleName, newRoleName) => {
+  const _rename = (oldRoleName: Name, newRoleName: Name) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName);
     const newRoleNameStr = mOptions.literal(newRoleName);
     return `ALTER ROLE ${oldRoleNameStr} RENAME TO ${newRoleNameStr};`;
   };
-  _rename.reverse = (oldRoleName, newRoleName) =>
+  _rename.reverse = (oldRoleName: Name, newRoleName: Name) =>
     _rename(newRoleName, oldRoleName);
   return _rename;
 }

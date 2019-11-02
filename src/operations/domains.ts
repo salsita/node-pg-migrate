@@ -1,4 +1,4 @@
-import { Value } from '../definitions';
+import { DropOptions, Name, Type, Value } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { applyType, escapeValue } from '../utils';
 
@@ -22,7 +22,7 @@ export interface DomainOptionsAlterEn {
 export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions;
 
 export function dropDomain(mOptions: MigrationOptions) {
-  const _drop = (domainName, { ifExists, cascade } = {}) => {
+  const _drop = (domainName: Name, { ifExists, cascade }: DropOptions = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const domainNameStr = mOptions.literal(domainName);
@@ -32,7 +32,11 @@ export function dropDomain(mOptions: MigrationOptions) {
 }
 
 export function createDomain(mOptions: MigrationOptions) {
-  const _create = (domainName, type, options = {}) => {
+  const _create = (
+    domainName: Name,
+    type: Type,
+    options: DomainOptionsCreate = {}
+  ) => {
     const {
       default: defaultValue,
       collation,
@@ -69,13 +73,13 @@ export function createDomain(mOptions: MigrationOptions) {
 
     return `CREATE DOMAIN ${domainNameStr} AS ${typeStr}${constraintsStr};`;
   };
-  _create.reverse = (domainName, type, options) =>
+  _create.reverse = (domainName: Name, type: Type, options: DropOptions) =>
     dropDomain(mOptions)(domainName, options);
   return _create;
 }
 
 export function alterDomain(mOptions: MigrationOptions) {
-  const _alter = (domainName, options) => {
+  const _alter = (domainName: Name, options: DomainOptionsAlter) => {
     const {
       default: defaultValue,
       notNull,
@@ -112,12 +116,12 @@ export function alterDomain(mOptions: MigrationOptions) {
 }
 
 export function renameDomain(mOptions: MigrationOptions) {
-  const _rename = (domainName, newDomainName) => {
+  const _rename = (domainName: Name, newDomainName: Name) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);
     return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`;
   };
-  _rename.reverse = (domainName, newDomainName) =>
+  _rename.reverse = (domainName: Name, newDomainName: Name) =>
     _rename(newDomainName, domainName);
   return _rename;
 }

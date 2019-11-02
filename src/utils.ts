@@ -42,7 +42,7 @@ export const createSchemalize = (
 
 export const createTransformer = (literal: (v: Name) => string) => (
   s: string,
-  d
+  d?: object
 ) =>
   Object.keys(d || {}).reduce(
     (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
