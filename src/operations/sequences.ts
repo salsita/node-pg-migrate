@@ -28,7 +28,7 @@ export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions;
 
 export const parseSequenceOptions = (
   typeShorthands: ColumnDefinitions,
-  options
+  options: SequenceOptions
 ) => {
   const {
     type,
@@ -40,7 +40,7 @@ export const parseSequenceOptions = (
     cycle,
     owner
   } = options;
-  const clauses = [];
+  const clauses: string[] = [];
   if (type) {
     clauses.push(`AS ${applyType(type, typeShorthands).type}`);
   }

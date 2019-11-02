@@ -1,5 +1,7 @@
 import decamelize from 'decamelize';
 import { ColumnDefinitions, Name, Type, Value } from './definitions';
+import { MigrationOptions } from './migration-builder';
+import { FunctionParamType } from './operations/functions';
 import { RunnerOption } from './runner';
 
 // This is used to create unescaped strings
@@ -57,7 +59,7 @@ export const escapeValue = (val: Value): string | number => {
     return val.toString();
   }
   if (typeof val === 'string') {
-    let dollars;
+    let dollars: string;
     let index = 0;
     do {
       index += 1;
@@ -113,13 +115,13 @@ export const applyTypeAdapters = (type: string): string =>
 export const applyType = (
   type: Type,
   extendingTypeShorthands: ColumnDefinitions = {}
-) => {
+): FunctionParamType => {
   const typeShorthands: ColumnDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
   };
   const options = typeof type === 'string' ? { type } : type;
-  let ext = null;
+  let ext: { type?: string } | null = null;
   const types: string[] = [options.type];
   while (typeShorthands[types[types.length - 1]]) {
     if (ext) {
@@ -144,12 +146,16 @@ export const applyType = (
   };
 };
 
-const formatParam = mOptions => param => {
-  const { mode, name, type, default: defaultValue } = applyType(
-    param,
-    mOptions.typeShorthands
-  );
-  const options = [];
+const formatParam = (mOptions: MigrationOptions) => (
+  param: FunctionParamType
+) => {
+  const {
+    mode,
+    name,
+    type,
+    default: defaultValue
+  }: FunctionParamType = applyType(param, mOptions.typeShorthands);
+  const options: string[] = [];
   if (mode) {
     options.push(mode);
   }
@@ -165,15 +171,21 @@ const formatParam = mOptions => param => {
   return options.join(' ');
 };
 
-export const formatParams = (params = [], mOptions) =>
-  `(${params.map(formatParam(mOptions)).join(', ')})`;
+export const formatParams = (
+  params: FunctionParamType[] = [],
+  mOptions: MigrationOptions
+) => `(${params.map(formatParam(mOptions)).join(', ')})`;
 
-export const comment = (object, name, text) => {
+export const comment = (object: string, name: string, text?: string) => {
   const cmt = escapeValue(text || null);
   return `COMMENT ON ${object} ${name} IS ${cmt};`;
 };
 
-export const formatLines = (lines, replace = '  ', separator = ',') =>
+export const formatLines = (
+  lines: string[],
+  replace: string = '  ',
+  separator: string = ','
+) =>
   lines
     .map(line => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
