@@ -267,8 +267,12 @@ export interface FunctionOptions {
     replace?: boolean
     window?: boolean
     behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE'
-    onNull?: boolean
+    onNull?: boolean | 'NULL' | 'CALLED'
+    strict?: boolean
+    security?: 'DEFINER' | 'INVOKER'
     parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE'
+    cost?: number
+    rows?: number
 }
 
 interface TriggerOptions {

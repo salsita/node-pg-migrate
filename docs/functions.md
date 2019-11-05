@@ -23,8 +23,11 @@
   - `replace` _[boolean]_ - create or replace function
   - `window` _[boolean]_ - window function
   - `behavior` _[string]_ - `IMMUTABLE`, `STABLE`, or `VOLATILE`
-  - `onNull` _[boolean]_ - `RETURNS NULL ON NULL INPUT`
+  - `strict` _[boolean]_ - `RETURNS NULL ON NULL INPUT`
+  - `onNull` _[string]_ (deprecated) - alias for `strict`, also accepts `NULL` or `CALLED`
   - `parallel` _[string]_ - `UNSAFE`, `RESTRICTED`, or `SAFE`
+  - `cost` _[number]_ - estimated execution cost
+  - `rows` _[number]_ - estimated number of result rows
 - `definition` _[string]_ - definition of function
 
 **Reverse Operation:** `dropFunction`
