@@ -9,6 +9,7 @@
 - `tableName` _[[Name](migrations.md#type)]_ - name of the table to alter
 - `policyName` _[string]_ - name of the new policy
 - `options` _[object]_ - options:
+  - `restrictive` _[boolean]_ - `RESTRICTIVE` instead of `PERMISSIVE`
   - `command` _[string]_ - `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`
   - `role` _[string or array]_ - the role(s) to which the policy is to be applied
   - `using` _[string]_ - SQL conditional expression for visibility check

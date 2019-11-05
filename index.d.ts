@@ -368,7 +368,8 @@ export interface PolicyOptions {
 }
 
 export interface CreatePolicyOptionsEn {
-    command: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE'
+    restrictive?: boolean
+    command?: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE'
 }
 
 export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions
