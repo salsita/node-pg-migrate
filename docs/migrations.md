@@ -41,7 +41,7 @@ Another way how to perform some async operation is to return [Promise](https://p
 
 ```javascript
 exports.up = function(pgm) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     // doSomethingAsync
     resolve();
   });

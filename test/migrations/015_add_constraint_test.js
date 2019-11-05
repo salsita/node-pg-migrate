@@ -1,15 +1,11 @@
 exports.up = pgm =>
-  new Promise((resolve, reject) =>
-    Promise.resolve()
-      .then(() =>
-        pgm.db
-          .query('SAVEPOINT sp_check;')
-          .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (30);'))
-          .then(() => reject(new Error('Missing check clause')))
-          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;'))
-      )
-      .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (21);'))
-      .then(resolve)
-  );
+  pgm.db
+    .query('SAVEPOINT sp_check;')
+    .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (30);'))
+    .then(
+      () => Promise.reject(new Error('Missing check clause')),
+      () => pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;')
+    )
+    .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (21);'));
 
 exports.down = () => null;

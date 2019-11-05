@@ -44,7 +44,7 @@ describe('lib/db', () => {
     });
 
     it('pg.Client should be called with connection string', () => {
-      sandbox.stub(pgMock, 'Client');
+      sandbox.stub(pgMock, 'Client').returns({ end() {} });
       db = Db('connection_string');
       expect(pgMock.Client).to.be.calledWith('connection_string');
     });
