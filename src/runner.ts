@@ -257,7 +257,7 @@ const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
     await ensureMigrationsTable(db, options);
 
     if (!options.noLock) {
-      await lock(db, options);
+      await lock(db);
     }
 
     const [migrations, runNames] = await Promise.all([
