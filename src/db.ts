@@ -7,7 +7,8 @@ import {
   ClientConfig,
   QueryArrayResult,
   QueryConfig,
-  QueryResult
+  QueryResult,
+  QueryResultRow
 } from 'pg';
 // or native libpq bindings
 // const pg = require('pg/native');
@@ -16,10 +17,10 @@ import {
 export interface DB {
   createConnection(): Promise<void>;
   query(queryConfig: QueryConfig): Promise<QueryResult>;
-  query(
-    queryTextOrConfig: string | QueryConfig,
-    values?: any[]
-  ): Promise<QueryResult>;
+  query<R extends QueryResultRow = any, I extends any[] = any[]>(
+    queryTextOrConfig: string | QueryConfig<I>,
+    values?: I[]
+  ): Promise<QueryResult<R>>;
   select(queryConfig: QueryConfig): Promise<any[]>;
   select(
     queryTextOrConfig: string | QueryConfig,

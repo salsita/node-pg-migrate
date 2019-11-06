@@ -59,7 +59,7 @@ const loadMigrations = async (
 const lock = async (db: DB): Promise<void> => {
   const {
     rows: [lockObtained]
-  } = await db.query(
+  } = await db.query<{ lockObtained: boolean }>(
     `select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`
   );
   if (!lockObtained) {
