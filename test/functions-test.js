@@ -5,6 +5,15 @@ const { options1, options2 } = require('./utils');
 describe('lib/operations/functions', () => {
   const params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }];
   describe('.create', () => {
+    it('throws on missing language', () => {
+      expect(() =>
+        Functions.createFunction(options1)(
+          { schema: 'mySchema', name: 'f' },
+          []
+        )
+      ).to.throw();
+    });
+
     it('check schemas can be used', () => {
       const args = [
         { schema: 'mySchema', name: 'f' },
@@ -23,20 +32,20 @@ END;`
       expect(sql1).to.equal(
         `CREATE FUNCTION "mySchema"."f"(integer, in "arg2" integer)
   RETURNS integer
+  LANGUAGE plpgsql
   AS $pg1$BEGIN
   return $1 + arg2;
 END;$pg1$
-  VOLATILE
-  LANGUAGE plpgsql;`
+  VOLATILE;`
       );
       expect(sql2).to.equal(
         `CREATE FUNCTION "my_schema"."f"(integer, in "arg2" integer)
   RETURNS integer
+  LANGUAGE plpgsql
   AS $pg1$BEGIN
   return $1 + arg2;
 END;$pg1$
-  VOLATILE
-  LANGUAGE plpgsql;`
+  VOLATILE;`
       );
     });
 
@@ -57,17 +66,17 @@ END;$pg1$
       expect(sql1).to.equal(
         `CREATE FUNCTION "mySchema"."f"(integer, IN arg2 integer)
   RETURNS integer
+  LANGUAGE sql
   AS $pg1$SELECT $1 + arg2;$pg1$
   IMMUTABLE
-  LANGUAGE sql
   RETURNS NULL ON NULL INPUT;`
       );
       expect(sql2).to.equal(
         `CREATE FUNCTION "my_schema"."f"(integer, IN arg2 integer)
   RETURNS integer
+  LANGUAGE sql
   AS $pg1$SELECT $1 + arg2;$pg1$
   IMMUTABLE
-  LANGUAGE sql
   RETURNS NULL ON NULL INPUT;`
       );
     });
@@ -91,9 +100,9 @@ END;$pg1$
       expect(sql).to.equal(
         `CREATE FUNCTION "myFunction"(a integer, b real)
   RETURNS integer
+  LANGUAGE plpgsql
   AS $pg1$blah-blubb$pg1$
   STABLE
-  LANGUAGE plpgsql
   RETURNS NULL ON NULL INPUT
   SECURITY DEFINER
   PARALLEL RESTRICTED

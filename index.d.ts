@@ -266,7 +266,7 @@ export interface FunctionOptions {
     language: string
     replace?: boolean
     window?: boolean
-    behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE'
+    behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE' | 'LEAKPROOF'
     onNull?: boolean | 'NULL' | 'CALLED'
     strict?: boolean
     security?: 'DEFINER' | 'INVOKER'
