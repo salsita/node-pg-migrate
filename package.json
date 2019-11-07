@@ -88,7 +88,7 @@
     "dotenv": ">=1.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "(tsc || true)",
     "compile": "babel lib/ -d dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "node bin/node-pg-migrate",
