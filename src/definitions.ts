@@ -106,7 +106,7 @@ export interface ColumnDefinition extends ReferencesOptions {
 }
 
 export interface ColumnDefinitions {
-  [name: string]: ColumnDefinition;
+  [name: string]: ColumnDefinition | string;
 }
 
 export type Like =
