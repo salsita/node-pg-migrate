@@ -88,8 +88,8 @@
     "dotenv": ">=1.0.0"
   },
   "scripts": {
-    "build": "(tsc || true) && cp src/migration-template.* lib/",
-    "compile": "babel lib/ -d dist/ && cp lib/migration-template.* dist/",
+    "build": "tsc",
+    "compile": "babel lib/ -d dist/",
     "test": "cross-env NODE_ENV=test mocha --opts ./mocha.opts test",
     "migrate": "node bin/node-pg-migrate",
     "lint": "eslint . bin/*",

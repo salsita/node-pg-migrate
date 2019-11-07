@@ -73,7 +73,7 @@ export class Migration implements RunMigration {
     await new Promise(resolve => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.createReadStream(
-        path.resolve(__dirname, `./migration-template.${suffix}`)
+        path.resolve(__dirname, `../templates/migration-template.${suffix}`)
       )
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         .pipe(fs.createWriteStream(newFile))
