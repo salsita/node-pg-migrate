@@ -6,14 +6,14 @@ export interface CreateMaterializedViewOptions {
   ifNotExists?: boolean;
   columns?: string | string[];
   tablespace?: string;
-  storageParameters?: object;
+  storageParameters?: { [key: string]: any };
   data?: boolean;
 }
 
 export interface AlterMaterializedViewOptions {
   cluster?: null | false | string;
   extension?: string;
-  storageParameters?: object;
+  storageParameters?: { [key: string]: any };
 }
 
 export interface RefreshMaterializedViewOptions {
@@ -23,7 +23,12 @@ export interface RefreshMaterializedViewOptions {
 
 const dataClause = (data?: boolean) =>
   data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '';
-const storageParameterStr = <T>(storageParameters: T) => (key: keyof T) => {
+const storageParameterStr = <
+  T extends { [key: string]: any },
+  K extends keyof T
+>(
+  storageParameters: T
+) => (key: K) => {
   const value =
     storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`;
   return `${key}${value}`;
