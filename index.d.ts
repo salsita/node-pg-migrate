@@ -260,11 +260,7 @@ export interface FunctionParamType {
 }
 
 export type FunctionParam = string | FunctionParamType
-
-export interface FunctionOptions {
-    returns?: string
-    language: string
-    replace?: boolean
+interface FunctionOptions {
     window?: boolean
     behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE' | 'LEAKPROOF'
     onNull?: boolean | 'NULL' | 'CALLED'
@@ -274,6 +270,20 @@ export interface FunctionOptions {
     cost?: number
     rows?: number
 }
+
+interface CreateFunctionOptionsEn {
+    returns?: string
+    language: string
+    replace?: boolean
+}
+
+interface AlterFunctionOptionsEn {
+    owner?: string
+}
+
+export type CreateFunctionOptions = CreateFunctionOptionsEn & FunctionOptions
+
+export type AlterFunctionOptions = AlterFunctionOptionsEn & FunctionOptions
 
 interface TriggerOptions {
     when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
@@ -470,13 +480,14 @@ export interface MigrationBuilder {
     renameRole(oldRoleName: Name, newRoleName: Name): void
 
     // Functions
-    createFunction(functionName: Name, functionParams: FunctionParam[], functionOptions: FunctionOptions, definition: Value): void
+    createFunction(functionName: Name, functionParams: FunctionParam[], functionOptions: CreateFunctionOptions, definition: Value): void
     dropFunction(functionName: Name, functionParams: FunctionParam[], dropOptions?: DropOptions): void
+    alterFunction(functionName: Name, functionParams: FunctionParam[], functionOptions: AlterFunctionOptions): void
     renameFunction(oldFunctionName: Name, functionParams: FunctionParam[], newFunctionName: Name): void
 
     // Triggers
     createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions): void
-    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions & FunctionOptions, definition: Value): void
+    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions & CreateFunctionOptions, definition: Value): void
     dropTrigger(tableName: Name, triggerName: Name, dropOptions?: DropOptions): void
     renameTrigger(tableName: Name, oldTriggerName: Name, newTriggerName: Name): void
 

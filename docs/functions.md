@@ -23,7 +23,7 @@
   - `replace` _[boolean]_ - create or replace function
   - `window` _[boolean]_ - window function
   - `behavior` _[string]_ - `IMMUTABLE`, `STABLE`, or `VOLATILE`
-  - `strict` _[boolean]_ - `RETURNS NULL ON NULL INPUT`
+  - `strict` _[boolean]_ - `RETURNS NULL/CALLED ON NULL INPUT`
   - `onNull` _[string]_ (deprecated) - alias for `strict`, also accepts `NULL` or `CALLED`
   - `parallel` _[string]_ - `UNSAFE`, `RESTRICTED`, or `SAFE`
   - `cost` _[number]_ - estimated execution cost
@@ -45,6 +45,26 @@
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops function only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
+
+---
+
+### `pgm.alterFunction( function_name, function_params, function_options )`
+
+> Alter a function - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterfunction.html)
+
+**Arguments:**
+
+- `function_name` _[[Name](migrations.md#type)]_ - name of the function to drop
+- `function_params` _[array]_ - [see](#pgmcreatefunction-function_name-function_params-function_options-definition-)
+- `function_options` _[object]_ - options:
+  - `owner` _[string]_ - the new owner of the function
+  - `window` _[boolean]_ - window function
+  - `behavior` _[string]_ - `IMMUTABLE`, `STABLE`, or `VOLATILE`
+  - `strict` _[boolean]_ - `RETURNS NULL/CALLED ON NULL INPUT`
+  - `onNull` _[string]_ (deprecated) - alias for `strict`, also accepts `NULL` or `CALLED`
+  - `parallel` _[string]_ - `UNSAFE`, `RESTRICTED`, or `SAFE`
+  - `cost` _[number]_ - estimated execution cost
+  - `rows` _[number]_ - estimated number of result rows
 
 ---
 

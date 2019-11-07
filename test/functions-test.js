@@ -36,7 +36,7 @@ END;`
   AS $pg1$BEGIN
   return $1 + arg2;
 END;$pg1$
-  VOLATILE;`
+  CALLED ON NULL INPUT;`
       );
       expect(sql2).to.equal(
         `CREATE FUNCTION "my_schema"."f"(integer, in "arg2" integer)
@@ -45,7 +45,7 @@ END;$pg1$
   AS $pg1$BEGIN
   return $1 + arg2;
 END;$pg1$
-  VOLATILE;`
+  CALLED ON NULL INPUT;`
       );
     });
 
@@ -108,6 +108,73 @@ END;$pg1$
   PARALLEL RESTRICTED
   COST 0
   ROWS 7;`
+      );
+    });
+  });
+
+  describe('.alter', () => {
+    it('can alter function options', () => {
+      const args = [
+        'myFunction',
+        ['integer', 'real'],
+        {
+          behavior: 'VOLATILE',
+          onNull: 'CALLED',
+          security: 'INVOKER',
+          parallel: 'UNSAFE',
+          cost: 1000,
+          rows: 1
+        }
+      ];
+      const sql1 = Functions.alterFunction(options1)(...args);
+      const sql2 = Functions.alterFunction(options2)(...args);
+      expect(sql1).to.equal(
+        `ALTER FUNCTION "myFunction"(integer, real)
+  VOLATILE
+  CALLED ON NULL INPUT
+  SECURITY INVOKER
+  PARALLEL UNSAFE
+  COST 1000
+  ROWS 1;`
+      );
+      expect(sql2).to.equal(
+        `ALTER FUNCTION "my_function"(integer, real)
+  VOLATILE
+  CALLED ON NULL INPUT
+  SECURITY INVOKER
+  PARALLEL UNSAFE
+  COST 1000
+  ROWS 1;`
+      );
+    });
+
+    it('can alter the owner', () => {
+      const sql1 = Functions.alterFunction(options1)(
+        'myFunction',
+        ['something'],
+        {
+          owner: 'newOwner',
+          behavior: 'VOLATILE',
+          security: 'DEFINER'
+        }
+      );
+      expect(sql1).to.equal(
+        `ALTER FUNCTION "myFunction"(something)
+  OWNER TO newOwner;
+ALTER FUNCTION "myFunction"(something)
+  VOLATILE
+  SECURITY DEFINER;`
+      );
+      const sql2 = Functions.alterFunction(options2)(
+        'myFunction',
+        ['something', 'custom'],
+        {
+          owner: 'CURRENT_USER'
+        }
+      );
+      expect(sql2).to.equal(
+        `ALTER FUNCTION "my_function"(something, custom)
+  OWNER TO CURRENT_USER;`
       );
     });
   });
