@@ -32,7 +32,7 @@ export interface ForeignKeyOptions extends ReferencesOptions {
 
 export interface ConstraintOptions {
     check?: string | string[]
-    unique?: Name[] | Name[][]
+    unique?: Name | Name[] | Name[][]
     primaryKey?: Name | Name[]
     foreignKeys?: ForeignKeyOptions | ForeignKeyOptions[]
     exclude?: string

@@ -194,6 +194,33 @@ describe('lib/operations/tables', () => {
 );`);
     });
 
+    it('check table unique constraint work correctly for string', () => {
+      const args = [
+        'myTableName',
+        {
+          colA: { type: 'integer' },
+          colB: { type: 'varchar' }
+        },
+        {
+          constraints: {
+            unique: 'colA'
+          }
+        }
+      ];
+      const sql1 = Tables.createTable(options1)(...args);
+      const sql2 = Tables.createTable(options2)(...args);
+      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+  "colA" integer,
+  "colB" varchar,
+  CONSTRAINT "myTableName_uniq_colA" UNIQUE ("colA")
+);`);
+      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+  "col_a" integer,
+  "col_b" varchar,
+  CONSTRAINT "my_table_name_uniq_col_a" UNIQUE ("col_a")
+);`);
+    });
+
     it('check table unique constraint work correctly for array of arrays', () => {
       const args = [
         'myTableName',

@@ -109,6 +109,10 @@ export interface ColumnDefinitions {
   [name: string]: ColumnDefinition | string;
 }
 
+export interface ShorthandDefinitions {
+  [name: string]: ColumnDefinition
+}
+
 export type Like =
   | 'COMMENTS'
   | 'CONSTRAINTS'

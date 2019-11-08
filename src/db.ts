@@ -6,9 +6,9 @@ import {
   Client,
   ClientConfig,
   QueryArrayResult,
-  QueryConfig,
   QueryResult,
-  QueryResultRow
+  QueryArrayConfig,
+  QueryConfig,
 } from 'pg';
 // or native libpq bindings
 // const pg = require('pg/native');
@@ -16,17 +16,19 @@ import {
 // see ClientBase in @types/pg
 export interface DB {
   createConnection(): Promise<void>;
+
+  query(queryConfig: QueryArrayConfig, values?: any[]): Promise<QueryArrayResult>;
   query(queryConfig: QueryConfig): Promise<QueryResult>;
-  query<R extends QueryResultRow = any, I extends any[] = any[]>(
-    queryTextOrConfig: string | QueryConfig<I>,
-    values?: I[]
-  ): Promise<QueryResult<R>>;
-  select(queryConfig: QueryConfig): Promise<any[]>;
-  select(
-    queryTextOrConfig: string | QueryConfig,
-    values?: any[]
-  ): Promise<any[]>;
-  column(columnName: 'name', ...args: string[]): Promise<any>;
+  query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>;
+
+  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[][]>;
+  select(queryConfig: QueryConfig): Promise<any[][]>;
+  select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[][]>;
+
+  column(columnName: 'name',queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>;
+  column(columnName: 'name',queryConfig: QueryConfig): Promise<any[]>;
+  column(columnName: 'name',queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>;
+
   addBeforeCloseListener: (listener: any) => number;
   close(): Promise<void>;
 }
@@ -58,15 +60,16 @@ const db = (
           })
     );
 
-  const query = async <R extends any[] = any[]>(
-    ...args: any[]
-  ): Promise<QueryArrayResult<R>> => {
+  const query: DB['query'] = async (
+    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    values?: any[],
+  ): Promise<QueryArrayResult | QueryResult> => {
     await createConnection();
     try {
-      return await client.query(...args);
+      return await client.query(queryTextOrConfig, values);
     } catch (err) {
       const { message, position }: { message: string; position: number } = err;
-      const string: string = args[0].text || args[0];
+      const string: string = typeof queryTextOrConfig === 'string' ? queryTextOrConfig : queryTextOrConfig.text;
       if (message && position >= 1) {
         const endLineWrapIndexOf = string.indexOf('\n', position);
         const endLineWrapPos =
@@ -91,12 +94,21 @@ ${err}
     }
   };
 
-  const select = async <T>(...args: T[]) => {
-    const { rows } = await query(...args);
+  const select: DB['select'] = async (
+    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    values?: any[],
+  ) => {
+    const { rows } = await query(queryTextOrConfig, values);
     return rows;
   };
-  const column = async (columnName: string, ...args: string[]) =>
-    (await select(...args)).map((r: { [key: string]: any }) => r[columnName]);
+  const column: DB['column'] = async (
+    columnName: string,
+    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    values?: any[],
+  ) => {
+    const rows = await select(queryTextOrConfig, values)
+    return rows.map((r: { [key: string]: any }) => r[columnName]);
+  }
 
   return {
     createConnection,

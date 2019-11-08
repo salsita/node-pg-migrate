@@ -26,7 +26,7 @@ export interface ForeignKeyOptions extends ReferencesOptions {
 
 export interface ConstraintOptions {
   check?: string | string[];
-  unique?: Name[] | Name[][];
+  unique?: Name | Name[] | Name[][];
   primaryKey?: Name | Name[];
   foreignKeys?: ForeignKeyOptions | ForeignKeyOptions[];
   exclude?: string;
@@ -235,9 +235,9 @@ const parseConstraints = (
     }
   }
   if (unique) {
-    const uniqueArray = _.isArray(unique) ? unique : [unique];
+    const uniqueArray: Array<Name | Name[]> = _.isArray(unique) ? unique : [unique];
     const isArrayOfArrays = uniqueArray.some(uniqueSet => _.isArray(uniqueSet));
-    (isArrayOfArrays ? uniqueArray : [uniqueArray]).forEach(uniqueSet => {
+    ((isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>).forEach(uniqueSet => {
       const cols = _.isArray(uniqueSet) ? uniqueSet : [uniqueSet];
       const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`);
       constraints.push(
@@ -320,13 +320,13 @@ const parseLike = (
       .map(option => ` ${name} ${option}`)
       .join('');
 
-  const table = typeof like === 'string' || !like.table ? like : like.table;
-  const options = like.options
-    ? [
+  const table = typeof like === 'string' || !('table' in like) ? like : like.table;
+  const options = typeof like === 'string' || !('options' in like)
+    ? ''
+    : [
         formatOptions('INCLUDING', like.options.including),
         formatOptions('EXCLUDING', like.options.excluding)
-      ].join('')
-    : '';
+      ].join('');
   return `LIKE ${literal(table)}${options}`;
 };
 

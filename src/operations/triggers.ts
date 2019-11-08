@@ -35,7 +35,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   const _create = (
     tableName: Name,
     triggerName: Name,
-    triggerOptions: TriggerOptions = {},
+    triggerOptions: Partial<TriggerOptions> = {},
     definition?: Value
   ) => {
     const {
@@ -44,8 +44,8 @@ export function createTrigger(mOptions: MigrationOptions) {
       operation,
       deferrable,
       deferred,
-      functionArgs = []
-    }: TriggerOptions = triggerOptions;
+      functionParams = []
+    } = triggerOptions;
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
     const operations = isArray(operation) ? operation.join(' OR ') : operation;
     if (constraint) {
@@ -79,7 +79,7 @@ export function createTrigger(mOptions: MigrationOptions) {
       : '';
     const conditionClause = condition ? `WHEN (${condition})\n  ` : '';
     const constraintStr = constraint ? ' CONSTRAINT' : '';
-    const paramsStr = functionArgs.map(escapeValue).join(', ');
+    const paramsStr = functionParams.map(escapeValue).join(', ');
     const triggerNameStr = mOptions.literal(triggerName);
     const tableNameStr = mOptions.literal(tableName);
     const functionNameStr = mOptions.literal(functionName);

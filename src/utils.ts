@@ -1,7 +1,7 @@
 import decamelize from 'decamelize';
 import {
   ColumnDefinition,
-  ColumnDefinitions,
+  ShorthandDefinitions,
   Name,
   Type,
   Value
@@ -50,7 +50,7 @@ export const createSchemalize = (
 
 export const createTransformer = (literal: (v: Name) => string) => (
   s: string,
-  d?: object
+  d?: { [key: string]: Name }
 ) =>
   Object.keys(d || {}).reduce(
     (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
@@ -110,19 +110,19 @@ const typeAdapters = {
   bool: 'boolean'
 } as const;
 
-const defaultTypeShorthands: ColumnDefinitions = {
+const defaultTypeShorthands: ShorthandDefinitions = {
   id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
 };
 
 // some convenience adapters -- see above
 export const applyTypeAdapters = (type: string): string =>
-  typeAdapters[type] ? typeAdapters[type] : type;
+  type in typeAdapters ? typeAdapters[type as keyof typeof typeAdapters] : type;
 
 export const applyType = (
   type: Type,
-  extendingTypeShorthands: ColumnDefinitions = {}
+  extendingTypeShorthands: ShorthandDefinitions = {}
 ): ColumnDefinition & FunctionParamType => {
-  const typeShorthands: ColumnDefinitions = {
+  const typeShorthands: ShorthandDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
   };

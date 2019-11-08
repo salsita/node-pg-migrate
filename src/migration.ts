@@ -10,7 +10,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import { DB } from './db';
-import { ColumnDefinitions } from './definitions';
+import { ShorthandDefinitions } from './definitions';
 import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
 import { MigrationDirection, RunnerOption } from './runner';
 import { getMigrationTableSchema, promisify } from './utils';
@@ -80,7 +80,7 @@ export class Migration implements RunMigration {
         .on('end', resolve);
     });
 
-    return new Migration(null, newFile);
+    return newFile;
   }
 
   public readonly db: DB;
@@ -90,15 +90,15 @@ export class Migration implements RunMigration {
   public readonly up: (pgm: MigrationBuilder) => Promise<void>;
   public down?: ((pgm: MigrationBuilder) => Promise<void>) | false;
   public readonly options: RunnerOption;
-  public readonly typeShorthands: ColumnDefinitions;
+  public readonly typeShorthands: ShorthandDefinitions;
   public readonly log: typeof console.log;
 
   constructor(
     db: DB | null,
     migrationPath: string,
     { up, down }: MigrationBuilderActions = {},
-    options: RunnerOption = {},
-    typeShorthands?: ColumnDefinitions,
+    options: RunnerOption,
+    typeShorthands?: ShorthandDefinitions,
     log = console.log
   ) {
     this.db = db;
@@ -159,7 +159,7 @@ export class Migration implements RunMigration {
 
     return sqlSteps.reduce(
       (promise, sql) =>
-        promise.then(() => this.options.dryRun || this.db.query(sql)),
+        promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
       Promise.resolve()
     );
   }

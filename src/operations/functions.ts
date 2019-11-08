@@ -40,7 +40,7 @@ export function createFunction(mOptions: MigrationOptions) {
   const _create = (
     functionName: Name,
     functionParams: FunctionParam[] = [],
-    functionOptions: FunctionOptions = {},
+    functionOptions: Partial<FunctionOptions> = {},
     definition: Value
   ) => {
     const {

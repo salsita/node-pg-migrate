@@ -51,7 +51,7 @@ export function dropOperator(mOptions: MigrationOptions) {
 }
 
 export function createOperator(mOptions: MigrationOptions) {
-  const _create = (operatorName: Name, options: CreateOperatorOptions = {}) => {
+  const _create = (operatorName: Name, options: Partial<CreateOperatorOptions> = {}) => {
     const {
       procedure,
       left,
@@ -121,7 +121,7 @@ export function createOperatorFamily(mOptions: MigrationOptions) {
 }
 
 const operatorMap = (mOptions: MigrationOptions) => ({
-  type = '',
+  type,
   number,
   name,
   params = []

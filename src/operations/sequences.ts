@@ -1,4 +1,4 @@
-import { ColumnDefinitions, DropOptions, Name, Type } from '../definitions';
+import { ShorthandDefinitions, DropOptions, Name, Type } from '../definitions';
 import { MigrationOptions } from '../migration-builder';
 import { applyType } from '../utils';
 
@@ -27,7 +27,7 @@ export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions;
 export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions;
 
 export const parseSequenceOptions = (
-  typeShorthands: ColumnDefinitions,
+  typeShorthands: ShorthandDefinitions,
   options: SequenceOptions
 ) => {
   const {

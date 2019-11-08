@@ -13,7 +13,7 @@
   - `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
   - `constraint` _[boolean]_ - creates constraint trigger
   - `function` _[[Name](migrations.md#type)]_ - the name of procedure to execute
-  - `functionArgs` _[array]_ - parameters of the procedure
+  - `functionParams` _[array]_ - parameters of the procedure
   - `level` _[string]_ - `STATEMENT`, or `ROW`
   - `condition` _[string]_ - condition to met to execute trigger
   - `deferrable` _[boolean]_ - flag for deferrable constraint trigger

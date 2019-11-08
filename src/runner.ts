@@ -3,7 +3,7 @@ import path from 'path';
 import { Client } from 'pg';
 import { TlsOptions } from 'tls';
 import Db, { DB } from './db';
-import { ColumnDefinitions } from './definitions';
+import { ShorthandDefinitions } from './definitions';
 import Migration, { loadMigrationFiles, RunMigration } from './migration';
 import { MigrationBuilderActions } from './migration-builder';
 import {
@@ -29,7 +29,7 @@ const loadMigrations = async (
   log: typeof console.log
 ) => {
   try {
-    let shorthands: ColumnDefinitions = {};
+    let shorthands: ShorthandDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
     return files.map(file => {
       const filePath = `${options.dir}/${file}`;
@@ -57,9 +57,7 @@ const loadMigrations = async (
 };
 
 const lock = async (db: DB): Promise<void> => {
-  const {
-    rows: [lockObtained]
-  } = await db.query<{ lockObtained: boolean }>(
+  const [lockObtained] = await db.select(
     `select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`
   );
   if (!lockObtained) {
@@ -121,20 +119,20 @@ const getMigrationsToRun = (
   migrations: Migration[]
 ): Migration[] => {
   if (options.direction === 'down') {
-    const downMigrations: Migration[] = runNames
+    const downMigrations: Array<string | Migration> = runNames
       .filter(migrationName => !options.file || options.file === migrationName)
       .map(
         migrationName =>
           migrations.find(({ name }) => name === migrationName) || migrationName
       );
     const toRun = (options.timestamp
-      ? downMigrations.filter(({ timestamp }) => timestamp >= options.count)
+      ? downMigrations.filter((migration) => typeof migration === 'object' && migration.timestamp >= options.count)
       : downMigrations.slice(
           -Math.abs(options.count === undefined ? 1 : options.count)
         )
     ).reverse();
     const deletedMigrations = toRun.filter(
-      migration => typeof migration === 'string'
+      (migration): migration is string => typeof migration === 'string'
     );
     if (deletedMigrations.length) {
       const deletedMigrationsStr = deletedMigrations.join(', ');
@@ -142,7 +140,7 @@ const getMigrationsToRun = (
         `Definitions of migrations ${deletedMigrationsStr} have been deleted.`
       );
     }
-    return toRun;
+    return toRun as Migration[];
   }
   const upMigrations = migrations.filter(
     ({ name }) =>

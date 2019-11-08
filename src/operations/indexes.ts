@@ -29,7 +29,7 @@ function generateIndexName(
       : options.name;
   }
   const cols = _.isArray(columns) ? columns.join('_') : columns;
-  const uniq = options.unique ? '_unique' : '';
+  const uniq = 'unique' in options && options.unique ? '_unique' : '';
   return typeof table === 'object'
     ? {
         schema: table.schema,

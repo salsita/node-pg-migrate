@@ -13,7 +13,7 @@ export interface CreatePolicyOptionsEn {
 
 export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions;
 
-const makeClauses = ({ role, using, check }: PolicyOptions) => {
+const makeClauses = ({ role, using, check }: Partial<PolicyOptions>) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');
   const clauses: string[] = [];
   if (roles) {
@@ -46,9 +46,9 @@ export function createPolicy(mOptions: MigrationOptions) {
   const _create = (
     tableName: Name,
     policyName: string,
-    options: CreatePolicyOptions = {}
+    options: Partial<CreatePolicyOptions> = {}
   ) => {
-    const createOptions: CreatePolicyOptions = {
+    const createOptions: Partial<CreatePolicyOptions> = {
       ...options,
       role: options.role || 'PUBLIC'
     };
@@ -69,7 +69,7 @@ export function alterPolicy(mOptions: MigrationOptions) {
   const _alter = (
     tableName: Name,
     policyName: string,
-    options: PolicyOptions = {}
+    options: Partial<PolicyOptions> = {}
   ) => {
     const clausesStr = makeClauses(options).join(' ');
     const policyNameStr = mOptions.literal(policyName);
