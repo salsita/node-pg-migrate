@@ -9,10 +9,10 @@ describe('lib/operations/policies', () => {
       const sql1 = Policies.createPolicy(options1)(...args);
       const sql2 = Policies.createPolicy(options2)(...args);
       expect(sql1).to.equal(
-        'CREATE POLICY "getIn" ON "mySchema"."myTableName" AS PERMISSIVE FOR ALL TO PUBLIC;'
+        'CREATE POLICY "getIn" ON "mySchema"."myTableName" FOR ALL TO PUBLIC;'
       );
       expect(sql2).to.equal(
-        'CREATE POLICY "get_in" ON "my_schema"."my_table_name" AS PERMISSIVE FOR ALL TO PUBLIC;'
+        'CREATE POLICY "get_in" ON "my_schema"."my_table_name" FOR ALL TO PUBLIC;'
       );
     });
     it('can be restrictive', () => {
