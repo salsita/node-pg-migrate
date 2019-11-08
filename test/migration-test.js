@@ -14,20 +14,23 @@ describe('lib/migration', () => {
   const dbMock = {};
   const log = () => null;
   const options = { migrationsTable };
+  const typeShorthands = {};
+  const logger = { debug: log, info: log, warn: log, error: log };
   let migration;
 
   beforeEach(() => {
     dbMock.query = sinon.spy();
   });
 
-  describe('self.applyUp', () => {
+  describe('.applyUp', () => {
     it('normal operations: db.query should be called', () => {
       migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
         options,
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('up').then(() => {
         expect(dbMock.query).to.be.called;
@@ -40,7 +43,8 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsPromise,
         options,
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('up').then(() => {
         expect(dbMock.query).to.be.called;
@@ -53,7 +57,8 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         { ...options, dryRun: true },
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('up').then(() => {
         expect(dbMock.query).to.not.be.called;
@@ -66,7 +71,8 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsCallback,
         options,
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('up').then(() => {
         expect(dbMock.query).to.have.callCount(4);
@@ -80,14 +86,15 @@ describe('lib/migration', () => {
     });
   });
 
-  describe('self.applyDown', () => {
+  describe('.applyDown', () => {
     it('normal operations: db.query should be called', () => {
       migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
         options,
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('down').then(() => {
         expect(dbMock.query).to.be.called;
@@ -100,7 +107,8 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         { ...options, dryRun: true },
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('down').then(() => {
         expect(dbMock.query).to.not.be.called;
@@ -113,7 +121,8 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsCallback,
         options,
-        log
+        typeShorthands,
+        logger
       );
       return migration.apply('down').then(() => {
         expect(dbMock.query).to.have.callCount(4);

@@ -21,5 +21,6 @@ which takes options argument with following structure (similar to [command line 
 - `noLock` _[boolean]_ - Disables locking mechanism and checks
 - `fake` _[boolean]_ - Mark migrations as run without actually performing them (use with caution!)
 - `dryRun` _[boolean]_
-- `log` _[function]_ - Redirect log messages to this function, rather than `console.log`
+- `log` _[function]_ - Redirect log messages to this function, rather than `console`
+- `logger` _[object with debug/info/warn/error methods]_ - Redirect messages to this logger object, rather than `console`
 - `decamelize` _[boolean]_ - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names (experimental)

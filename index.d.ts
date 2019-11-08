@@ -576,6 +576,7 @@ export interface RunnerOptionClient {
     dbClient: Client
 }
 
+export type LogFn = (msg:string) => void
 export interface RunnerOptionConfig {
     migrationsTable: string
     migrationsSchema?: string
@@ -591,10 +592,11 @@ export interface RunnerOptionConfig {
     createSchema?: boolean
     createMigrationsSchema?: boolean
     singleTransaction?: boolean
-    noLock?: boolean,
-    fake?: boolean,
-    decamelize?: boolean,
-    log?: (msg:string) => void;
+    noLock?: boolean
+    fake?: boolean
+    decamelize?: boolean
+    log?: LogFn
+    logger?: { debug: LogFn; info: LogFn; warn: LogFn; error: LogFn }
 }
 
 export type RunnerOption = RunnerOptionConfig & (RunnerOptionClient | RunnerOptionUrl)
