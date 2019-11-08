@@ -3,4 +3,5 @@
 *.log
 /migrations
 /node_modules
-/dist*/**
+/dist
+/lib

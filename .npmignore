@@ -2,5 +2,6 @@
 *.log
 migrations/
 test/
+src/
 mocha*
 renovate.json
