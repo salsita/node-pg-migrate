@@ -4,7 +4,7 @@ import { MigrationOptions } from '../migration-builder';
 import { escapeValue } from '../utils';
 import { createFunction, dropFunction, FunctionOptions } from './functions';
 
-export interface TriggerOptions extends FunctionOptions {
+export interface TriggerOptions {
   when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
   operation: string | string[];
   constraint?: boolean;
@@ -35,7 +35,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   const _create = (
     tableName: Name,
     triggerName: Name,
-    triggerOptions: Partial<TriggerOptions> = {},
+    triggerOptions: Partial<TriggerOptions & FunctionOptions> = {},
     definition?: Value
   ) => {
     const {

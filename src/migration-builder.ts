@@ -68,9 +68,11 @@ import * as types from './operations/types';
 import * as views from './operations/views';
 import * as mViews from './operations/viewsMaterialized';
 
+export type MigrationAction = (pgm: MigrationBuilder, run?: () => void) => Promise<void> | void
+
 export interface MigrationBuilderActions {
-  up?: (pgm: MigrationBuilder) => Promise<void>;
-  down?: (pgm: MigrationBuilder) => Promise<void>;
+  up?: MigrationAction;
+  down?: MigrationAction;
   shorthands?: ShorthandDefinitions;
 }
 
@@ -402,6 +404,7 @@ export default class MigrationBuilder {
   ) => void;
   public readonly alterViewColumn: (
     viewName: Name,
+    columnName: string,
     options: AlterViewColumnOptions
   ) => void;
   public readonly renameView: (viewName: Name, newViewName: Name) => void;
@@ -451,16 +454,16 @@ export default class MigrationBuilder {
     // by default, all migrations are wrapped in a transaction
     this._use_transaction = true;
 
-    type WrapOperation<R extends string | string[]> = {
-      (...args: any[]): R;
-      reverse?: (...args: any[]) => R;
-    };
+    interface Operation {
+      (...args: any[]): string | string[]
+      reverse?: (...args: any[]) => string | string[]
+    }
 
     // this function wraps each operation within a function that either
     // calls the operation or its reverse, and appends the result (array of sql statements)
     // to the  steps array
-    const wrap = <R extends string | string[]>(operation: WrapOperation<R>) => (
-      ...args: any[]
+    const wrap = <T extends Operation>(operation: T) => (
+      ...args: Parameters<T>
     ) => {
       if (this._REVERSE_MODE && typeof operation.reverse !== 'function') {
         const name = `pgm.${operation.name}()`;

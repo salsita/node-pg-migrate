@@ -11,7 +11,7 @@ import mkdirp from 'mkdirp';
 import path from 'path';
 import { DB } from './db';
 import { ShorthandDefinitions } from './definitions';
-import MigrationBuilder, { MigrationBuilderActions } from './migration-builder';
+import MigrationBuilder, { MigrationAction, MigrationBuilderActions } from './migration-builder';
 import { MigrationDirection, RunnerOption } from './runner';
 import { getMigrationTableSchema, promisify } from './utils';
 
@@ -87,16 +87,16 @@ export class Migration implements RunMigration {
   public readonly path: string;
   public readonly name: string;
   public readonly timestamp: number;
-  public readonly up: (pgm: MigrationBuilder) => Promise<void>;
-  public down?: ((pgm: MigrationBuilder) => Promise<void>) | false;
+  public readonly up?: MigrationAction;
+  public down?: false | MigrationAction;
   public readonly options: RunnerOption;
   public readonly typeShorthands: ShorthandDefinitions;
   public readonly log: typeof console.log;
 
   constructor(
-    db: DB | null,
+    db: DB,
     migrationPath: string,
-    { up, down }: MigrationBuilderActions = {},
+    { up, down }: MigrationBuilderActions,
     options: RunnerOption,
     typeShorthands?: ShorthandDefinitions,
     log = console.log
@@ -112,7 +112,7 @@ export class Migration implements RunMigration {
     this.log = log;
   }
 
-  _getMarkAsRun(action: (pgm: MigrationBuilder) => Promise<void>) {
+  _getMarkAsRun(action: MigrationAction) {
     const schema = getMigrationTableSchema(this.options);
     const { migrationsTable } = this.options;
     const { name } = this;
@@ -128,10 +128,7 @@ export class Migration implements RunMigration {
     }
   }
 
-  async _apply(
-    action: (pgm: MigrationBuilder, value?: unknown) => Promise<void>,
-    pgm: MigrationBuilder
-  ) {
+  async _apply(action: MigrationAction, pgm: MigrationBuilder) {
     if (action.length === 2) {
       await new Promise(resolve => action(pgm, resolve));
     } else {
@@ -177,9 +174,7 @@ export class Migration implements RunMigration {
       }
     }
 
-    const action: ((pgm: MigrationBuilder) => Promise<void>) | false = this[
-      direction
-    ];
+    const action: MigrationAction | false = this[direction];
 
     if (typeof action !== 'function') {
       throw new Error(`Unknown value for direction: ${direction}`);
