@@ -28,6 +28,7 @@
   - `parallel` _[string]_ - `UNSAFE`, `RESTRICTED`, or `SAFE`
   - `cost` _[number]_ - estimated execution cost
   - `rows` _[number]_ - estimated number of result rows
+  - `comment` _[string]_ - comment on function
 - `definition` _[string]_ - definition of function
 
 **Reverse Operation:** `dropFunction`
@@ -65,6 +66,7 @@
   - `parallel` _[string]_ - `UNSAFE`, `RESTRICTED`, or `SAFE`
   - `cost` _[number]_ - estimated execution cost
   - `rows` _[number]_ - estimated number of result rows
+  - `comment` _[string]_ - comment on function
 
 ---
 

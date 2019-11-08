@@ -269,6 +269,7 @@ interface FunctionOptions {
     parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE'
     cost?: number
     rows?: number
+    comment?: string | null
 }
 
 interface CreateFunctionOptionsEn {

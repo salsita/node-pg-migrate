@@ -110,6 +110,41 @@ END;$pg1$
   ROWS 7;`
       );
     });
+
+    it('check if comments can be created', () => {
+      const args = [
+        { schema: 'mySchema', name: 'otherFunction' },
+        ['a integer', 'b integer'],
+        {
+          returns: 'integer',
+          language: 'sql',
+          replace: true,
+          behavior: 'IMMUTABLE',
+          comment: `it does addition\nwith special characters ("')!`
+        },
+        `SELECT a + b;`
+      ];
+      const sql1 = Functions.createFunction(options1)(...args);
+      const sql2 = Functions.createFunction(options2)(...args);
+      expect(sql1).to.equal(
+        `CREATE OR REPLACE FUNCTION "mySchema"."otherFunction"(a integer, b integer)
+  RETURNS integer
+  LANGUAGE sql
+  AS $pg1$SELECT a + b;$pg1$
+  IMMUTABLE;
+COMMENT ON FUNCTION "mySchema"."otherFunction"(a integer, b integer) IS $pg1$it does addition
+with special characters ("')!$pg1$;`
+      );
+      expect(sql2).to.equal(
+        `CREATE OR REPLACE FUNCTION "my_schema"."other_function"(a integer, b integer)
+  RETURNS integer
+  LANGUAGE sql
+  AS $pg1$SELECT a + b;$pg1$
+  IMMUTABLE;
+COMMENT ON FUNCTION "my_schema"."other_function"(a integer, b integer) IS $pg1$it does addition
+with special characters ("')!$pg1$;`
+      );
+    });
   });
 
   describe('.alter', () => {
@@ -175,6 +210,32 @@ ALTER FUNCTION "myFunction"(something)
       expect(sql2).to.equal(
         `ALTER FUNCTION "my_function"(something, custom)
   OWNER TO CURRENT_USER;`
+      );
+    });
+
+    it('can alter the comment', () => {
+      const sql1 = Functions.alterFunction(options1)(
+        'myFunction',
+        ['something'],
+        {
+          strict: false,
+          comment: 'deals with null values'
+        }
+      );
+      expect(sql1).to.equal(
+        `ALTER FUNCTION "myFunction"(something)
+  CALLED ON NULL INPUT;
+COMMENT ON FUNCTION "myFunction"(something) IS $pg1$deals with null values$pg1$;`
+      );
+      const sql2 = Functions.alterFunction(options2)(
+        'myFunction',
+        ['something', 'custom'],
+        {
+          comment: null
+        }
+      );
+      expect(sql2).to.equal(
+        `COMMENT ON FUNCTION "my_function"(something, custom) IS NULL;`
       );
     });
   });
