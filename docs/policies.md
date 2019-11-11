@@ -14,6 +14,7 @@
   - `role` _[string or array]_ - the role(s) to which the policy is to be applied
   - `using` _[string]_ - SQL conditional expression for visibility check
   - `check` _[string]_ - SQL conditional expression for insert/update check
+  - `comment` _[string or null]_ - comment on the policy
 
 **Reverse Operation:** `dropPolicy`
 
@@ -44,6 +45,7 @@
   - `role` _[string or array]_ - the role(s) to which the policy is to be applied
   - `using` _[string]_ - SQL conditional expression for visibility check
   - `check` _[string]_ - SQL conditional expression for insert/update check
+  - `comment` _[string or null]_ - comment on the policy
 
 ---
 

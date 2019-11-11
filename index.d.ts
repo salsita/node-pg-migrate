@@ -19,7 +19,7 @@ export type Action = 'NO ACTION' | 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'SET DE
 
 export interface ReferencesOptions {
     referencesConstraintName?: string
-    referencesConstraintComment?: string
+    referencesConstraintComment?: string | null
     references?: Name
     onDelete?: Action
     onUpdate?: Action
@@ -38,7 +38,7 @@ export interface ConstraintOptions {
     exclude?: string
     deferrable?: boolean
     deferred?: boolean
-    comment?: string
+    comment?: string | null
 }
 
 export interface ColumnDefinition extends ReferencesOptions {
@@ -374,8 +374,9 @@ export interface OperatorListDefinition {
 
 export interface PolicyOptions {
     role: string | string[]
-    using: string
-    check: string
+    using?: string
+    check?: string
+    comment?: string | null
 }
 
 export interface CreatePolicyOptionsEn {

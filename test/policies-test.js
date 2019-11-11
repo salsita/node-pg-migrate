@@ -37,14 +37,43 @@ describe('lib/operations/policies', () => {
         {
           restrictive: false,
           command: 'UPDATE',
-          role: 'the_user',
+          role: ['SESSION_USER', 'the_user'],
           using: 'crazy_expression',
-          check: 'curious.function(column)'
+          check: 'curious.function(column)',
+          comment: 'is a sample'
         }
       ];
       const sql = Policies.createPolicy(options1)(...args);
       expect(sql).to.equal(
-        'CREATE POLICY "my_allowance" ON "my_tablename" AS PERMISSIVE FOR UPDATE TO the_user USING (crazy_expression) WITH CHECK (curious.function(column));'
+        `CREATE POLICY "my_allowance" ON "my_tablename" AS PERMISSIVE FOR UPDATE TO SESSION_USER, the_user USING (crazy_expression) WITH CHECK (curious.function(column));
+COMMENT ON POLICY "my_allowance" ON "my_tablename" IS $pg1$is a sample$pg1$;`
+      );
+    });
+  });
+
+  describe('.alter', () => {
+    it('can set role', () => {
+      const args = [
+        'myTablename',
+        'myAllowance',
+        {
+          role: 'PUBLIC'
+        }
+      ];
+      const sql = Policies.alterPolicy(options2)(...args);
+      expect(sql).to.equal(
+        'ALTER POLICY "my_allowance" ON "my_tablename" TO PUBLIC;'
+      );
+    });
+
+    it('can remove comment', () => {
+      const sql = Policies.alterPolicy(options1)(
+        { schema: 'mySchema', name: 'myTableName' },
+        'getIn',
+        { comment: null }
+      );
+      expect(sql).to.equal(
+        'COMMENT ON POLICY "getIn" ON "mySchema"."myTableName" IS NULL;'
       );
     });
   });
