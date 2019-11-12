@@ -78,6 +78,23 @@ describe('lib/migration', () => {
         expect(dbMock.query.getCall(3).args[0]).to.equal('COMMIT;');
       });
     });
+
+    it('should fail with an error message if the migration is invalid', () => {
+      const invalidMigrationName = 'invalid-migration';
+      migration = new Migration(dbMock, invalidMigrationName, {}, options, log);
+      const direction = 'up';
+      let error;
+      try {
+        migration.apply(direction);
+      } catch (err) {
+        error = err;
+      }
+      // expecting outside the catch block ensures that the test will fail if the
+      // an exception is not caught
+      expect(error.toString()).to.include(
+        `${invalidMigrationName} exporting a '${direction}' function`
+      );
+    });
   });
 
   describe('self.applyDown', () => {
