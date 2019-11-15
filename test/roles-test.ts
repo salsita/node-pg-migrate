@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const Roles = require('../lib/operations/roles');
-const { options1, options2 } = require('./utils');
+import { expect } from 'chai';
+import * as Roles from '../src/operations/roles';
+import { options1, options2 } from './utils';
 
 describe('lib/operations/roles', () => {
   describe('.create', () => {

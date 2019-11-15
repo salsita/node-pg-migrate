@@ -1,10 +1,10 @@
-const { expect } = require('chai');
-const { escapeValue, PgLiteral, applyType } = require('../lib/utils');
+import { expect } from 'chai';
+import { escapeValue, PgLiteral, applyType } from '../src/utils';
 
 describe('lib/utils', () => {
   describe('.escapeValue', () => {
     it("parse null to 'NULL'", () => {
-      const value = null;
+      const value: null = null;
 
       expect(escapeValue(value)).to.equal('NULL');
     });
@@ -44,7 +44,7 @@ describe('lib/utils', () => {
     });
 
     it('parse unexpected type to empty string', () => {
-      const value = undefined;
+      const value: undefined = undefined;
 
       expect(escapeValue(value)).to.equal('');
     });

@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const Tables = require('../lib/operations/tables');
-const { options1, options2 } = require('./utils');
+import { expect } from 'chai';
+import * as Tables from '../src/operations/tables';
+import { options1, options2 } from './utils';
 
 describe('lib/operations/tables', () => {
   describe('.create', () => {

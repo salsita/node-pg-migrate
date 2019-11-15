@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-expressions */
-const sinon = require('sinon');
-const { expect } = require('chai');
-const Migration = require('../lib/migration');
+import sinon, { SinonSpy } from 'sinon';
+import { expect } from 'chai';
+import Migration from '../src/migration';
+import { DB } from '../src/db'
+import { RunnerOption } from 'runner';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
@@ -11,13 +13,14 @@ const actionsCallback = require(`./${callbackMigration}`); // eslint-disable-lin
 const actionsPromise = require(`./${promiseMigration}`); // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require
 
 describe('lib/migration', () => {
-  const dbMock = {};
-  const log = () => null;
-  const options = { migrationsTable };
+  const dbMock = {} as DB;
+  const log: typeof console.log = () => null;
+  const options = { migrationsTable } as RunnerOption;
   let migration;
+  let queryMock: SinonSpy
 
   beforeEach(() => {
-    dbMock.query = sinon.spy();
+    queryMock = dbMock.query = sinon.spy();
   });
 
   describe('self.applyUp', () => {
@@ -27,10 +30,11 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         options,
+        {},
         log
       );
       return migration.apply('up').then(() => {
-        expect(dbMock.query).to.be.called;
+        expect(queryMock).to.be.called;
       });
     });
 
@@ -40,10 +44,11 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsPromise,
         options,
+        {},
         log
       );
       return migration.apply('up').then(() => {
-        expect(dbMock.query).to.be.called;
+        expect(queryMock).to.be.called;
       });
     });
 
@@ -53,10 +58,11 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         { ...options, dryRun: true },
+        {},
         log
       );
       return migration.apply('up').then(() => {
-        expect(dbMock.query).to.not.be.called;
+        expect(queryMock).to.not.be.called;
       });
     });
 
@@ -66,22 +72,23 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsCallback,
         options,
+        {},
         log
       );
       return migration.apply('up').then(() => {
-        expect(dbMock.query).to.have.callCount(4);
-        expect(dbMock.query.getCall(0).args[0]).to.equal('BEGIN;');
-        expect(dbMock.query.getCall(1).args[0]).to.include('CREATE TABLE');
-        expect(dbMock.query.getCall(2).args[0]).to.include(
+        expect(queryMock).to.have.callCount(4);
+        expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');
+        expect(queryMock.getCall(1).args[0]).to.include('CREATE TABLE');
+        expect(queryMock.getCall(2).args[0]).to.include(
           `INSERT INTO "public"."${migrationsTable}"`
         );
-        expect(dbMock.query.getCall(3).args[0]).to.equal('COMMIT;');
+        expect(queryMock.getCall(3).args[0]).to.equal('COMMIT;');
       });
     });
 
     it('should fail with an error message if the migration is invalid', () => {
       const invalidMigrationName = 'invalid-migration';
-      migration = new Migration(dbMock, invalidMigrationName, {}, options, log);
+      migration = new Migration(dbMock, invalidMigrationName, {}, options, {}, log);
       const direction = 'up';
       let error;
       try {
@@ -104,10 +111,11 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         options,
+        {},
         log
       );
       return migration.apply('down').then(() => {
-        expect(dbMock.query).to.be.called;
+        expect(queryMock).to.be.called;
       });
     });
 
@@ -117,10 +125,11 @@ describe('lib/migration', () => {
         callbackMigration,
         actionsCallback,
         { ...options, dryRun: true },
+        {},
         log
       );
       return migration.apply('down').then(() => {
-        expect(dbMock.query).to.not.be.called;
+        expect(queryMock).to.not.be.called;
       });
     });
 
@@ -130,16 +139,17 @@ describe('lib/migration', () => {
         promiseMigration,
         actionsCallback,
         options,
+        {},
         log
       );
       return migration.apply('down').then(() => {
-        expect(dbMock.query).to.have.callCount(4);
-        expect(dbMock.query.getCall(0).args[0]).to.equal('BEGIN;');
-        expect(dbMock.query.getCall(1).args[0]).to.include('DROP TABLE');
-        expect(dbMock.query.getCall(2).args[0]).to.include(
+        expect(queryMock).to.have.callCount(4);
+        expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');
+        expect(queryMock.getCall(1).args[0]).to.include('DROP TABLE');
+        expect(queryMock.getCall(2).args[0]).to.include(
           `DELETE FROM "public"."${migrationsTable}"`
         );
-        expect(dbMock.query.getCall(3).args[0]).to.equal('COMMIT;');
+        expect(queryMock.getCall(3).args[0]).to.equal('COMMIT;');
       });
     });
   });

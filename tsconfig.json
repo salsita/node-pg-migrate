@@ -2,16 +2,17 @@
   "compilerOptions": {
     "target": "es5",
     "moduleResolution": "node",
-    "rootDir": "src",
-    "outDir": "lib",
+    "baseUrl": "src",
+    "outDir": "dist",
     "lib": ["es2017"],
     "esModuleInterop": true,
     "declaration": true,
     "sourceMap": false,
     "removeComments": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": false,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "noUnusedLocals": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "templates", "lib", "dist", "bin"]
+  "exclude": ["node_modules", "templates", "dist", "bin"]
 }
