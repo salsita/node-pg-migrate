@@ -7,7 +7,7 @@
 **Arguments:**
 
 - `table_name` _[[Name](migrations.md#type)]_ - name of the table where the new trigger will live
-- `trigger_name` _[[Name](migrations.md#type)]_ - name of the new trigger
+- `trigger_name` _[string]_ - name of the new trigger
 - `trigger_options` _[object]_ - options:
   - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
   - `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
@@ -31,7 +31,7 @@
 **Arguments:**
 
 - `table_name` _[[Name](migrations.md#type)]_ - name of the table where the trigger lives
-- `trigger_name` _[[Name](migrations.md#type)]_ - name of the trigger to drop
+- `trigger_name` _[string]_ - name of the trigger to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops trigger only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -45,5 +45,5 @@
 **Arguments:**
 
 - `table_name` _[[Name](migrations.md#type)]_ - name of the table where the trigger lives
-- `old_trigger_name` _[[Name](migrations.md#type)]_ - old name of the trigger
-- `new_trigger_name` _[[Name](migrations.md#type)]_ - new name of the trigger
+- `old_trigger_name` _[string]_ - old name of the trigger
+- `new_trigger_name` _[string]_ - new name of the trigger

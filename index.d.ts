@@ -470,10 +470,10 @@ export interface MigrationBuilder {
     renameFunction(oldFunctionName: Name, functionParams: FunctionParam[], newFunctionName: Name): void
 
     // Triggers
-    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions): void
-    createTrigger(tableName: Name, triggerName: Name, triggerOptions: TriggerOptions & FunctionOptions, definition: Value): void
-    dropTrigger(tableName: Name, triggerName: Name, dropOptions?: DropOptions): void
-    renameTrigger(tableName: Name, oldTriggerName: Name, newTriggerName: Name): void
+    createTrigger(tableName: Name, triggerName: string, triggerOptions: TriggerOptions): void
+    createTrigger(tableName: Name, triggerName: string, triggerOptions: TriggerOptions & FunctionOptions, definition: Value): void
+    dropTrigger(tableName: Name, triggerName: string, dropOptions?: DropOptions): void
+    renameTrigger(tableName: Name, oldTriggerName: string, newTriggerName: string): void
 
     // Schemas
     createSchema(schemaName: string, schemaOptions?: { ifNotExists?: boolean, authorization?: string }): void

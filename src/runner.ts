@@ -72,7 +72,10 @@ const ensureMigrationsTable = async (
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
-    const fullTableName = createSchemalize(options.decamelize, true)({
+    const fullTableName = createSchemalize(
+      options.decamelize,
+      true
+    )({
       schema,
       name: migrationsTable
     });
@@ -103,7 +106,10 @@ const ensureMigrationsTable = async (
 const getRunMigrations = async (db: DB, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options);
   const { migrationsTable } = options;
-  const fullTableName = createSchemalize(options.decamelize, true)({
+  const fullTableName = createSchemalize(
+    options.decamelize,
+    true
+  )({
     schema,
     name: migrationsTable
   });

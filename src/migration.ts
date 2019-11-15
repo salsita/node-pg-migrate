@@ -177,7 +177,9 @@ export class Migration implements RunMigration {
     const action: MigrationAction | false = this[direction];
 
     if (typeof action !== 'function') {
-      throw new Error(`Unknown value for direction: ${direction}`);
+      throw new Error(
+        `Unknown value for direction: ${direction}. Is the migration ${this.name} exporting a '${direction}' function?`
+      );
     }
 
     return action;
