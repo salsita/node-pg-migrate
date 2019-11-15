@@ -1,7 +1,25 @@
-const { escapeValue } = require('../utils');
+import { DropOptions, Name, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { escapeValue } from '../utils';
 
-function dropView(mOptions) {
-  const _drop = (viewName, { ifExists, cascade } = {}) => {
+export interface CreateViewOptions {
+  temporary?: boolean;
+  replace?: boolean;
+  recursive?: boolean;
+  columns?: string | string[];
+  checkOption?: 'CASCADED' | 'LOCAL';
+}
+
+export interface AlterViewOptions {
+  checkOption?: null | false | 'CASCADED' | 'LOCAL';
+}
+
+export interface AlterViewColumnOptions {
+  default?: Value;
+}
+
+export function dropView(mOptions: MigrationOptions) {
+  const _drop = (viewName: Name, { ifExists, cascade }: DropOptions = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const viewNameStr = mOptions.literal(viewName);
@@ -10,8 +28,12 @@ function dropView(mOptions) {
   return _drop;
 }
 
-function createView(mOptions) {
-  const _create = (viewName, options, definition) => {
+export function createView(mOptions: MigrationOptions) {
+  const _create = (
+    viewName: Name,
+    options: CreateViewOptions,
+    definition: string
+  ) => {
     const {
       temporary,
       replace,
@@ -36,8 +58,8 @@ function createView(mOptions) {
   return _create;
 }
 
-function alterView(mOptions) {
-  const _alter = (viewName, options) => {
+export function alterView(mOptions: MigrationOptions) {
+  const _alter = (viewName: Name, options: AlterViewOptions) => {
     const { checkOption } = options;
     const clauses = [];
     if (checkOption !== undefined) {
@@ -54,8 +76,12 @@ function alterView(mOptions) {
   return _alter;
 }
 
-function alterViewColumn(mOptions) {
-  const _alter = (viewName, columnName, options) => {
+export function alterViewColumn(mOptions: MigrationOptions) {
+  const _alter = (
+    viewName: Name,
+    columnName: Name,
+    options: AlterViewColumnOptions
+  ) => {
     const { default: defaultValue } = options;
     const actions = [];
     if (defaultValue === null) {
@@ -75,20 +101,13 @@ function alterViewColumn(mOptions) {
   return _alter;
 }
 
-function renameView(mOptions) {
-  const _rename = (viewName, newViewName) => {
+export function renameView(mOptions: MigrationOptions) {
+  const _rename = (viewName: Name, newViewName: Name) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
     return `ALTER VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`;
   };
-  _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
+  _rename.reverse = (viewName: Name, newViewName: Name) =>
+    _rename(newViewName, viewName);
   return _rename;
 }
-
-module.exports = {
-  createView,
-  dropView,
-  alterView,
-  alterViewColumn,
-  renameView
-};

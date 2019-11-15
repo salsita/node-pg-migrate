@@ -1,9 +1,27 @@
-const { isArray } = require('lodash');
-const { escapeValue } = require('../utils');
-const { createFunction, dropFunction } = require('./functions');
+import { isArray } from 'lodash';
+import { DropOptions, Name, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { escapeValue } from '../utils';
+import { createFunction, dropFunction, FunctionOptions } from './functions';
 
-function dropTrigger(mOptions) {
-  const _drop = (tableName, triggerName, { ifExists, cascade } = {}) => {
+export interface TriggerOptions {
+  when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+  operation: string | string[];
+  constraint?: boolean;
+  function?: Name;
+  functionParams?: Value[];
+  level?: 'STATEMENT' | 'ROW';
+  condition?: string;
+  deferrable?: boolean;
+  deferred?: boolean;
+}
+
+export function dropTrigger(mOptions: MigrationOptions) {
+  const _drop = (
+    tableName: Name,
+    triggerName: Name,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const triggerNameStr = mOptions.literal(triggerName);
@@ -13,15 +31,20 @@ function dropTrigger(mOptions) {
   return _drop;
 }
 
-function createTrigger(mOptions) {
-  const _create = (tableName, triggerName, triggerOptions = {}, definition) => {
+export function createTrigger(mOptions: MigrationOptions) {
+  const _create = (
+    tableName: Name,
+    triggerName: Name,
+    triggerOptions: Partial<TriggerOptions & FunctionOptions> = {},
+    definition?: Value
+  ) => {
     const {
       constraint,
       condition,
       operation,
       deferrable,
       deferred,
-      functionArgs = []
+      functionParams = []
     } = triggerOptions;
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
     const operations = isArray(operation) ? operation.join(' OR ') : operation;
@@ -56,7 +79,7 @@ function createTrigger(mOptions) {
       : '';
     const conditionClause = condition ? `WHEN (${condition})\n  ` : '';
     const constraintStr = constraint ? ' CONSTRAINT' : '';
-    const paramsStr = functionArgs.map(escapeValue).join(', ');
+    const paramsStr = functionParams.map(escapeValue).join(', ');
     const triggerNameStr = mOptions.literal(triggerName);
     const tableNameStr = mOptions.literal(tableName);
     const functionNameStr = mOptions.literal(functionName);
@@ -78,10 +101,10 @@ function createTrigger(mOptions) {
   };
 
   _create.reverse = (
-    tableName,
-    triggerName,
-    triggerOptions = {},
-    definition
+    tableName: Name,
+    triggerName: Name,
+    triggerOptions: Partial<TriggerOptions> & DropOptions = {},
+    definition?: Value
   ) => {
     const triggerSQL = dropTrigger(mOptions)(
       tableName,
@@ -101,20 +124,21 @@ function createTrigger(mOptions) {
   return _create;
 }
 
-function renameTrigger(mOptions) {
-  const _rename = (tableName, oldTriggerName, newTriggerName) => {
+export function renameTrigger(mOptions: MigrationOptions) {
+  const _rename = (
+    tableName: Name,
+    oldTriggerName: Name,
+    newTriggerName: Name
+  ) => {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName);
     const tableNameStr = mOptions.literal(tableName);
     const newTriggerNameStr = mOptions.literal(newTriggerName);
     return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`;
   };
-  _rename.reverse = (tableName, oldTriggerName, newTriggerName) =>
-    _rename(tableName, newTriggerName, oldTriggerName);
+  _rename.reverse = (
+    tableName: Name,
+    oldTriggerName: Name,
+    newTriggerName: Name
+  ) => _rename(tableName, newTriggerName, oldTriggerName);
   return _rename;
 }
-
-module.exports = {
-  createTrigger,
-  dropTrigger,
-  renameTrigger
-};

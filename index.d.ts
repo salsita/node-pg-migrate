@@ -32,7 +32,7 @@ export interface ForeignKeyOptions extends ReferencesOptions {
 
 export interface ConstraintOptions {
     check?: string | string[]
-    unique?: Name[] | Name[][]
+    unique?: Name | Name[] | Name[][]
     primaryKey?: Name | Name[]
     foreignKeys?: ForeignKeyOptions | ForeignKeyOptions[]
     exclude?: string
@@ -513,7 +513,7 @@ export interface MigrationBuilder {
     createView(viewName: Name, options: CreateViewOptions, definition: string): void
     dropView(viewName: Name, options?: DropOptions): void
     alterView(viewName: Name, options: AlterViewOptions): void
-    alterViewColumn(viewName: Name, options: AlterViewColumnOptions): void
+    alterViewColumn(viewName: Name, columnName: string, options: AlterViewColumnOptions): void
     renameView(viewName: Name, newViewName: Name): void
 
     createMaterializedView(viewName: Name, options: CreateMaterializedViewOptions, definition: string): void

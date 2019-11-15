@@ -1,6 +1,21 @@
-const makeClauses = ({ role, using, check }) => {
+import { IfExistsOption, Name } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+
+export interface PolicyOptions {
+  role: string | string[];
+  using: string;
+  check: string;
+}
+
+export interface CreatePolicyOptionsEn {
+  command: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE';
+}
+
+export type CreatePolicyOptions = CreatePolicyOptionsEn & PolicyOptions;
+
+const makeClauses = ({ role, using, check }: Partial<PolicyOptions>) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');
-  const clauses = [];
+  const clauses: string[] = [];
   if (roles) {
     clauses.push(`TO ${roles}`);
   }
@@ -13,8 +28,12 @@ const makeClauses = ({ role, using, check }) => {
   return clauses;
 };
 
-function dropPolicy(mOptions) {
-  const _drop = (tableName, policyName, { ifExists } = {}) => {
+export function dropPolicy(mOptions: MigrationOptions) {
+  const _drop = (
+    tableName: Name,
+    policyName: string,
+    { ifExists }: IfExistsOption = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
@@ -23,9 +42,13 @@ function dropPolicy(mOptions) {
   return _drop;
 }
 
-function createPolicy(mOptions) {
-  const _create = (tableName, policyName, options = {}) => {
-    const createOptions = {
+export function createPolicy(mOptions: MigrationOptions) {
+  const _create = (
+    tableName: Name,
+    policyName: string,
+    options: Partial<CreatePolicyOptions> = {}
+  ) => {
+    const createOptions: Partial<CreatePolicyOptions> = {
       ...options,
       role: options.role || 'PUBLIC'
     };
@@ -42,8 +65,12 @@ function createPolicy(mOptions) {
   return _create;
 }
 
-function alterPolicy(mOptions) {
-  const _alter = (tableName, policyName, options = {}) => {
+export function alterPolicy(mOptions: MigrationOptions) {
+  const _alter = (
+    tableName: Name,
+    policyName: string,
+    options: Partial<PolicyOptions> = {}
+  ) => {
     const clausesStr = makeClauses(options).join(' ');
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
@@ -52,21 +79,21 @@ function alterPolicy(mOptions) {
   return _alter;
 }
 
-function renamePolicy(mOptions) {
-  const _rename = (tableName, policyName, newPolicyName) => {
+export function renamePolicy(mOptions: MigrationOptions) {
+  const _rename = (
+    tableName: Name,
+    policyName: string,
+    newPolicyName: string
+  ) => {
     const policyNameStr = mOptions.literal(policyName);
     const newPolicyNameStr = mOptions.literal(newPolicyName);
     const tableNameStr = mOptions.literal(tableName);
     return `ALTER POLICY ${policyNameStr} ON ${tableNameStr} RENAME TO ${newPolicyNameStr};`;
   };
-  _rename.reverse = (tableName, policyName, newPolicyName) =>
-    _rename(tableName, newPolicyName, policyName);
+  _rename.reverse = (
+    tableName: Name,
+    policyName: string,
+    newPolicyName: string
+  ) => _rename(tableName, newPolicyName, policyName);
   return _rename;
 }
-
-module.exports = {
-  createPolicy,
-  dropPolicy,
-  alterPolicy,
-  renamePolicy
-};

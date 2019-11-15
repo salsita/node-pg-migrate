@@ -277,8 +277,8 @@ if (action === 'create') {
     MIGRATIONS_FILE_LANGUAGE,
     IGNORE_PATTERN
   )
-    .then(migration => {
-      console.log(util.format('Created migration -- %s', migration.path));
+    .then(migrationPath => {
+      console.log(util.format('Created migration -- %s', migrationPath));
       process.exit(0);
     })
     .catch(err => {

@@ -1,6 +1,35 @@
-const { applyType } = require('../utils');
+import { ShorthandDefinitions, DropOptions, Name, Type } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { applyType } from '../utils';
 
-const parseSequenceOptions = (typeShorthands, options) => {
+export interface SequenceOptions {
+  type?: Type;
+  increment?: number;
+  minvalue?: number | null | false;
+  maxvalue?: number | null | false;
+  start?: number;
+  cache?: number;
+  cycle?: boolean;
+  owner?: string | null | false;
+}
+
+export interface SequenceOptionsCreateEn {
+  temporary?: boolean;
+  ifNotExists?: boolean;
+}
+
+export interface SequenceOptionsAlterEn {
+  restart?: number | true;
+}
+
+export type SequenceOptionsCreate = SequenceOptionsCreateEn & SequenceOptions;
+
+export type SequenceOptionsAlter = SequenceOptionsAlterEn & SequenceOptions;
+
+export const parseSequenceOptions = (
+  typeShorthands: ShorthandDefinitions,
+  options: SequenceOptions
+) => {
   const {
     type,
     increment,
@@ -11,7 +40,7 @@ const parseSequenceOptions = (typeShorthands, options) => {
     cycle,
     owner
   } = options;
-  const clauses = [];
+  const clauses: string[] = [];
   if (type) {
     clauses.push(`AS ${applyType(type, typeShorthands).type}`);
   }
@@ -47,8 +76,11 @@ const parseSequenceOptions = (typeShorthands, options) => {
   return clauses;
 };
 
-function dropSequence(mOptions) {
-  const _drop = (sequenceName, { ifExists, cascade } = {}) => {
+export function dropSequence(mOptions: MigrationOptions) {
+  const _drop = (
+    sequenceName: Name,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const sequenceNameStr = mOptions.literal(sequenceName);
@@ -57,8 +89,8 @@ function dropSequence(mOptions) {
   return _drop;
 }
 
-function createSequence(mOptions) {
-  const _create = (sequenceName, options = {}) => {
+export function createSequence(mOptions: MigrationOptions) {
+  const _create = (sequenceName: Name, options: SequenceOptionsCreate = {}) => {
     const { temporary, ifNotExists } = options;
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -74,8 +106,8 @@ function createSequence(mOptions) {
   return _create;
 }
 
-function alterSequence(mOptions) {
-  return (sequenceName, options) => {
+export function alterSequence(mOptions: MigrationOptions) {
+  return (sequenceName: Name, options: SequenceOptionsAlter) => {
     const { restart } = options;
     const clauses = parseSequenceOptions(mOptions.typeShorthands, options);
     if (restart) {
@@ -90,21 +122,13 @@ function alterSequence(mOptions) {
   };
 }
 
-function renameSequence(mOptions) {
-  const _rename = (sequenceName, newSequenceName) => {
+export function renameSequence(mOptions: MigrationOptions) {
+  const _rename = (sequenceName: Name, newSequenceName: Name) => {
     const sequenceNameStr = mOptions.literal(sequenceName);
     const newSequenceNameStr = mOptions.literal(newSequenceName);
     return `ALTER SEQUENCE ${sequenceNameStr} RENAME TO ${newSequenceNameStr};`;
   };
-  _rename.reverse = (sequenceName, newSequenceName) =>
+  _rename.reverse = (sequenceName: Name, newSequenceName: Name) =>
     _rename(newSequenceName, sequenceName);
   return _rename;
 }
-
-module.exports = {
-  createSequence,
-  dropSequence,
-  alterSequence,
-  renameSequence,
-  parseSequenceOptions
-};

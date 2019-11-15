@@ -1,34 +1,39 @@
-const path = require('path');
-const fs = require('fs');
-const Db = require('./db');
-const Migration = require('./migration');
-const {
-  getSchemas,
+import fs from 'fs';
+import path from 'path';
+import { Client } from 'pg';
+import { TlsOptions } from 'tls';
+import Db, { DB } from './db';
+import { ShorthandDefinitions } from './definitions';
+import Migration, { loadMigrationFiles, RunMigration } from './migration';
+import { MigrationBuilderActions } from './migration-builder';
+import {
+  createSchemalize,
   getMigrationTableSchema,
-  promisify,
+  getSchemas,
   PgLiteral,
-  createSchemalize
-} = require('./utils');
+  promisify
+} from './utils';
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964;
 
-const readFile = promisify(fs.readFile); // eslint-disable-line security/detect-non-literal-fs-filename
+const readFile = promisify<string>(fs.readFile); // eslint-disable-line security/detect-non-literal-fs-filename
 
 const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-const loadMigrations = async (db, options, log) => {
+const loadMigrations = async (
+  db: DB,
+  options: RunnerOption,
+  log: typeof console.log
+) => {
   try {
-    let shorthands = {};
-    const files = await Migration.loadMigrationFiles(
-      options.dir,
-      options.ignorePattern
-    );
+    let shorthands: ShorthandDefinitions = {};
+    const files = await loadMigrationFiles(options.dir, options.ignorePattern);
     return files.map(file => {
       const filePath = `${options.dir}/${file}`;
-      const actions =
+      const actions: MigrationBuilderActions =
         path.extname(filePath) === '.sql'
           ? // eslint-disable-next-line security/detect-non-literal-fs-filename
             { up: async pgm => pgm.sql(await readFile(filePath, 'utf8')) }
@@ -51,10 +56,8 @@ const loadMigrations = async (db, options, log) => {
   }
 };
 
-const lock = async db => {
-  const {
-    rows: [lockObtained]
-  } = await db.query(
+const lock = async (db: DB): Promise<void> => {
+  const [lockObtained] = await db.select(
     `select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`
   );
   if (!lockObtained) {
@@ -62,7 +65,10 @@ const lock = async db => {
   }
 };
 
-const ensureMigrationsTable = async (db, options) => {
+const ensureMigrationsTable = async (
+  db: DB,
+  options: RunnerOption
+): Promise<void> => {
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
@@ -94,7 +100,7 @@ const ensureMigrationsTable = async (db, options) => {
   }
 };
 
-const getRunMigrations = async (db, options) => {
+const getRunMigrations = async (db: DB, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options);
   const { migrationsTable } = options;
   const fullTableName = createSchemalize(options.decamelize, true)({
@@ -107,22 +113,26 @@ const getRunMigrations = async (db, options) => {
   );
 };
 
-const getMigrationsToRun = (options, runNames, migrations) => {
+const getMigrationsToRun = (
+  options: RunnerOption,
+  runNames: string[],
+  migrations: Migration[]
+): Migration[] => {
   if (options.direction === 'down') {
-    const downMigrations = runNames
+    const downMigrations: Array<string | Migration> = runNames
       .filter(migrationName => !options.file || options.file === migrationName)
       .map(
         migrationName =>
           migrations.find(({ name }) => name === migrationName) || migrationName
       );
     const toRun = (options.timestamp
-      ? downMigrations.filter(({ timestamp }) => timestamp >= options.count)
+      ? downMigrations.filter((migration) => typeof migration === 'object' && migration.timestamp >= options.count)
       : downMigrations.slice(
           -Math.abs(options.count === undefined ? 1 : options.count)
         )
     ).reverse();
     const deletedMigrations = toRun.filter(
-      migration => typeof migration === 'string'
+      (migration): migration is string => typeof migration === 'string'
     );
     if (deletedMigrations.length) {
       const deletedMigrationsStr = deletedMigrations.join(', ');
@@ -130,7 +140,7 @@ const getMigrationsToRun = (options, runNames, migrations) => {
         `Definitions of migrations ${deletedMigrationsStr} have been deleted.`
       );
     }
-    return toRun;
+    return toRun as Migration[];
   }
   const upMigrations = migrations.filter(
     ({ name }) =>
@@ -144,7 +154,7 @@ const getMigrationsToRun = (options, runNames, migrations) => {
       );
 };
 
-const checkOrder = (runNames, migrations) => {
+const checkOrder = (runNames: string[], migrations: Migration[]) => {
   const len = Math.min(runNames.length, migrations.length);
   for (let i = 0; i < len; i += 1) {
     const runName = runNames[i];
@@ -157,15 +167,70 @@ const checkOrder = (runNames, migrations) => {
   }
 };
 
-const runMigrations = (toRun, method, direction) =>
+export type MigrationDirection = 'up' | 'down';
+
+const runMigrations = (
+  toRun: Migration[],
+  method: 'markAsRun' | 'apply',
+  direction: MigrationDirection
+) =>
   toRun.reduce(
     (promise, migration) => promise.then(() => migration[method](direction)),
     Promise.resolve()
   );
 
-const runner = async options => {
+export interface RunnerOptionConfig {
+  migrationsTable: string;
+  migrationsSchema?: string;
+  schema?: string | string[];
+  dir: string;
+  checkOrder?: boolean;
+  direction: MigrationDirection;
+  count: number;
+  timestamp?: boolean;
+  ignorePattern: string;
+  file?: string;
+  dryRun?: boolean;
+  createSchema?: boolean;
+  createMigrationsSchema?: boolean;
+  singleTransaction?: boolean;
+  noLock?: boolean;
+  fake?: boolean;
+  decamelize?: boolean;
+  log?: (msg: string) => void;
+}
+
+export interface ConnectionConfig {
+  user?: string;
+  database?: string;
+  password?: string;
+  port?: number;
+  host?: string;
+  connectionString?: string;
+}
+
+export interface ClientConfig extends ConnectionConfig {
+  ssl?: boolean | TlsOptions;
+}
+
+export interface RunnerOptionUrl {
+  databaseUrl: string | ClientConfig;
+}
+
+export interface RunnerOptionClient {
+  dbClient: Client;
+}
+
+export type RunnerOption = RunnerOptionConfig &
+  (RunnerOptionClient | RunnerOptionUrl);
+
+const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
   const log = options.log || console.log;
-  const db = Db(options.dbClient || options.databaseUrl, log);
+  const db = Db(
+    (options as RunnerOptionClient).dbClient ||
+      (options as RunnerOptionUrl).databaseUrl,
+    log
+  );
   try {
     await db.createConnection();
     if (options.schema) {
@@ -190,7 +255,7 @@ const runner = async options => {
     await ensureMigrationsTable(db, options);
 
     if (!options.noLock) {
-      await lock(db, options);
+      await lock(db);
     }
 
     const [migrations, runNames] = await Promise.all([
@@ -202,7 +267,11 @@ const runner = async options => {
       checkOrder(runNames, migrations);
     }
 
-    const toRun = getMigrationsToRun(options, runNames, migrations);
+    const toRun: Migration[] = getMigrationsToRun(
+      options,
+      runNames,
+      migrations
+    );
 
     if (!toRun.length) {
       log('No migrations to run!');
@@ -245,4 +314,5 @@ runner.default = runner; // workaround for transpilers
 runner.PgLiteral = PgLiteral;
 runner.Migration = Migration;
 
+export default runner;
 module.exports = runner;

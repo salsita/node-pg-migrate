@@ -1,5 +1,15 @@
-function dropSchema(mOptions) {
-  const _drop = (schemaName, { ifExists, cascade } = {}) => {
+import { DropOptions, IfNotExistsOption, Name } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+
+export interface CreateSchemaOptions extends IfNotExistsOption {
+  authorization?: string;
+}
+
+export function dropSchema(mOptions: MigrationOptions) {
+  const _drop = (
+    schemaName: string,
+    { ifExists, cascade }: DropOptions = {}
+  ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const schemaNameStr = mOptions.literal(schemaName);
@@ -8,8 +18,11 @@ function dropSchema(mOptions) {
   return _drop;
 }
 
-function createSchema(mOptions) {
-  const _create = (schemaName, { ifNotExists, authorization } = {}) => {
+export function createSchema(mOptions: MigrationOptions) {
+  const _create = (
+    schemaName: string,
+    { ifNotExists, authorization }: CreateSchemaOptions = {}
+  ) => {
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaNameStr = mOptions.literal(schemaName);
     const authorizationStr = authorization
@@ -21,19 +34,13 @@ function createSchema(mOptions) {
   return _create;
 }
 
-function renameSchema(mOptions) {
-  const _rename = (schemaName, newSchemaName) => {
+export function renameSchema(mOptions: MigrationOptions) {
+  const _rename = (schemaName: Name, newSchemaName: Name) => {
     const schemaNameStr = mOptions.literal(schemaName);
     const newSchemaNameStr = mOptions.literal(newSchemaName);
     return `ALTER SCHEMA ${schemaNameStr} RENAME TO ${newSchemaNameStr};`;
   };
-  _rename.reverse = (schemaName, newSchemaName) =>
+  _rename.reverse = (schemaName: Name, newSchemaName: Name) =>
     _rename(newSchemaName, schemaName);
   return _rename;
 }
-
-module.exports = {
-  createSchema,
-  dropSchema,
-  renameSchema
-};

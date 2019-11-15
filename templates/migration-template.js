@@ -2,10 +2,6 @@
 
 exports.shorthands = undefined;
 
-exports.up = (pgm) => {
+exports.up = pgm => {};
 
-};
-
-exports.down = (pgm) => {
-
-};
+exports.down = pgm => {};

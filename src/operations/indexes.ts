@@ -1,13 +1,35 @@
-const _ = require('lodash');
+import _ from 'lodash';
+import { DropOptions, Name } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
 
-function generateIndexName(table, columns, options) {
+export interface CreateIndexOptions {
+  name?: string;
+  unique?: boolean;
+  where?: string;
+  concurrently?: boolean;
+  opclass?: string;
+  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
+}
+
+export interface DropIndexOptionsEn {
+  name?: string;
+  concurrently?: boolean;
+}
+
+export type DropIndexOptions = DropIndexOptionsEn & DropOptions;
+
+function generateIndexName(
+  table: Name,
+  columns: string | string[],
+  options: CreateIndexOptions | DropIndexOptions
+) {
   if (options.name) {
     return typeof table === 'object'
       ? { schema: table.schema, name: options.name }
       : options.name;
   }
   const cols = _.isArray(columns) ? columns.join('_') : columns;
-  const uniq = options.unique ? '_unique' : '';
+  const uniq = 'unique' in options && options.unique ? '_unique' : '';
   return typeof table === 'object'
     ? {
         schema: table.schema,
@@ -16,7 +38,7 @@ function generateIndexName(table, columns, options) {
     : `${table}_${cols}${uniq}_index`;
 }
 
-function generateColumnString(column, literal) {
+function generateColumnString(column: string, literal: (v: Name) => string) {
   const openingBracketPos = column.indexOf('(');
   const closingBracketPos = column.indexOf(')');
   const isFunction =
@@ -26,14 +48,21 @@ function generateColumnString(column, literal) {
     : literal(column); // single column
 }
 
-function generateColumnsString(columns, literal) {
+function generateColumnsString(
+  columns: string | string[],
+  literal: (v: Name) => string
+) {
   return _.isArray(columns)
     ? columns.map(column => generateColumnString(column, literal)).join(', ')
     : generateColumnString(columns, literal);
 }
 
-function dropIndex(mOptions) {
-  const _drop = (tableName, columns, options = {}) => {
+export function dropIndex(mOptions: MigrationOptions) {
+  const _drop = (
+    tableName: Name,
+    columns: string | string[],
+    options: DropIndexOptions = {}
+  ) => {
     const { concurrently, ifExists, cascade } = options;
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -46,8 +75,12 @@ function dropIndex(mOptions) {
   return _drop;
 }
 
-function createIndex(mOptions) {
-  const _create = (tableName, columns, options = {}) => {
+export function createIndex(mOptions: MigrationOptions) {
+  const _create = (
+    tableName: Name,
+    columns: string | string[],
+    options: CreateIndexOptions = {}
+  ) => {
     /*
     columns - the column, columns, or expression to create the index on
 
@@ -80,8 +113,3 @@ function createIndex(mOptions) {
   _create.reverse = dropIndex(mOptions);
   return _create;
 }
-
-module.exports = {
-  createIndex,
-  dropIndex
-};

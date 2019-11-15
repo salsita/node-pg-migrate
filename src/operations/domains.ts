@@ -1,7 +1,28 @@
-const { applyType, escapeValue } = require('../utils');
+import { DropOptions, Name, Type, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { applyType, escapeValue } from '../utils';
 
-function dropDomain(mOptions) {
-  const _drop = (domainName, { ifExists, cascade } = {}) => {
+export interface DomainOptions {
+  default?: Value;
+  notNull?: boolean;
+  check?: string;
+  constraintName?: string;
+}
+
+export interface DomainOptionsCreateEn {
+  collation?: string;
+}
+
+export type DomainOptionsCreate = DomainOptionsCreateEn & DomainOptions;
+
+export interface DomainOptionsAlterEn {
+  allowNull?: boolean;
+}
+
+export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions;
+
+export function dropDomain(mOptions: MigrationOptions) {
+  const _drop = (domainName: Name, { ifExists, cascade }: DropOptions = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const domainNameStr = mOptions.literal(domainName);
@@ -10,8 +31,12 @@ function dropDomain(mOptions) {
   return _drop;
 }
 
-function createDomain(mOptions) {
-  const _create = (domainName, type, options = {}) => {
+export function createDomain(mOptions: MigrationOptions) {
+  const _create = (
+    domainName: Name,
+    type: Type,
+    options: DomainOptionsCreate = {}
+  ) => {
     const {
       default: defaultValue,
       collation,
@@ -48,13 +73,13 @@ function createDomain(mOptions) {
 
     return `CREATE DOMAIN ${domainNameStr} AS ${typeStr}${constraintsStr};`;
   };
-  _create.reverse = (domainName, type, options) =>
+  _create.reverse = (domainName: Name, type: Type, options: DropOptions) =>
     dropDomain(mOptions)(domainName, options);
   return _create;
 }
 
-function alterDomain(mOptions) {
-  const _alter = (domainName, options) => {
+export function alterDomain(mOptions: MigrationOptions) {
+  const _alter = (domainName: Name, options: DomainOptionsAlter) => {
     const {
       default: defaultValue,
       notNull,
@@ -90,20 +115,13 @@ function alterDomain(mOptions) {
   return _alter;
 }
 
-function renameDomain(mOptions) {
-  const _rename = (domainName, newDomainName) => {
+export function renameDomain(mOptions: MigrationOptions) {
+  const _rename = (domainName: Name, newDomainName: Name) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);
     return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`;
   };
-  _rename.reverse = (domainName, newDomainName) =>
+  _rename.reverse = (domainName: Name, newDomainName: Name) =>
     _rename(newDomainName, domainName);
   return _rename;
 }
-
-module.exports = {
-  dropDomain,
-  createDomain,
-  alterDomain,
-  renameDomain
-};

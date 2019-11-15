@@ -6,19 +6,24 @@
 
  */
 
-const fs = require('fs');
-const mkdirp = require('mkdirp');
-const path = require('path');
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import path from 'path';
+import { DB } from './db';
+import { ShorthandDefinitions } from './definitions';
+import MigrationBuilder, { MigrationAction, MigrationBuilderActions } from './migration-builder';
+import { MigrationDirection, RunnerOption } from './runner';
+import { getMigrationTableSchema, promisify } from './utils';
 
-const MigrationBuilder = require('./migration-builder');
-const { getMigrationTableSchema, promisify } = require('./utils');
-
-const readdir = promisify(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
-const lstat = promisify(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
+const readdir = promisify<string[]>(fs.readdir); // eslint-disable-line security/detect-non-literal-fs-filename
+const lstat = promisify<fs.Stats>(fs.lstat); // eslint-disable-line security/detect-non-literal-fs-filename
 
 const SEPARATOR = '_';
 
-const loadMigrationFiles = async (dir, ignorePattern) => {
+export const loadMigrationFiles = async (
+  dir: string,
+  ignorePattern: string
+) => {
   const dirContent = await readdir(`${dir}/`);
   const files = await Promise.all(
     dirContent.map(async file => {
@@ -30,7 +35,7 @@ const loadMigrationFiles = async (dir, ignorePattern) => {
   return files.filter(i => i && !filter.test(i)).sort();
 };
 
-const getLastSuffix = async (dir, ignorePattern) => {
+const getLastSuffix = async (dir: string, ignorePattern: string) => {
   try {
     const files = await loadMigrationFiles(dir, ignorePattern);
     return files.length > 0
@@ -41,9 +46,20 @@ const getLastSuffix = async (dir, ignorePattern) => {
   }
 };
 
-module.exports = class Migration {
+export interface RunMigration {
+  readonly path: string;
+  readonly name: string;
+  readonly timestamp: number;
+}
+
+export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
-  static async create(name, directory, language, ignorePattern) {
+  static async create(
+    name: string,
+    directory: string,
+    language: 'js' | 'ts' | 'sql',
+    ignorePattern: string
+  ) {
     // ensure the migrations directory exists
     mkdirp.sync(directory);
 
@@ -57,22 +73,32 @@ module.exports = class Migration {
     await new Promise(resolve => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.createReadStream(
-        path.resolve(__dirname, `./migration-template.${suffix}`)
+        path.resolve(__dirname, `../templates/migration-template.${suffix}`)
       )
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         .pipe(fs.createWriteStream(newFile))
         .on('end', resolve);
     });
 
-    return new Migration(null, newFile);
+    return newFile;
   }
 
+  public readonly db: DB;
+  public readonly path: string;
+  public readonly name: string;
+  public readonly timestamp: number;
+  public readonly up?: MigrationAction;
+  public down?: false | MigrationAction;
+  public readonly options: RunnerOption;
+  public readonly typeShorthands: ShorthandDefinitions;
+  public readonly log: typeof console.log;
+
   constructor(
-    db,
-    migrationPath,
-    { up, down } = {},
-    options = {},
-    typeShorthands,
+    db: DB,
+    migrationPath: string,
+    { up, down }: MigrationBuilderActions,
+    options: RunnerOption,
+    typeShorthands?: ShorthandDefinitions,
     log = console.log
   ) {
     this.db = db;
@@ -86,7 +112,7 @@ module.exports = class Migration {
     this.log = log;
   }
 
-  _getMarkAsRun(action) {
+  _getMarkAsRun(action: MigrationAction) {
     const schema = getMigrationTableSchema(this.options);
     const { migrationsTable } = this.options;
     const { name } = this;
@@ -102,7 +128,7 @@ module.exports = class Migration {
     }
   }
 
-  async _apply(action, pgm) {
+  async _apply(action: MigrationAction, pgm: MigrationBuilder) {
     if (action.length === 2) {
       await new Promise(resolve => action(pgm, resolve));
     } else {
@@ -130,12 +156,12 @@ module.exports = class Migration {
 
     return sqlSteps.reduce(
       (promise, sql) =>
-        promise.then(() => this.options.dryRun || this.db.query(sql)),
+        promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
       Promise.resolve()
     );
   }
 
-  _getAction(direction) {
+  _getAction(direction: MigrationDirection) {
     if (direction === 'down') {
       if (this.down === false) {
         throw new Error(
@@ -148,7 +174,7 @@ module.exports = class Migration {
       }
     }
 
-    const action = this[direction];
+    const action: MigrationAction | false = this[direction];
 
     if (typeof action !== 'function') {
       throw new Error(`Unknown value for direction: ${direction}`);
@@ -157,7 +183,7 @@ module.exports = class Migration {
     return action;
   }
 
-  apply(direction) {
+  apply(direction: MigrationDirection) {
     const pgm = new MigrationBuilder(
       this.db,
       this.typeShorthands,
@@ -173,9 +199,11 @@ module.exports = class Migration {
     return this._apply(action, pgm);
   }
 
-  markAsRun(direction) {
+  markAsRun(direction: MigrationDirection) {
     return this.db.query(this._getMarkAsRun(this._getAction(direction)));
   }
-};
+}
 
+export default Migration;
+module.exports = Migration;
 module.exports.loadMigrationFiles = loadMigrationFiles;

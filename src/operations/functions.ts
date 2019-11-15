@@ -1,10 +1,31 @@
-const { escapeValue, formatParams } = require('../utils');
+import { DropOptions, Name, Value } from '../definitions';
+import { MigrationOptions } from '../migration-builder';
+import { escapeValue, formatParams } from '../utils';
 
-function dropFunction(mOptions) {
+export interface FunctionParamType {
+  mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
+  name?: string;
+  type: string;
+  default?: Value;
+}
+
+export type FunctionParam = string | FunctionParamType;
+
+export interface FunctionOptions {
+  returns?: string;
+  language: string;
+  replace?: boolean;
+  window?: boolean;
+  behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE';
+  onNull?: boolean;
+  parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
+}
+
+export function dropFunction(mOptions: MigrationOptions) {
   const _drop = (
-    functionName,
-    functionParams = [],
-    { ifExists, cascade } = {}
+    functionName: Name,
+    functionParams: FunctionParam[] = [],
+    { ifExists, cascade }: DropOptions = {}
   ) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
@@ -15,12 +36,12 @@ function dropFunction(mOptions) {
   return _drop;
 }
 
-function createFunction(mOptions) {
+export function createFunction(mOptions: MigrationOptions) {
   const _create = (
-    functionName,
-    functionParams = [],
-    functionOptions = {},
-    definition
+    functionName: Name,
+    functionParams: FunctionParam[] = [],
+    functionOptions: Partial<FunctionOptions> = {},
+    definition: Value
   ) => {
     const {
       replace,
@@ -65,20 +86,21 @@ function createFunction(mOptions) {
   return _create;
 }
 
-function renameFunction(mOptions) {
-  const _rename = (oldFunctionName, functionParams = [], newFunctionName) => {
+export function renameFunction(mOptions: MigrationOptions) {
+  const _rename = (
+    oldFunctionName: Name,
+    functionParams: FunctionParam[] = [],
+    newFunctionName: Name
+  ) => {
     const paramsStr = formatParams(functionParams, mOptions);
     const oldFunctionNameStr = mOptions.literal(oldFunctionName);
     const newFunctionNameStr = mOptions.literal(newFunctionName);
     return `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`;
   };
-  _rename.reverse = (oldFunctionName, functionParams, newFunctionName) =>
-    _rename(newFunctionName, functionParams, oldFunctionName);
+  _rename.reverse = (
+    oldFunctionName: Name,
+    functionParams: FunctionParam[],
+    newFunctionName: Name
+  ) => _rename(newFunctionName, functionParams, oldFunctionName);
   return _rename;
 }
-
-module.exports = {
-  createFunction,
-  dropFunction,
-  renameFunction
-};

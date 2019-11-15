@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "outDir": "lib",
+    "lib": ["es2017"],
+    "esModuleInterop": true,
+    "declaration": true,
+    "sourceMap": false,
+    "removeComments": true,
+    "strict": false,
+    "noImplicitAny": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "templates", "lib", "dist", "bin"]
+}

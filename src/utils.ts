@@ -1,30 +1,45 @@
-const decamelize = require('decamelize');
+import decamelize from 'decamelize';
+import {
+  ColumnDefinition,
+  ShorthandDefinitions,
+  Name,
+  Type,
+  Value
+} from './definitions';
+import { MigrationOptions } from './migration-builder';
+import { FunctionParam, FunctionParamType } from './operations/functions';
+import { RunnerOption } from './runner';
 
 // This is used to create unescaped strings
 // exposed in the migrations via pgm.func
-class PgLiteral {
-  static create(str) {
+export class PgLiteral {
+  static create(str: string): PgLiteral {
     return new PgLiteral(str);
   }
 
-  constructor(str) {
+  private readonly _str: string;
+
+  constructor(str: string) {
     this._str = str;
   }
 
-  toString() {
+  toString(): string {
     return this._str;
   }
 }
 
-const identity = v => v;
-const quote = str => `"${str}"`;
+const identity = <T>(v: T) => v;
+const quote = (str: string) => `"${str}"`;
 
-const createSchemalize = (shouldDecamelize, shouldQuote) => {
-  const transform = [
+export const createSchemalize = (
+  shouldDecamelize: boolean,
+  shouldQuote: boolean
+) => {
+  const transform: (v: Name) => string = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity
   ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))));
-  return v => {
+  return (v: Name) => {
     if (typeof v === 'object') {
       const { schema, name } = v;
       return (schema ? `${transform(schema)}.` : '') + transform(name);
@@ -33,13 +48,16 @@ const createSchemalize = (shouldDecamelize, shouldQuote) => {
   };
 };
 
-const createTransformer = literal => (s, d) =>
+export const createTransformer = (literal: (v: Name) => string) => (
+  s: string,
+  d?: { [key: string]: Name }
+) =>
   Object.keys(d || {}).reduce(
-    (str, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
+    (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
     s
   );
 
-const escapeValue = val => {
+export const escapeValue = (val: Value): string | number => {
   if (val === null) {
     return 'NULL';
   }
@@ -47,7 +65,7 @@ const escapeValue = val => {
     return val.toString();
   }
   if (typeof val === 'string') {
-    let dollars;
+    let dollars: string;
     let index = 0;
     do {
       index += 1;
@@ -71,14 +89,14 @@ const escapeValue = val => {
   return '';
 };
 
-const getSchemas = schema => {
+export const getSchemas = (schema: string | string[]): string[] => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
     s => typeof s === 'string' && s.length > 0
   );
   return schemas.length > 0 ? schemas : ['public'];
 };
 
-const getMigrationTableSchema = options =>
+export const getMigrationTableSchema = (options: RunnerOption): string =>
   options.migrationsSchema !== undefined
     ? options.migrationsSchema
     : getSchemas(options.schema)[0];
@@ -90,24 +108,27 @@ const typeAdapters = {
   double: 'double precision',
   datetime: 'timestamp',
   bool: 'boolean'
-};
+} as const;
 
-const defaultTypeShorthands = {
+const defaultTypeShorthands: ShorthandDefinitions = {
   id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
 };
 
 // some convenience adapters -- see above
-const applyTypeAdapters = type =>
-  typeAdapters[type] ? typeAdapters[type] : type;
+export const applyTypeAdapters = (type: string): string =>
+  type in typeAdapters ? typeAdapters[type as keyof typeof typeAdapters] : type;
 
-const applyType = (type, extendingTypeShorthands = {}) => {
-  const typeShorthands = {
+export const applyType = (
+  type: Type,
+  extendingTypeShorthands: ShorthandDefinitions = {}
+): ColumnDefinition & FunctionParamType => {
+  const typeShorthands: ShorthandDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
   };
   const options = typeof type === 'string' ? { type } : type;
-  let ext = null;
-  const types = [options.type];
+  let ext: { type?: string } | null = null;
+  const types: string[] = [options.type];
   while (typeShorthands[types[types.length - 1]]) {
     if (ext) {
       delete ext.type;
@@ -131,12 +152,16 @@ const applyType = (type, extendingTypeShorthands = {}) => {
   };
 };
 
-const formatParam = mOptions => param => {
-  const { mode, name, type, default: defaultValue } = applyType(
-    param,
-    mOptions.typeShorthands
-  );
-  const options = [];
+const formatParam = (mOptions: MigrationOptions) => (
+  param: FunctionParamType
+) => {
+  const {
+    mode,
+    name,
+    type,
+    default: defaultValue
+  }: FunctionParamType = applyType(param, mOptions.typeShorthands);
+  const options: string[] = [];
   if (mode) {
     options.push(mode);
   }
@@ -152,38 +177,33 @@ const formatParam = mOptions => param => {
   return options.join(' ');
 };
 
-const formatParams = (params = [], mOptions) =>
-  `(${params.map(formatParam(mOptions)).join(', ')})`;
+export const formatParams = (
+  params: FunctionParam[] = [],
+  mOptions: MigrationOptions
+) => `(${params.map(formatParam(mOptions)).join(', ')})`;
 
-const comment = (object, name, text) => {
+export const comment = (object: string, name: string, text?: string) => {
   const cmt = escapeValue(text || null);
   return `COMMENT ON ${object} ${name} IS ${cmt};`;
 };
 
-const formatLines = (lines, replace = '  ', separator = ',') =>
+export const formatLines = (
+  lines: string[],
+  replace: string = '  ',
+  separator: string = ','
+) =>
   lines
     .map(line => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
     .replace(/^/gm, replace);
 
-const promisify = fn => (...args) =>
-  new Promise((resolve, reject) =>
-    fn.call(this, ...args, (err, ...result) =>
-      err ? reject(err) : resolve(...result)
-    )
-  );
-
-module.exports = {
-  PgLiteral,
-  createSchemalize,
-  createTransformer,
-  escapeValue,
-  getSchemas,
-  getMigrationTableSchema,
-  applyTypeAdapters,
-  applyType,
-  formatParams,
-  comment,
-  formatLines,
-  promisify
-};
+export function promisify<R>(
+  fn: (...args: any[]) => any
+): (...args: any[]) => Promise<R> {
+  return (...args) =>
+    new Promise<R>((resolve, reject) =>
+      fn.call(this, ...args, (err: any, ...result: any[]) =>
+        err ? reject(err) : resolve(...result)
+      )
+    );
+}
