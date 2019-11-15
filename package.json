@@ -83,10 +83,6 @@
   "peerDependencies": {
     "pg": ">=4.3.0 <8.0.0"
   },
-  "optionalDependencies": {
-    "config": ">=1.0.0",
-    "dotenv": ">=1.0.0"
-  },
   "scripts": {
     "build": "tsc",
     "compile": "babel lib/ -d dist/",
