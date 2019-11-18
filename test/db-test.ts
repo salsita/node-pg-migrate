@@ -1,6 +1,6 @@
-const sinon = require('sinon');
-const { expect } = require('chai');
-const proxyquire = require('proxyquire');
+import sinon, { SinonSandbox, SinonStub } from 'sinon';
+import { expect } from 'chai';
+import proxyquire from 'proxyquire';
 
 class Client {
   /* eslint-disable */
@@ -8,7 +8,7 @@ class Client {
 
   connect() {}
 
-  query() {}
+  query(...args: any[]) {}
 
   end() {}
   /* eslint-enable */
@@ -20,11 +20,11 @@ const pgMock = {
   Client
 };
 
-const Db = proxyquire('../lib/db', { pg: pgMock });
+const Db = proxyquire('../src/db', { pg: pgMock });
 
 describe('lib/db', () => {
-  let sandbox;
-  const log = () => null;
+  let sandbox: SinonSandbox;
+  const log: typeof console.log = () => null;
   const client = new Client();
 
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('lib/db', () => {
   });
 
   describe('.constructor( connection )', () => {
-    let db;
+    let db: typeof Db;
     afterEach(() => {
       if (db) {
         db.close();
@@ -44,28 +44,30 @@ describe('lib/db', () => {
     });
 
     it('pg.Client should be called with connection string', () => {
-      sandbox.stub(pgMock, 'Client');
+      const mocked = sandbox.stub(pgMock, 'Client');
       db = Db('connection_string');
-      expect(pgMock.Client).to.be.calledWith('connection_string');
+      expect(mocked).to.be.calledWith('connection_string');
     });
 
     it('should use external client', () => {
       const mockClient = new pgMock.Client();
-      sandbox.stub(mockClient, 'query').returns(Promise.resolve());
+      const mocked = sandbox.stub(mockClient, 'query').returns(Promise.resolve() as any);
 
       db = Db(mockClient, log);
       return db.query('query').then(() => {
-        expect(mockClient.query.getCall(0).args[0]).to.equal('query');
+        expect(mocked.getCall(0).args[0]).to.equal('query');
       });
     });
   });
 
   describe('.query( query )', () => {
-    let db;
+    let db: typeof Db;
+    let connectMock: SinonStub
+    let queryMock: SinonStub
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client);
-      sandbox.stub(client, 'connect').returns(Promise.resolve());
-      sandbox.stub(client, 'query').returns(Promise.resolve());
+      connectMock = sandbox.stub(client, 'connect').returns(Promise.resolve() as any);
+      queryMock = sandbox.stub(client, 'query').returns(Promise.resolve() as any);
       db = Db(undefined, log);
     });
     afterEach(() => {
@@ -73,55 +75,55 @@ describe('lib/db', () => {
     });
 
     it('should call client.connect if this is the first query', () => {
-      client.connect.callsFake(fn => fn());
-      client.query.returns(Promise.resolve());
+      connectMock.callsFake(fn => fn());
+      queryMock.returns(Promise.resolve() as any);
       return db.query('query').then(() => {
-        expect(client.connect).to.be.calledOnce;
+        expect(connectMock).to.be.calledOnce;
       });
     });
     it('should not call client.connect on subsequent queries', () => {
-      client.connect.callsFake(fn => fn());
-      client.query.returns(Promise.resolve());
+      connectMock.callsFake(fn => fn());
+      queryMock.returns(Promise.resolve() as any);
       return db
         .query('query_one')
         .then(() => db.query('query_two'))
         .then(() => {
-          expect(client.connect).to.be.calledOnce;
+          expect(connectMock).to.be.calledOnce;
         });
     });
     it('should call client.query with query', () => {
-      client.connect.callsFake(fn => fn());
-      client.query.returns(Promise.resolve());
+      connectMock.callsFake(fn => fn());
+      queryMock.returns(Promise.resolve() as any);
       return db.query('query').then(() => {
-        expect(client.query.getCall(0).args[0]).to.equal('query');
+        expect(queryMock.getCall(0).args[0]).to.equal('query');
       });
     });
     it('should not call client.query if client.connect fails', () => {
       const error = 'error';
-      client.connect.callsFake(fn => fn(error));
+      connectMock.callsFake(fn => fn(error));
       return expect(db.query('query'))
         .to.eventually.be.rejectedWith(error)
-        .then(() => expect(client.query).to.not.been.called);
+        .then(() => expect(queryMock).to.not.been.called);
     });
     it('should resolve promise if query throws no error', () => {
-      client.connect.callsFake(fn => fn());
+      connectMock.callsFake(fn => fn());
       const result = 'result';
-      client.query.returns(Promise.resolve(result));
+      queryMock.returns(Promise.resolve(result));
       return expect(db.query('query')).to.eventually.equal(result);
     });
     it('should reject promise if query throws error', () => {
-      client.connect.callsFake(fn => fn());
+      connectMock.callsFake(fn => fn());
       const error = 'error';
-      client.query.returns(Promise.reject(error));
+      queryMock.returns(Promise.reject(error));
       return expect(db.query('query')).to.eventually.be.rejectedWith(error);
     });
   });
 
   describe('.close()', () => {
-    let db;
+    let db: typeof Db;
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client);
-      sandbox.stub(client, 'end').returns(Promise.resolve());
+      sandbox.stub(client, 'end').returns(Promise.resolve() as any);
       db = Db();
     });
     afterEach(() => {

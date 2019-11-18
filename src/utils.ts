@@ -1,7 +1,7 @@
 import decamelize from 'decamelize';
 import {
   ColumnDefinition,
-  ShorthandDefinitions,
+  ColumnDefinitions,
   Name,
   Type,
   Value
@@ -110,7 +110,7 @@ const typeAdapters = {
   bool: 'boolean'
 } as const;
 
-const defaultTypeShorthands: ShorthandDefinitions = {
+const defaultTypeShorthands: ColumnDefinitions = {
   id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
 };
 
@@ -120,20 +120,21 @@ export const applyTypeAdapters = (type: string): string =>
 
 export const applyType = (
   type: Type,
-  extendingTypeShorthands: ShorthandDefinitions = {}
+  extendingTypeShorthands: ColumnDefinitions = {}
 ): ColumnDefinition & FunctionParamType => {
-  const typeShorthands: ShorthandDefinitions = {
+  const typeShorthands: ColumnDefinitions = {
     ...defaultTypeShorthands,
     ...extendingTypeShorthands
   };
   const options = typeof type === 'string' ? { type } : type;
-  let ext: { type?: string } | null = null;
+  let ext: ColumnDefinition | null = null;
   const types: string[] = [options.type];
   while (typeShorthands[types[types.length - 1]]) {
     if (ext) {
       delete ext.type;
     }
-    ext = { ...typeShorthands[types[types.length - 1]], ...ext };
+    const t = typeShorthands[types[types.length - 1]]
+    ext = { ...(typeof t === 'string' ? { type: t } : t), ...ext };
     if (types.includes(ext.type)) {
       throw new Error(
         `Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`

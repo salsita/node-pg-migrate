@@ -1,11 +1,13 @@
-const { expect } = require('chai');
-const Indexes = require('../lib/operations/indexes');
-const { options1, options2 } = require('./utils');
+import { expect } from 'chai';
+import * as Indexes from '../src/operations/indexes';
+import { options1, options2 } from './utils';
+
+type CreateIndexParams = Parameters<ReturnType<typeof Indexes.createIndex>>
 
 describe('lib/operations/indexes', () => {
   describe('.create', () => {
     it('check schema not included in index name', () => {
-      const args = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']];
+      const args: CreateIndexParams = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
       expect(sql1).to.equal(
@@ -17,7 +19,7 @@ describe('lib/operations/indexes', () => {
     });
 
     it('add opclass option', () => {
-      const args = [
+      const args: CreateIndexParams = [
         'xTable',
         ['yName'],
         {

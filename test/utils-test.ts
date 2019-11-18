@@ -1,10 +1,11 @@
-const { expect } = require('chai');
-const { escapeValue, PgLiteral, applyType } = require('../lib/utils');
+import { expect } from 'chai';
+import { escapeValue, PgLiteral, applyType } from '../src/utils';
+import { ColumnDefinitions } from 'definitions';
 
 describe('lib/utils', () => {
   describe('.escapeValue', () => {
     it("parse null to 'NULL'", () => {
-      const value = null;
+      const value: null = null;
 
       expect(escapeValue(value)).to.equal('NULL');
     });
@@ -44,7 +45,7 @@ describe('lib/utils', () => {
     });
 
     it('parse unexpected type to empty string', () => {
-      const value = undefined;
+      const value: undefined = undefined;
 
       expect(escapeValue(value)).to.equal('');
     });
@@ -70,20 +71,20 @@ describe('lib/utils', () => {
     });
 
     it('apply recursive shorthand', () => {
-      const shorthands = {
-        ref: { type: `integer`, onDelete: `cascade` },
+      const shorthands: ColumnDefinitions = {
+        ref: { type: `integer`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` }
       };
       expect(applyType('user', shorthands)).to.eql({
         type: `integer`,
-        onDelete: `cascade`,
+        onDelete: `CASCADE`,
         references: `users`
       });
     });
 
     it('detect cycle in recursive shorthand', () => {
-      const shorthands = {
-        ref: { type: `user`, onDelete: `cascade` },
+      const shorthands: ColumnDefinitions = {
+        ref: { type: `user`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` }
       };
       expect(() => applyType('user', shorthands)).to.throw();

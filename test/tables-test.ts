@@ -1,11 +1,15 @@
-const { expect } = require('chai');
-const Tables = require('../lib/operations/tables');
-const { options1, options2 } = require('./utils');
+import { expect } from 'chai';
+import * as Tables from '../src/operations/tables';
+import { options1, options2 } from './utils';
+
+type CreateTableParams = Parameters<ReturnType<typeof Tables.createTable>>
+type DropColumnsParams = Parameters<ReturnType<typeof Tables.dropColumns>>
+type AddConstraintParams = Parameters<ReturnType<typeof Tables.addConstraint>>
 
 describe('lib/operations/tables', () => {
   describe('.create', () => {
     it('check schemas can be used', () => {
-      const args = [
+      const args: CreateTableParams = [
         { schema: 'mySchema', name: 'myTableName' },
         { idColumn: 'serial' }
       ];
@@ -20,7 +24,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check shorthands work', () => {
-      const args = ['myTableName', { idColumn: 'id' }];
+      const args: CreateTableParams = ['myTableName', { idColumn: 'id' }];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
@@ -32,7 +36,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check custom shorthands can be used', () => {
-      const args = ['myTableName', { idColumn: 'idTest' }];
+      const args: CreateTableParams = ['myTableName', { idColumn: 'idTest' }];
       const sql1 = Tables.createTable({
         ...options1,
         typeShorthands: {
@@ -56,7 +60,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check schemas can be used for foreign keys', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           parentId: {
@@ -76,7 +80,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check match clause can be used for foreign keys', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           parentId: {
@@ -97,7 +101,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check defining column can be used for foreign keys', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           parentId: { type: 'integer', references: 'schemaA.tableB(idColumn)' }
@@ -114,7 +118,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check multicolumn primary key name does not include schema', () => {
-      const args = [
+      const args: CreateTableParams = [
         { schema: 'mySchema', name: 'myTableName' },
         {
           colA: { type: 'integer', primaryKey: true },
@@ -136,7 +140,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table references work correctly', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' },
@@ -168,7 +172,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table unique constraint work correctly', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' },
@@ -195,7 +199,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table unique constraint work correctly for string', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' },
@@ -222,7 +226,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('check table unique constraint work correctly for array of arrays', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' },
@@ -254,7 +258,7 @@ describe('lib/operations/tables', () => {
     });
 
     it('creates comments on foreign keys', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' }
@@ -284,7 +288,7 @@ COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$exampl
     });
 
     it('creates comments on column foreign keys', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: {
@@ -317,7 +321,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
     });
 
     it('creates no comments on unnamed constraints', () => {
-      const args = [
+      const args: CreateTableParams = [
         'myTableName',
         {
           colA: { type: 'integer' }
@@ -340,7 +344,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
 
   describe('.dropColumns', () => {
     it('check multiple columns can be dropped', () => {
-      const args = ['myTableName', ['colC1', 'colC2']];
+      const args: DropColumnsParams = ['myTableName', ['colC1', 'colC2']];
       const sql1 = Tables.dropColumns(options1)(...args);
       const sql2 = Tables.dropColumns(options2)(...args);
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
@@ -354,7 +358,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
 
   describe('.addConstraint', () => {
     it('works with strings', () => {
-      const args = [
+      const args: AddConstraintParams = [
         'myTableName',
         'myConstraintName',
         'CHECK name IS NOT NULL'
@@ -368,7 +372,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
     });
 
     it('does not add contraint name if not defined', () => {
-      const args = ['myTableName', null, 'CHECK name IS NOT NULL'];
+      const args: AddConstraintParams = ['myTableName', null, 'CHECK name IS NOT NULL'];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
@@ -378,7 +382,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
     });
 
     it('can create comments', () => {
-      const args = [
+      const args: AddConstraintParams = [
         'myTableName',
         'myConstraintName',
         {

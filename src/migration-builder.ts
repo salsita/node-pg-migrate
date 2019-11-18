@@ -13,7 +13,6 @@ import { DB } from './db';
 import {
   AddOptions,
   ColumnDefinitions,
-  ShorthandDefinitions,
   DropOptions,
   IfExistsOption,
   LiteralUnion,
@@ -73,11 +72,11 @@ export type MigrationAction = (pgm: MigrationBuilder, run?: () => void) => Promi
 export interface MigrationBuilderActions {
   up?: MigrationAction;
   down?: MigrationAction;
-  shorthands?: ShorthandDefinitions;
+  shorthands?: ColumnDefinitions;
 }
 
 export interface MigrationOptions {
-  typeShorthands: ShorthandDefinitions;
+  typeShorthands: ColumnDefinitions;
   schemalize: (v: Name) => string;
   literal: (v: Name) => string;
 }
@@ -446,7 +445,7 @@ export default class MigrationBuilder {
 
   constructor(
     db: DB,
-    typeShorthands: ShorthandDefinitions,
+    typeShorthands: ColumnDefinitions,
     shouldDecamelize: boolean
   ) {
     this._steps = [];

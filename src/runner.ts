@@ -3,7 +3,7 @@ import path from 'path';
 import { Client } from 'pg';
 import { TlsOptions } from 'tls';
 import Db, { DB } from './db';
-import { ShorthandDefinitions } from './definitions';
+import { ColumnDefinitions } from './definitions';
 import Migration, { loadMigrationFiles, RunMigration } from './migration';
 import { MigrationBuilderActions } from './migration-builder';
 import {
@@ -29,7 +29,7 @@ const loadMigrations = async (
   log: typeof console.log
 ) => {
   try {
-    let shorthands: ShorthandDefinitions = {};
+    let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
     return files.map(file => {
       const filePath = `${options.dir}/${file}`;
