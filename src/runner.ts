@@ -251,8 +251,5 @@ const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
   }
 }
 
-runner.default = runner // workaround for transpilers
-runner.PgLiteral = PgLiteral
-runner.Migration = Migration
-
+export { PgLiteral, Migration }
 export default runner

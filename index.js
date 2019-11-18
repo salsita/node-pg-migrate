@@ -1,6 +1,10 @@
 /* eslint-disable global-require */
-module.exports = require('./dist/runner') // eslint-disable-line import/no-unresolved
+const runner = require('./dist/runner') // eslint-disable-line import/no-unresolved
 
+module.exports = runner.default
+module.exports.default = runner.default
+module.exports.PgLiteral = runner.PgLiteral
+module.exports.Migration = runner.Migration
 module.exports.PgType = {
   BIGINT: 'bigint', // signed eight-byte integer
   INT8: 'int8', // alias for bigint
