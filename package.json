@@ -49,12 +49,12 @@
     "decamelize": "^3.2.0",
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.0",
-    "yargs": "~14.2.0"
+    "yargs": "~15.0.0"
   },
   "devDependencies": {
     "@types/chai": "4.2.5",
     "@types/chai-as-promised": "7.1.2",
-    "@types/lodash": "4.14.147",
+    "@types/lodash": "4.14.148",
     "@types/mkdirp": "0.5.2",
     "@types/mocha": "5.2.7",
     "@types/proxyquire": "1.3.28",
@@ -68,11 +68,11 @@
     "dotenv": "8.2.0",
     "eslint": "6.6.0",
     "eslint-config-airbnb-base": "14.0.0",
-    "eslint-config-prettier": "6.5.0",
+    "eslint-config-prettier": "6.6.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-prettier": "3.1.1",
     "eslint-plugin-security": "1.4.0",
-    "husky": "3.0.9",
+    "husky": "3.1.0",
     "lint-staged": "9.4.3",
     "mocha": "6.2.2",
     "pg": "7.12.1",
