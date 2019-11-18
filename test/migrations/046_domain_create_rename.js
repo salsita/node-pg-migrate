@@ -1,9 +1,9 @@
 exports.up = pgm => {
   pgm.createDomain('d', 'integer', {
-    check: 'VALUE BETWEEN 0 AND 10'
-  });
-  pgm.renameDomain('d', 'dom');
+    check: 'VALUE BETWEEN 0 AND 10',
+  })
+  pgm.renameDomain('d', 'dom')
   pgm.createTable('td', {
-    d: 'dom'
-  });
-};
+    d: 'dom',
+  })
+}

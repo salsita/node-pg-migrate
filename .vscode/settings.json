@@ -1,3 +1,4 @@
 {
-  "deepcode.review.results.hideInformationIssues": false
+  "deepcode.review.results.hideInformationIssues": false,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

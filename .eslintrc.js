@@ -1,27 +1,53 @@
 module.exports = {
   extends: [
-    "eslint:recommended",
-    "eslint-config-airbnb-base",
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:security/recommended",
-    "plugin:prettier/recommended"
+    'eslint:recommended',
+    'eslint-config-airbnb-base',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:security/recommended',
+    'prettier/@typescript-eslint',
+    'plugin:prettier/recommended',
   ],
-  parser: "babel-eslint",
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint', 'import', 'security'],
+  settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      typescript: {},
+    },
+  },
   env: {
     node: true,
-    mocha: true
+    mocha: true,
   },
   rules: {
-    "no-console": 0,
-    "no-underscore-dangle": 0,
-    "security/detect-object-injection": 0,
-    "import/no-extraneous-dependencies": [
-      "error",
+    'no-console': 0,
+    'no-underscore-dangle': 0,
+    'security/detect-object-injection': 0,
+    'import/no-extraneous-dependencies': [
+      'error',
       {
-        devDependencies: ["mocha.bootstrap.js", "/test/**"]
-      }
-    ]
+        devDependencies: ['mocha.bootstrap.js', '/test/**'],
+      },
+    ],
+    '@typescript-eslint/explicit-function-return-type': 0,
+    'import/no-cycle': 0,
+    '@typescript-eslint/no-explicit-any': 0,
+    'import/no-duplicates': 0,
   },
-  plugins: ["import", "security"]
-};
+  overrides: [
+    {
+      files: ['*.js', 'node-pg-migrate'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 0,
+        '@typescript-eslint/camelcase': 0,
+      },
+    },
+  ],
+}

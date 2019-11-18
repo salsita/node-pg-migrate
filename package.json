@@ -3,10 +3,7 @@
   "version": "4.0.0-alpha.0",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
-  "contributors": [
-    "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
-  ],
+  "contributors": ["Salsita Software <jando@salsitasoft.com>", "Christopher Quadflieg <chrissi92@hotmail.de>"],
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
   },
@@ -60,7 +57,8 @@
     "@types/proxyquire": "1.3.28",
     "@types/sinon": "7.5.0",
     "@types/sinon-chai": "3.2.3",
-    "babel-eslint": "10.0.3",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
+    "@typescript-eslint/parser": "^2.7.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "config": "3.2.4",
@@ -69,6 +67,7 @@
     "eslint": "6.6.0",
     "eslint-config-airbnb-base": "14.0.0",
     "eslint-config-prettier": "6.6.0",
+    "eslint-import-resolver-typescript": "^2.0.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-prettier": "3.1.1",
     "eslint-plugin-security": "1.4.0",
@@ -92,7 +91,7 @@
     "build": "tsc",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "migrate": "node bin/node-pg-migrate",
-    "lint": "eslint . bin/*",
+    "lint": "eslint . bin/* --ext .js,.ts",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run build"
   },

@@ -1,4 +1,4 @@
 node_modules
 dist
 templates
-src
+*.d.ts

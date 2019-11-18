@@ -7,11 +7,11 @@ exports.up = pgm => {
         table: 't1',
         options: {
           including: ['COMMENTS', 'CONSTRAINTS'],
-          excluding: ['INDEXES', 'STORAGE']
-        }
-      }
-    }
-  );
-};
+          excluding: ['INDEXES', 'STORAGE'],
+        },
+      },
+    },
+  )
+}
 
-exports.down = () => null;
+exports.down = () => null

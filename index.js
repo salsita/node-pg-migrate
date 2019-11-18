@@ -1,5 +1,5 @@
 /* eslint-disable global-require */
-module.exports = require('./dist/runner'); // eslint-disable-line import/no-unresolved
+module.exports = require('./dist/runner') // eslint-disable-line import/no-unresolved
 
 module.exports.PgType = {
   BIGINT: 'bigint', // signed eight-byte integer
@@ -58,5 +58,5 @@ module.exports.PgType = {
   TSVECTOR: 'tsvector', // text search document
   TXID_SNAPSHOT: 'txid_snapshot', // user-level transaction ID snapshot
   UUID: 'uuid', // universally unique identifier
-  XML: 'xml' // XML data
-};
+  XML: 'xml', // XML data
+}

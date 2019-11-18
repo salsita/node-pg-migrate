@@ -1,5 +1,5 @@
-const policy = require('./057_policy_create');
+const policy = require('./057_policy_create')
 
-exports.up = policy.down;
+exports.up = policy.down
 
-exports.down = policy.up;
+exports.down = policy.up
