@@ -7,6 +7,7 @@ const config = require('./tsconfig-test.json')
 config.compilerOptions.module = 'commonjs'
 config.transpileOnly = true
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 require('ts-node').register(config)
 
 chai.use(sinonChai)

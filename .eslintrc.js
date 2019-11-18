@@ -30,12 +30,6 @@ module.exports = {
     'no-console': 0,
     'no-underscore-dangle': 0,
     'security/detect-object-injection': 0,
-    'import/no-extraneous-dependencies': [
-      'error',
-      {
-        devDependencies: ['mocha.bootstrap.js', '/test/**'],
-      },
-    ],
     '@typescript-eslint/explicit-function-return-type': 0,
     'import/no-cycle': 0,
     '@typescript-eslint/no-explicit-any': 0,
