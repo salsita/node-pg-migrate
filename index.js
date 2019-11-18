@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 const runner = require('./dist/runner')
 const definitions = require('./dist/definitions')
 
