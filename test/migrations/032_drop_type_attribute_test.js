@@ -6,9 +6,9 @@ exports.up = pgm =>
           .query('SAVEPOINT sp_attr;')
           .then(() => pgm.db.query("select (ROW(1, 'x')::obj).str;"))
           .then(() => reject(new Error('Attribute was not removed')))
-          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_attr;'))
+          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_attr;')),
       )
-      .then(resolve)
-  );
+      .then(resolve),
+  )
 
-exports.down = () => null;
+exports.down = () => null

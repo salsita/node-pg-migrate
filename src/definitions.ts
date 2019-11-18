@@ -1,28 +1,19 @@
-import { PgLiteral } from './utils';
-import { SequenceOptions } from './operations/sequences';
+import { PgLiteral } from './utils'
+import { SequenceOptions } from './operations/sequences'
 
-export type LiteralUnion<T extends U, U = string> =
-  | T
-  | (U & { zz_IGNORE_ME?: never });
+export type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never })
 
-interface ValueArray extends Array<Value> {}
+export type Value = null | boolean | string | number | PgLiteral | Value[]
 
-export type Value = null | boolean | string | number | PgLiteral | ValueArray;
+export type Type = string | { type: string }
 
-export type Type = string | { type: string };
+export type Name = string | { schema?: string; name: string }
 
-export type Name = string | { schema?: string; name: string };
-
-export type Action =
-  | 'NO ACTION'
-  | 'RESTRICT'
-  | 'CASCADE'
-  | 'SET NULL'
-  | 'SET DEFAULT';
+export type Action = 'NO ACTION' | 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'SET DEFAULT'
 
 // Note these currently don't contain the parameterized types like
 // bit(n), varchar(n) and so on, they have to be specified as strings
-export enum PgType {
+export enum PgType { // eslint-disable-line import/prefer-default-export
   BIGINT = 'bigint', // signed eight-byte integer
   INT8 = 'int8', // alias for bigint
   BIGSERIAL = 'bigserial', // autoincrementing eight-byte integer
@@ -79,62 +70,54 @@ export enum PgType {
   TSVECTOR = 'tsvector', // text search document
   TXID_SNAPSHOT = 'txid_snapshot', // user-level transaction ID snapshot
   UUID = 'uuid', // universally unique identifier
-  XML = 'xml' // XML data
+  XML = 'xml', // XML data
 }
 
 export interface ReferencesOptions {
-  referencesConstraintName?: string;
-  referencesConstraintComment?: string;
-  references?: Name;
-  onDelete?: Action;
-  onUpdate?: Action;
-  match?: 'FULL' | 'SIMPLE';
+  referencesConstraintName?: string
+  referencesConstraintComment?: string
+  references?: Name
+  onDelete?: Action
+  onUpdate?: Action
+  match?: 'FULL' | 'SIMPLE'
 }
 
 export interface ColumnDefinition extends ReferencesOptions {
-  type: string;
-  collation?: string;
-  unique?: boolean;
-  primaryKey?: boolean;
-  notNull?: boolean;
-  default?: Value;
-  check?: string;
-  deferrable?: boolean;
-  deferred?: boolean;
-  comment?: string | null;
-  generated?: { precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions;
+  type: string
+  collation?: string
+  unique?: boolean
+  primaryKey?: boolean
+  notNull?: boolean
+  default?: Value
+  check?: string
+  deferrable?: boolean
+  deferred?: boolean
+  comment?: string | null
+  generated?: { precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions
 }
 
 export interface ColumnDefinitions {
-  [name: string]: ColumnDefinition | string;
+  [name: string]: ColumnDefinition | string
 }
 
-export type Like =
-  | 'COMMENTS'
-  | 'CONSTRAINTS'
-  | 'DEFAULTS'
-  | 'IDENTITY'
-  | 'INDEXES'
-  | 'STATISTICS'
-  | 'STORAGE'
-  | 'ALL';
+export type Like = 'COMMENTS' | 'CONSTRAINTS' | 'DEFAULTS' | 'IDENTITY' | 'INDEXES' | 'STATISTICS' | 'STORAGE' | 'ALL'
 
 export interface LikeOptions {
-  including?: Like | Like[];
-  excluding?: Like | Like[];
+  including?: Like | Like[]
+  excluding?: Like | Like[]
 }
 
 export interface IfNotExistsOption {
-  ifNotExists?: boolean;
+  ifNotExists?: boolean
 }
 
 export interface IfExistsOption {
-  ifExists?: boolean;
+  ifExists?: boolean
 }
 
 export interface CascadeOption {
-  cascade?: boolean;
+  cascade?: boolean
 }
 
-export type AddOptions = IfNotExistsOption;
-export type DropOptions = IfExistsOption & CascadeOption;
+export type AddOptions = IfNotExistsOption
+export type DropOptions = IfExistsOption & CascadeOption

@@ -1,22 +1,18 @@
-import { expect } from 'chai';
-import * as Indexes from '../src/operations/indexes';
-import { options1, options2 } from './utils';
+import { expect } from 'chai'
+import * as Indexes from '../src/operations/indexes'
+import { options1, options2 } from './utils'
 
 type CreateIndexParams = Parameters<ReturnType<typeof Indexes.createIndex>>
 
 describe('lib/operations/indexes', () => {
   describe('.create', () => {
     it('check schema not included in index name', () => {
-      const args: CreateIndexParams = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']];
-      const sql1 = Indexes.createIndex(options1)(...args);
-      const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
-        'CREATE  INDEX  "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");'
-      );
-      expect(sql2).to.equal(
-        'CREATE  INDEX  "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");'
-      );
-    });
+      const args: CreateIndexParams = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']]
+      const sql1 = Indexes.createIndex(options1)(...args)
+      const sql2 = Indexes.createIndex(options2)(...args)
+      expect(sql1).to.equal('CREATE  INDEX  "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");')
+      expect(sql2).to.equal('CREATE  INDEX  "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");')
+    })
 
     it('add opclass option', () => {
       const args: CreateIndexParams = [
@@ -26,17 +22,17 @@ describe('lib/operations/indexes', () => {
           method: 'gist',
           name: 'zIndex',
           opclass: 'someOpclass',
-          where: 'some condition'
-        }
-      ];
-      const sql1 = Indexes.createIndex(options1)(...args);
-      const sql2 = Indexes.createIndex(options2)(...args);
+          where: 'some condition',
+        },
+      ]
+      const sql1 = Indexes.createIndex(options1)(...args)
+      const sql2 = Indexes.createIndex(options2)(...args)
       expect(sql1).to.equal(
-        'CREATE  INDEX  "zIndex" ON "xTable" USING gist ("yName" someOpclass) WHERE some condition;'
-      );
+        'CREATE  INDEX  "zIndex" ON "xTable" USING gist ("yName" someOpclass) WHERE some condition;',
+      )
       expect(sql2).to.equal(
-        'CREATE  INDEX  "z_index" ON "x_table" USING gist ("y_name" some_opclass) WHERE some condition;'
-      );
-    });
-  });
-});
+        'CREATE  INDEX  "z_index" ON "x_table" USING gist ("y_name" some_opclass) WHERE some condition;',
+      )
+    })
+  })
+})

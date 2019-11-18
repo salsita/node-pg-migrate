@@ -1,105 +1,89 @@
-import decamelize from 'decamelize';
-import {
-  ColumnDefinition,
-  ColumnDefinitions,
-  Name,
-  Type,
-  Value
-} from './definitions';
-import { MigrationOptions } from './migration-builder';
-import { FunctionParam, FunctionParamType } from './operations/functions';
-import { RunnerOption } from './runner';
+import decamelize from 'decamelize'
+import { ColumnDefinition, ColumnDefinitions, Name, Type, Value } from './definitions'
+import { MigrationOptions } from './migration-builder'
+import { FunctionParam, FunctionParamType } from './operations/functions'
+import { RunnerOption } from './runner'
 
 // This is used to create unescaped strings
 // exposed in the migrations via pgm.func
 export class PgLiteral {
   static create(str: string): PgLiteral {
-    return new PgLiteral(str);
+    return new PgLiteral(str)
   }
 
-  private readonly _str: string;
+  private readonly _str: string
 
   constructor(str: string) {
-    this._str = str;
+    this._str = str
   }
 
   toString(): string {
-    return this._str;
+    return this._str
   }
 }
 
-const identity = <T>(v: T) => v;
-const quote = (str: string) => `"${str}"`;
+const identity = <T>(v: T) => v
+const quote = (str: string) => `"${str}"`
 
-export const createSchemalize = (
-  shouldDecamelize: boolean,
-  shouldQuote: boolean
-) => {
+export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean) => {
   const transform: (v: Name) => string = [
     shouldDecamelize ? decamelize : identity,
-    shouldQuote ? quote : identity
-  ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))));
+    shouldQuote ? quote : identity,
+  ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))))
   return (v: Name) => {
     if (typeof v === 'object') {
-      const { schema, name } = v;
-      return (schema ? `${transform(schema)}.` : '') + transform(name);
+      const { schema, name } = v
+      return (schema ? `${transform(schema)}.` : '') + transform(name)
     }
-    return transform(v);
-  };
-};
+    return transform(v)
+  }
+}
 
-export const createTransformer = (literal: (v: Name) => string) => (
-  s: string,
-  d?: { [key: string]: Name }
-) =>
+export const createTransformer = (literal: (v: Name) => string) => (s: string, d?: { [key: string]: Name }) =>
   Object.keys(d || {}).reduce(
     (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
-    s
-  );
+    s,
+  )
 
 export const escapeValue = (val: Value): string | number => {
   if (val === null) {
-    return 'NULL';
+    return 'NULL'
   }
   if (typeof val === 'boolean') {
-    return val.toString();
+    return val.toString()
   }
   if (typeof val === 'string') {
-    let dollars: string;
-    let index = 0;
+    let dollars: string
+    let index = 0
     do {
-      index += 1;
-      dollars = `$pg${index}$`;
-    } while (val.indexOf(dollars) >= 0);
-    return `${dollars}${val}${dollars}`;
+      index += 1
+      dollars = `$pg${index}$`
+    } while (val.indexOf(dollars) >= 0)
+    return `${dollars}${val}${dollars}`
   }
   if (typeof val === 'number') {
-    return val;
+    return val
   }
   if (Array.isArray(val)) {
     const arrayStr = val
       .map(escapeValue)
       .join(',')
-      .replace(/ARRAY/g, '');
-    return `ARRAY[${arrayStr}]`;
+      .replace(/ARRAY/g, '')
+    return `ARRAY[${arrayStr}]`
   }
   if (val instanceof PgLiteral) {
-    return val.toString();
+    return val.toString()
   }
-  return '';
-};
+  return ''
+}
 
 export const getSchemas = (schema: string | string[]): string[] => {
-  const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
-    s => typeof s === 'string' && s.length > 0
-  );
-  return schemas.length > 0 ? schemas : ['public'];
-};
+  const schemas = (Array.isArray(schema) ? schema : [schema]).filter(s => typeof s === 'string' && s.length > 0)
+  return schemas.length > 0 ? schemas : ['public']
+}
 
 export const getMigrationTableSchema = (options: RunnerOption): string =>
-  options.migrationsSchema !== undefined
-    ? options.migrationsSchema
-    : getSchemas(options.schema)[0];
+  options.migrationsSchema !== undefined ? options.migrationsSchema : getSchemas(options.schema)[0]
 
 const typeAdapters = {
   int: 'integer',
@@ -107,104 +91,78 @@ const typeAdapters = {
   float: 'real',
   double: 'double precision',
   datetime: 'timestamp',
-  bool: 'boolean'
-} as const;
+  bool: 'boolean',
+} as const
 
 const defaultTypeShorthands: ColumnDefinitions = {
-  id: { type: 'serial', primaryKey: true } // convenience type for serial primary keys
-};
+  id: { type: 'serial', primaryKey: true }, // convenience type for serial primary keys
+}
 
 // some convenience adapters -- see above
 export const applyTypeAdapters = (type: string): string =>
-  type in typeAdapters ? typeAdapters[type as keyof typeof typeAdapters] : type;
+  type in typeAdapters ? typeAdapters[type as keyof typeof typeAdapters] : type
 
 export const applyType = (
   type: Type,
-  extendingTypeShorthands: ColumnDefinitions = {}
+  extendingTypeShorthands: ColumnDefinitions = {},
 ): ColumnDefinition & FunctionParamType => {
   const typeShorthands: ColumnDefinitions = {
     ...defaultTypeShorthands,
-    ...extendingTypeShorthands
-  };
-  const options = typeof type === 'string' ? { type } : type;
-  let ext: ColumnDefinition | null = null;
-  const types: string[] = [options.type];
+    ...extendingTypeShorthands,
+  }
+  const options = typeof type === 'string' ? { type } : type
+  let ext: ColumnDefinition | null = null
+  const types: string[] = [options.type]
   while (typeShorthands[types[types.length - 1]]) {
     if (ext) {
-      delete ext.type;
+      delete ext.type
     }
     const t = typeShorthands[types[types.length - 1]]
-    ext = { ...(typeof t === 'string' ? { type: t } : t), ...ext };
+    ext = { ...(typeof t === 'string' ? { type: t } : t), ...ext }
     if (types.includes(ext.type)) {
-      throw new Error(
-        `Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`
-      );
+      throw new Error(`Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`)
     } else {
-      types.push(ext.type);
+      types.push(ext.type)
     }
   }
   if (!ext) {
-    ext = { type: options.type };
+    ext = { type: options.type }
   }
   return {
     ...ext,
     ...options,
-    type: applyTypeAdapters(ext.type)
-  };
-};
+    type: applyTypeAdapters(ext.type),
+  }
+}
 
-const formatParam = (mOptions: MigrationOptions) => (
-  param: FunctionParamType
-) => {
-  const {
-    mode,
-    name,
-    type,
-    default: defaultValue
-  }: FunctionParamType = applyType(param, mOptions.typeShorthands);
-  const options: string[] = [];
+const formatParam = (mOptions: MigrationOptions) => (param: FunctionParamType) => {
+  const { mode, name, type, default: defaultValue }: FunctionParamType = applyType(param, mOptions.typeShorthands)
+  const options: string[] = []
   if (mode) {
-    options.push(mode);
+    options.push(mode)
   }
   if (name) {
-    options.push(mOptions.literal(name));
+    options.push(mOptions.literal(name))
   }
   if (type) {
-    options.push(type);
+    options.push(type)
   }
   if (defaultValue) {
-    options.push(`DEFAULT ${escapeValue(defaultValue)}`);
+    options.push(`DEFAULT ${escapeValue(defaultValue)}`)
   }
-  return options.join(' ');
-};
+  return options.join(' ')
+}
 
-export const formatParams = (
-  params: FunctionParam[] = [],
-  mOptions: MigrationOptions
-) => `(${params.map(formatParam(mOptions)).join(', ')})`;
+export const formatParams = (params: FunctionParam[] = [], mOptions: MigrationOptions) =>
+  `(${params.map(formatParam(mOptions)).join(', ')})`
 
 export const comment = (object: string, name: string, text?: string) => {
-  const cmt = escapeValue(text || null);
-  return `COMMENT ON ${object} ${name} IS ${cmt};`;
-};
+  const cmt = escapeValue(text || null)
+  return `COMMENT ON ${object} ${name} IS ${cmt};`
+}
 
-export const formatLines = (
-  lines: string[],
-  replace: string = '  ',
-  separator: string = ','
-) =>
+export const formatLines = (lines: string[], replace = '  ', separator = ',') =>
   lines
     .map(line => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
-    .replace(/^/gm, replace);
-
-export function promisify<R>(
-  fn: (...args: any[]) => any
-): (...args: any[]) => Promise<R> {
-  return (...args) =>
-    new Promise<R>((resolve, reject) =>
-      fn.call(this, ...args, (err: any, ...result: any[]) =>
-        err ? reject(err) : resolve(...result)
-      )
-    );
-}
+    .replace(/^/gm, replace)

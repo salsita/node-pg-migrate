@@ -1,6 +1,10 @@
 /* eslint-disable global-require */
-module.exports = require('./dist/runner'); // eslint-disable-line import/no-unresolved
+const runner = require('./dist/runner') // eslint-disable-line import/no-unresolved
 
+module.exports = runner.default
+module.exports.default = runner.default
+module.exports.PgLiteral = runner.PgLiteral
+module.exports.Migration = runner.Migration
 module.exports.PgType = {
   BIGINT: 'bigint', // signed eight-byte integer
   INT8: 'int8', // alias for bigint
@@ -58,5 +62,5 @@ module.exports.PgType = {
   TSVECTOR: 'tsvector', // text search document
   TXID_SNAPSHOT: 'txid_snapshot', // user-level transaction ID snapshot
   UUID: 'uuid', // universally unique identifier
-  XML: 'xml' // XML data
-};
+  XML: 'xml', // XML data
+}

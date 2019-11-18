@@ -1,7 +1,7 @@
 exports.up = pgm => {
   pgm.createTable('tt', {
-    a: 'integer'
-  });
+    a: 'integer',
+  })
   pgm.createTrigger(
     'tt',
     't',
@@ -9,15 +9,15 @@ exports.up = pgm => {
       when: 'before',
       operation: 'insert',
       level: 'row',
-      language: 'plpgsql'
+      language: 'plpgsql',
     },
     `
 BEGIN
   NEW.a := NEW.a + 1;
   return NEW;
 END;
-  `
-  );
-  pgm.renameTrigger('tt', 't', 'trig');
-  pgm.renameFunction('t', [], 'trig');
-};
+  `,
+  )
+  pgm.renameTrigger('tt', 't', 'trig')
+  pgm.renameFunction('t', [], 'trig')
+}

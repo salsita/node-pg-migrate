@@ -1,3 +1,3 @@
 exports.up = (pgm, done) => {
-  setTimeout(done, 10);
-};
+  setTimeout(done, 10)
+}

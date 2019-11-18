@@ -6,10 +6,10 @@ exports.up = pgm =>
           .query('SAVEPOINT sp_check;')
           .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (30);'))
           .then(() => reject(new Error('Missing check clause')))
-          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;'))
+          .catch(() => pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;')),
       )
       .then(() => pgm.db.query('INSERT INTO t1(nmbr) VALUES (21);'))
-      .then(resolve)
-  );
+      .then(resolve),
+  )
 
-exports.down = () => null;
+exports.down = () => null

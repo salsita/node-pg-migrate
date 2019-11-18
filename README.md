@@ -41,26 +41,26 @@ exports.up = pgm => {
     createdAt: {
       type: 'timestamp',
       notNull: true,
-      default: pgm.func('current_timestamp')
-    }
-  });
+      default: pgm.func('current_timestamp'),
+    },
+  })
   pgm.createTable('posts', {
     id: 'id',
     userId: {
       type: 'integer',
       notNull: true,
       references: '"users"',
-      onDelete: 'cascade'
+      onDelete: 'cascade',
     },
     body: { type: 'text', notNull: true },
     createdAt: {
       type: 'timestamp',
       notNull: true,
-      default: pgm.func('current_timestamp')
-    }
-  });
-  pgm.createIndex('posts', 'userId');
-};
+      default: pgm.func('current_timestamp'),
+    },
+  })
+  pgm.createIndex('posts', 'userId')
+}
 ```
 
 Save migration file.
@@ -77,9 +77,9 @@ Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
 ```js
 exports.up = pgm => {
   pgm.addColumns('posts', {
-    lead: { type: 'text', notNull: true }
-  });
-};
+    lead: { type: 'text', notNull: true },
+  })
+}
 ```
 
 Run `npm run migrate up` and there will be new column in `posts` table :tada: :tada:

@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import { DropOptions, LiteralUnion } from '../definitions';
-import { MigrationOptions } from '../migration-builder';
+import _ from 'lodash'
+import { DropOptions, LiteralUnion } from '../definitions'
+import { MigrationOptions } from '../migration-builder'
 
 export type Extension =
   | 'adminpack'
@@ -47,42 +47,42 @@ export type Extension =
   | 'tsm_system_time'
   | 'unaccent'
   | 'uuid-ossp'
-  | 'xml2';
+  | 'xml2'
 
 export interface CreateExtensionOptions {
-  ifNotExists?: boolean;
-  schema?: string;
+  ifNotExists?: boolean
+  schema?: string
 }
 
 export function dropExtension(mOptions: MigrationOptions) {
   const _drop = (
     extensions: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
-    { ifExists, cascade }: DropOptions = {}
+    { ifExists, cascade }: DropOptions = {},
   ) => {
-    if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
-    const ifExistsStr = ifExists ? ' IF EXISTS' : '';
-    const cascadeStr = cascade ? ' CASCADE' : '';
+    if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
+    const ifExistsStr = ifExists ? ' IF EXISTS' : ''
+    const cascadeStr = cascade ? ' CASCADE' : ''
     return _.map(extensions, extension => {
-      const extensionStr = mOptions.literal(extension);
-      return `DROP EXTENSION${ifExistsStr} ${extensionStr}${cascadeStr};`;
-    });
-  };
-  return _drop;
+      const extensionStr = mOptions.literal(extension)
+      return `DROP EXTENSION${ifExistsStr} ${extensionStr}${cascadeStr};`
+    })
+  }
+  return _drop
 }
 
 export function createExtension(mOptions: MigrationOptions) {
   const _create = (
     extensions: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
-    { ifNotExists, schema }: CreateExtensionOptions = {}
+    { ifNotExists, schema }: CreateExtensionOptions = {},
   ) => {
-    if (!_.isArray(extensions)) extensions = [extensions]; // eslint-disable-line no-param-reassign
-    const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
-    const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : '';
+    if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
+    const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
+    const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : ''
     return _.map(extensions, extension => {
-      const extensionStr = mOptions.literal(extension);
-      return `CREATE EXTENSION${ifNotExistsStr} ${extensionStr}${schemaStr};`;
-    });
-  };
-  _create.reverse = dropExtension(mOptions);
-  return _create;
+      const extensionStr = mOptions.literal(extension)
+      return `CREATE EXTENSION${ifNotExistsStr} ${extensionStr}${schemaStr};`
+    })
+  }
+  _create.reverse = dropExtension(mOptions)
+  return _create
 }
