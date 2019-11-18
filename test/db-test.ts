@@ -8,7 +8,7 @@ class Client {
 
   connect() {}
 
-  query() {}
+  query(...args: any[]) {}
 
   end() {}
   /* eslint-enable */

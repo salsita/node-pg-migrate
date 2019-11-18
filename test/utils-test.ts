@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { escapeValue, PgLiteral, applyType } from '../src/utils';
+import { ColumnDefinitions } from 'definitions';
 
 describe('lib/utils', () => {
   describe('.escapeValue', () => {
@@ -70,20 +71,20 @@ describe('lib/utils', () => {
     });
 
     it('apply recursive shorthand', () => {
-      const shorthands = {
-        ref: { type: `integer`, onDelete: `cascade` },
+      const shorthands: ColumnDefinitions = {
+        ref: { type: `integer`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` }
       };
       expect(applyType('user', shorthands)).to.eql({
         type: `integer`,
-        onDelete: `cascade`,
+        onDelete: `CASCADE`,
         references: `users`
       });
     });
 
     it('detect cycle in recursive shorthand', () => {
-      const shorthands = {
-        ref: { type: `user`, onDelete: `cascade` },
+      const shorthands: ColumnDefinitions = {
+        ref: { type: `user`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` }
       };
       expect(() => applyType('user', shorthands)).to.throw();

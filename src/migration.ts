@@ -10,7 +10,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import { DB } from './db';
-import { ShorthandDefinitions } from './definitions';
+import { ColumnDefinitions } from './definitions';
 import MigrationBuilder, { MigrationAction, MigrationBuilderActions } from './migration-builder';
 import { MigrationDirection, RunnerOption } from './runner';
 import { getMigrationTableSchema, promisify } from './utils';
@@ -90,7 +90,7 @@ export class Migration implements RunMigration {
   public readonly up?: MigrationAction;
   public down?: false | MigrationAction;
   public readonly options: RunnerOption;
-  public readonly typeShorthands: ShorthandDefinitions;
+  public readonly typeShorthands: ColumnDefinitions;
   public readonly log: typeof console.log;
 
   constructor(
@@ -98,7 +98,7 @@ export class Migration implements RunMigration {
     migrationPath: string,
     { up, down }: MigrationBuilderActions,
     options: RunnerOption,
-    typeShorthands?: ShorthandDefinitions,
+    typeShorthands?: ColumnDefinitions,
     log = console.log
   ) {
     this.db = db;
