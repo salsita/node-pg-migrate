@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-expressions */
 import sinon, { SinonSpy } from 'sinon'
 import { expect } from 'chai'
-import { RunnerOption } from '../src/runner'
+import { RunnerOption } from '../src/types'
 import { Migration } from '../src/migration'
-import { DB } from '../src/db'
+import { DBConnection } from '../src/db'
 
 const callbackMigration = '1414549381268_names.js'
 const promiseMigration = '1414549381268_names_promise.js'
@@ -13,7 +13,7 @@ const actionsCallback = require(`./${callbackMigration}`) // eslint-disable-line
 const actionsPromise = require(`./${promiseMigration}`) // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
 
 describe('lib/migration', () => {
-  const dbMock = {} as DB
+  const dbMock = {} as DBConnection
   const log: typeof console.log = () => null
   const options = { migrationsTable } as RunnerOption
   let migration

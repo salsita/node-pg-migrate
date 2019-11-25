@@ -1,34 +1,32 @@
-import { DropOptions, Name } from '../definitions'
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions } from '../types'
 import { formatLines } from '../utils'
+import {
+  StorageParameters,
+  CreateMaterializedView,
+  DropMaterializedView,
+  AlterMaterializedView,
+  RenameMaterializedView,
+  RenameMaterializedViewColumn,
+  RefreshMaterializedView,
+} from './viewsMaterializedTypes'
 
-export interface CreateMaterializedViewOptions {
-  ifNotExists?: boolean
-  columns?: string | string[]
-  tablespace?: string
-  storageParameters?: { [key: string]: any }
-  data?: boolean
-}
-
-export interface AlterMaterializedViewOptions {
-  cluster?: null | false | string
-  extension?: string
-  storageParameters?: { [key: string]: any }
-}
-
-export interface RefreshMaterializedViewOptions {
-  concurrently?: boolean
-  data?: boolean
+export {
+  CreateMaterializedView,
+  DropMaterializedView,
+  AlterMaterializedView,
+  RenameMaterializedView,
+  RenameMaterializedViewColumn,
+  RefreshMaterializedView,
 }
 
 const dataClause = (data?: boolean) => (data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '')
-const storageParameterStr = <T extends { [key: string]: any }, K extends keyof T>(storageParameters: T) => (key: K) => {
+const storageParameterStr = <T extends StorageParameters, K extends keyof T>(storageParameters: T) => (key: K) => {
   const value = storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`
   return `${key}${value}`
 }
 
 export function dropMaterializedView(mOptions: MigrationOptions) {
-  const _drop = (viewName: Name, { ifExists, cascade }: DropOptions = {}) => {
+  const _drop: DropMaterializedView = (viewName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const viewNameStr = mOptions.literal(viewName)
@@ -38,7 +36,7 @@ export function dropMaterializedView(mOptions: MigrationOptions) {
 }
 
 export function createMaterializedView(mOptions: MigrationOptions) {
-  const _create = (viewName: Name, options: CreateMaterializedViewOptions, definition: string) => {
+  const _create: CreateMaterializedView = (viewName, options, definition) => {
     const { ifNotExists, columns = [], tablespace, storageParameters = {}, data } = options
     // prettier-ignore
     const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(", ");
@@ -60,8 +58,8 @@ export function createMaterializedView(mOptions: MigrationOptions) {
 }
 
 export function alterMaterializedView(mOptions: MigrationOptions) {
-  const _alter = (viewName: Name, options: AlterMaterializedViewOptions) => {
-    const { cluster, extension, storageParameters = {} }: AlterMaterializedViewOptions = options
+  const _alter: AlterMaterializedView = (viewName, options) => {
+    const { cluster, extension, storageParameters = {} } = options
     const clauses = []
     if (cluster !== undefined) {
       if (cluster) {
@@ -94,29 +92,28 @@ export function alterMaterializedView(mOptions: MigrationOptions) {
 }
 
 export function renameMaterializedView(mOptions: MigrationOptions) {
-  const _rename = (viewName: Name, newViewName: Name) => {
+  const _rename: RenameMaterializedView = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName)
     const newViewNameStr = mOptions.literal(newViewName)
     return `ALTER MATERIALIZED VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`
   }
-  _rename.reverse = (viewName: Name, newViewName: Name) => _rename(newViewName, viewName)
+  _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName)
   return _rename
 }
 
 export function renameMaterializedViewColumn(mOptions: MigrationOptions) {
-  const _rename = (viewName: Name, columnName: string, newColumnName: string) => {
+  const _rename: RenameMaterializedViewColumn = (viewName, columnName, newColumnName) => {
     const viewNameStr = mOptions.literal(viewName)
     const columnNameStr = mOptions.literal(columnName)
     const newColumnNameStr = mOptions.literal(newColumnName)
     return `ALTER MATERIALIZED VIEW ${viewNameStr} RENAME COLUMN ${columnNameStr} TO ${newColumnNameStr};`
   }
-  _rename.reverse = (viewName: Name, columnName: string, newColumnName: string) =>
-    _rename(viewName, newColumnName, columnName)
+  _rename.reverse = (viewName, columnName, newColumnName) => _rename(viewName, newColumnName, columnName)
   return _rename
 }
 
 export function refreshMaterializedView(mOptions: MigrationOptions) {
-  const _refresh = (viewName: Name, { concurrently, data }: RefreshMaterializedViewOptions = {}) => {
+  const _refresh: RefreshMaterializedView = (viewName, { concurrently, data } = {}) => {
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : ''
     const dataStr = dataClause(data)
     const viewNameStr = mOptions.literal(viewName)

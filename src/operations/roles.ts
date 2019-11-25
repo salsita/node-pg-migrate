@@ -1,24 +1,9 @@
 import { isArray } from 'lodash'
-import { IfExistsOption, Name, Value } from '../definitions'
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
+import { CreateRole, DropRole, AlterRole, RenameRole, RoleOptions } from './rolesTypes'
 
-export interface RoleOptions {
-  superuser?: boolean
-  createdb?: boolean
-  createrole?: boolean
-  inherit?: boolean
-  login?: boolean
-  replication?: boolean
-  bypassrls?: boolean
-  limit?: number
-  password?: Value
-  encrypted?: boolean
-  valid?: Value
-  inRole?: string | string[]
-  role?: string | string[]
-  admin?: string | string[]
-}
+export { CreateRole, DropRole, AlterRole, RenameRole }
 
 const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
   const options = []
@@ -71,7 +56,7 @@ const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
 }
 
 export function dropRole(mOptions: MigrationOptions) {
-  const _drop = (roleName: Name, { ifExists }: IfExistsOption = {}) => {
+  const _drop: DropRole = (roleName, { ifExists } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const roleNameStr = mOptions.literal(roleName)
     return `DROP ROLE${ifExistsStr} ${roleNameStr};`
@@ -80,7 +65,7 @@ export function dropRole(mOptions: MigrationOptions) {
 }
 
 export function createRole(mOptions: MigrationOptions) {
-  const _create = (roleName: Name, roleOptions: RoleOptions = {}) => {
+  const _create: CreateRole = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions({
       ...roleOptions,
       superuser: roleOptions.superuser || false,
@@ -98,7 +83,7 @@ export function createRole(mOptions: MigrationOptions) {
 }
 
 export function alterRole(mOptions: MigrationOptions) {
-  const _alter = (roleName: Name, roleOptions: RoleOptions = {}) => {
+  const _alter: AlterRole = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions(roleOptions)
     return options ? `ALTER ROLE ${mOptions.literal(roleName)} WITH ${options};` : ''
   }
@@ -106,11 +91,11 @@ export function alterRole(mOptions: MigrationOptions) {
 }
 
 export function renameRole(mOptions: MigrationOptions) {
-  const _rename = (oldRoleName: Name, newRoleName: Name) => {
+  const _rename: RenameRole = (oldRoleName, newRoleName) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName)
     const newRoleNameStr = mOptions.literal(newRoleName)
     return `ALTER ROLE ${oldRoleNameStr} RENAME TO ${newRoleNameStr};`
   }
-  _rename.reverse = (oldRoleName: Name, newRoleName: Name) => _rename(newRoleName, oldRoleName)
+  _rename.reverse = (oldRoleName, newRoleName) => _rename(newRoleName, oldRoleName)
   return _rename
 }

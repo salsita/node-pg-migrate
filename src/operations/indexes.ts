@@ -1,22 +1,9 @@
 import _ from 'lodash'
-import { DropOptions, Name } from '../definitions'
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions, Literal } from '../types'
+import { Name } from './generalTypes'
+import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from './indexesTypes'
 
-export interface CreateIndexOptions {
-  name?: string
-  unique?: boolean
-  where?: string
-  concurrently?: boolean
-  opclass?: string
-  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
-}
-
-export interface DropIndexOptionsEn {
-  name?: string
-  concurrently?: boolean
-}
-
-export type DropIndexOptions = DropIndexOptionsEn & DropOptions
+export { CreateIndex, DropIndex }
 
 function generateIndexName(table: Name, columns: string | string[], options: CreateIndexOptions | DropIndexOptions) {
   if (options.name) {
@@ -32,7 +19,7 @@ function generateIndexName(table: Name, columns: string | string[], options: Cre
     : `${table}_${cols}${uniq}_index`
 }
 
-function generateColumnString(column: string, literal: (v: Name) => string) {
+function generateColumnString(column: string, literal: Literal) {
   const openingBracketPos = column.indexOf('(')
   const closingBracketPos = column.indexOf(')')
   const isFunction = openingBracketPos >= 0 && closingBracketPos > openingBracketPos
@@ -41,14 +28,14 @@ function generateColumnString(column: string, literal: (v: Name) => string) {
     : literal(column) // single column
 }
 
-function generateColumnsString(columns: string | string[], literal: (v: Name) => string) {
+function generateColumnsString(columns: string | string[], literal: Literal) {
   return _.isArray(columns)
     ? columns.map(column => generateColumnString(column, literal)).join(', ')
     : generateColumnString(columns, literal)
 }
 
 export function dropIndex(mOptions: MigrationOptions) {
-  const _drop = (tableName: Name, columns: string | string[], options: DropIndexOptions = {}) => {
+  const _drop: DropIndex = (tableName, columns, options = {}) => {
     const { concurrently, ifExists, cascade } = options
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : ''
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
@@ -62,7 +49,7 @@ export function dropIndex(mOptions: MigrationOptions) {
 }
 
 export function createIndex(mOptions: MigrationOptions) {
-  const _create = (tableName: Name, columns: string | string[], options: CreateIndexOptions = {}) => {
+  const _create: CreateIndex = (tableName, columns, options = {}) => {
     /*
     columns - the column, columns, or expression to create the index on
 

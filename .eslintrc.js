@@ -31,9 +31,7 @@ module.exports = {
     'no-underscore-dangle': 0,
     'security/detect-object-injection': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
-    'import/no-cycle': 0,
     '@typescript-eslint/no-explicit-any': 0,
-    'import/no-duplicates': 0,
   },
   overrides: [
     {

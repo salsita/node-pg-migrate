@@ -10,11 +10,11 @@ import fs from 'fs'
 import mkdirp from 'mkdirp'
 import path from 'path'
 import { promisify } from 'util'
-import { DB } from './db'
-import { ColumnDefinitions } from './definitions'
-import MigrationBuilder, { MigrationAction, MigrationBuilderActions } from './migration-builder'
-import { MigrationDirection, RunnerOption } from './runner'
+import { DBConnection } from './db'
+import MigrationBuilder from './migration-builder'
+import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOption } from './types'
 import { getMigrationTableSchema } from './utils'
+import { ColumnDefinitions } from './operations/tablesTypes'
 
 const readdir = promisify(fs.readdir) // eslint-disable-line security/detect-non-literal-fs-filename
 const lstat = promisify(fs.lstat) // eslint-disable-line security/detect-non-literal-fs-filename
@@ -71,7 +71,7 @@ export class Migration implements RunMigration {
     return newFile
   }
 
-  public readonly db: DB
+  public readonly db: DBConnection
 
   public readonly path: string
 
@@ -90,7 +90,7 @@ export class Migration implements RunMigration {
   public readonly log: typeof console.log
 
   constructor(
-    db: DB,
+    db: DBConnection,
     migrationPath: string,
     { up, down }: MigrationBuilderActions,
     options: RunnerOption,

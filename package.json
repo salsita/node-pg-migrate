@@ -7,8 +7,8 @@
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
   },
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "db",
     "database",

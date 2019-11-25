@@ -1,11 +1,12 @@
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions } from '../types'
 import { createTransformer } from '../utils'
-import { Name } from '../definitions'
+import { Sql } from './othersTypes'
 
-// eslint-disable-next-line import/prefer-default-export
-export function sql(mOptions: MigrationOptions) {
+export { Sql }
+
+export function sql(mOptions: MigrationOptions): Sql {
   const t = createTransformer(mOptions.literal)
-  return (sqlStr: string, args?: { [key: string]: Name }) => {
+  return (sqlStr, args) => {
     // applies some very basic templating using the utils.p
     let s: string = t(sqlStr, args)
     // add trailing ; if not present

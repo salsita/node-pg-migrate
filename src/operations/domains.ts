@@ -1,28 +1,11 @@
-import { DropOptions, Name, Type, Value } from '../definitions'
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions } from '../types'
 import { applyType, escapeValue } from '../utils'
+import { CreateDomain, DropDomain, AlterDomain, RenameDomain } from './domainsTypes'
 
-export interface DomainOptions {
-  default?: Value
-  notNull?: boolean
-  check?: string
-  constraintName?: string
-}
-
-export interface DomainOptionsCreateEn {
-  collation?: string
-}
-
-export type DomainOptionsCreate = DomainOptionsCreateEn & DomainOptions
-
-export interface DomainOptionsAlterEn {
-  allowNull?: boolean
-}
-
-export type DomainOptionsAlter = DomainOptionsAlterEn & DomainOptions
+export { CreateDomain, DropDomain, AlterDomain, RenameDomain }
 
 export function dropDomain(mOptions: MigrationOptions) {
-  const _drop = (domainName: Name, { ifExists, cascade }: DropOptions = {}) => {
+  const _drop: DropDomain = (domainName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const domainNameStr = mOptions.literal(domainName)
@@ -32,7 +15,7 @@ export function dropDomain(mOptions: MigrationOptions) {
 }
 
 export function createDomain(mOptions: MigrationOptions) {
-  const _create = (domainName: Name, type: Type, options: DomainOptionsCreate = {}) => {
+  const _create: CreateDomain = (domainName, type, options = {}) => {
     const { default: defaultValue, collation, notNull, check, constraintName } = options
     const constraints = []
     if (collation) {
@@ -61,12 +44,12 @@ export function createDomain(mOptions: MigrationOptions) {
 
     return `CREATE DOMAIN ${domainNameStr} AS ${typeStr}${constraintsStr};`
   }
-  _create.reverse = (domainName: Name, type: Type, options: DropOptions) => dropDomain(mOptions)(domainName, options)
+  _create.reverse = (domainName, type, options) => dropDomain(mOptions)(domainName, options)
   return _create
 }
 
 export function alterDomain(mOptions: MigrationOptions) {
-  const _alter = (domainName: Name, options: DomainOptionsAlter) => {
+  const _alter: AlterDomain = (domainName, options) => {
     const { default: defaultValue, notNull, allowNull, check, constraintName } = options
     const actions = []
     if (defaultValue === null) {
@@ -89,11 +72,11 @@ export function alterDomain(mOptions: MigrationOptions) {
 }
 
 export function renameDomain(mOptions: MigrationOptions) {
-  const _rename = (domainName: Name, newDomainName: Name) => {
+  const _rename: RenameDomain = (domainName, newDomainName) => {
     const domainNameStr = mOptions.literal(domainName)
     const newDomainNameStr = mOptions.literal(newDomainName)
     return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`
   }
-  _rename.reverse = (domainName: Name, newDomainName: Name) => _rename(newDomainName, domainName)
+  _rename.reverse = (domainName, newDomainName) => _rename(newDomainName, domainName)
   return _rename
 }
