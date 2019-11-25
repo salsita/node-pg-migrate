@@ -1,6 +1,6 @@
 {
   "name": "node-pg-migrate",
-  "version": "4.0.0-alpha.0",
+  "version": "4.0.0-alpha.1",
   "description": "Postgresql database migration management tool for node.js",
   "author": "Theo Ephraim",
   "contributors": ["Salsita Software <jando@salsitasoft.com>", "Christopher Quadflieg <chrissi92@hotmail.de>"],
