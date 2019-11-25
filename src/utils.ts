@@ -1,32 +1,15 @@
 import decamelize from 'decamelize'
-import { ColumnDefinition, ColumnDefinitions, Name, Type, Value } from './definitions'
-import { MigrationOptions } from './migration-builder'
-import { FunctionParam, FunctionParamType } from './operations/functions'
-import { RunnerOption } from './runner'
-
-// This is used to create unescaped strings
-// exposed in the migrations via pgm.func
-export class PgLiteral {
-  static create(str: string): PgLiteral {
-    return new PgLiteral(str)
-  }
-
-  private readonly _str: string
-
-  constructor(str: string) {
-    this._str = str
-  }
-
-  toString(): string {
-    return this._str
-  }
-}
+import { ColumnDefinitions, ColumnDefinition } from './operations/tablesTypes'
+import { Name, Type, Value } from './operations/generalTypes'
+import { MigrationOptions, Literal, RunnerOption } from './types'
+import { FunctionParam, FunctionParamType } from './operations/functionsTypes'
+import PgLiteral from './operations/PgLiteral'
 
 const identity = <T>(v: T) => v
 const quote = (str: string) => `"${str}"`
 
 export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean) => {
-  const transform: (v: Name) => string = [
+  const transform: Literal = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity,
   ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))))
@@ -39,7 +22,7 @@ export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean
   }
 }
 
-export const createTransformer = (literal: (v: Name) => string) => (s: string, d?: { [key: string]: Name }) =>
+export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name }) =>
   Object.keys(d || {}).reduce(
     (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
     s,

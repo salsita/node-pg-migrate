@@ -1,6 +1,7 @@
 import { expect } from 'chai'
-import { escapeValue, PgLiteral, applyType } from '../src/utils'
-import { ColumnDefinitions } from '../src/definitions'
+import { escapeValue, applyType } from '../src/utils'
+import { ColumnDefinitions } from '../src/operations/tablesTypes'
+import PgLiteral from '../src/operations/PgLiteral'
 
 describe('lib/utils', () => {
   describe('.escapeValue', () => {

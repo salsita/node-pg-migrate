@@ -1,23 +1,15 @@
 import { isArray } from 'lodash'
-import { DropOptions, Name, Value } from '../definitions'
-import { MigrationOptions } from '../migration-builder'
+import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
-import { createFunction, dropFunction, FunctionOptions } from './functions'
+import { createFunction, dropFunction } from './functions'
+import { Name, DropOptions, Value } from './generalTypes'
+import { CreateTrigger, DropTrigger, RenameTrigger, TriggerOptions } from './triggersTypes'
+import { FunctionOptions } from './functionsTypes'
 
-export interface TriggerOptions {
-  when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF'
-  operation: string | string[]
-  constraint?: boolean
-  function?: Name
-  functionParams?: Value[]
-  level?: 'STATEMENT' | 'ROW'
-  condition?: string
-  deferrable?: boolean
-  deferred?: boolean
-}
+export { CreateTrigger, DropTrigger, RenameTrigger }
 
 export function dropTrigger(mOptions: MigrationOptions) {
-  const _drop = (tableName: Name, triggerName: Name, { ifExists, cascade }: DropOptions = {}) => {
+  const _drop: DropTrigger = (tableName, triggerName, { ifExists, cascade } = {}) => {
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const triggerNameStr = mOptions.literal(triggerName)
@@ -28,10 +20,10 @@ export function dropTrigger(mOptions: MigrationOptions) {
 }
 
 export function createTrigger(mOptions: MigrationOptions) {
-  const _create = (
+  const _create: CreateTrigger = (
     tableName: Name,
-    triggerName: Name,
-    triggerOptions: Partial<TriggerOptions & FunctionOptions> = {},
+    triggerName: string,
+    triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
     definition?: Value,
   ) => {
     const { constraint, condition, operation, deferrable, deferred, functionParams = [] } = triggerOptions
@@ -80,8 +72,8 @@ export function createTrigger(mOptions: MigrationOptions) {
 
   _create.reverse = (
     tableName: Name,
-    triggerName: Name,
-    triggerOptions: Partial<TriggerOptions> & DropOptions = {},
+    triggerName: string,
+    triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
     definition?: Value,
   ) => {
     const triggerSQL = dropTrigger(mOptions)(tableName, triggerName, triggerOptions)
@@ -95,13 +87,12 @@ export function createTrigger(mOptions: MigrationOptions) {
 }
 
 export function renameTrigger(mOptions: MigrationOptions) {
-  const _rename = (tableName: Name, oldTriggerName: Name, newTriggerName: Name) => {
+  const _rename: RenameTrigger = (tableName, oldTriggerName, newTriggerName) => {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName)
     const tableNameStr = mOptions.literal(tableName)
     const newTriggerNameStr = mOptions.literal(newTriggerName)
     return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`
   }
-  _rename.reverse = (tableName: Name, oldTriggerName: Name, newTriggerName: Name) =>
-    _rename(tableName, newTriggerName, oldTriggerName)
+  _rename.reverse = (tableName, oldTriggerName, newTriggerName) => _rename(tableName, newTriggerName, oldTriggerName)
   return _rename
 }

@@ -8,25 +8,27 @@ import { Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, 
 
 // see ClientBase in @types/pg
 export interface DB {
-  createConnection(): Promise<void>
-
   query(queryConfig: QueryArrayConfig, values?: any[]): Promise<QueryArrayResult>
   query(queryConfig: QueryConfig): Promise<QueryResult>
   query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>
 
-  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[][]>
-  select(queryConfig: QueryConfig): Promise<any[][]>
-  select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[][]>
+  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
+  select(queryConfig: QueryConfig): Promise<any[]>
+  select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
+}
 
-  column(columnName: 'name', queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
-  column(columnName: 'name', queryConfig: QueryConfig): Promise<any[]>
-  column(columnName: 'name', queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
+export interface DBConnection extends DB {
+  createConnection(): Promise<void>
+
+  column(columnName: string, queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
+  column(columnName: string, queryConfig: QueryConfig): Promise<any[]>
+  column(columnName: string, queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
 
   addBeforeCloseListener: (listener: any) => number
   close(): Promise<void>
 }
 
-const db = (connection: Client | string | ClientConfig, log = console.error): DB => {
+const db = (connection: Client | string | ClientConfig, log = console.error): DBConnection => {
   const isExternalClient = connection instanceof Client
   let clientActive = false
 
@@ -48,7 +50,7 @@ const db = (connection: Client | string | ClientConfig, log = console.error): DB
           }),
     )
 
-  const query: DB['query'] = async (
+  const query: DBConnection['query'] = async (
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[],
   ): Promise<QueryArrayResult | QueryResult> => {
@@ -81,11 +83,14 @@ ${err}
     }
   }
 
-  const select: DB['select'] = async (queryTextOrConfig: string | QueryConfig | QueryArrayConfig, values?: any[]) => {
+  const select: DBConnection['select'] = async (
+    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    values?: any[],
+  ) => {
     const { rows } = await query(queryTextOrConfig, values)
     return rows
   }
-  const column: DB['column'] = async (
+  const column: DBConnection['column'] = async (
     columnName: string,
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[],

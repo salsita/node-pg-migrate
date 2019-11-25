@@ -1,13 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
-import { Client } from 'pg'
-import { TlsOptions } from 'tls'
-import Db, { DB } from './db'
-import { ColumnDefinitions } from './definitions'
+import Db, { DBConnection } from './db'
+import { ColumnDefinitions } from './operations/tablesTypes'
 import { Migration, loadMigrationFiles, RunMigration } from './migration'
-import { MigrationBuilderActions } from './migration-builder'
-import { createSchemalize, getMigrationTableSchema, getSchemas, PgLiteral } from './utils'
+import { MigrationBuilderActions, MigrationDirection, RunnerOptionClient, RunnerOptionUrl, RunnerOption } from './types'
+import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964
@@ -18,7 +16,7 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
-const loadMigrations = async (db: DB, options: RunnerOption, log: typeof console.log) => {
+const loadMigrations = async (db: DBConnection, options: RunnerOption, log: typeof console.log) => {
   try {
     let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir, options.ignorePattern)
@@ -47,14 +45,14 @@ const loadMigrations = async (db: DB, options: RunnerOption, log: typeof console
   }
 }
 
-const lock = async (db: DB): Promise<void> => {
+const lock = async (db: DBConnection): Promise<void> => {
   const [lockObtained] = await db.select(`select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`)
   if (!lockObtained) {
     throw new Error('Another migration is already running')
   }
 }
 
-const ensureMigrationsTable = async (db: DB, options: RunnerOption): Promise<void> => {
+const ensureMigrationsTable = async (db: DBConnection, options: RunnerOption): Promise<void> => {
   try {
     const schema = getMigrationTableSchema(options)
     const { migrationsTable } = options
@@ -87,7 +85,7 @@ const ensureMigrationsTable = async (db: DB, options: RunnerOption): Promise<voi
   }
 }
 
-const getRunMigrations = async (db: DB, options: RunnerOption) => {
+const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options)
   const { migrationsTable } = options
   const fullTableName = createSchemalize(
@@ -135,56 +133,10 @@ const checkOrder = (runNames: string[], migrations: Migration[]) => {
   }
 }
 
-export type MigrationDirection = 'up' | 'down'
-
 const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direction: MigrationDirection) =>
   toRun.reduce((promise, migration) => promise.then(() => migration[method](direction)), Promise.resolve())
 
-export interface RunnerOptionConfig {
-  migrationsTable: string
-  migrationsSchema?: string
-  schema?: string | string[]
-  dir: string
-  checkOrder?: boolean
-  direction: MigrationDirection
-  count: number
-  timestamp?: boolean
-  ignorePattern: string
-  file?: string
-  dryRun?: boolean
-  createSchema?: boolean
-  createMigrationsSchema?: boolean
-  singleTransaction?: boolean
-  noLock?: boolean
-  fake?: boolean
-  decamelize?: boolean
-  log?: (msg: string) => void
-}
-
-export interface ConnectionConfig {
-  user?: string
-  database?: string
-  password?: string
-  port?: number
-  host?: string
-  connectionString?: string
-}
-
-export interface ClientConfig extends ConnectionConfig {
-  ssl?: boolean | TlsOptions
-}
-
-export interface RunnerOptionUrl {
-  databaseUrl: string | ClientConfig
-}
-
-export interface RunnerOptionClient {
-  dbClient: Client
-}
-
-export type RunnerOption = RunnerOptionConfig & (RunnerOptionClient | RunnerOptionUrl)
-
-const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
+export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const log = options.log || console.log
   const db = Db((options as RunnerOptionClient).dbClient || (options as RunnerOptionUrl).databaseUrl, log)
   try {
@@ -250,6 +202,3 @@ const runner = async (options: RunnerOption): Promise<RunMigration[]> => {
     db.close()
   }
 }
-
-export { PgLiteral, Migration }
-export default runner

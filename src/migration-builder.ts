@@ -10,34 +10,9 @@
  */
 
 import { DB } from './db'
-import {
-  AddOptions,
-  ColumnDefinitions,
-  DropOptions,
-  IfExistsOption,
-  LiteralUnion,
-  Name,
-  Type,
-  Value,
-} from './definitions'
-import { DomainOptionsAlter, DomainOptionsCreate } from './operations/domains'
-import { CreateExtensionOptions, Extension } from './operations/extensions'
-import { FunctionOptions, FunctionParam } from './operations/functions'
-import { CreateIndexOptions, DropIndexOptions } from './operations/indexes'
-import {
-  CreateOperatorClassOptions,
-  CreateOperatorOptions,
-  DropOperatorOptions,
-  OperatorListDefinition,
-} from './operations/operators'
-import { CreatePolicyOptions, PolicyOptions } from './operations/policies'
-import { RoleOptions } from './operations/roles'
-import { CreateSchemaOptions } from './operations/schemas'
-import { SequenceOptionsAlter, SequenceOptionsCreate } from './operations/sequences'
-import { AlterColumnOptions, AlterTableOptions, ConstraintOptions, TableOptions } from './operations/tables'
-import { TriggerOptions } from './operations/triggers'
-import { AlterViewColumnOptions, AlterViewOptions, CreateViewOptions } from './operations/views'
-import { createSchemalize, PgLiteral } from './utils'
+import { createSchemalize } from './utils'
+import { ColumnDefinitions } from './operations/tablesTypes'
+import { MigrationBuilder, MigrationOptions } from './types'
 
 import * as domains from './operations/domains'
 import * as extensions from './operations/extensions'
@@ -54,255 +29,167 @@ import * as triggers from './operations/triggers'
 import * as types from './operations/types'
 import * as views from './operations/views'
 import * as mViews from './operations/viewsMaterialized'
-
-export type MigrationAction = (pgm: MigrationBuilder, run?: () => void) => Promise<void> | void
-
-export interface MigrationBuilderActions {
-  up?: MigrationAction
-  down?: MigrationAction
-  shorthands?: ColumnDefinitions
-}
-
-export interface MigrationOptions {
-  typeShorthands: ColumnDefinitions
-  schemalize: (v: Name) => string
-  literal: (v: Name) => string
-}
+import PgLiteral from './operations/PgLiteral'
 
 /* eslint-disable security/detect-non-literal-fs-filename */
-export default class MigrationBuilder {
-  public readonly createExtension: (
-    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
-    options?: CreateExtensionOptions,
-  ) => void
+export default class MigrationBuilderImpl implements MigrationBuilder {
+  public readonly createExtension: (...args: Parameters<extensions.CreateExtension>) => void
 
-  public readonly dropExtension: (
-    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
-    dropOptions?: DropOptions,
-  ) => void
+  public readonly dropExtension: (...args: Parameters<extensions.DropExtension>) => void
 
-  public readonly addExtension: (
-    extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
-    options?: CreateExtensionOptions,
-  ) => void
+  public readonly addExtension: (...args: Parameters<extensions.CreateExtension>) => void
 
-  public readonly createTable: (tableName: Name, columns: ColumnDefinitions, options?: TableOptions) => void
+  public readonly createTable: (...args: Parameters<tables.CreateTable>) => void
 
-  public readonly dropTable: (tableName: Name, dropOptions?: DropOptions) => void
+  public readonly dropTable: (...args: Parameters<tables.DropTable>) => void
 
-  public readonly renameTable: (tableName: Name, newtableName: Name) => void
+  public readonly renameTable: (...args: Parameters<tables.RenameTable>) => void
 
-  public readonly alterTable: (tableName: Name, alterOptions: AlterTableOptions) => void
+  public readonly alterTable: (...args: Parameters<tables.AlterTable>) => void
 
-  public readonly addColumns: (tableName: Name, newColumns: ColumnDefinitions, addOptions?: AddOptions) => void
+  public readonly addColumns: (...args: Parameters<tables.AddColumns>) => void
 
-  public readonly dropColumns: (
-    tableName: Name,
-    columns: string | string[] | { [name: string]: any },
-    dropOptions?: DropOptions,
-  ) => void
+  public readonly dropColumns: (...args: Parameters<tables.DropColumns>) => void
 
-  public readonly renameColumn: (tableName: Name, oldColumnName: string, newColumnName: string) => void
+  public readonly renameColumn: (...args: Parameters<tables.RenameColumn>) => void
 
-  public readonly alterColumn: (tableName: Name, columnName: string, options: AlterColumnOptions) => void
+  public readonly alterColumn: (...args: Parameters<tables.AlterColumn>) => void
 
-  public readonly addColumn: (tableName: Name, newColumns: ColumnDefinitions, addOptions?: AddOptions) => void
+  public readonly addColumn: (...args: Parameters<tables.AddColumns>) => void
 
-  public readonly dropColumn: (
-    tableName: Name,
-    columns: string | string[] | { [name: string]: any },
-    dropOptions?: DropOptions,
-  ) => void
+  public readonly dropColumn: (...args: Parameters<tables.DropColumns>) => void
 
-  public readonly addConstraint: (
-    tableName: Name,
-    constraintName: string | null,
-    expression: string | ConstraintOptions,
-  ) => void
+  public readonly addConstraint: (...args: Parameters<tables.CreateConstraint>) => void
 
-  public readonly dropConstraint: (tableName: Name, constraintName: string, options?: DropOptions) => void
+  public readonly dropConstraint: (...args: Parameters<tables.DropConstraint>) => void
 
-  public readonly renameConstraint: (tableName: Name, oldConstraintName: string, newConstraintName: string) => void
+  public readonly renameConstraint: (...args: Parameters<tables.RenameConstraint>) => void
 
-  public readonly createConstraint: (
-    tableName: Name,
-    constraintName: string | null,
-    expression: string | ConstraintOptions,
-  ) => void
+  public readonly createConstraint: (...args: Parameters<tables.CreateConstraint>) => void
 
-  public readonly createType: (typeName: Name, values: Value[] | { [name: string]: Type }) => void
+  public readonly createType: (...args: Parameters<types.CreateType>) => void
 
-  public readonly dropType: (typeName: Name, dropOptions?: DropOptions) => void
+  public readonly dropType: (...args: Parameters<types.DropType>) => void
 
-  public readonly addType: (typeName: Name, values: Value[] | { [name: string]: Type }) => void
+  public readonly addType: (...args: Parameters<types.CreateType>) => void
 
-  public readonly renameType: (typeName: Name, newTypeName: Name) => void
+  public readonly renameType: (...args: Parameters<types.RenameType>) => void
 
-  public readonly renameTypeAttribute: (typeName: Name, attributeName: string, newAttributeName: string) => void
+  public readonly renameTypeAttribute: (...args: Parameters<types.RenameTypeAttribute>) => void
 
-  public readonly renameTypeValue: (typeName: Name, value: string, newValue: string) => void
+  public readonly renameTypeValue: (...args: Parameters<types.RenameTypeValue>) => void
 
-  public readonly addTypeAttribute: (typeName: Name, attributeName: string, attributeType: Type) => void
+  public readonly addTypeAttribute: (...args: Parameters<types.AddTypeAttribute>) => void
 
-  public readonly dropTypeAttribute: (typeName: Name, attributeName: string, options: IfExistsOption) => void
+  public readonly dropTypeAttribute: (...args: Parameters<types.DropTypeAttribute>) => void
 
-  public readonly setTypeAttribute: (typeName: Name, attributeName: string, attributeType: Type) => void
+  public readonly setTypeAttribute: (...args: Parameters<types.SetTypeAttribute>) => void
 
-  public readonly addTypeValue: (
-    typeName: Name,
-    value: Value,
-    options?: {
-      ifNotExists?: boolean
-      before?: string
-      after?: string
-    },
-  ) => void
+  public readonly addTypeValue: (...args: Parameters<types.AddTypeValue>) => void
 
-  public readonly createIndex: (tableName: Name, columns: string | string[], options?: CreateIndexOptions) => void
+  public readonly createIndex: (...args: Parameters<indexes.CreateIndex>) => void
 
-  public readonly dropIndex: (tableName: Name, columns: string | string[], options?: DropIndexOptions) => void
+  public readonly dropIndex: (...args: Parameters<indexes.DropIndex>) => void
 
-  public readonly addIndex: (tableName: Name, columns: string | string[], options?: CreateIndexOptions) => void
+  public readonly addIndex: (...args: Parameters<indexes.CreateIndex>) => void
 
-  public readonly createRole: (roleName: Name, roleOptions?: RoleOptions) => void
+  public readonly createRole: (...args: Parameters<roles.CreateRole>) => void
 
-  public readonly dropRole: (roleName: Name, options?: IfExistsOption) => void
+  public readonly dropRole: (...args: Parameters<roles.DropRole>) => void
 
-  public readonly alterRole: (roleName: Name, roleOptions: RoleOptions) => void
+  public readonly alterRole: (...args: Parameters<roles.AlterRole>) => void
 
-  public readonly renameRole: (oldRoleName: Name, newRoleName: Name) => void
+  public readonly renameRole: (...args: Parameters<roles.RenameRole>) => void
 
-  public readonly createFunction: (
-    functionName: Name,
-    functionParams: FunctionParam[],
-    functionOptions: FunctionOptions,
-    definition: Value,
-  ) => void
+  public readonly createFunction: (...args: Parameters<functions.CreateFunction>) => void
 
-  public readonly dropFunction: (functionName: Name, functionParams: FunctionParam[], dropOptions?: DropOptions) => void
+  public readonly dropFunction: (...args: Parameters<functions.DropFunction>) => void
 
-  public readonly renameFunction: (
-    oldFunctionName: Name,
-    functionParams: FunctionParam[],
-    newFunctionName: Name,
-  ) => void
+  public readonly renameFunction: (...args: Parameters<functions.RenameFunction>) => void
 
-  public readonly createTrigger:
-    | ((tableName: Name, triggerName: Name, triggerOptions: TriggerOptions) => void)
-    | ((
-        tableName: Name,
-        triggerName: Name,
-        triggerOptions: TriggerOptions & FunctionOptions,
-        definition: Value,
-      ) => void)
+  public readonly createTrigger: (...args: Parameters<triggers.CreateTrigger>) => void
 
-  public readonly dropTrigger: (tableName: Name, triggerName: Name, dropOptions?: DropOptions) => void
+  public readonly dropTrigger: (...args: Parameters<triggers.DropTrigger>) => void
 
-  public readonly renameTrigger: (tableName: Name, oldTriggerName: Name, newTriggerName: Name) => void
+  public readonly renameTrigger: (...args: Parameters<triggers.RenameTrigger>) => void
 
-  public readonly createSchema: (schemaName: string, schemaOptions?: CreateSchemaOptions) => void
+  public readonly createSchema: (...args: Parameters<schemas.CreateSchema>) => void
 
-  public readonly dropSchema: (schemaName: string, dropOptions?: DropOptions) => void
+  public readonly dropSchema: (...args: Parameters<schemas.DropSchema>) => void
 
-  public readonly renameSchema: (oldSchemaName: string, newSchemaName: string) => void
+  public readonly renameSchema: (...args: Parameters<schemas.RenameSchema>) => void
 
-  public readonly createDomain: (domainName: Name, type: Type, domainOptions?: DomainOptionsCreate) => void
+  public readonly createDomain: (...args: Parameters<domains.CreateDomain>) => void
 
-  public readonly dropDomain: (domainName: Name, dropOptions?: DropOptions) => void
+  public readonly dropDomain: (...args: Parameters<domains.DropDomain>) => void
 
-  public readonly alterDomain: (domainName: Name, domainOptions: DomainOptionsAlter) => void
+  public readonly alterDomain: (...args: Parameters<domains.AlterDomain>) => void
 
-  public readonly renameDomain: (oldDomainName: Name, newDomainName: Name) => void
+  public readonly renameDomain: (...args: Parameters<domains.RenameDomain>) => void
 
-  public readonly createSequence: (sequenceName: Name, sequenceOptions?: SequenceOptionsCreate) => void
+  public readonly createSequence: (...args: Parameters<sequences.CreateSequence>) => void
 
-  public readonly dropSequence: (sequenceName: Name, dropOptions?: DropOptions) => void
+  public readonly dropSequence: (...args: Parameters<sequences.DropSequence>) => void
 
-  public readonly alterSequence: (sequenceName: Name, sequenceOptions: SequenceOptionsAlter) => void
+  public readonly alterSequence: (...args: Parameters<sequences.AlterSequence>) => void
 
-  public readonly renameSequence: (oldSequenceName: Name, newSequenceName: Name) => void
+  public readonly renameSequence: (...args: Parameters<sequences.RenameSequence>) => void
 
-  public readonly createOperator: (operatorName: Name, options?: CreateOperatorOptions) => void
+  public readonly createOperator: (...args: Parameters<operators.CreateOperator>) => void
 
-  public readonly dropOperator: (operatorName: Name, dropOptions?: DropOperatorOptions) => void
+  public readonly dropOperator: (...args: Parameters<operators.DropOperator>) => void
 
-  public readonly createOperatorClass: (
-    operatorClassName: Name,
-    type: Type,
-    indexMethod: string,
-    operatorList: OperatorListDefinition[],
-    options: CreateOperatorClassOptions,
-  ) => void
+  public readonly createOperatorClass: (...args: Parameters<operators.CreateOperatorClass>) => void
 
-  public readonly dropOperatorClass: (operatorClassName: Name, indexMethod: string, dropOptions?: DropOptions) => void
+  public readonly dropOperatorClass: (...args: Parameters<operators.DropOperatorClass>) => void
 
-  public readonly renameOperatorClass: (
-    oldOperatorClassName: Name,
-    indexMethod: string,
-    newOperatorClassName: Name,
-  ) => void
+  public readonly renameOperatorClass: (...args: Parameters<operators.RenameOperatorClass>) => void
 
-  public readonly createOperatorFamily: (operatorFamilyName: Name, indexMethod: string) => void
+  public readonly createOperatorFamily: (...args: Parameters<operators.CreateOperatorFamily>) => void
 
-  public readonly dropOperatorFamily: (operatorFamilyName: Name, newSchemaName: Name, dropOptions?: DropOptions) => void
+  public readonly dropOperatorFamily: (...args: Parameters<operators.DropOperatorFamily>) => void
 
-  public readonly renameOperatorFamily: (
-    oldOperatorFamilyName: Name,
-    indexMethod: string,
-    newOperatorFamilyName: Name,
-  ) => void
+  public readonly renameOperatorFamily: (...args: Parameters<operators.RenameOperatorFamily>) => void
 
-  public readonly addToOperatorFamily: (
-    operatorFamilyName: Name,
-    indexMethod: string,
-    operatorList: OperatorListDefinition[],
-  ) => void
+  public readonly addToOperatorFamily: (...args: Parameters<operators.AddToOperatorFamily>) => void
 
-  public readonly removeFromOperatorFamily: (
-    operatorFamilyName: Name,
-    indexMethod: string,
-    operatorList: OperatorListDefinition[],
-  ) => void
+  public readonly removeFromOperatorFamily: (...args: Parameters<operators.RemoveFromOperatorFamily>) => void
 
-  public readonly createPolicy: (tableName: Name, policyName: string, options?: CreatePolicyOptions) => void
+  public readonly createPolicy: (...args: Parameters<policies.CreatePolicy>) => void
 
-  public readonly dropPolicy: (tableName: Name, policyName: string, options?: IfExistsOption) => void
+  public readonly dropPolicy: (...args: Parameters<policies.DropPolicy>) => void
 
-  public readonly alterPolicy: (tableName: Name, policyName: string, options: PolicyOptions) => void
+  public readonly alterPolicy: (...args: Parameters<policies.AlterPolicy>) => void
 
-  public readonly renamePolicy: (tableName: Name, policyName: string, newPolicyName: string) => void
+  public readonly renamePolicy: (...args: Parameters<policies.RenamePolicy>) => void
 
-  public readonly createView: (viewName: Name, options: CreateViewOptions, definition: string) => void
+  public readonly createView: (...args: Parameters<views.CreateView>) => void
 
-  public readonly dropView: (viewName: Name, options?: DropOptions) => void
+  public readonly dropView: (...args: Parameters<views.DropView>) => void
 
-  public readonly alterView: (viewName: Name, options: AlterViewOptions) => void
+  public readonly alterView: (...args: Parameters<views.AlterView>) => void
 
-  public readonly alterViewColumn: (viewName: Name, columnName: string, options: AlterViewColumnOptions) => void
+  public readonly alterViewColumn: (...args: Parameters<views.AlterViewColumn>) => void
 
-  public readonly renameView: (viewName: Name, newViewName: Name) => void
+  public readonly renameView: (...args: Parameters<views.RenameView>) => void
 
-  public readonly createMaterializedView: (
-    viewName: Name,
-    options: mViews.CreateMaterializedViewOptions,
-    definition: string,
-  ) => void
+  public readonly createMaterializedView: (...args: Parameters<mViews.CreateMaterializedView>) => void
 
-  public readonly dropMaterializedView: (viewName: Name, options?: DropOptions) => void
+  public readonly dropMaterializedView: (...args: Parameters<mViews.DropMaterializedView>) => void
 
-  public readonly alterMaterializedView: (viewName: Name, options: mViews.AlterMaterializedViewOptions) => void
+  public readonly alterMaterializedView: (...args: Parameters<mViews.AlterMaterializedView>) => void
 
-  public readonly renameMaterializedView: (viewName: Name, newViewName: Name) => void
+  public readonly renameMaterializedView: (...args: Parameters<mViews.RenameMaterializedView>) => void
 
-  public readonly renameMaterializedViewColumn: (viewName: Name, columnName: string, newColumnName: string) => void
+  public readonly renameMaterializedViewColumn: (...args: Parameters<mViews.RenameMaterializedViewColumn>) => void
 
-  public readonly refreshMaterializedView: (viewName: Name, options?: mViews.RefreshMaterializedViewOptions) => void
+  public readonly refreshMaterializedView: (...args: Parameters<mViews.RefreshMaterializedView>) => void
 
-  public readonly sql: (sql: string, args?: object) => void
+  public readonly sql: (...args: Parameters<other.Sql>) => void
 
   public readonly func: (sql: string) => PgLiteral
 
-  public readonly db: Partial<DB>
+  public readonly db: DB
 
   private _steps: string[]
 
@@ -316,10 +203,8 @@ export default class MigrationBuilder {
     // by default, all migrations are wrapped in a transaction
     this._useTransaction = true
 
-    interface Operation {
-      (...args: any[]): string | string[]
-      reverse?: (...args: any[]) => string | string[]
-    }
+    type OperationFn = (...args: any[]) => string | string[]
+    type Operation = OperationFn & { reverse?: OperationFn }
 
     // this function wraps each operation within a function that either
     // calls the operation or its reverse, and appends the result (array of sql statements)
@@ -457,7 +342,7 @@ export default class MigrationBuilder {
     return this
   }
 
-  public noTransaction(): this {
+  noTransaction(): this {
     this._useTransaction = false
     return this
   }
