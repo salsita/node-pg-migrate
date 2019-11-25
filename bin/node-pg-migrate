@@ -7,9 +7,7 @@ const util = require('util')
 const path = require('path')
 const yargs = require('yargs')
 const ConnectionParameters = require('pg/lib/connection-parameters')
-const migrationRunner = require('../dist')
-
-const { Migration } = migrationRunner
+const { default: migrationRunner, Migration } = require('../dist')
 
 process.on('uncaughtException', err => {
   console.log(err.stack)
