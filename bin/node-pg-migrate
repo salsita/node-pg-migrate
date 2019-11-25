@@ -10,7 +10,7 @@ const ConnectionParameters = require('pg/lib/connection-parameters')
 const { default: migrationRunner, Migration } = require('../dist')
 
 process.on('uncaughtException', err => {
-  console.log(err.stack)
+  console.error(err.stack)
   process.exit(1)
 })
 
@@ -40,6 +40,7 @@ const timestampArg = 'timestamp'
 const dryRunArg = 'dry-run'
 const fakeArg = 'fake'
 const decamelizeArg = 'decamelize'
+const tsconfigArg = 'tsconfig'
 
 const { argv } = yargs
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -170,6 +171,12 @@ const { argv } = yargs
     type: 'boolean',
   })
 
+  .option(tsconfigArg, {
+    default: undefined,
+    describe: 'path to tsconfig.json file',
+    type: 'string',
+  })
+
   .help()
 
 if (argv.version) {
@@ -193,6 +200,32 @@ let MIGRATIONS_TABLE = argv[migrationsTableArg]
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
 let CHECK_ORDER = argv[checkOrderArg]
 let DECAMELIZE = argv[decamelizeArg]
+
+const tsconfigPath = argv[tsconfigArg]
+if (tsconfigPath) {
+  let tsconfig
+  let tsnode
+  try {
+    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
+    tsconfig = require(path.resolve(process.cwd(), tsconfigPath))
+  } catch (err) {
+    console.error(`Can't load tsconfig.json: ${err.stack}`)
+  }
+  try {
+    // eslint-disable-next-line global-require,import/no-extraneous-dependencies
+    tsnode = require('ts-node')
+  } catch (err) {
+    console.error(`Can't load ts-node: ${err.stack}`)
+  }
+  if (tsconfig && tsnode) {
+    tsnode.register(tsconfig)
+    if (!MIGRATIONS_FILE_LANGUAGE) {
+      MIGRATIONS_FILE_LANGUAGE = 'ts'
+    }
+  } else {
+    process.exit(1)
+  }
+}
 
 function readJson(json) {
   if (typeof json === 'object') {
@@ -254,7 +287,7 @@ if (action === 'create') {
   newMigrationName = newMigrationName.replace(/[_ ]+/g, '-')
 
   if (!newMigrationName) {
-    console.log("'migrationName' is required.")
+    console.error("'migrationName' is required.")
     yargs.showHelp()
     process.exit(1)
   }
@@ -265,7 +298,7 @@ if (action === 'create') {
       process.exit(0)
     })
     .catch(err => {
-      console.log(err.stack)
+      console.error(err.stack)
       process.exit(1)
     })
 } else if (action === 'up' || action === 'down' || action === 'redo') {
@@ -339,11 +372,11 @@ if (action === 'create') {
       process.exit(0)
     })
     .catch(err => {
-      console.log(err.stack)
+      console.error(err.stack)
       process.exit(1)
     })
 } else {
-  console.log('Invalid Action: Must be [up|down|create|redo].')
+  console.error('Invalid Action: Must be [up|down|create|redo].')
   yargs.showHelp()
   process.exit(1)
 }

@@ -1,6 +1,8 @@
-# Transpiling Babel or Typescript
+# Transpiling
 
-You can use babel or typescript for transpiling migration files. You have e.g. these options:
+## Transpiling Babel
+
+You can use babel for transpiling migration files. You have e.g. these options:
 
 ### Use global configuration
 
@@ -14,17 +16,31 @@ It requires a little setup to use:
 1.  Create `migrate.js` file with contents:
 
     ```
-    // require('babel-core/register')( { ... your babel config ... } );
-    // require('ts-node').register( { ... your typescript config ... } );
+    require('babel-core/register')( { ... your babel config ... } );
     require('./node_modules/node-pg-migrate/bin/node-pg-migrate');
     ```
 
-    Uncomment/Use either babel or typescript hook and adjust your config for compiler.
-    You can then use migration as usual via e.g. `npm run migrate up`. :tada:
+## Transpiling Typescript
+
+### Use flag
+
+Typescript is supported out of the box. You need to have installed `ts-node` package and need to pass `tsconfig` arg ([see](https://github.com/salsita/node-pg-migrate/blob/master/docs/cli.md#configuration))
+
+### Use global configuration
 
 Another option is to use [ts-node](https://www.npmjs.com/package/ts-node) CLI directly and it needs to be available globally or as a dependency.
-If migrations are in the `/src/migrations` folder then the path can still be referenced with the `-m` CLI option.
 
 ```
-"migrate": "ts-node node_modules/.bin/node-pg-migrate -m src/migrations -j ts",
+"migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts",
+```
+
+### Use custom configuration
+
+If you need some more advanced TS config, you need to register transpiler yourself like in using babel configuration.
+
+```
+const config = { ... your ts config ... }
+require('ts-node').register(config);
+// e.g. require("tsconfig-paths").register(config.compilerOptions);
+require('./node_modules/node-pg-migrate/bin/node-pg-migrate');
 ```
