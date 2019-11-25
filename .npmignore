@@ -4,4 +4,5 @@ migrations/
 test/
 src/
 mocha*
+tsconfig*
 renovate.json
