@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { MigrationBuilder } from 'node-pg-migrate';
+import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
 
-export const shorthands = undefined;
+export const shorthands: ColumnDefinitions = undefined;
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
 }

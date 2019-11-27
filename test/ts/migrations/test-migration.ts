@@ -1,6 +1,6 @@
-import { MigrationBuilder } from '../../../dist'
+import { MigrationBuilder, ColumnDefinitions } from '../../../dist'
 
-export const shorthands = undefined;
+export const shorthands: ColumnDefinitions = undefined
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
   pgm.createTable('t1', {
