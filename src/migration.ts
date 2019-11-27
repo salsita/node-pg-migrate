@@ -23,12 +23,14 @@ const SEPARATOR = '_'
 
 export const loadMigrationFiles = async (dir: string, ignorePattern?: string) => {
   const dirContent = await readdir(`${dir}/`)
-  const files = (await Promise.all(
-    dirContent.map(async file => {
-      const stats = await lstat(`${dir}/${file}`)
-      return stats.isFile() ? file : null
-    }),
-  )).sort()
+  const files = (
+    await Promise.all(
+      dirContent.map(async file => {
+        const stats = await lstat(`${dir}/${file}`)
+        return stats.isFile() ? file : null
+      }),
+    )
+  ).sort()
   const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
   return ignorePattern === undefined ? files : files.filter(i => i && !filter.test(i))
 }
