@@ -26,7 +26,8 @@ export {
 }
 
 export function dropType(mOptions: MigrationOptions) {
-  const _drop: DropType = (typeName, { ifExists, cascade } = {}) => {
+  const _drop: DropType = (typeName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const typeNameStr = mOptions.literal(typeName)

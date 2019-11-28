@@ -113,7 +113,7 @@ export interface MigrationBuilderActions {
 }
 
 export interface MigrationOptions {
-  typeShorthands: tables.ColumnDefinitions
+  typeShorthands?: tables.ColumnDefinitions
   schemalize: Literal
   literal: Literal
 }

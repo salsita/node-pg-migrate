@@ -6,13 +6,13 @@ export type Action = 'NO ACTION' | 'RESTRICT' | 'CASCADE' | 'SET NULL' | 'SET DE
 export interface ReferencesOptions {
   referencesConstraintName?: string
   referencesConstraintComment?: string
-  references?: Name
+  references: Name
   onDelete?: Action
   onUpdate?: Action
   match?: 'FULL' | 'SIMPLE'
 }
 
-export interface ColumnDefinition extends ReferencesOptions {
+export interface ColumnDefinition extends Partial<ReferencesOptions> {
   type: string
   collation?: string
   unique?: boolean

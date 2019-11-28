@@ -5,7 +5,8 @@ import { CreateDomain, DropDomain, AlterDomain, RenameDomain } from './domainsTy
 export { CreateDomain, DropDomain, AlterDomain, RenameDomain }
 
 export function dropDomain(mOptions: MigrationOptions) {
-  const _drop: DropDomain = (domainName, { ifExists, cascade } = {}) => {
+  const _drop: DropDomain = (domainName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const domainNameStr = mOptions.literal(domainName)

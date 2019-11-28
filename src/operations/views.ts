@@ -5,7 +5,8 @@ import { CreateView, DropView, AlterView, AlterViewColumn, RenameView } from './
 export { CreateView, DropView, AlterView, AlterViewColumn, RenameView }
 
 export function dropView(mOptions: MigrationOptions) {
-  const _drop: DropView = (viewName, { ifExists, cascade } = {}) => {
+  const _drop: DropView = (viewName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const viewNameStr = mOptions.literal(viewName)

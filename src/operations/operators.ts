@@ -45,7 +45,7 @@ export function dropOperator(mOptions: MigrationOptions) {
 
 export function createOperator(mOptions: MigrationOptions) {
   const _create: CreateOperator = (operatorName, options) => {
-    const { procedure, left, right, commutator, negator, restrict, join, hashes, merges } = options
+    const { procedure, left, right, commutator, negator, restrict, join, hashes, merges } = options || {}
 
     const defs = []
     defs.push(`PROCEDURE = ${mOptions.literal(procedure)}`)
@@ -81,7 +81,8 @@ export function createOperator(mOptions: MigrationOptions) {
 }
 
 export function dropOperatorFamily(mOptions: MigrationOptions) {
-  const _drop: DropOperatorFamily = (operatorFamilyName, indexMethod, { ifExists, cascade } = {}) => {
+  const _drop: DropOperatorFamily = (operatorFamilyName, indexMethod, options = {}) => {
+    const { ifExists, cascade } = options
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName)
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
@@ -153,7 +154,8 @@ export function renameOperatorFamily(mOptions: MigrationOptions) {
 }
 
 export function dropOperatorClass(mOptions: MigrationOptions) {
-  const _drop: DropOperatorClass = (operatorClassName, indexMethod, { ifExists, cascade } = {}) => {
+  const _drop: DropOperatorClass = (operatorClassName, indexMethod, options = {}) => {
+    const { ifExists, cascade } = options
     const operatorClassNameStr = mOptions.literal(operatorClassName)
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''

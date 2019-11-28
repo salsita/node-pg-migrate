@@ -30,7 +30,7 @@ export interface OperatorListDefinition {
   params?: FunctionParam[]
 }
 
-type CreateOperatorFn = (operatorName: Name, options?: CreateOperatorOptions & DropOperatorOptions) => string | string[]
+type CreateOperatorFn = (operatorName: Name, options: CreateOperatorOptions & DropOperatorOptions) => string | string[]
 export type CreateOperator = CreateOperatorFn & { reverse: CreateOperatorFn }
 export type DropOperator = (operatorName: Name, dropOptions?: DropOperatorOptions) => string | string[]
 type CreateOperatorClassFn = (

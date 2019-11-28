@@ -19,7 +19,8 @@ const makeClauses = ({ role, using, check }: PolicyOptions) => {
 }
 
 export function dropPolicy(mOptions: MigrationOptions) {
-  const _drop: DropPolicy = (tableName, policyName, { ifExists } = {}) => {
+  const _drop: DropPolicy = (tableName, policyName, options = {}) => {
+    const { ifExists } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const policyNameStr = mOptions.literal(policyName)
     const tableNameStr = mOptions.literal(tableName)
