@@ -13,12 +13,20 @@ const run = async () => {
       ...options,
       direction: 'up',
     })
+    if (upResult.length !== 1) {
+      console.error('There should be exactly one migration processed')
+      process.exit(1)
+    }
     console.log('Up success')
     console.log(upResult)
     const downResult = await runner({
       ...options,
       direction: 'down',
     })
+    if (downResult.length !== 1) {
+      console.error('There should be exactly one migration processed')
+      process.exit(1)
+    }
     console.log('Down success')
     console.log(downResult)
     process.exit(0)
