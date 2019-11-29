@@ -285,6 +285,36 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -s myschema public --create-schema -m test/migrations && npm run migrate down 0 -- -s myschema public -m test/migrations --timestamps
+  test-typescript-migration:
+    docker:
+      - image: circleci/node:12
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.11-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: npm run migrate up -- --tsconfig tsconfig.json -m test/ts/migrations && npm run migrate down 0 -- --tsconfig tsconfig.json -m test/ts/migrations --timestamps
+  test-typescript-customrunner:
+    docker:
+      - image: circleci/node:12
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:10.11-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: $(npm bin)/ts-node test/ts/customRunner.ts
 
 workflows:
   version: 2
@@ -334,5 +364,11 @@ workflows:
           requires:
           - install
       - test-schemas:
+          requires:
+          - install
+      - test-typescript-migration:
+          requires:
+          - install
+      - test-typescript-customrunner:
           requires:
           - install

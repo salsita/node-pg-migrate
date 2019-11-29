@@ -191,7 +191,7 @@ export interface RunnerOptionConfig {
   direction: MigrationDirection
   count: number
   timestamp?: boolean
-  ignorePattern: string
+  ignorePattern?: string
   file?: string
   dryRun?: boolean
   createSchema?: boolean

@@ -21,19 +21,21 @@ const lstat = promisify(fs.lstat) // eslint-disable-line security/detect-non-lit
 
 const SEPARATOR = '_'
 
-export const loadMigrationFiles = async (dir: string, ignorePattern: string) => {
+export const loadMigrationFiles = async (dir: string, ignorePattern?: string) => {
   const dirContent = await readdir(`${dir}/`)
-  const files = await Promise.all(
-    dirContent.map(async file => {
-      const stats = await lstat(`${dir}/${file}`)
-      return stats.isFile() ? file : null
-    }),
-  )
+  const files = (
+    await Promise.all(
+      dirContent.map(async file => {
+        const stats = await lstat(`${dir}/${file}`)
+        return stats.isFile() ? file : null
+      }),
+    )
+  ).sort()
   const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
-  return files.filter(i => i && !filter.test(i)).sort()
+  return ignorePattern === undefined ? files : files.filter(i => i && !filter.test(i))
 }
 
-const getLastSuffix = async (dir: string, ignorePattern: string) => {
+const getLastSuffix = async (dir: string, ignorePattern?: string) => {
   try {
     const files = await loadMigrationFiles(dir, ignorePattern)
     return files.length > 0 ? path.extname(files[files.length - 1]).substr(1) : undefined
@@ -50,7 +52,7 @@ export interface RunMigration {
 
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
-  static async create(name: string, directory: string, language: 'js' | 'ts' | 'sql', ignorePattern: string) {
+  static async create(name: string, directory: string, language?: 'js' | 'ts' | 'sql', ignorePattern?: string) {
     // ensure the migrations directory exists
     mkdirp.sync(directory)
 
