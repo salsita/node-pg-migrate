@@ -5,7 +5,8 @@ import { CreateFunction, DropFunction, RenameFunction } from './functionsTypes'
 export { CreateFunction, DropFunction, RenameFunction }
 
 export function dropFunction(mOptions: MigrationOptions) {
-  const _drop: DropFunction = (functionName, functionParams = [], { ifExists, cascade } = {}) => {
+  const _drop: DropFunction = (functionName, functionParams = [], options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const paramsStr = formatParams(functionParams, mOptions)

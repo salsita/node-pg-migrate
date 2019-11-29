@@ -7,7 +7,7 @@ const run = async () => {
       migrationsTable: 'migrations',
       dir: resolve(__dirname, 'migrations'),
       count: Infinity,
-      databaseUrl: process.env.DATABASE_URL,
+      databaseUrl: String(process.env.DATABASE_URL),
     }
     const upResult = await runner({
       ...options,

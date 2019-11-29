@@ -26,7 +26,8 @@ const storageParameterStr = <T extends StorageParameters, K extends keyof T>(sto
 }
 
 export function dropMaterializedView(mOptions: MigrationOptions) {
-  const _drop: DropMaterializedView = (viewName, { ifExists, cascade } = {}) => {
+  const _drop: DropMaterializedView = (viewName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const viewNameStr = mOptions.literal(viewName)
@@ -113,7 +114,8 @@ export function renameMaterializedViewColumn(mOptions: MigrationOptions) {
 }
 
 export function refreshMaterializedView(mOptions: MigrationOptions) {
-  const _refresh: RefreshMaterializedView = (viewName, { concurrently, data } = {}) => {
+  const _refresh: RefreshMaterializedView = (viewName, options = {}) => {
+    const { concurrently, data } = options
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : ''
     const dataStr = dataClause(data)
     const viewNameStr = mOptions.literal(viewName)

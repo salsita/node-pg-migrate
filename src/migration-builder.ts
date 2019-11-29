@@ -197,7 +197,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   private _useTransaction: boolean
 
-  constructor(db: DB, typeShorthands: ColumnDefinitions, shouldDecamelize: boolean) {
+  constructor(db: DB, typeShorthands: ColumnDefinitions | undefined, shouldDecamelize: boolean) {
     this._steps = []
     this._REVERSE_MODE = false
     // by default, all migrations are wrapped in a transaction
@@ -210,11 +210,15 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     // calls the operation or its reverse, and appends the result (array of sql statements)
     // to the  steps array
     const wrap = <T extends Operation>(operation: T) => (...args: Parameters<T>) => {
-      if (this._REVERSE_MODE && typeof operation.reverse !== 'function') {
-        const name = `pgm.${operation.name}()`
-        throw new Error(`Impossible to automatically infer down migration for "${name}"`)
+      if (this._REVERSE_MODE) {
+        if (typeof operation.reverse !== 'function') {
+          const name = `pgm.${operation.name}()`
+          throw new Error(`Impossible to automatically infer down migration for "${name}"`)
+        }
+        this._steps = this._steps.concat(operation.reverse(...args))
+      } else {
+        this._steps = this._steps.concat(operation(...args))
       }
-      this._steps = this._steps.concat(this._REVERSE_MODE ? operation.reverse(...args) : operation(...args))
     }
 
     const options: MigrationOptions = {
@@ -325,7 +329,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.func = PgLiteral.create
 
     // expose DB so we can access database within transaction
-    const wrapDB = <T, R>(operation: (...args: T[]) => R) => (...args: T[]) => {
+    const wrapDB = <T extends any[], R>(operation: (...args: T) => R) => (...args: T) => {
       if (this._REVERSE_MODE) {
         throw new Error('Impossible to automatically infer down migration')
       }

@@ -9,10 +9,9 @@ const identity = <T>(v: T) => v
 const quote = (str: string) => `"${str}"`
 
 export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean) => {
-  const transform: Literal = [
-    shouldDecamelize ? decamelize : identity,
-    shouldQuote ? quote : identity,
-  ].reduce((acc, fn) => (fn === identity ? acc : x => acc(fn(x))))
+  const transform = [shouldDecamelize ? decamelize : identity, shouldQuote ? quote : identity].reduce((acc, fn) =>
+    fn === identity ? acc : (x: string) => acc(fn(x)),
+  )
   return (v: Name) => {
     if (typeof v === 'object') {
       const { schema, name } = v
@@ -24,7 +23,8 @@ export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean
 
 export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name }) =>
   Object.keys(d || {}).reduce(
-    (str: string, p) => str.replace(new RegExp(`{${p}}`, 'g'), literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
+    (str: string, p) =>
+      str.replace(new RegExp(`{${p}}`, 'g'), d === undefined || d[p] === undefined ? '' : literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
     s,
   )
 
@@ -60,8 +60,10 @@ export const escapeValue = (val: Value): string | number => {
   return ''
 }
 
-export const getSchemas = (schema: string | string[]): string[] => {
-  const schemas = (Array.isArray(schema) ? schema : [schema]).filter(s => typeof s === 'string' && s.length > 0)
+export const getSchemas = (schema?: string | string[]): string[] => {
+  const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
+    (s): s is string => typeof s === 'string' && s.length > 0,
+  )
   return schemas.length > 0 ? schemas : ['public']
 }
 
@@ -101,7 +103,7 @@ export const applyType = (
       delete ext.type
     }
     const t = typeShorthands[types[types.length - 1]]
-    ext = { ...(typeof t === 'string' ? { type: t } : t), ...ext }
+    ext = { ...(typeof t === 'string' ? { type: t } : t), ...(ext === null ? {} : ext) }
     if (types.includes(ext.type)) {
       throw new Error(`Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`)
     } else {
@@ -118,8 +120,8 @@ export const applyType = (
   }
 }
 
-const formatParam = (mOptions: MigrationOptions) => (param: FunctionParamType) => {
-  const { mode, name, type, default: defaultValue }: FunctionParamType = applyType(param, mOptions.typeShorthands)
+const formatParam = (mOptions: MigrationOptions) => (param: FunctionParam) => {
+  const { mode, name, type, default: defaultValue } = applyType(param, mOptions.typeShorthands)
   const options: string[] = []
   if (mode) {
     options.push(mode)
@@ -139,7 +141,7 @@ const formatParam = (mOptions: MigrationOptions) => (param: FunctionParamType) =
 export const formatParams = (params: FunctionParam[] = [], mOptions: MigrationOptions) =>
   `(${params.map(formatParam(mOptions)).join(', ')})`
 
-export const comment = (object: string, name: string, text?: string) => {
+export const makeComment = (object: string, name: string, text?: string | null) => {
   const cmt = escapeValue(text || null)
   return `COMMENT ON ${object} ${name} IS ${cmt};`
 }

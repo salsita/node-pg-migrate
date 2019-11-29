@@ -30,9 +30,11 @@ export const loadMigrationFiles = async (dir: string, ignorePattern?: string) =>
         return stats.isFile() ? file : null
       }),
     )
-  ).sort()
+  )
+    .filter((file): file is string => Boolean(file))
+    .sort()
   const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
-  return ignorePattern === undefined ? files : files.filter(i => i && !filter.test(i))
+  return ignorePattern === undefined ? files : files.filter(i => !filter.test(i))
 }
 
 const getLastSuffix = async (dir: string, ignorePattern?: string) => {
@@ -87,7 +89,7 @@ export class Migration implements RunMigration {
 
   public readonly options: RunnerOption
 
-  public readonly typeShorthands: ColumnDefinitions
+  public readonly typeShorthands?: ColumnDefinitions
 
   public readonly log: typeof console.log
 
@@ -153,7 +155,7 @@ export class Migration implements RunMigration {
     this.log(`${sqlSteps.join('\n')}\n\n`)
 
     return sqlSteps.reduce(
-      (promise, sql) => promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
+      (promise: Promise<unknown>, sql) => promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
       Promise.resolve(),
     )
   }
@@ -169,7 +171,7 @@ export class Migration implements RunMigration {
       }
     }
 
-    const action: MigrationAction | false = this[direction]
+    const action: MigrationAction | false | undefined = this[direction]
 
     if (typeof action !== 'function') {
       throw new Error(
@@ -181,7 +183,7 @@ export class Migration implements RunMigration {
   }
 
   apply(direction: MigrationDirection) {
-    const pgm = new MigrationBuilder(this.db, this.typeShorthands, this.options.decamelize)
+    const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize))
     const action = this._getAction(direction)
 
     if (this.down === this.up) {

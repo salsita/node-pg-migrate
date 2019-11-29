@@ -9,7 +9,8 @@ import { FunctionOptions } from './functionsTypes'
 export { CreateTrigger, DropTrigger, RenameTrigger }
 
 export function dropTrigger(mOptions: MigrationOptions) {
-  const _drop: DropTrigger = (tableName, triggerName, { ifExists, cascade } = {}) => {
+  const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const triggerNameStr = mOptions.literal(triggerName)
@@ -23,7 +24,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   const _create: CreateTrigger = (
     tableName: Name,
     triggerName: string,
-    triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+    triggerOptions: (TriggerOptions & DropOptions) | (TriggerOptions & FunctionOptions & DropOptions),
     definition?: Value,
   ) => {
     const { constraint, condition, operation, deferrable, deferred, functionParams = [] } = triggerOptions
@@ -32,17 +33,21 @@ export function createTrigger(mOptions: MigrationOptions) {
     if (constraint) {
       when = 'AFTER'
     }
+    if (!when) {
+      throw new Error('"when" (BEFORE/AFTER/INSTEAD OF) have to be specified')
+    }
     const isInsteadOf = /instead\s+of/i.test(when)
     if (isInsteadOf) {
       level = 'ROW'
     }
     if (definition) {
-      functionName = functionName || triggerName
+      functionName = functionName === undefined ? triggerName : functionName
     }
 
-    if (!when) {
-      throw new Error('"when" (BEFORE/AFTER/INSTEAD OF) have to be specified')
-    } else if (isInsteadOf && condition) {
+    if (!functionName) {
+      throw new Error("Can't determine function name")
+    }
+    if (isInsteadOf && condition) {
       throw new Error("INSTEAD OF trigger can't have condition specified")
     }
     if (!operations) {
@@ -65,7 +70,12 @@ export function createTrigger(mOptions: MigrationOptions) {
   ${conditionClause}EXECUTE PROCEDURE ${functionNameStr}(${paramsStr});`
 
     const fnSQL = definition
-      ? `${createFunction(mOptions)(functionName, [], { ...triggerOptions, returns: 'trigger' }, definition)}\n`
+      ? `${createFunction(mOptions)(
+          functionName,
+          [],
+          { ...(triggerOptions as FunctionOptions), returns: 'trigger' },
+          definition,
+        )}\n`
       : ''
     return `${fnSQL}${triggerSQL}`
   }
@@ -73,7 +83,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   _create.reverse = (
     tableName: Name,
     triggerName: string,
-    triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+    triggerOptions: TriggerOptions & DropOptions,
     definition?: Value,
   ) => {
     const triggerSQL = dropTrigger(mOptions)(tableName, triggerName, triggerOptions)

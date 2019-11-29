@@ -4,7 +4,8 @@ import { CreateSchema, DropSchema, RenameSchema } from './schemasTypes'
 export { CreateSchema, DropSchema, RenameSchema }
 
 export function dropSchema(mOptions: MigrationOptions) {
-  const _drop: DropSchema = (schemaName, { ifExists, cascade } = {}) => {
+  const _drop: DropSchema = (schemaName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const schemaNameStr = mOptions.literal(schemaName)
@@ -14,7 +15,8 @@ export function dropSchema(mOptions: MigrationOptions) {
 }
 
 export function createSchema(mOptions: MigrationOptions) {
-  const _create: CreateSchema = (schemaName: string, { ifNotExists, authorization } = {}) => {
+  const _create: CreateSchema = (schemaName: string, options = {}) => {
+    const { ifNotExists, authorization } = options
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const schemaNameStr = mOptions.literal(schemaName)
     const authorizationStr = authorization ? ` AUTHORIZATION ${authorization}` : ''

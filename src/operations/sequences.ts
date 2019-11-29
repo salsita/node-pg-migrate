@@ -5,7 +5,7 @@ import { ColumnDefinitions } from './tablesTypes'
 
 export { CreateSequence, DropSequence, AlterSequence, RenameSequence }
 
-export const parseSequenceOptions = (typeShorthands: ColumnDefinitions, options: SequenceOptions) => {
+export const parseSequenceOptions = (typeShorthands: ColumnDefinitions | undefined, options: SequenceOptions) => {
   const { type, increment, minvalue, maxvalue, start, cache, cycle, owner } = options
   const clauses: string[] = []
   if (type) {
@@ -44,7 +44,8 @@ export const parseSequenceOptions = (typeShorthands: ColumnDefinitions, options:
 }
 
 export function dropSequence(mOptions: MigrationOptions) {
-  const _drop: DropSequence = (sequenceName, { ifExists, cascade } = {}) => {
+  const _drop: DropSequence = (sequenceName, options = {}) => {
+    const { ifExists, cascade } = options
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     const sequenceNameStr = mOptions.literal(sequenceName)

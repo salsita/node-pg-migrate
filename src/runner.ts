@@ -57,7 +57,7 @@ const ensureMigrationsTable = async (db: DBConnection, options: RunnerOption): P
     const schema = getMigrationTableSchema(options)
     const { migrationsTable } = options
     const fullTableName = createSchemalize(
-      options.decamelize,
+      Boolean(options.decamelize),
       true,
     )({
       schema,
@@ -89,7 +89,7 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options)
   const { migrationsTable } = options
   const fullTableName = createSchemalize(
-    options.decamelize,
+    Boolean(options.decamelize),
     true,
   )({
     schema,
@@ -134,7 +134,10 @@ const checkOrder = (runNames: string[], migrations: Migration[]) => {
 }
 
 const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direction: MigrationDirection) =>
-  toRun.reduce((promise, migration) => promise.then(() => migration[method](direction)), Promise.resolve())
+  toRun.reduce(
+    (promise: Promise<unknown>, migration) => promise.then(() => migration[method](direction)),
+    Promise.resolve(),
+  )
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const log = options.log || console.log
