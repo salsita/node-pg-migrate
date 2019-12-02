@@ -1,5 +1,39 @@
 # Change Log
 
+## [4.0.0-rc](2019-11-02)
+
+Rewrite in typescript
+
+### Breaking changes
+
+- Removed optional dependencies [#509](https://github.com/salsita/node-pg-migrate/pull/509)
+
+  If you are using `config` or `dotenv` configuration, it is no longer installed as optional dependency. You have to provide this package yourself.
+
+- Write node-pg-migrate in TypeScript
+  [#502](https://github.com/salsita/node-pg-migrate/pull/502)
+  [#510](https://github.com/salsita/node-pg-migrate/pull/510)
+  [#515](https://github.com/salsita/node-pg-migrate/pull/515)
+  [#516](https://github.com/salsita/node-pg-migrate/pull/516)
+  [#519](https://github.com/salsita/node-pg-migrate/pull/519)
+  [#520](https://github.com/salsita/node-pg-migrate/pull/520)
+  [#523](https://github.com/salsita/node-pg-migrate/pull/523)
+
+  - Fixed some issues with types which did not correspond to how code behave.
+  - `functionArgs` in trigger options renamed to `functionParams` because of consistency.
+
+- Support for TS migrations [#521](https://github.com/salsita/node-pg-migrate/pull/521)
+
+### Added
+
+- Improve error message in migration.js [#506](https://github.com/salsita/node-pg-migrate/pull/506)
+- Another way for transpiling TypeScript [#522](https://github.com/salsita/node-pg-migrate/pull/522)
+
+### Fixes
+
+- Updates to docs - specifying schema for trigger_name [#505](https://github.com/salsita/node-pg-migrate/pull/505)
+- createIndex doc [#524](https://github.com/salsita/node-pg-migrate/pull/524)
+
 ## [3.23.3](2019-10-10)
 
 ### Fixed
