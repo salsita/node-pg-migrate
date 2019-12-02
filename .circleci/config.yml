@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:10
+  image: circleci/node:12
 
 set-npm-global: &set-npm-global
   run:
@@ -155,9 +155,9 @@ jobs:
       - <<: *restore
       - <<: *postgres-wait
       - <<: *test-postgres
-  test-node-12:
+  test-node-10:
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:10
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.11-alpine
@@ -287,7 +287,7 @@ jobs:
           command: npm run migrate up -- -s myschema public --create-schema -m test/migrations && npm run migrate down 0 -- -s myschema public -m test/migrations --timestamps
   test-typescript-migration:
     docker:
-      - image: circleci/node:12
+      - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.11-alpine
@@ -302,7 +302,7 @@ jobs:
           command: npm run migrate up -- --tsconfig tsconfig.json -m test/ts/migrations && npm run migrate down 0 -- --tsconfig tsconfig.json -m test/ts/migrations --timestamps
   test-typescript-customrunner:
     docker:
-      - image: circleci/node:12
+      - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
       - image: postgres:10.11-alpine
@@ -345,7 +345,7 @@ workflows:
       - test-node-8:
           requires:
             - install
-      - test-node-12:
+      - test-node-10:
           requires:
             - install
       - test-config:

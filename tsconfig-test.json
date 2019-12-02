@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2020",
     "moduleResolution": "node",
     "baseUrl": "src",
     "outDir": "dist",
-    "lib": ["es2017"],
+    "lib": ["es2018"],
     "esModuleInterop": true,
     "declaration": true,
     "sourceMap": false,
