@@ -13,6 +13,7 @@
   - `unique` _[boolean]_ - set to true if this is a unique index
   - `where` _[string]_ - raw sql for where clause of index
   - `concurrently` _[boolean]_ - create this index concurrently
+  - `ifNotExists` _[bool]_ - default false
   - `opclass` _[[Name](migrations.md#type)]_ - name of an operator class to use
   - `method` _[string]_ - btree | hash | gist | spgist | gin
 
