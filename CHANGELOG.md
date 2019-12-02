@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.0.0-rc1](2019-11-02)
+
+### Breaking changes
+
+- Drop old node support [#526](https://github.com/salsita/node-pg-migrate/pull/526)
+
 ## [4.0.0-rc](2019-11-02)
 
 Rewrite in typescript
