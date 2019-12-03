@@ -5,6 +5,7 @@ export interface CreateIndexOptions {
   unique?: boolean
   where?: string
   concurrently?: boolean
+  ifNotExists?: boolean
   opclass?: Name
   method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
 }

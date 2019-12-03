@@ -58,6 +58,7 @@ export function createIndex(mOptions: MigrationOptions) {
     unique - is this a unique index
     where - where clause
     concurrently -
+    ifNotExists - optionally create index
     opclass - name of an operator class
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
@@ -65,13 +66,14 @@ export function createIndex(mOptions: MigrationOptions) {
     const columnsString = generateColumnsString(columns, mOptions.literal)
     const unique = options.unique ? ' UNIQUE ' : ''
     const concurrently = options.concurrently ? ' CONCURRENTLY ' : ''
+    const ifNotExistsStr = options.ifNotExists ? ' IF NOT EXISTS' : ''
     const method = options.method ? ` USING ${options.method}` : ''
     const where = options.where ? ` WHERE ${options.where}` : ''
     const opclass = options.opclass ? ` ${mOptions.schemalize(options.opclass)}` : ''
     const indexNameStr = mOptions.literal(indexName)
     const tableNameStr = mOptions.literal(tableName)
 
-    return `CREATE ${unique} INDEX ${concurrently} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString}${opclass})${where};`
+    return `CREATE ${unique} INDEX ${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString}${opclass})${where};`
   }
   _create.reverse = dropIndex(mOptions)
   return _create
