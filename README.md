@@ -109,6 +109,7 @@ Want to know more? Read docs:
   - [Extensions](docs/extensions.md)
   - [Miscellaneous](docs/misc.md)
 - [Transpiling migrations](docs/transpiling.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
 ## Explanation & Goals
 
