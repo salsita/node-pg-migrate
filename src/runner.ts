@@ -16,6 +16,19 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
+const migrateSqlFile = async (sqlPath: string): Promise<MigrationBuilderActions> => {
+  const sql = await readFile(sqlPath, 'utf-8')
+  const [up, down] = sql.split(/^--+\s*down\smigration/im)
+  const actions: MigrationBuilderActions = {}
+  if (up) {
+    actions.up = async pgm => pgm.sql(up)
+  }
+  if (down) {
+    actions.down = async pgm => pgm.sql(down)
+  }
+  return actions
+}
+
 const loadMigrations = async (db: DBConnection, options: RunnerOption, log: typeof console.log) => {
   try {
     let shorthands: ColumnDefinitions = {}
@@ -24,8 +37,7 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, log: type
       const filePath = `${options.dir}/${file}`
       const actions: MigrationBuilderActions =
         path.extname(filePath) === '.sql'
-          ?
-            migrateSqlFile(filePath)
+          ? migrateSqlFile(filePath)
           : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
             require(path.relative(__dirname, filePath))
       shorthands = { ...shorthands, ...actions.shorthands }
@@ -44,19 +56,6 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, log: type
     throw new Error(`Can't get migration files: ${err.stack}`)
   }
 }
-
-const migrateSqlFile = async (path: string): Promise<MigrationBuilderActions> => {
-  const sql = await readFile(path, 'utf-8');
-  const [up, down] = sql.split(/^--+\s*down\smigration/im);
-  const actions: MigrationBuilderActions = {};
-  if (up) {
-    actions.up = async (pgm) => pgm.sql(up);
-  }
-  if (down) {
-    actions.down = async (pgm) => pgm.sql(down);
-  }
-  return actions;
-};
 
 const lock = async (db: DBConnection): Promise<void> => {
   const [lockObtained] = await db.select(`select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`)
