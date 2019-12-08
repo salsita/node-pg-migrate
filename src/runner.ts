@@ -16,15 +16,18 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
-const migrateSqlFile = async (sqlPath: string): Promise<MigrationBuilderActions> => {
-  const sql = await readFile(sqlPath, 'utf-8')
-  const [up, down] = sql.split(/^--+\s*down\smigration/im)
+const migrateSqlFile = (sqlPath: string): MigrationBuilderActions => {
   const actions: MigrationBuilderActions = {}
-  if (up) {
-    actions.up = async pgm => pgm.sql(up)
+  const regex = new RegExp('^--+s*downsmigration', 'im')
+  const getUp = (sql: string) => sql.split(regex)[0] || ''
+  const getDown = (sql: string) => sql.split(regex)[1] || ''
+  actions.up = async pgm => {
+    const up = getUp(await readFile(sqlPath, 'utf-8'))
+    return pgm.sql(up || '')
   }
-  if (down) {
-    actions.down = async pgm => pgm.sql(down)
+  actions.down = async pgm => {
+    const down = getDown(await readFile(sqlPath, 'utf-8'))
+    return pgm.sql(down || '')
   }
   return actions
 }
