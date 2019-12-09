@@ -18,9 +18,9 @@ const runOnColumn = 'run_on'
 
 const migrateSqlFile = (sqlPath: string): MigrationBuilderActions => {
   const actions: MigrationBuilderActions = {}
-  const regex = new RegExp('^--+s*downsmigration', 'im')
-  const getUp = (sql: string) => sql.split(regex)[0] || ''
-  const getDown = (sql: string) => sql.split(regex)[1] || ''
+  const migrationCommentRegex = /^--+s*down\smigration/im
+  const getUp = (sql: string) => sql.split(migrationCommentRegex)[0] || ''
+  const getDown = (sql: string) => sql.split(migrationCommentRegex)[1] || ''
   actions.up = async pgm => {
     const up = getUp(await readFile(sqlPath, 'utf-8'))
     return pgm.sql(up || '')
