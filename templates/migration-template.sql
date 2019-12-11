@@ -1,1 +1,3 @@
--- up migration
+-- Up Migration
+
+-- Down Migration
