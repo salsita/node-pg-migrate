@@ -1,60 +1,43 @@
-import fs from 'fs'
 import path from 'path'
-import { promisify } from 'util'
 import Db, { DBConnection } from './db'
 import { ColumnDefinitions } from './operations/tablesTypes'
 import { Migration, loadMigrationFiles, RunMigration } from './migration'
 import { MigrationBuilderActions, MigrationDirection, RunnerOptionClient, RunnerOptionUrl, RunnerOption } from './types'
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
+import migrateSqlFile from './sqlMigration'
 
 // Random but well-known identifier shared by all instances of node-pg-migrate
 const PG_MIGRATE_LOCK_ID = 7241865325823964
-
-const readFile = promisify(fs.readFile) // eslint-disable-line security/detect-non-literal-fs-filename
 
 const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
-const migrateSqlFile = (sqlPath: string): MigrationBuilderActions => {
-  const actions: MigrationBuilderActions = {}
-  const migrationCommentRegex = /^--+\s*down\smigration/im
-  const getUp = (sql: string) => sql.split(migrationCommentRegex)[0] || ''
-  const getDown = (sql: string) => sql.split(migrationCommentRegex)[1] || ''
-  actions.up = async pgm => {
-    const up = getUp(await readFile(sqlPath, 'utf-8'))
-    return pgm.sql(up || '')
-  }
-  actions.down = async pgm => {
-    const down = getDown(await readFile(sqlPath, 'utf-8'))
-    return pgm.sql(down || '')
-  }
-  return actions
-}
-
 const loadMigrations = async (db: DBConnection, options: RunnerOption, log: typeof console.log) => {
   try {
     let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir, options.ignorePattern)
-    return files.map(file => {
-      const filePath = `${options.dir}/${file}`
-      const actions: MigrationBuilderActions =
-        path.extname(filePath) === '.sql'
-          ? migrateSqlFile(filePath)
-          : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-            require(path.relative(__dirname, filePath))
-      shorthands = { ...shorthands, ...actions.shorthands }
-      return new Migration(
-        db,
-        filePath,
-        actions,
-        options,
-        {
-          ...shorthands,
-        },
-        log,
-      )
-    })
+    return Promise.all(
+      files.map(async file => {
+        const filePath = `${options.dir}/${file}`
+        const actions: MigrationBuilderActions =
+          path.extname(filePath) === '.sql'
+            ? await migrateSqlFile(filePath)
+            : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
+              require(path.relative(__dirname, filePath))
+        shorthands = { ...shorthands, ...actions.shorthands }
+        return new Migration(
+          db,
+          filePath,
+          actions,
+          options,
+          {
+            ...shorthands,
+          },
+          log,
+        )
+      }),
+    )
   } catch (err) {
     throw new Error(`Can't get migration files: ${err.stack}`)
   }

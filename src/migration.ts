@@ -83,7 +83,7 @@ export class Migration implements RunMigration {
 
   public readonly timestamp: number
 
-  public readonly up?: MigrationAction
+  public up?: false | MigrationAction
 
   public down?: false | MigrationAction
 
@@ -161,17 +161,15 @@ export class Migration implements RunMigration {
   }
 
   _getAction(direction: MigrationDirection) {
-    if (direction === 'down') {
-      if (this.down === false) {
-        throw new Error(`User has disabled down migration on file: ${this.name}`)
-      }
-
-      if (this.down === undefined) {
-        this.down = this.up
-      }
+    if (direction === 'down' && this.down === undefined) {
+      this.down = this.up
     }
 
     const action: MigrationAction | false | undefined = this[direction]
+
+    if (action === false) {
+      throw new Error(`User has disabled ${direction} migration on file: ${this.name}`)
+    }
 
     if (typeof action !== 'function') {
       throw new Error(

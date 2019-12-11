@@ -107,8 +107,8 @@ export type MigrationAction = (pgm: MigrationBuilder, run?: () => void) => Promi
 export type Literal = (v: Name) => string
 
 export interface MigrationBuilderActions {
-  up?: MigrationAction
-  down?: MigrationAction
+  up?: MigrationAction | false
+  down?: MigrationAction | false
   shorthands?: tables.ColumnDefinitions
 }
 
