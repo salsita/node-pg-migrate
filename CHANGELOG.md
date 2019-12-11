@@ -1,12 +1,18 @@
 # Change Log
 
-## [4.0.0-rc1](2019-11-02)
+## [4.0.0-rc2](2019-12-11)
+
+### Added
+
+- Allow 'Down' migrations in .sql files [#530](https://github.com/salsita/node-pg-migrate/pull/530)
+
+## [4.0.0-rc1](2019-12-02)
 
 ### Breaking changes
 
 - Drop old node support [#526](https://github.com/salsita/node-pg-migrate/pull/526)
 
-## [4.0.0-rc](2019-11-02)
+## [4.0.0-rc](2019-12-02)
 
 Rewrite in typescript
 
