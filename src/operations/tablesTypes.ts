@@ -78,7 +78,6 @@ export interface AlterColumnOptions {
   comment?: string | null
   generated?: null | false | SequenceGeneratedOptions // deprecated
   sequenceGenerated?: SequenceGeneratedOptions
-  expressionGenerated?: string | null
 }
 
 type CreateTableFn = (

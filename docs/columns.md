@@ -106,7 +106,6 @@ is equivalent to
   - `using` _[string]_ - adds USING clause to change values in column
   - `collation` _[string]_ - adds COLLATE clause to change values in column
   - `comment` _[string]_ - adds comment on column
-  - `expressionGenerated` _[string or null]_ - expression to compute column value
   - `sequenceGenerated` _[object or null]_ - sets or drops identity column
     - sequence options -- see [sequence options section](sequences.md#sequence-options)
     - `precedence` _[string]_ - `ALWAYS` or `BY DEFAULT`
