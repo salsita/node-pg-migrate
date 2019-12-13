@@ -5,10 +5,10 @@ const getMajorVersion = async pgm => {
 }
 
 const isSupportedSequenceGeneratedVersion = major => major >= 10
-const isSupportedExpressionGeneratedVersion = major => major >= 10
+const isSupportedExpressionGeneratedVersion = major => major >= 12
 
 exports.up = async pgm => {
-  const major = getMajorVersion(pgm)
+  const major = await getMajorVersion(pgm)
   if (isSupportedSequenceGeneratedVersion(major)) {
     pgm.createTable('t_sequenceGenerated', {
       id: 'id',
@@ -35,7 +35,7 @@ exports.up = async pgm => {
 }
 
 exports.down = async pgm => {
-  const major = getMajorVersion(pgm)
+  const major = await getMajorVersion(pgm)
   if (isSupportedSequenceGeneratedVersion(major)) {
     pgm.dropTable('t_sequenceGenerated')
   }

@@ -154,7 +154,7 @@ const parseColumns = (
         )
       }
       if (expressionGenerated) {
-        constraints.push(`GENERATED ALAWAYS AS (${expressionGenerated}) STORED`)
+        constraints.push(`GENERATED ALWAYS AS (${expressionGenerated}) STORED`)
       }
 
       const constraintsStr = constraints.length ? ` ${constraints.join(' ')}` : ''
