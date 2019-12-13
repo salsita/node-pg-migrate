@@ -25,7 +25,10 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
   deferrable?: boolean
   deferred?: boolean
   comment?: string | null
-  generated?: SequenceGeneratedOptions // deprecated
+  /**
+   * @deprecated use sequenceGenerated
+   */
+  generated?: SequenceGeneratedOptions
   sequenceGenerated?: SequenceGeneratedOptions
   expressionGenerated?: string
 }
@@ -76,8 +79,11 @@ export interface AlterColumnOptions {
   collation?: string
   using?: string
   comment?: string | null
-  generated?: null | false | SequenceGeneratedOptions // deprecated
-  sequenceGenerated?: SequenceGeneratedOptions
+  /**
+   * @deprecated use sequenceGenerated
+   */
+  generated?: null | false | SequenceGeneratedOptions
+  sequenceGenerated?: null | false | SequenceGeneratedOptions
 }
 
 type CreateTableFn = (
