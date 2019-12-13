@@ -108,8 +108,9 @@ const parseColumns = (
         referencesConstraintName,
         referencesConstraintComment,
         deferrable,
-        generated,
+        expressionGenerated,
       }: ColumnDefinition = options
+      const sequenceGenerated = options.sequenceGenerated ?? options.generated
       const constraints: string[] = []
       if (collation) {
         constraints.push(`COLLATE ${collation}`)
@@ -146,11 +147,14 @@ const parseColumns = (
       if (deferrable) {
         constraints.push(parseDeferrable(options))
       }
-      if (generated) {
-        const sequenceOptions = parseSequenceOptions(extendingTypeShorthands, generated).join(' ')
+      if (sequenceGenerated) {
+        const sequenceOptions = parseSequenceOptions(extendingTypeShorthands, sequenceGenerated).join(' ')
         constraints.push(
-          `GENERATED ${generated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
+          `GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
         )
+      }
+      if (expressionGenerated) {
+        constraints.push(`GENERATED ALAWAYS AS (${expressionGenerated}) STORED`)
       }
 
       const constraintsStr = constraints.length ? ` ${constraints.join(' ')}` : ''

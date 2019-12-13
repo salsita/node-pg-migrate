@@ -12,6 +12,8 @@ export interface ReferencesOptions {
   match?: 'FULL' | 'SIMPLE'
 }
 
+type SequenceGeneratedOptions = { precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions
+
 export interface ColumnDefinition extends Partial<ReferencesOptions> {
   type: string
   collation?: string
@@ -23,7 +25,9 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
   deferrable?: boolean
   deferred?: boolean
   comment?: string | null
-  generated?: { precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions
+  generated?: SequenceGeneratedOptions // deprecated
+  sequenceGenerated?: SequenceGeneratedOptions
+  expressionGenerated?: string
 }
 
 export interface ColumnDefinitions {
@@ -72,7 +76,9 @@ export interface AlterColumnOptions {
   collation?: string
   using?: string
   comment?: string | null
-  generated?: null | false | ({ precedence: 'ALWAYS' | 'BY DEFAULT' } & SequenceOptions)
+  generated?: null | false | SequenceGeneratedOptions // deprecated
+  sequenceGenerated?: SequenceGeneratedOptions
+  expressionGenerated?: string | null
 }
 
 type CreateTableFn = (
