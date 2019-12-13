@@ -21,6 +21,7 @@ exports.up = async pgm => {
         },
       },
     })
+    pgm.sql('INSERT INTO "t_sequenceGenerated" DEFAULT VALUES')
   }
   if (isSupportedExpressionGeneratedVersion(major)) {
     pgm.createTable('t_expressionGenerated', {
@@ -31,6 +32,7 @@ exports.up = async pgm => {
         expressionGenerated: 'id + 1',
       },
     })
+    pgm.sql('INSERT INTO "t_expressionGenerated" DEFAULT VALUES')
   }
 }
 
