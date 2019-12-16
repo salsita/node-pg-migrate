@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.1.0](2019-12-13)
+
+### Added
+
+- Expression generated columns [#532](https://github.com/salsita/node-pg-migrate/pull/532)
+
 ## [4.0.0](2019-12-12)
 
 ## [4.0.0-rc2](2019-12-11)
