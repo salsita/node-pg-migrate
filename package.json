@@ -88,7 +88,7 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc",
+    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "migrate": "node bin/node-pg-migrate",
     "lint": "eslint . bin/* --ext .js,.ts",

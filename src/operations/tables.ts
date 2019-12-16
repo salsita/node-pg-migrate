@@ -108,8 +108,9 @@ const parseColumns = (
         referencesConstraintName,
         referencesConstraintComment,
         deferrable,
-        generated,
+        expressionGenerated,
       }: ColumnDefinition = options
+      const sequenceGenerated = options.sequenceGenerated ?? options.generated
       const constraints: string[] = []
       if (collation) {
         constraints.push(`COLLATE ${collation}`)
@@ -146,11 +147,14 @@ const parseColumns = (
       if (deferrable) {
         constraints.push(parseDeferrable(options))
       }
-      if (generated) {
-        const sequenceOptions = parseSequenceOptions(extendingTypeShorthands, generated).join(' ')
+      if (sequenceGenerated) {
+        const sequenceOptions = parseSequenceOptions(extendingTypeShorthands, sequenceGenerated).join(' ')
         constraints.push(
-          `GENERATED ${generated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
+          `GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
         )
+      }
+      if (expressionGenerated) {
+        constraints.push(`GENERATED ALWAYS AS (${expressionGenerated}) STORED`)
       }
 
       const constraintsStr = constraints.length ? ` ${constraints.join(' ')}` : ''
@@ -347,7 +351,8 @@ export function addColumns(mOptions: MigrationOptions) {
 
 export function alterColumn(mOptions: MigrationOptions): AlterColumn {
   return (tableName, columnName, options) => {
-    const { default: defaultValue, type, collation, using, notNull, allowNull, comment, generated } = options
+    const { default: defaultValue, type, collation, using, notNull, allowNull, comment } = options
+    const sequenceGenerated = options.sequenceGenerated ?? options.generated
     const actions: string[] = []
     if (defaultValue === null) {
       actions.push('DROP DEFAULT')
@@ -365,13 +370,13 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     } else if (notNull === false || allowNull) {
       actions.push('DROP NOT NULL')
     }
-    if (generated !== undefined) {
-      if (!generated) {
+    if (sequenceGenerated !== undefined) {
+      if (!sequenceGenerated) {
         actions.push('DROP IDENTITY')
       } else {
-        const sequenceOptions = parseSequenceOptions(mOptions.typeShorthands, generated).join(' ')
+        const sequenceOptions = parseSequenceOptions(mOptions.typeShorthands, sequenceGenerated).join(' ')
         actions.push(
-          `SET GENERATED ${generated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
+          `SET GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
         )
       }
     }

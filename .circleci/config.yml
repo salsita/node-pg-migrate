@@ -116,6 +116,19 @@ jobs:
       - <<: *restore
       - <<: *postgres-wait
       - <<: *test-postgres
+  test-pg-12:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+      - image: postgres:12.1-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-cockroach-1:
     docker:
       - <<: *node-image
@@ -147,7 +160,7 @@ jobs:
       - image: circleci/node:8
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -160,7 +173,7 @@ jobs:
       - image: circleci/node:10
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -171,7 +184,7 @@ jobs:
   test-config:
     docker:
       - <<: *node-image
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -199,7 +212,7 @@ jobs:
         environment:
           # can't use characters @#?/ in password - they have special meaning in url
           - DATABASE_URL=postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/circle_test
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
@@ -211,7 +224,7 @@ jobs:
   test-password-2:
     docker:
       - <<: *node-image
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
@@ -242,7 +255,7 @@ jobs:
         - PGUSER=ubuntu
         - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
         - PGDATABASE=circle_test
-    - image: postgres:10.11-alpine
+    - image: postgres:12.1-alpine
       environment:
         - POSTGRES_USER=ubuntu
         - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
@@ -258,7 +271,7 @@ jobs:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -275,7 +288,7 @@ jobs:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -290,7 +303,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -305,7 +318,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
-      - image: postgres:10.11-alpine
+      - image: postgres:12.1-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_DB=circle_test
@@ -334,6 +347,9 @@ workflows:
           requires:
             - install
       - test-pg-11:
+          requires:
+            - install
+      - test-pg-12:
           requires:
             - install
       - test-cockroach-1:

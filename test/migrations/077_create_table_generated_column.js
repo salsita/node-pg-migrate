@@ -20,6 +20,7 @@ exports.up = pgm =>
           },
         },
       })
+      pgm.sql('INSERT INTO "t_generated" DEFAULT VALUES')
     }
   })
 
