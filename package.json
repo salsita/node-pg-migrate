@@ -31,7 +31,7 @@
     "api"
   ],
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8.0.0"
   },
   "bugs": {
     "url": "https://github.com/salsita/node-pg-migrate/issues"
