@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.2.0](2019-12-19)
+
+### Added
+
+- Adding include option for createIndex [#537](https://github.com/salsita/node-pg-migrate/pull/537)
+
 ## [4.1.0](2019-12-13)
 
 ### Added
