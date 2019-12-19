@@ -10,8 +10,8 @@ describe('lib/operations/indexes', () => {
       const args: CreateIndexParams = [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']]
       const sql1 = Indexes.createIndex(options1)(...args)
       const sql2 = Indexes.createIndex(options2)(...args)
-      expect(sql1).to.equal('CREATE  INDEX  "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");')
-      expect(sql2).to.equal('CREATE  INDEX  "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");')
+      expect(sql1).to.equal('CREATE INDEX "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");')
+      expect(sql2).to.equal('CREATE INDEX "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");')
     })
 
     it('add opclass option', () => {
@@ -27,12 +27,18 @@ describe('lib/operations/indexes', () => {
       ]
       const sql1 = Indexes.createIndex(options1)(...args)
       const sql2 = Indexes.createIndex(options2)(...args)
-      expect(sql1).to.equal(
-        'CREATE  INDEX  "zIndex" ON "xTable" USING gist ("yName" someOpclass) WHERE some condition;',
-      )
+      expect(sql1).to.equal('CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" someOpclass) WHERE some condition;')
       expect(sql2).to.equal(
-        'CREATE  INDEX  "z_index" ON "x_table" USING gist ("y_name" some_opclass) WHERE some condition;',
+        'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" some_opclass) WHERE some condition;',
       )
+    })
+
+    it('add include option', () => {
+      const args: CreateIndexParams = ['xTable', ['yName'], { name: 'zIndex', include: 'someOtherColumn' }]
+      const sql1 = Indexes.createIndex(options1)(...args)
+      const sql2 = Indexes.createIndex(options2)(...args)
+      expect(sql1).to.equal('CREATE INDEX "zIndex" ON "xTable" ("yName") INCLUDE ("someOtherColumn");')
+      expect(sql2).to.equal('CREATE INDEX "z_index" ON "x_table" ("y_name") INCLUDE ("some_other_column");')
     })
   })
 })

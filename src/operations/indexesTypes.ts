@@ -8,6 +8,7 @@ export interface CreateIndexOptions {
   ifNotExists?: boolean
   opclass?: Name
   method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
+  include?: string | string[]
 }
 
 export interface DropIndexOptions extends DropOptions {
