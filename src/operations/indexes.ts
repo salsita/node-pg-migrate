@@ -64,16 +64,21 @@ export function createIndex(mOptions: MigrationOptions) {
     */
     const indexName = generateIndexName(typeof tableName === 'object' ? tableName.name : tableName, columns, options)
     const columnsString = generateColumnsString(columns, mOptions.literal)
-    const unique = options.unique ? ' UNIQUE ' : ''
-    const concurrently = options.concurrently ? ' CONCURRENTLY ' : ''
+    const unique = options.unique ? ' UNIQUE' : ''
+    const concurrently = options.concurrently ? ' CONCURRENTLY' : ''
     const ifNotExistsStr = options.ifNotExists ? ' IF NOT EXISTS' : ''
     const method = options.method ? ` USING ${options.method}` : ''
     const where = options.where ? ` WHERE ${options.where}` : ''
     const opclass = options.opclass ? ` ${mOptions.schemalize(options.opclass)}` : ''
+    const include = options.include
+      ? ` INCLUDE (${(_.isArray(options.include) ? options.include : [options.include])
+          .map(mOptions.literal)
+          .join(', ')})`
+      : ''
     const indexNameStr = mOptions.literal(indexName)
     const tableNameStr = mOptions.literal(tableName)
 
-    return `CREATE ${unique} INDEX ${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString}${opclass})${where};`
+    return `CREATE${unique} INDEX${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString}${opclass})${include}${where};`
   }
   _create.reverse = dropIndex(mOptions)
   return _create
