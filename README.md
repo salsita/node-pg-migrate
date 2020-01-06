@@ -123,7 +123,7 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 The MIT License (MIT)
 
-Copyright (c) 2016-2019 Salsita Software &lt;jando@salsitasoft.com&gt;
+Copyright (c) 2016-2020 Salsita Software &lt;jando@salsitasoft.com&gt;
 
 Copyright (c) 2014-2016 Theo Ephraim
 
