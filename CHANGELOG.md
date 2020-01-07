@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.2.1](2020-01-07)
+
+### Fixed
+
+- Fixing typing of createTrigger parameters [#548](https://github.com/salsita/node-pg-migrate/pull/548)
+
 ## [4.2.0](2019-12-19)
 
 ### Added
