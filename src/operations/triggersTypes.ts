@@ -13,15 +13,18 @@ export interface TriggerOptions {
   deferred?: boolean
 }
 
-interface CreateTriggerFn {
-  (tableName: Name, triggerName: string, triggerOptions: TriggerOptions & DropOptions): string | string[]
-  (
-    tableName: Name,
-    triggerName: string,
-    triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
-    definition: Value,
-  ): string | string[]
-}
+type CreateTriggerFn1 = (
+  tableName: Name,
+  triggerName: string,
+  triggerOptions: TriggerOptions & DropOptions,
+) => string | string[]
+type CreateTriggerFn2 = (
+  tableName: Name,
+  triggerName: string,
+  triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+  definition: Value,
+) => string | string[]
+type CreateTriggerFn = CreateTriggerFn1 | CreateTriggerFn2
 export type CreateTrigger = CreateTriggerFn & { reverse: CreateTriggerFn }
 export type DropTrigger = (tableName: Name, triggerName: string, dropOptions?: DropOptions) => string | string[]
 type RenameTriggerFn = (tableName: Name, oldTriggerName: string, newTriggerName: string) => string | string[]
