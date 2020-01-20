@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.2.2](2020-01-20)
+
+### Fixed
+
+- Escape BEFORE and AFTER in addTypeValue [#554](https://github.com/salsita/node-pg-migrate/pull/554)
+
 ## [4.2.1](2020-01-07)
 
 ### Fixed
