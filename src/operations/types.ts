@@ -92,8 +92,8 @@ export function addTypeValue(mOptions: MigrationOptions) {
     if (before && after) {
       throw new Error('"before" and "after" can\'t be specified together')
     }
-    const beforeStr = before ? ` BEFORE ${mOptions.literal(before)}` : ''
-    const afterStr = after ? ` AFTER ${mOptions.literal(after)}` : ''
+    const beforeStr = before ? ` BEFORE ${escapeValue(before)}` : ''
+    const afterStr = after ? ` AFTER ${escapeValue(after)}` : ''
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const valueStr = escapeValue(value)
     const typeNameStr = mOptions.literal(typeName)
