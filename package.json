@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@types/pg": "^7.4.0",
-    "decamelize": "^3.2.0",
+    "decamelize": "^4.0.0",
     "lodash": "~4.17.0",
     "mkdirp": "~0.5.0",
     "yargs": "~15.1.0"
