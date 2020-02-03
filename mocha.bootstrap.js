@@ -1,3 +1,4 @@
+/* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const chai = require('chai')
 const sinonChai = require('sinon-chai')
 const chaiAsPromised = require('chai-as-promised')
