@@ -24,7 +24,9 @@ Installing this module adds a runnable file into your `node_modules/.bin` direct
 
 It will also install [`pg`](https://node-postgres.com/) library as it is peer dependency used for migrations.
 
-## Quick Example
+## Usage
+
+### Quick Example
 
 Add `"migrate": "node-pg-migrate"` to `scripts` section of `package.json` so you are able to quickly run commands.
 
@@ -84,9 +86,30 @@ Run `npm run migrate up` and there will be new column in `posts` table :tada: :t
 
 Want to know more? Read docs:
 
-## Docs
+### Docs
 
-Full docs are available at https://salsita.github.io/node-pg-migrate
+- [CLI](cli.md)
+- [Programmatic API](api.md)
+- [Defining Migrations](migrations.md)
+  - [Tables](tables.md)
+  - [Columns](columns.md)
+  - [Constraints](constraints.md)
+  - [Indexes](indexes.md)
+  - [Functions](functions.md)
+  - [Triggers](triggers.md)
+  - [Schemas](schemas.md)
+  - [Sequences](sequences.md)
+  - [Views](views.md)
+  - [Materialized Views](mViews.md)
+  - [Types](types.md)
+  - [Domains](domains.md)
+  - [Operators](operators.md)
+  - [Roles](roles.md)
+  - [Policies](policies.md)
+  - [Extensions](extensions.md)
+  - [Miscellaneous](misc.md)
+- [Transpiling migrations](transpiling.md)
+- [Troubleshooting](troubleshooting.md)
 
 ## Explanation & Goals
 
