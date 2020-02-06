@@ -24,7 +24,7 @@ It requires a little setup to use:
 
 ### Use flag
 
-Typescript is supported out of the box. You need to have installed `ts-node` package and need to pass `tsconfig` arg ([see](https://github.com/salsita/node-pg-migrate/blob/master/docs/cli.md#configuration))
+Typescript is supported out of the box. You need to have installed `ts-node` package and need to pass `tsconfig` arg ([see](cli.md#configuration))
 
 ### Use global configuration
 

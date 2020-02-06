@@ -7,7 +7,7 @@ e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node
 
 Or you can append `?ssl=true` to your `DATABASE_URL`
 
-For setting SSL certificates etc. you will need to use some form of JSON config [see](https://github.com/salsita/node-pg-migrate/blob/master/docs/cli.md)
+For setting SSL certificates etc. you will need to use some form of JSON config [see](cli.md)
 with proper SSL configuration [see](https://node-postgres.com/features/ssl)
 
 ## Camel case, Snake case, case sensitivity
@@ -21,7 +21,7 @@ Unquoted identifiers are always folded to lower case.
 `node-pg-migrate` always quotes all identifiers, so make sure you also quote them in your SQL (and so does eventual library you use).
 Or always use lower case identifiers to prevent confusion (unquoted identifiers are always folded to lower case - see above).
 
-`node-pg-migrate` also comes with `decamelize` flag which runs `decamelize` package on all table/column/etc. names ([see](https://github.com/salsita/node-pg-migrate/blob/master/docs/cli.md#configuration)). That means that your camel case identifiers will be converted to snake case (lower cased).
+`node-pg-migrate` also comes with `decamelize` flag which runs `decamelize` package on all table/column/etc. names ([see](cli.md#configuration)). That means that your camel case identifiers will be converted to snake case (lower cased).
 
 ## Refused connection issues
 
