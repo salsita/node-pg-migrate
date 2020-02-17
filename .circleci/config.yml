@@ -80,10 +80,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:9.6-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -93,10 +94,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:10.12-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -106,10 +108,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:11.7-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -119,10 +122,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -158,10 +162,11 @@ jobs:
     docker:
       - image: circleci/node:8
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -171,10 +176,11 @@ jobs:
     docker:
       - image: circleci/node:10
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -186,6 +192,7 @@ jobs:
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -197,6 +204,7 @@ jobs:
             {
               "db": {
                 "user": "ubuntu",
+                "password": "ubuntu",
                 "host": "localhost",
                 "port": "5432",
                 "database": "circle_test"
@@ -267,12 +275,13 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -284,12 +293,13 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
           # used in tests
           - SCHEMA=myschema
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -301,10 +311,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
@@ -316,10 +327,11 @@ jobs:
     docker:
       - <<: *node-image
         environment:
-          - DATABASE_URL=postgres://ubuntu@localhost:5432/circle_test
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:12.2-alpine
         environment:
           - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
           - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
