@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.2.3](2020-03-17)
+
+Release with updated dependencies
+
 ## [4.2.2](2020-01-20)
 
 ### Fixed
