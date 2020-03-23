@@ -44,7 +44,7 @@ export function alterView(mOptions: MigrationOptions) {
         clauses.push(`RESET check_option`)
       }
     }
-    return clauses.map(clause => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`).join('\n')
+    return clauses.map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`).join('\n')
   }
   return _alter
 }
@@ -60,7 +60,7 @@ export function alterViewColumn(mOptions: MigrationOptions) {
     }
     const viewNameStr = mOptions.literal(viewName)
     const columnNameStr = mOptions.literal(columnName)
-    return actions.map(action => `ALTER VIEW ${viewNameStr} ALTER COLUMN ${columnNameStr} ${action};`).join('\n')
+    return actions.map((action) => `ALTER VIEW ${viewNameStr} ALTER COLUMN ${columnNameStr} ${action};`).join('\n')
   }
   return _alter
 }

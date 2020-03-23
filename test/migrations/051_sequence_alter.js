@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.alterSequence('seq', { restart: 20 })
 }
 

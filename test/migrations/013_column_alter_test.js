@@ -1,4 +1,4 @@
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     Promise.resolve()
       .then(() =>

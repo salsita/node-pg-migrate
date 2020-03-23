@@ -48,10 +48,7 @@ export const escapeValue = (val: Value): string | number => {
     return val
   }
   if (Array.isArray(val)) {
-    const arrayStr = val
-      .map(escapeValue)
-      .join(',')
-      .replace(/ARRAY/g, '')
+    const arrayStr = val.map(escapeValue).join(',').replace(/ARRAY/g, '')
     return `ARRAY[${arrayStr}]`
   }
   if (val instanceof PgLiteral) {
@@ -148,6 +145,6 @@ export const makeComment = (object: string, name: string, text?: string | null) 
 
 export const formatLines = (lines: string[], replace = '  ', separator = ',') =>
   lines
-    .map(line => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
+    .map((line) => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
     .replace(/^/gm, replace)

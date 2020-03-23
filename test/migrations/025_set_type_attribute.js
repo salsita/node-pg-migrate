@@ -1,7 +1,7 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.setTypeAttribute('obj', 'id', 'smallint')
 }
 
-exports.down = pgm => {
+exports.down = (pgm) => {
   pgm.setTypeAttribute('obj', 'id', 'integer')
 }

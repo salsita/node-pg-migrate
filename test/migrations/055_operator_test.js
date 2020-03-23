@@ -1,4 +1,4 @@
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select('SELECT ROW(1,2)::complex + ROW(3,4)::complex as sum;')

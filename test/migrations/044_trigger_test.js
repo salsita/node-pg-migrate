@@ -1,4 +1,4 @@
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select('INSERT INTO tt (a) VALUES (1) RETURNING a')

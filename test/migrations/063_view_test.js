@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.sql('SELECT id, str FROM v')
 }
 

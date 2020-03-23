@@ -1,3 +1,3 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.renameRole('r', 'rx')
 }

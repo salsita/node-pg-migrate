@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   const schema = 'foo'
   const tableName = { schema, name: 'bar' }
   const columnName = 'baz'

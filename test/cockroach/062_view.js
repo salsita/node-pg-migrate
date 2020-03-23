@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.noTransaction()
   pgm.createTable('tv', {
     id: 'id',

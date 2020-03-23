@@ -3,7 +3,7 @@ const {
   comment,
 } = require('./072_alter_column_comment')
 
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select(
