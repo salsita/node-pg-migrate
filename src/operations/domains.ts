@@ -67,7 +67,7 @@ export function alterDomain(mOptions: MigrationOptions) {
       actions.push(`${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}CHECK (${check})`)
     }
 
-    return `${actions.map(action => `ALTER DOMAIN ${mOptions.literal(domainName)} ${action}`).join(';\n')};`
+    return `${actions.map((action) => `ALTER DOMAIN ${mOptions.literal(domainName)} ${action}`).join(';\n')};`
   }
   return _alter
 }

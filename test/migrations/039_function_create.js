@@ -1,6 +1,6 @@
 exports.params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }]
 
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.createFunction(
     'f',
     exports.params,

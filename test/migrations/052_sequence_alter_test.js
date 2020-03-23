@@ -1,4 +1,4 @@
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select('INSERT INTO ts DEFAULT VALUES RETURNING id;')

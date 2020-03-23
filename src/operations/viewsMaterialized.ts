@@ -41,9 +41,7 @@ export function createMaterializedView(mOptions: MigrationOptions) {
     const { ifNotExists, columns = [], tablespace, storageParameters = {}, data } = options
     // prettier-ignore
     const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(", ");
-    const withOptions = Object.keys(storageParameters)
-      .map(storageParameterStr(storageParameters))
-      .join(', ')
+    const withOptions = Object.keys(storageParameters).map(storageParameterStr(storageParameters)).join(', ')
 
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const columnsStr = columnNames ? `(${columnNames})` : ''
@@ -73,14 +71,14 @@ export function alterMaterializedView(mOptions: MigrationOptions) {
       clauses.push(`DEPENDS ON EXTENSION ${mOptions.literal(extension)}`)
     }
     const withOptions = Object.keys(storageParameters)
-      .filter(key => storageParameters[key])
+      .filter((key) => storageParameters[key])
       .map(storageParameterStr(storageParameters))
       .join(', ')
     if (withOptions) {
       clauses.push(`SET (${withOptions})`)
     }
     const resetOptions = Object.keys(storageParameters)
-      .filter(key => !storageParameters[key])
+      .filter((key) => !storageParameters[key])
       .join(', ')
     if (resetOptions) {
       clauses.push(`RESET (${resetOptions})`)

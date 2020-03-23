@@ -40,7 +40,7 @@ const db = (connection: Client | string | ClientConfig, log = console.error): DB
     new Promise((resolve, reject) =>
       clientActive || isExternalClient
         ? resolve()
-        : client.connect(err => {
+        : client.connect((err) => {
             if (err) {
               log('could not connect to postgres', err)
               return reject(err)
@@ -105,7 +105,7 @@ ${err}
     select,
     column,
 
-    addBeforeCloseListener: listener => beforeCloseListeners.push(listener),
+    addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
 
     close: async () => {
       await beforeCloseListeners.reduce(

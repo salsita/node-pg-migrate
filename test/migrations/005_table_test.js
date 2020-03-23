@@ -2,7 +2,7 @@ const table = require('./004_table')
 
 const schema = process.env.SCHEMA || 'public'
 
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select(
@@ -30,7 +30,7 @@ exports.up = pgm =>
       .then(resolve),
   )
 
-exports.down = pgm => {
+exports.down = (pgm) => {
   pgm.sql('DELETE from t2')
   pgm.sql('DELETE from t1')
 }

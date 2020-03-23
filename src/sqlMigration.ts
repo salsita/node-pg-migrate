@@ -24,8 +24,8 @@ export const getActions = (content: string): MigrationBuilderActions => {
       : undefined
 
   return {
-    up: pgm => pgm.sql(upSql),
-    down: downSql === undefined ? false : pgm => pgm.sql(downSql),
+    up: (pgm) => pgm.sql(upSql),
+    down: downSql === undefined ? false : (pgm) => pgm.sql(downSql),
   }
 }
 

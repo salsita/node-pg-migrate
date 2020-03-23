@@ -10,7 +10,7 @@ export function dropExtension(mOptions: MigrationOptions) {
     if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
-    return _.map(extensions, extension => {
+    return _.map(extensions, (extension) => {
       const extensionStr = mOptions.literal(extension)
       return `DROP EXTENSION${ifExistsStr} ${extensionStr}${cascadeStr};`
     })
@@ -24,7 +24,7 @@ export function createExtension(mOptions: MigrationOptions) {
     if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : ''
-    return _.map(extensions, extension => {
+    return _.map(extensions, (extension) => {
       const extensionStr = mOptions.literal(extension)
       return `CREATE EXTENSION${ifNotExistsStr} ${extensionStr}${schemaStr};`
     })

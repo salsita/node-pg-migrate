@@ -30,7 +30,7 @@ function generateColumnString(column: string, literal: Literal) {
 
 function generateColumnsString(columns: string | string[], literal: Literal) {
   return _.isArray(columns)
-    ? columns.map(column => generateColumnString(column, literal)).join(', ')
+    ? columns.map((column) => generateColumnString(column, literal)).join(', ')
     : generateColumnString(columns, literal)
 }
 

@@ -3,7 +3,7 @@ const {
   table: { schema, name },
 } = require('./060_column_comment')
 
-exports.up = pgm =>
+exports.up = (pgm) =>
   new Promise((resolve, reject) =>
     pgm.db
       .select(

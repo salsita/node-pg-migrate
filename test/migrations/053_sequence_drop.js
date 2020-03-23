@@ -1,6 +1,6 @@
 const sequence = require('./049_sequence_create_rename')
 
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.dropTable('ts')
   pgm.dropSequence('seq')
 }

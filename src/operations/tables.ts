@@ -70,7 +70,7 @@ const parseColumns = (
   comments: string[]
 } => {
   const extendingTypeShorthands = mOptions.typeShorthands
-  let columnsWithOptions = _.mapValues(columns, column => applyType(column, extendingTypeShorthands))
+  let columnsWithOptions = _.mapValues(columns, (column) => applyType(column, extendingTypeShorthands))
 
   const primaryColumns = _.chain(columnsWithOptions)
     .map((options: ColumnDefinition, columnName) => (options.primaryKey ? columnName : null))
@@ -79,7 +79,7 @@ const parseColumns = (
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
-    columnsWithOptions = _.mapValues(columnsWithOptions, options => ({
+    columnsWithOptions = _.mapValues(columnsWithOptions, (options) => ({
       ...options,
       primaryKey: false,
     }))
@@ -186,8 +186,8 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
   }
   if (unique) {
     const uniqueArray: Array<Name | Name[]> = _.isArray(unique) ? unique : [unique]
-    const isArrayOfArrays = uniqueArray.some(uniqueSet => _.isArray(uniqueSet))
-    ;((isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>).forEach(uniqueSet => {
+    const isArrayOfArrays = uniqueArray.some((uniqueSet) => _.isArray(uniqueSet))
+    ;((isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>).forEach((uniqueSet) => {
       const cols = _.isArray(uniqueSet) ? uniqueSet : [uniqueSet]
       const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`)
       constraints.push(`CONSTRAINT ${name} UNIQUE (${cols.map(literal).join(', ')})`)
@@ -199,7 +199,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
     constraints.push(`CONSTRAINT ${name} PRIMARY KEY (${key})`)
   }
   if (foreignKeys) {
-    ;(_.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach(fk => {
+    ;(_.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach((fk) => {
       const { columns, referencesConstraintName, referencesConstraintComment } = fk
       const cols = _.isArray(columns) ? columns : [columns]
       const name = literal(referencesConstraintName || optionName || `${tableName}_fk_${cols.join('_')}`)
@@ -217,7 +217,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
   }
 
   if (deferrable) {
-    constraints = constraints.map(constraint => `${constraint} ${parseDeferrable(options)}`)
+    constraints = constraints.map((constraint) => `${constraint} ${parseDeferrable(options)}`)
   }
   if (comment) {
     if (!optionName) throw new Error('cannot comment on unspecified constraints')
@@ -233,7 +233,7 @@ const parseLike = (like: Name | { table: Name; options?: LikeOptions }, literal:
   const formatOptions = (name: 'INCLUDING' | 'EXCLUDING', options?: Like | Like[]) =>
     (_.isArray(options) ? options : [options])
       .filter((option): option is Like => option !== undefined)
-      .map(option => ` ${name} ${option}`)
+      .map((option) => ` ${name} ${option}`)
       .join('')
 
   const table = typeof like === 'string' || !('table' in like) ? like : like.table

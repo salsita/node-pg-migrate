@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.createTable('t1', {
     id: 'id',
     string: { type: 'text', notNull: true },

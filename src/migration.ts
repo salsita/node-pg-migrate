@@ -25,7 +25,7 @@ export const loadMigrationFiles = async (dir: string, ignorePattern?: string) =>
   const dirContent = await readdir(`${dir}/`)
   const files = (
     await Promise.all(
-      dirContent.map(async file => {
+      dirContent.map(async (file) => {
         const stats = await lstat(`${dir}/${file}`)
         return stats.isFile() ? file : null
       }),
@@ -34,7 +34,7 @@ export const loadMigrationFiles = async (dir: string, ignorePattern?: string) =>
     .filter((file): file is string => Boolean(file))
     .sort()
   const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
-  return ignorePattern === undefined ? files : files.filter(i => !filter.test(i))
+  return ignorePattern === undefined ? files : files.filter((i) => !filter.test(i))
 }
 
 const getLastSuffix = async (dir: string, ignorePattern?: string) => {
@@ -64,7 +64,7 @@ export class Migration implements RunMigration {
     const newFile = `${directory}/${Date.now()}${SEPARATOR}${name}.${suffix}`
 
     // copy the default migration template to the new file location
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.createReadStream(path.resolve(__dirname, `../templates/migration-template.${suffix}`))
         // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -130,7 +130,7 @@ export class Migration implements RunMigration {
 
   async _apply(action: MigrationAction, pgm: MigrationBuilder) {
     if (action.length === 2) {
-      await new Promise(resolve => action(pgm, resolve))
+      await new Promise((resolve) => action(pgm, resolve))
     } else {
       await action(pgm)
     }

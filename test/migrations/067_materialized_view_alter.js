@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.alterMaterializedView('mv', {
     storageParameters: {
       autovacuum_enabled: false,

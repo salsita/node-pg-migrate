@@ -1,13 +1,13 @@
-const getMajorVersion = pgm =>
+const getMajorVersion = (pgm) =>
   pgm.db.select(`SHOW "server_version"`).then(([{ server_version: version }]) => {
     const [major] = version.split('.')
     return Number(major)
   })
 
-const isSupportedVersion = major => major >= 10
+const isSupportedVersion = (major) => major >= 10
 
-exports.up = pgm =>
-  getMajorVersion(pgm).then(major => {
+exports.up = (pgm) =>
+  getMajorVersion(pgm).then((major) => {
     if (isSupportedVersion(major)) {
       pgm.createTable('t_generated', {
         id: 'id',
@@ -24,8 +24,8 @@ exports.up = pgm =>
     }
   })
 
-exports.down = pgm =>
-  getMajorVersion(pgm).then(major => {
+exports.down = (pgm) =>
+  getMajorVersion(pgm).then((major) => {
     if (isSupportedVersion(major)) {
       pgm.dropTable('t_generated')
     }

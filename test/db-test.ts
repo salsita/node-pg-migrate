@@ -75,14 +75,14 @@ describe('lib/db', () => {
     })
 
     it('should call client.connect if this is the first query', () => {
-      connectMock.callsFake(fn => fn())
+      connectMock.callsFake((fn) => fn())
       queryMock.returns(Promise.resolve() as any)
       return db.query('query').then(() => {
         expect(connectMock).to.be.calledOnce
       })
     })
     it('should not call client.connect on subsequent queries', () => {
-      connectMock.callsFake(fn => fn())
+      connectMock.callsFake((fn) => fn())
       queryMock.returns(Promise.resolve() as any)
       return db
         .query('query_one')
@@ -92,7 +92,7 @@ describe('lib/db', () => {
         })
     })
     it('should call client.query with query', () => {
-      connectMock.callsFake(fn => fn())
+      connectMock.callsFake((fn) => fn())
       queryMock.returns(Promise.resolve() as any)
       return db.query('query').then(() => {
         expect(queryMock.getCall(0).args[0]).to.equal('query')
@@ -100,19 +100,19 @@ describe('lib/db', () => {
     })
     it('should not call client.query if client.connect fails', () => {
       const error = 'error'
-      connectMock.callsFake(fn => fn(error))
+      connectMock.callsFake((fn) => fn(error))
       return expect(db.query('query'))
         .to.eventually.be.rejectedWith(error)
         .then(() => expect(queryMock).to.not.been.called)
     })
     it('should resolve promise if query throws no error', () => {
-      connectMock.callsFake(fn => fn())
+      connectMock.callsFake((fn) => fn())
       const result = 'result'
       queryMock.returns(Promise.resolve(result))
       return expect(db.query('query')).to.eventually.equal(result)
     })
     it('should reject promise if query throws error', () => {
-      connectMock.callsFake(fn => fn())
+      connectMock.callsFake((fn) => fn())
       const error = 'error'
       queryMock.returns(Promise.reject(error))
       return expect(db.query('query')).to.eventually.be.rejectedWith(error)

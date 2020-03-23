@@ -1,4 +1,4 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.noTransaction()
   pgm.addTypeValue('list', 'd', { ifNotExists: true })
 }

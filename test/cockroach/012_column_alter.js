@@ -1,10 +1,10 @@
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.alterColumn('t1', 'nmbr', {
     default: 10,
   })
 }
 
-exports.down = pgm => {
+exports.down = (pgm) => {
   pgm.alterColumn('t1', 'nmbr', {
     default: null,
   })

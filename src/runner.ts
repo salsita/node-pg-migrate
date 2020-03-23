@@ -18,7 +18,7 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, log: type
     let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir, options.ignorePattern)
     return Promise.all(
-      files.map(async file => {
+      files.map(async (file) => {
         const filePath = `${options.dir}/${file}`
         const actions: MigrationBuilderActions =
           path.extname(filePath) === '.sql'
@@ -99,10 +99,10 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
 const getMigrationsToRun = (options: RunnerOption, runNames: string[], migrations: Migration[]): Migration[] => {
   if (options.direction === 'down') {
     const downMigrations: Array<string | Migration> = runNames
-      .filter(migrationName => !options.file || options.file === migrationName)
-      .map(migrationName => migrations.find(({ name }) => name === migrationName) || migrationName)
+      .filter((migrationName) => !options.file || options.file === migrationName)
+      .map((migrationName) => migrations.find(({ name }) => name === migrationName) || migrationName)
     const toRun = (options.timestamp
-      ? downMigrations.filter(migration => typeof migration === 'object' && migration.timestamp >= options.count)
+      ? downMigrations.filter((migration) => typeof migration === 'object' && migration.timestamp >= options.count)
       : downMigrations.slice(-Math.abs(options.count === undefined ? 1 : options.count))
     ).reverse()
     const deletedMigrations = toRun.filter((migration): migration is string => typeof migration === 'string')
@@ -145,9 +145,9 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
     if (options.schema) {
       const schemas = getSchemas(options.schema)
       if (options.createSchema) {
-        await Promise.all(schemas.map(schema => db.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`)))
+        await Promise.all(schemas.map((schema) => db.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`)))
       }
-      await db.query(`SET search_path TO ${schemas.map(s => `"${s}"`).join(', ')}`)
+      await db.query(`SET search_path TO ${schemas.map((s) => `"${s}"`).join(', ')}`)
     }
     if (options.migrationsSchema && options.createMigrationsSchema) {
       await db.query(`CREATE SCHEMA IF NOT EXISTS "${options.migrationsSchema}"`)
@@ -174,7 +174,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
 
     // TODO: add some fancy colors to logging
     log('> Migrating files:')
-    toRun.forEach(m => {
+    toRun.forEach((m) => {
       log(`> - ${m.name}`)
     })
 
@@ -194,7 +194,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       await runMigrations(toRun, 'apply', options.direction)
     }
 
-    return toRun.map(m => ({
+    return toRun.map((m) => ({
       path: m.path,
       name: m.name,
       timestamp: m.timestamp,

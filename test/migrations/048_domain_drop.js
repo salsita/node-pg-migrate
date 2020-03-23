@@ -1,6 +1,6 @@
 const domain = require('./046_domain_create_rename')
 
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.dropTable('td')
   pgm.dropDomain('dom')
 }
