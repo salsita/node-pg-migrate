@@ -152,7 +152,9 @@ export class Migration implements RunMigration {
       this.logger.warn('#> WARNING: This migration is not wrapped in a transaction! <')
     }
 
-    this.logger.debug(`${sqlSteps.join('\n')}\n\n`)
+    if (typeof this.logger.debug === 'function') {
+      this.logger.debug(`${sqlSteps.join('\n')}\n\n`)
+    }
 
     return sqlSteps.reduce(
       (promise: Promise<unknown>, sql) => promise.then((): unknown => this.options.dryRun || this.db.query(sql)),

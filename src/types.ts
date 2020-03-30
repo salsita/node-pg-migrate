@@ -192,8 +192,8 @@ export enum PgType { // eslint-disable-line import/prefer-default-export
 
 export type MigrationDirection = 'up' | 'down'
 
-export type Logger = Pick<typeof console, 'debug' | 'info' | 'warn' | 'error'>
 export type LogFn = (msg: string) => void
+export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn }
 
 export interface RunnerOptionConfig {
   migrationsTable: string
@@ -215,6 +215,7 @@ export interface RunnerOptionConfig {
   decamelize?: boolean
   log?: LogFn
   logger?: Logger
+  verbose?: boolean
 }
 
 export interface ConnectionConfig {

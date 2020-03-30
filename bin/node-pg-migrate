@@ -41,6 +41,7 @@ const dryRunArg = 'dry-run'
 const fakeArg = 'fake'
 const decamelizeArg = 'decamelize'
 const tsconfigArg = 'tsconfig'
+const verboseArg = 'verbose'
 
 const { argv } = yargs
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -103,6 +104,12 @@ const { argv } = yargs
   .option(checkOrderArg, {
     default: true,
     describe: 'Check order of migrations before running them',
+    type: 'boolean',
+  })
+
+  .option(verboseArg, {
+    default: true,
+    describe: 'Print debug messages - all DB statements run',
     type: 'boolean',
   })
 
@@ -199,6 +206,7 @@ let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg]
 let MIGRATIONS_TABLE = argv[migrationsTableArg]
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
 let CHECK_ORDER = argv[checkOrderArg]
+let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
 
 const tsconfigPath = argv[tsconfigArg]
@@ -237,6 +245,7 @@ function readJson(json) {
     MIGRATIONS_TABLE = json[migrationsTableArg] || MIGRATIONS_TABLE
     MIGRATIONS_FILE_LANGUAGE = json[migrationFileLanguageArg] || MIGRATIONS_FILE_LANGUAGE
     CHECK_ORDER = typeof json[checkOrderArg] !== 'undefined' ? json[checkOrderArg] : CHECK_ORDER
+    VERBOSE = typeof json[verboseArg] !== 'undefined' ? json[verboseArg] : VERBOSE
     IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN
     DECAMELIZE = typeof json[decamelizeArg] !== 'undefined' ? json[decamelizeArg] : DECAMELIZE
     if (json.url) {
@@ -353,6 +362,7 @@ if (action === 'create') {
       timestamp,
       file: migrationName,
       checkOrder: CHECK_ORDER,
+      verbose: VERBOSE,
       createSchema: CREATE_SCHEMA,
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
       direction,

@@ -152,6 +152,9 @@ const getLogger = ({ log, logger }: RunnerOption): Logger => {
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const logger = getLogger(options)
+  if (options.verbose === false) {
+    logger.debug = undefined
+  }
   const db = Db((options as RunnerOptionClient).dbClient || (options as RunnerOptionUrl).databaseUrl, logger)
   try {
     await db.createConnection()
