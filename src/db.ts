@@ -3,19 +3,7 @@
  */
 
 import { Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
-// or native libpq bindings
-// const pg = require('pg/native');
-
-// see ClientBase in @types/pg
-export interface DB {
-  query(queryConfig: QueryArrayConfig, values?: any[]): Promise<QueryArrayResult>
-  query(queryConfig: QueryConfig): Promise<QueryResult>
-  query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>
-
-  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
-  select(queryConfig: QueryConfig): Promise<any[]>
-  select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
-}
+import { Logger, DB } from './types'
 
 export interface DBConnection extends DB {
   createConnection(): Promise<void>
@@ -28,7 +16,7 @@ export interface DBConnection extends DB {
   close(): Promise<void>
 }
 
-const db = (connection: Client | string | ClientConfig, log = console.error): DBConnection => {
+const db = (connection: Client | string | ClientConfig, logger: Logger = console): DBConnection => {
   const isExternalClient = connection instanceof Client
   let clientActive = false
 
@@ -42,7 +30,7 @@ const db = (connection: Client | string | ClientConfig, log = console.error): DB
         ? resolve()
         : client.connect((err) => {
             if (err) {
-              log('could not connect to postgres', err)
+              logger.error('could not connect to postgres', err)
               return reject(err)
             }
             clientActive = true
@@ -67,14 +55,14 @@ const db = (connection: Client | string | ClientConfig, log = console.error): DB
         const stringEnd = string.substr(endLineWrapPos)
         const startLineWrapPos = stringStart.lastIndexOf('\n') + 1
         const padding = ' '.repeat(position - startLineWrapPos - 1)
-        log(`Error executing:
+        logger.error(`Error executing:
 ${stringStart}
 ${padding}^^^^${stringEnd}
 
 ${message}
 `)
       } else {
-        log(`Error executing:
+        logger.error(`Error executing:
 ${string}
 ${err}
 `)
@@ -109,7 +97,7 @@ ${err}
 
     close: async () => {
       await beforeCloseListeners.reduce(
-        (promise, listener) => promise.then(listener).catch((err: any) => log(err.stack || err)),
+        (promise, listener) => promise.then(listener).catch((err: any) => logger.error(err.stack || err)),
         Promise.resolve(),
       )
       if (!isExternalClient) {

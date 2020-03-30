@@ -27,7 +27,6 @@ module.exports = {
     mocha: true,
   },
   rules: {
-    'no-console': 0,
     'no-underscore-dangle': 0,
     'security/detect-object-injection': 0,
     '@typescript-eslint/explicit-function-return-type': 0,

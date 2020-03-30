@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import runner, { RunnerOption } from '../../dist'
 
+/* eslint-disable no-console */
 const run = async () => {
   try {
     const options: Omit<RunnerOption, 'direction'> & { databaseUrl: string } = {
