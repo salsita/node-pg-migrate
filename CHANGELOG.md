@@ -1,5 +1,12 @@
 # Change Log
 
+## [4.3.0](2020-03-30)
+
+### Added
+
+- Possibility to pass custom logger [#580](https://github.com/salsita/node-pg-migrate/pull/580)
+- Ability to switch off debug logging [#581](https://github.com/salsita/node-pg-migrate/pull/581)
+
 ## [4.2.3](2020-03-17)
 
 Release with updated dependencies
