@@ -145,9 +145,13 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
   )
 
 const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
-  if (typeof logger === 'object') return { ...logger, debug: verbose ? logger.debug : undefined }
-  if (typeof log === 'function') return { debug: verbose ? log : undefined, info: log, warn: log, error: log }
-  return { ...console, debug: verbose ? console.debug : undefined } // eslint-disable-line no-console
+  let loggerObject: Logger = console
+  if (typeof logger === 'object') {
+    loggerObject = logger
+  } else if (typeof log === 'function') {
+    loggerObject = { debug: log, info: log, warn: log, error: log }
+  }
+  return verbose ? loggerObject : { ...loggerObject, debug: undefined }
 }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
