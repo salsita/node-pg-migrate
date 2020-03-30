@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable strict */
+/* eslint-disable strict, no-console */
 
 'use strict'
 

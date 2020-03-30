@@ -9,10 +9,9 @@
  and it makes inference of down migrations possible.
  */
 
-import { DB } from './db'
 import { createSchemalize } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
-import { MigrationBuilder, MigrationOptions } from './types'
+import { DB, MigrationBuilder, MigrationOptions } from './types'
 
 import * as domains from './operations/domains'
 import * as extensions from './operations/extensions'

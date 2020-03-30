@@ -12,7 +12,7 @@ import path from 'path'
 import { promisify } from 'util'
 import { DBConnection } from './db'
 import MigrationBuilder from './migration-builder'
-import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOption } from './types'
+import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOption, Logger } from './types'
 import { getMigrationTableSchema } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
 
@@ -91,7 +91,7 @@ export class Migration implements RunMigration {
 
   public readonly typeShorthands?: ColumnDefinitions
 
-  public readonly log: typeof console.log
+  public readonly logger: Logger
 
   constructor(
     db: DBConnection,
@@ -99,7 +99,7 @@ export class Migration implements RunMigration {
     { up, down }: MigrationBuilderActions,
     options: RunnerOption,
     typeShorthands?: ColumnDefinitions,
-    log = console.log,
+    logger: Logger = console,
   ) {
     this.db = db
     this.path = migrationPath
@@ -109,7 +109,7 @@ export class Migration implements RunMigration {
     this.down = down
     this.options = options
     this.typeShorthands = typeShorthands
-    this.log = log
+    this.logger = logger
   }
 
   _getMarkAsRun(action: MigrationAction) {
@@ -118,10 +118,10 @@ export class Migration implements RunMigration {
     const { name } = this
     switch (action) {
       case this.down:
-        this.log(`### MIGRATION ${this.name} (DOWN) ###`)
+        this.logger.info(`### MIGRATION ${this.name} (DOWN) ###`)
         return `DELETE FROM "${schema}"."${migrationsTable}" WHERE name='${name}';`
       case this.up:
-        this.log(`### MIGRATION ${this.name} (UP) ###`)
+        this.logger.info(`### MIGRATION ${this.name} (UP) ###`)
         return `INSERT INTO "${schema}"."${migrationsTable}" (name, run_on) VALUES ('${name}', NOW());`
       default:
         throw new Error('Unknown direction')
@@ -145,14 +145,14 @@ export class Migration implements RunMigration {
       sqlSteps.push('COMMIT;')
     } else if (this.options.singleTransaction && !pgm.isUsingTransaction()) {
       // in singleTransaction mode we are already wrapped in a global transaction
-      this.log('#> WARNING: Need to break single transaction! <')
+      this.logger.warn('#> WARNING: Need to break single transaction! <')
       sqlSteps.unshift('COMMIT;')
       sqlSteps.push('BEGIN;')
     } else if (!this.options.singleTransaction || !pgm.isUsingTransaction()) {
-      this.log('#> WARNING: This migration is not wrapped in a transaction! <')
+      this.logger.warn('#> WARNING: This migration is not wrapped in a transaction! <')
     }
 
-    this.log(`${sqlSteps.join('\n')}\n\n`)
+    this.logger.debug(`${sqlSteps.join('\n')}\n\n`)
 
     return sqlSteps.reduce(
       (promise: Promise<unknown>, sql) => promise.then((): unknown => this.options.dryRun || this.db.query(sql)),

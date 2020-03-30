@@ -31,7 +31,7 @@ In some cases, you may want to perform some async operation during a migration, 
 
 ```javascript
 exports.up = function up(pgm, run) {
-  doSomethingAsync(function() {
+  doSomethingAsync(function () {
     run()
   })
 }
@@ -40,8 +40,8 @@ exports.up = function up(pgm, run) {
 Another way how to perform some async operation is to return [Promise](https://promisesaplus.com/) from `up` or `down` function. Example:
 
 ```javascript
-exports.up = function(pgm) {
-  return new Promise(resolve => {
+exports.up = function (pgm) {
+  return new Promise((resolve) => {
     // doSomethingAsync
     resolve()
   })
@@ -51,7 +51,7 @@ exports.up = function(pgm) {
 or
 
 ```javascript
-exports.up = async pgm => {
+exports.up = async (pgm) => {
   // doSomethingAsync
 }
 ```

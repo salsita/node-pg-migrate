@@ -1,6 +1,5 @@
-import { Client } from 'pg'
+import { Client, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { TlsOptions } from 'tls'
-import { DB } from './db'
 import { Name } from './operations/generalTypes'
 
 import * as domains from './operations/domainsTypes'
@@ -19,6 +18,17 @@ import * as types from './operations/typesTypes'
 import * as views from './operations/viewsTypes'
 import * as mViews from './operations/viewsMaterializedTypes'
 import PgLiteral from './operations/PgLiteral'
+
+// see ClientBase in @types/pg
+export interface DB {
+  query(queryConfig: QueryArrayConfig, values?: any[]): Promise<QueryArrayResult>
+  query(queryConfig: QueryConfig): Promise<QueryResult>
+  query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>
+
+  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
+  select(queryConfig: QueryConfig): Promise<any[]>
+  select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
+}
 
 export interface MigrationBuilder {
   createExtension: (...args: Parameters<extensions.CreateExtension>) => void
@@ -182,6 +192,9 @@ export enum PgType { // eslint-disable-line import/prefer-default-export
 
 export type MigrationDirection = 'up' | 'down'
 
+export type Logger = Pick<typeof console, 'debug' | 'info' | 'warn' | 'error'>
+export type LogFn = (msg: string) => void
+
 export interface RunnerOptionConfig {
   migrationsTable: string
   migrationsSchema?: string
@@ -200,7 +213,8 @@ export interface RunnerOptionConfig {
   noLock?: boolean
   fake?: boolean
   decamelize?: boolean
-  log?: (msg: string) => void
+  log?: LogFn
+  logger?: Logger
 }
 
 export interface ConnectionConfig {

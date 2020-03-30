@@ -2,7 +2,14 @@ import path from 'path'
 import Db, { DBConnection } from './db'
 import { ColumnDefinitions } from './operations/tablesTypes'
 import { Migration, loadMigrationFiles, RunMigration } from './migration'
-import { MigrationBuilderActions, MigrationDirection, RunnerOptionClient, RunnerOptionUrl, RunnerOption } from './types'
+import {
+  MigrationBuilderActions,
+  MigrationDirection,
+  RunnerOptionClient,
+  RunnerOptionUrl,
+  RunnerOption,
+  Logger,
+} from './types'
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils'
 import migrateSqlFile from './sqlMigration'
 
@@ -13,7 +20,7 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
-const loadMigrations = async (db: DBConnection, options: RunnerOption, log: typeof console.log) => {
+const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: Logger) => {
   try {
     let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir, options.ignorePattern)
@@ -34,7 +41,7 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, log: type
           {
             ...shorthands,
           },
-          log,
+          logger,
         )
       }),
     )
@@ -137,9 +144,15 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
     Promise.resolve(),
   )
 
+const getLogger = ({ log, logger }: RunnerOption): Logger => {
+  if (typeof logger === 'object') return logger
+  if (typeof log === 'function') return { debug: log, info: log, warn: log, error: log }
+  return console
+}
+
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
-  const log = options.log || console.log
-  const db = Db((options as RunnerOptionClient).dbClient || (options as RunnerOptionUrl).databaseUrl, log)
+  const logger = getLogger(options)
+  const db = Db((options as RunnerOptionClient).dbClient || (options as RunnerOptionUrl).databaseUrl, logger)
   try {
     await db.createConnection()
     if (options.schema) {
@@ -159,7 +172,10 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       await lock(db)
     }
 
-    const [migrations, runNames] = await Promise.all([loadMigrations(db, options, log), getRunMigrations(db, options)])
+    const [migrations, runNames] = await Promise.all([
+      loadMigrations(db, options, logger),
+      getRunMigrations(db, options),
+    ])
 
     if (options.checkOrder) {
       checkOrder(runNames, migrations)
@@ -168,14 +184,14 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
     const toRun: Migration[] = getMigrationsToRun(options, runNames, migrations)
 
     if (!toRun.length) {
-      log('No migrations to run!')
+      logger.info('No migrations to run!')
       return []
     }
 
     // TODO: add some fancy colors to logging
-    log('> Migrating files:')
+    logger.info('> Migrating files:')
     toRun.forEach((m) => {
-      log(`> - ${m.name}`)
+      logger.info(`> - ${m.name}`)
     })
 
     if (options.fake) {
@@ -186,7 +202,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
         await runMigrations(toRun, 'apply', options.direction)
         await db.query('COMMIT')
       } catch (err) {
-        log('> Rolling back attempted migration ...')
+        logger.warn('> Rolling back attempted migration ...')
         await db.query('ROLLBACK')
         throw err
       }
