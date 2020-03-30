@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 import sinon, { SinonSpy } from 'sinon'
 import { expect } from 'chai'
-import { RunnerOption } from '../src/types'
+import { RunnerOption, Logger } from '../src/types'
 import { Migration } from '../src/migration'
 import { DBConnection } from '../src/db'
 
@@ -14,7 +14,7 @@ const actionsPromise = require(`./${promiseMigration}`) // eslint-disable-line i
 
 describe('lib/migration', () => {
   const dbMock = {} as DBConnection
-  const log: typeof console.log = () => null
+  const logger: Logger = { debug: () => null, info: () => null, warn: () => null, error: () => null }
   const options = { migrationsTable } as RunnerOption
   let migration
   let queryMock: SinonSpy
@@ -26,28 +26,28 @@ describe('lib/migration', () => {
 
   describe('self.applyUp', () => {
     it('normal operations: db.query should be called', () => {
-      migration = new Migration(dbMock, callbackMigration, actionsCallback, options, {}, log)
+      migration = new Migration(dbMock, callbackMigration, actionsCallback, options, {}, logger)
       return migration.apply('up').then(() => {
         expect(queryMock).to.be.called
       })
     })
 
     it('normal operations: db.query should be called when returning promise', () => {
-      migration = new Migration(dbMock, promiseMigration, actionsPromise, options, {}, log)
+      migration = new Migration(dbMock, promiseMigration, actionsPromise, options, {}, logger)
       return migration.apply('up').then(() => {
         expect(queryMock).to.be.called
       })
     })
 
     it('--dry-run option: db.query should not be called', () => {
-      migration = new Migration(dbMock, callbackMigration, actionsCallback, { ...options, dryRun: true }, {}, log)
+      migration = new Migration(dbMock, callbackMigration, actionsCallback, { ...options, dryRun: true }, {}, logger)
       return migration.apply('up').then(() => {
         expect(queryMock).to.not.be.called
       })
     })
 
     it('should make proper SQL calls', () => {
-      migration = new Migration(dbMock, promiseMigration, actionsCallback, options, {}, log)
+      migration = new Migration(dbMock, promiseMigration, actionsCallback, options, {}, logger)
       return migration.apply('up').then(() => {
         expect(queryMock).to.have.callCount(4)
         expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;')
@@ -59,7 +59,7 @@ describe('lib/migration', () => {
 
     it('should fail with an error message if the migration is invalid', () => {
       const invalidMigrationName = 'invalid-migration'
-      migration = new Migration(dbMock, invalidMigrationName, {}, options, {}, log)
+      migration = new Migration(dbMock, invalidMigrationName, {}, options, {}, logger)
       const direction = 'up'
       let error
       try {
@@ -75,21 +75,21 @@ describe('lib/migration', () => {
 
   describe('self.applyDown', () => {
     it('normal operations: db.query should be called', () => {
-      migration = new Migration(dbMock, callbackMigration, actionsCallback, options, {}, log)
+      migration = new Migration(dbMock, callbackMigration, actionsCallback, options, {}, logger)
       return migration.apply('down').then(() => {
         expect(queryMock).to.be.called
       })
     })
 
     it('--dry-run option: db.query should not be called', () => {
-      migration = new Migration(dbMock, callbackMigration, actionsCallback, { ...options, dryRun: true }, {}, log)
+      migration = new Migration(dbMock, callbackMigration, actionsCallback, { ...options, dryRun: true }, {}, logger)
       return migration.apply('down').then(() => {
         expect(queryMock).to.not.be.called
       })
     })
 
     it('should make proper SQL calls', () => {
-      migration = new Migration(dbMock, promiseMigration, actionsCallback, options, {}, log)
+      migration = new Migration(dbMock, promiseMigration, actionsCallback, options, {}, logger)
       return migration.apply('down').then(() => {
         expect(queryMock).to.have.callCount(4)
         expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;')
