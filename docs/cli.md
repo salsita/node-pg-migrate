@@ -79,6 +79,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
 - `fake` - Mark migrations as run without actually performing them (use with caution!)
 - `decamelize` - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names
+- `verbose` - Print all debug messages like DB queries run (defaults to `true`, to switch it off supply `--no-verbose` on command line)
 
 See all by running `node-pg-migrate --help`.
 

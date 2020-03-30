@@ -14,7 +14,7 @@ const actionsPromise = require(`./${promiseMigration}`) // eslint-disable-line i
 
 describe('lib/migration', () => {
   const dbMock = {} as DBConnection
-  const logger: Logger = { debug: () => null, info: () => null, warn: () => null, error: () => null }
+  const logger: Logger = { info: () => null, warn: () => null, error: () => null }
   const options = { migrationsTable } as RunnerOption
   let migration
   let queryMock: SinonSpy

@@ -144,10 +144,14 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
     Promise.resolve(),
   )
 
-const getLogger = ({ log, logger }: RunnerOption): Logger => {
-  if (typeof logger === 'object') return logger
-  if (typeof log === 'function') return { debug: log, info: log, warn: log, error: log }
-  return console
+const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
+  let loggerObject: Logger = console
+  if (typeof logger === 'object') {
+    loggerObject = logger
+  } else if (typeof log === 'function') {
+    loggerObject = { debug: log, info: log, warn: log, error: log }
+  }
+  return verbose ? loggerObject : { ...loggerObject, debug: undefined }
 }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {

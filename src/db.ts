@@ -1,7 +1,7 @@
 /*
  This file just manages the database connection and provides a query method
  */
-
+import { inspect } from 'util'
 import { Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { Logger, DB } from './types'
 
@@ -30,7 +30,7 @@ const db = (connection: Client | string | ClientConfig, logger: Logger = console
         ? resolve()
         : client.connect((err) => {
             if (err) {
-              logger.error('could not connect to postgres', err)
+              logger.error(`could not connect to postgres: ${inspect(err)}`)
               return reject(err)
             }
             clientActive = true
