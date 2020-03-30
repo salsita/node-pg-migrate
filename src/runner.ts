@@ -145,9 +145,9 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
   )
 
 const getLogger = ({ log, logger }: RunnerOption): Logger => {
-  if (typeof logger === 'object') return logger
+  if (typeof logger === 'object') return { ...logger }
   if (typeof log === 'function') return { debug: log, info: log, warn: log, error: log }
-  return console
+  return { ...console }
 }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
