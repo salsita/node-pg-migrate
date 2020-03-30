@@ -144,17 +144,14 @@ const runMigrations = (toRun: Migration[], method: 'markAsRun' | 'apply', direct
     Promise.resolve(),
   )
 
-const getLogger = ({ log, logger }: RunnerOption): Logger => {
-  if (typeof logger === 'object') return { ...logger }
-  if (typeof log === 'function') return { debug: log, info: log, warn: log, error: log }
-  return { ...console }
+const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
+  if (typeof logger === 'object') return { ...logger, debug: verbose ? logger.debug : undefined }
+  if (typeof log === 'function') return { debug: verbose ? log : undefined, info: log, warn: log, error: log }
+  return { ...console, debug: verbose ? console.debug : undefined } // eslint-disable-line no-console
 }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const logger = getLogger(options)
-  if (options.verbose === false) {
-    logger.debug = undefined
-  }
   const db = Db((options as RunnerOptionClient).dbClient || (options as RunnerOptionUrl).databaseUrl, logger)
   try {
     await db.createConnection()
