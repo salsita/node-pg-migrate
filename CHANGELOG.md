@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.4.0](2020-03-31)
+
+### Added
+
+- Support for pg v8 [#584](https://github.com/salsita/node-pg-migrate/pull/584)
+
 ## [4.3.0](2020-03-30)
 
 ### Added
