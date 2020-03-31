@@ -237,16 +237,16 @@ if (tsconfigPath) {
 
 function readJson(json) {
   if (typeof json === 'object') {
-    SCHEMA = json[schemaArg] || SCHEMA
-    CREATE_SCHEMA = json[createSchemaArg] || CREATE_SCHEMA
-    MIGRATIONS_DIR = json[migrationsDirArg] || MIGRATIONS_DIR
-    MIGRATIONS_SCHEMA = json[migrationsSchemaArg] || MIGRATIONS_SCHEMA
-    CREATE_MIGRATIONS_SCHEMA = json[createMigrationsSchemaArg] || CREATE_MIGRATIONS_SCHEMA
-    MIGRATIONS_TABLE = json[migrationsTableArg] || MIGRATIONS_TABLE
-    MIGRATIONS_FILE_LANGUAGE = json[migrationFileLanguageArg] || MIGRATIONS_FILE_LANGUAGE
+    SCHEMA = SCHEMA || json[schemaArg]
+    CREATE_SCHEMA = CREATE_SCHEMA || json[createSchemaArg]
+    MIGRATIONS_DIR = MIGRATIONS_DIR || json[migrationsDirArg]
+    MIGRATIONS_SCHEMA = MIGRATIONS_SCHEMA || json[migrationsSchemaArg]
+    CREATE_MIGRATIONS_SCHEMA = CREATE_MIGRATIONS_SCHEMA || json[createMigrationsSchemaArg]
+    MIGRATIONS_TABLE = MIGRATIONS_TABLE || json[migrationsTableArg]
+    MIGRATIONS_FILE_LANGUAGE = MIGRATIONS_FILE_LANGUAGE || json[migrationFileLanguageArg]
+    IGNORE_PATTERN = IGNORE_PATTERN || json[ignorePatternArg]
     CHECK_ORDER = typeof json[checkOrderArg] !== 'undefined' ? json[checkOrderArg] : CHECK_ORDER
     VERBOSE = typeof json[verboseArg] !== 'undefined' ? json[verboseArg] : VERBOSE
-    IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN
     DECAMELIZE = typeof json[decamelizeArg] !== 'undefined' ? json[decamelizeArg] : DECAMELIZE
     if (json.url) {
       DB_CONNECTION = json.url
@@ -260,7 +260,7 @@ function readJson(json) {
       }
     }
   } else {
-    DB_CONNECTION = json || DB_CONNECTION
+    DB_CONNECTION = DB_CONNECTION || json
   }
 }
 
