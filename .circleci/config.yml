@@ -42,7 +42,7 @@ cockroach-wait: &cockroach-wait
     name: create-cockroach-db
     command: |
       node -e '
-        (new require("pg").Pool({ connectionString: process.env.DATABASE_URL }))
+        (new (require("pg").Pool)({ connectionString: process.env.DATABASE_URL }))
           .query(
             "CREATE DATABASE circle_test",
             err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
