@@ -77,7 +77,6 @@ const { argv } = yargs
   })
 
   .option(createSchemaArg, {
-    default: false,
     describe: "Creates the configured schema if it doesn't exist",
     type: 'boolean',
   })
@@ -90,25 +89,16 @@ const { argv } = yargs
   })
 
   .option(createMigrationsSchemaArg, {
-    default: false,
     describe: "Creates the configured migration schema if it doesn't exist",
     type: 'boolean',
   })
 
-  .option(dryRunArg, {
-    default: false,
-    describe: "Prints the SQL but doesn't run it",
-    type: 'boolean',
-  })
-
   .option(checkOrderArg, {
-    default: true,
     describe: 'Check order of migrations before running them',
     type: 'boolean',
   })
 
   .option(verboseArg, {
-    default: true,
     describe: 'Print debug messages - all DB statements run',
     type: 'boolean',
   })
@@ -119,22 +109,8 @@ const { argv } = yargs
     type: 'string',
   })
 
-  .option(fakeArg, {
-    default: false,
-    describe: 'Marks migrations as run',
-    type: 'boolean',
-  })
-
   .option(decamelizeArg, {
-    default: false,
     describe: 'Runs decamelize on table/columns/etc names',
-    type: 'boolean',
-  })
-
-  .option('i', {
-    alias: 'version',
-    default: false,
-    describe: 'Print version info',
     type: 'boolean',
   })
 
@@ -159,6 +135,24 @@ const { argv } = yargs
     type: 'string',
   })
 
+  .option(tsconfigArg, {
+    default: undefined,
+    describe: 'path to tsconfig.json file',
+    type: 'string',
+  })
+
+  .option(dryRunArg, {
+    default: false,
+    describe: "Prints the SQL but doesn't run it",
+    type: 'boolean',
+  })
+
+  .option(fakeArg, {
+    default: false,
+    describe: 'Marks migrations as run',
+    type: 'boolean',
+  })
+
   .option(singleTransactionArg, {
     default: true,
     describe:
@@ -178,10 +172,11 @@ const { argv } = yargs
     type: 'boolean',
   })
 
-  .option(tsconfigArg, {
-    default: undefined,
-    describe: 'path to tsconfig.json file',
-    type: 'string',
+  .option('i', {
+    alias: 'version',
+    default: false,
+    describe: 'Print version info',
+    type: 'boolean',
   })
 
   .help()
@@ -237,30 +232,35 @@ if (tsconfigPath) {
 
 function readJson(json) {
   if (typeof json === 'object') {
-    SCHEMA = json[schemaArg] || SCHEMA
-    CREATE_SCHEMA = json[createSchemaArg] || CREATE_SCHEMA
-    MIGRATIONS_DIR = json[migrationsDirArg] || MIGRATIONS_DIR
-    MIGRATIONS_SCHEMA = json[migrationsSchemaArg] || MIGRATIONS_SCHEMA
-    CREATE_MIGRATIONS_SCHEMA = json[createMigrationsSchemaArg] || CREATE_MIGRATIONS_SCHEMA
-    MIGRATIONS_TABLE = json[migrationsTableArg] || MIGRATIONS_TABLE
-    MIGRATIONS_FILE_LANGUAGE = json[migrationFileLanguageArg] || MIGRATIONS_FILE_LANGUAGE
-    CHECK_ORDER = typeof json[checkOrderArg] !== 'undefined' ? json[checkOrderArg] : CHECK_ORDER
-    VERBOSE = typeof json[verboseArg] !== 'undefined' ? json[verboseArg] : VERBOSE
-    IGNORE_PATTERN = json[ignorePatternArg] || IGNORE_PATTERN
-    DECAMELIZE = typeof json[decamelizeArg] !== 'undefined' ? json[decamelizeArg] : DECAMELIZE
+    SCHEMA = typeof SCHEMA !== 'undefined' ? SCHEMA : json[schemaArg]
+    CREATE_SCHEMA = typeof CREATE_SCHEMA !== 'undefined' ? CREATE_SCHEMA : json[createSchemaArg]
+    MIGRATIONS_DIR = typeof MIGRATIONS_DIR !== 'undefined' ? MIGRATIONS_DIR : json[migrationsDirArg]
+    MIGRATIONS_SCHEMA = typeof MIGRATIONS_SCHEMA !== 'undefined' ? MIGRATIONS_SCHEMA : json[migrationsSchemaArg]
+    CREATE_MIGRATIONS_SCHEMA =
+      typeof CREATE_MIGRATIONS_SCHEMA !== 'undefined' ? CREATE_MIGRATIONS_SCHEMA : json[createMigrationsSchemaArg]
+    MIGRATIONS_TABLE = typeof MIGRATIONS_TABLE !== 'undefined' ? MIGRATIONS_TABLE : json[migrationsTableArg]
+    MIGRATIONS_FILE_LANGUAGE =
+      typeof MIGRATIONS_FILE_LANGUAGE !== 'undefined' ? MIGRATIONS_FILE_LANGUAGE : json[migrationFileLanguageArg]
+    IGNORE_PATTERN = typeof IGNORE_PATTERN !== 'undefined' ? IGNORE_PATTERN : json[ignorePatternArg]
+    CHECK_ORDER = typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg]
+    VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg]
+    DECAMELIZE = typeof DECAMELIZE !== 'undefined' ? DECAMELIZE : json[decamelizeArg]
     if (json.url) {
-      DB_CONNECTION = json.url
+      DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json.url
     } else if (json.host || json.port || json.name || json.database) {
-      DB_CONNECTION = {
-        user: json.user,
-        host: json.host || 'localhost',
-        database: json.name || json.database,
-        password: json.password,
-        port: json.port || 5432,
-      }
+      DB_CONNECTION =
+        typeof DB_CONNECTION !== 'undefined'
+          ? DB_CONNECTION
+          : {
+              user: json.user,
+              host: json.host || 'localhost',
+              database: json.name || json.database,
+              password: json.password,
+              port: json.port || 5432,
+            }
     }
   } else {
-    DB_CONNECTION = json || DB_CONNECTION
+    DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json
   }
 }
 
@@ -356,20 +356,20 @@ if (action === 'create') {
       dir: MIGRATIONS_DIR,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
+      createSchema: CREATE_SCHEMA || false,
       migrationsSchema: MIGRATIONS_SCHEMA,
+      createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA || false,
       migrationsTable: MIGRATIONS_TABLE,
       count,
       timestamp,
       file: migrationName,
-      checkOrder: CHECK_ORDER,
-      verbose: VERBOSE,
-      createSchema: CREATE_SCHEMA,
-      createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
+      checkOrder: CHECK_ORDER || true,
+      verbose: VERBOSE || true,
       direction,
       singleTransaction,
       noLock,
       fake,
-      decamelize: DECAMELIZE,
+      decamelize: DECAMELIZE || false,
     }
   }
   const promise =
