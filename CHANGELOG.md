@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.5.0](2020-04-01)
+
+### Added
+
+- Command line arguments should override config ones [#585](https://github.com/salsita/node-pg-migrate/pull/585)
+
 ## [4.4.0](2020-03-31)
 
 ### Added
