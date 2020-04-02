@@ -57,6 +57,14 @@ const lock = async (db: DBConnection): Promise<void> => {
   }
 }
 
+const unlock = async (db: DBConnection): Promise<void> => {
+  const [result] = await db.select(`select pg_advisory_unlock(${PG_MIGRATE_LOCK_ID}) as "lockReleased"`)
+
+  if (!result.lockReleased) {
+    throw new Error('Failed to release migration lock')
+  }
+}
+
 const ensureMigrationsTable = async (db: DBConnection, options: RunnerOption): Promise<void> => {
   try {
     const schema = getMigrationTableSchema(options)
@@ -220,6 +228,9 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       timestamp: m.timestamp,
     }))
   } finally {
+    if (!options.noLock) {
+      await unlock(db).catch((error) => logger.warn(error.message))
+    }
     db.close()
   }
 }
