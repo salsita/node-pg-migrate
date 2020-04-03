@@ -1,5 +1,12 @@
 # Change Log
 
+## [4.5.1](2020-04-03)
+
+### Fixed
+
+- Do provide default cli option value only if not specified [#588](https://github.com/salsita/node-pg-migrate/pull/588)
+- Fix locking [#586](https://github.com/salsita/node-pg-migrate/pull/586)
+
 ## [4.5.0](2020-04-01)
 
 ### Added
