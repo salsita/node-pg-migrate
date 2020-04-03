@@ -191,6 +191,13 @@ if (argv.help || argv._.length === 0) {
   process.exit(1)
 }
 
+const configFileName = argv[configFileArg]
+if (configFileName) {
+  // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
+  const config = require(path.resolve(configFileName))
+  Object.assign(argv, config)
+}
+
 let MIGRATIONS_DIR = argv[migrationsDirArg]
 let DB_CONNECTION = process.env[argv[databaseUrlVarArg]]
 let IGNORE_PATTERN = argv[ignorePatternArg]
@@ -278,13 +285,6 @@ try {
   if (err.code !== 'MODULE_NOT_FOUND') {
     throw err
   }
-}
-
-const configFileName = argv[configFileArg]
-if (configFileName) {
-  // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-  const config = require(path.resolve(configFileName))
-  readJson(config)
 }
 
 const action = argv._.shift()
