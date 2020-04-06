@@ -67,14 +67,15 @@ export const getSchemas = (schema?: string | string[]): string[] => {
 export const getMigrationTableSchema = (options: RunnerOption): string =>
   options.migrationsSchema !== undefined ? options.migrationsSchema : getSchemas(options.schema)[0]
 
-const typeAdapters = {
-  int: 'integer',
-  string: 'text',
-  float: 'real',
-  double: 'double precision',
-  datetime: 'timestamp',
-  bool: 'boolean',
-} as const
+const typeAdapters =
+  {
+    int: 'integer',
+    string: 'text',
+    float: 'real',
+    double: 'double precision',
+    datetime: 'timestamp',
+    bool: 'boolean',
+  } as const
 
 const defaultTypeShorthands: ColumnDefinitions = {
   id: { type: 'serial', primaryKey: true }, // convenience type for serial primary keys
