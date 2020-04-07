@@ -42,6 +42,7 @@ const fakeArg = 'fake'
 const decamelizeArg = 'decamelize'
 const tsconfigArg = 'tsconfig'
 const verboseArg = 'verbose'
+const rejectUnauthorizedArg = 'reject-unauthorized'
 
 const { argv } = yargs
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -166,6 +167,11 @@ const { argv } = yargs
     type: 'boolean',
   })
 
+  .option(rejectUnauthorizedArg, {
+    describe: 'Sets rejectUnauthorized SSL option',
+    type: 'boolean',
+  })
+
   .option(timestampArg, {
     default: false,
     describe: 'Treats number argument to up/down migration as timestamp',
@@ -257,6 +263,7 @@ function readJson(json) {
               database: json.name || json.database,
               password: json.password,
               port: json.port || 5432,
+              ssl: json.ssl,
             }
     }
   } else {
@@ -328,7 +335,7 @@ if (action === 'create') {
   const singleTransaction = argv[singleTransactionArg]
   const fake = argv[fakeArg]
   const TIMESTAMP = argv[timestampArg]
-
+  const rejectUnauthorized = argv[rejectUnauthorizedArg]
   const noLock = !argv[lockArg]
   if (noLock) {
     console.log('no lock')
@@ -347,12 +354,17 @@ if (action === 'create') {
     }
   }
 
+  const databaseUrl = typeof DB_CONNECTION === 'string' ? { connectionString: DB_CONNECTION } : DB_CONNECTION
+
   const options = (direction, _count, _timestamp) => {
     const count = _count === undefined ? numMigrations : _count
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp
     return {
       dryRun,
-      databaseUrl: DB_CONNECTION,
+      databaseUrl: {
+        ...databaseUrl,
+        ...(typeof rejectUnauthorized === 'boolean' ? { ssl: { ...databaseUrl.ssl, rejectUnauthorized } } : undefined),
+      },
       dir: MIGRATIONS_DIR,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
