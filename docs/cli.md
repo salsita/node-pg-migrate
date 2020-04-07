@@ -80,6 +80,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `fake` - Mark migrations as run without actually performing them (use with caution!)
 - `decamelize` - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names
 - `verbose` - Print all debug messages like DB queries run (defaults to `true`, to switch it off supply `--no-verbose` on command line)
+- `reject-unauthorized` - Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on server. [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009)
 
 See all by running `node-pg-migrate --help`.
 
@@ -95,4 +96,6 @@ You can use [config](https://www.npmjs.com/package/config) or your own json file
 Available options are:
 
 - `migrations-dir`, `migrations-schema`, `migrations-table`, `check-order`, `ignore-pattern` - same as above
-- either `url` or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database` - for connection details
+- either
+  - `url` can be connection string or config object accepted by `pg` [see](https://node-postgres.com/features/connecting#Programmatic)
+  - or [`user`], [`password`], `host` (defaults to localhost), `port` (defaults to 5432), `database`, [`ssl`] - for connection details
