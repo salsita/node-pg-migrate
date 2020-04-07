@@ -10,10 +10,10 @@ Or you can append `?ssl=true` to your `DATABASE_URL`
 For setting SSL certificates etc. you will need to use some form of JSON config [see](cli.md)
 with proper SSL configuration [see](https://node-postgres.com/features/ssl)
 
-With the introduction of pg v8, SSL connection options use node defaults. That means e.g. rejecting self-signed
-certificates. To be able to accept self-signed certificates you can use `--no-reject-unauthorized` CLI option
-or pass database connection info through JSON configuration [see](cli.md).
-For explanation [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009)
+With the introduction of pg v8, SSL connection options use node defaults. That means e.g. rejecting self-signed
+certificates. To be able to accept self-signed certificates you can use `--no-reject-unauthorized` CLI option
+or pass database connection info through JSON configuration [see](cli.md).
+For explanation [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009).
 
 ## Camel case, Snake case, case sensitivity
 
@@ -36,3 +36,9 @@ Or always use lower case identifiers to prevent confusion (unquoted identifiers 
   Try `telnet url port` to try to connect (e.g. `telnet 127.0.0.1 5432`) to postgres server.
   If command will not end with error, but will wait for further input from you, server (or some other service running on that port :man_shrugging:) is accessible and waits for correct user/password.
   Otherwise server does not run or listen on specified port or there is some other connection problem. You have to investigate...
+
+## Running in transaction
+
+Some DB operations like add type value (`pgm.addTypeValue`) does not work if the type is not created in the same
+transaction. E.g. if it is created in previous migration. You need to run specific migration outside transaction
+(`pgm.noTransaction`).

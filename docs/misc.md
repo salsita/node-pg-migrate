@@ -29,3 +29,12 @@ e.g. `pgm.func('CURRENT_TIMESTAMP')` to use in `default` option for column defin
 > See [pg.Client.query](https://node-postgres.com/api/client#client-query)
 
 Returns promise with either result of query or returned rows of query (in case of `select`).
+
+---
+
+### `pgm.noTransaction`
+
+By default, all migrations are run in one transaction, but some DB operations like add type value (`pgm.addTypeValue`)
+does not work if the type is not created in the same transaction. E.g. if it is created in previous migration. You need to
+run specific migration outside a transaction (`pgm.noTransaction`). Be aware that this means that you can have
+some migrations applied and some not applied, if there is some error during migrating (leading to `ROLLBACK`)
