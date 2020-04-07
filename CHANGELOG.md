@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.6.0](2020-04-07)
+
+### Added
+
+- `reject-unauthorized` CLI option [#594](https://github.com/salsita/node-pg-migrate/pull/594)
+
 ## [4.5.1](2020-04-03)
 
 ### Fixed
