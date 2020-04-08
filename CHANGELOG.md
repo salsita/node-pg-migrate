@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.6.1](2020-04-08)
+
+### Fixed
+
+- Accepting Pool Client [#596](https://github.com/salsita/node-pg-migrate/pull/596)
+
 ## [4.6.0](2020-04-07)
 
 ### Added
