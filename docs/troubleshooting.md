@@ -14,6 +14,7 @@ With the introduction of pg v8, SSL connection options use node defaults. That m
 certificates. To be able to accept self-signed certificates you can use `--no-reject-unauthorized` CLI option
 or pass database connection info through JSON configuration [see](cli.md).
 For explanation [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009).
+Do not combine it with `?ssl=true` as it overrides ssl config from `--no-reject-unauthorized`.
 
 ## Camel case, Snake case, case sensitivity
 

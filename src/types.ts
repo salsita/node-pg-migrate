@@ -1,4 +1,4 @@
-import { Client, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
+import { ClientBase, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { TlsOptions } from 'tls'
 import { Name } from './operations/generalTypes'
 
@@ -236,7 +236,7 @@ export interface RunnerOptionUrl {
 }
 
 export interface RunnerOptionClient {
-  dbClient: Client
+  dbClient: ClientBase
 }
 
 export type RunnerOption = RunnerOptionConfig & (RunnerOptionClient | RunnerOptionUrl)
