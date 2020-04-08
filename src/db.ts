@@ -2,7 +2,7 @@
  This file just manages the database connection and provides a query method
  */
 import { inspect } from 'util'
-import { Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
+import { ClientBase, Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { Logger, DB } from './types'
 
 export interface DBConnection extends DB {
@@ -16,7 +16,7 @@ export interface DBConnection extends DB {
   close(): Promise<void>
 }
 
-const db = (connection: Client | string | ClientConfig, logger: Logger = console): DBConnection => {
+const db = (connection: ClientBase | string | ClientConfig, logger: Logger = console): DBConnection => {
   const isExternalClient = connection instanceof Client
   let clientActive = false
 
