@@ -37,11 +37,8 @@ test-postgres: &test-postgres
 cockroach-wait: &cockroach-wait
   run:
     name: Wait for DB
-    command: dockerize -wait tcp://127.0.0.1:26257 -timeout 120s
-  run:
-    name: create-cockroach-db
     command: |
-      node -e '
+      dockerize -wait tcp://127.0.0.1:26257 -timeout 120s && node -e '
         (new (require("pg").Pool)({ connectionString: process.env.DATABASE_URL }))
           .query(
             "CREATE DATABASE circle_test",
