@@ -56,61 +56,64 @@ const { argv } = yargs
 
   .option('m', {
     alias: migrationsDirArg,
-    default: `${process.cwd()}/migrations`,
-    defaultDescription: 'migrations',
+    defaultDescription: '"migrations"',
     describe: 'The directory containing your migration files',
     type: 'string',
   })
 
   .option('t', {
     alias: migrationsTableArg,
-    default: 'pgmigrations',
+    defaultDescription: '"pgmigrations"',
     describe: 'The table storing which migrations have been run',
     type: 'string',
   })
 
   .option('s', {
     alias: schemaArg,
-    default: 'public',
+    defaultDescription: '"public"',
     describe: 'The schema on which migration will be run (defaults to `public`)',
     type: 'string',
     array: true,
   })
 
   .option(createSchemaArg, {
+    defaultDescription: 'false',
     describe: "Creates the configured schema if it doesn't exist",
     type: 'boolean',
   })
 
   .option(migrationsSchemaArg, {
-    default: undefined,
     defaultDescription: 'Same as "schema"',
     describe: 'The schema storing table which migrations have been run',
     type: 'string',
   })
 
   .option(createMigrationsSchemaArg, {
+    defaultDescription: 'false',
     describe: "Creates the configured migration schema if it doesn't exist",
     type: 'boolean',
   })
 
   .option(checkOrderArg, {
+    defaultDescription: 'true',
     describe: 'Check order of migrations before running them',
     type: 'boolean',
   })
 
   .option(verboseArg, {
+    defaultDescription: 'true',
     describe: 'Print debug messages - all DB statements run',
     type: 'boolean',
   })
 
   .option(ignorePatternArg, {
-    default: '\\..*',
+    defaultDescription: '"\\..*"',
     describe: 'Regex pattern for file names to ignore',
     type: 'string',
   })
 
   .option(decamelizeArg, {
+    defaultDescription: 'false',
     describe: 'Runs decamelize on table/columns/etc names',
     type: 'boolean',
   })
@@ -123,7 +126,6 @@ const { argv } = yargs
 
   .option('f', {
     alias: configFileArg,
-    default: undefined,
     describe: 'Name of config file with db options',
     type: 'string',
   })
@@ -137,7 +139,6 @@ const { argv } = yargs
   })
 
   .option(tsconfigArg, {
-    default: undefined,
     describe: 'path to tsconfig.json file',
     type: 'string',
   })
@@ -168,6 +169,7 @@ const { argv } = yargs
   })
 
   .option(rejectUnauthorizedArg, {
+    defaultDescription: 'false',
     describe: 'Sets rejectUnauthorized SSL option',
     type: 'boolean',
   })
@@ -296,6 +298,14 @@ if (configFileName) {
 
 const action = argv._.shift()
 
+// defaults
+MIGRATIONS_DIR = typeof MIGRATIONS_DIR === 'undefined' ? `${process.cwd()}/migrations` : MIGRATIONS_DIR
+MIGRATIONS_TABLE = typeof MIGRATIONS_TABLE === 'undefined' ? 'pgmigrations' : MIGRATIONS_TABLE
+SCHEMA = typeof SCHEMA === 'undefined' ? 'public' : SCHEMA
+IGNORE_PATTERN = typeof IGNORE_PATTERN === 'undefined' ? '\\..*' : IGNORE_PATTERN
+CHECK_ORDER = typeof CHECK_ORDER === 'undefined' ? true : CHECK_ORDER
+VERBOSE = typeof VERBOSE === 'undefined' ? true : VERBOSE
+
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
   let newMigrationName = argv._.length ? argv._.join('-') : ''
@@ -375,8 +385,8 @@ if (action === 'create') {
       count,
       timestamp,
       file: migrationName,
-      checkOrder: typeof CHECK_ORDER === 'undefined' ? true : CHECK_ORDER,
-      verbose: typeof VERBOSE === 'undefined' ? true : VERBOSE,
+      checkOrder: CHECK_ORDER,
+      verbose: VERBOSE,
       direction,
       singleTransaction,
       noLock,
