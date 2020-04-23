@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.6.2](2020-04-23)
+
+### Fixed
+
+- Fixing default options [#601](https://github.com/salsita/node-pg-migrate/pull/601)
+
 ## [4.6.1](2020-04-08)
 
 ### Fixed
