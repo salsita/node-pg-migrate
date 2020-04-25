@@ -3,6 +3,7 @@
 
 'use strict'
 
+const fs = require('fs')
 const util = require('util')
 const path = require('path')
 const yargs = require('yargs')
@@ -217,8 +218,10 @@ if (tsconfigPath) {
   let tsconfig
   let tsnode
   try {
-    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-    tsconfig = require(path.resolve(process.cwd(), tsconfigPath))
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const config = fs.readFileSync(path.resolve(process.cwd(), tsconfigPath), { encoding: 'utf-8' })
+    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,import/no-extraneous-dependencies
+    tsconfig = require('json5').parse(config)
   } catch (err) {
     console.error(`Can't load tsconfig.json: ${err.stack}`)
   }
