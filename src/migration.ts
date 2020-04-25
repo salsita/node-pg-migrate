@@ -9,15 +9,13 @@
 import fs from 'fs'
 import mkdirp from 'mkdirp'
 import path from 'path'
-import { promisify } from 'util'
 import { DBConnection } from './db'
 import MigrationBuilder from './migration-builder'
 import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOption, Logger } from './types'
 import { getMigrationTableSchema } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
 
-const readdir = promisify(fs.readdir) // eslint-disable-line security/detect-non-literal-fs-filename
-const lstat = promisify(fs.lstat) // eslint-disable-line security/detect-non-literal-fs-filename
+const { readdir, lstat } = fs.promises
 
 const SEPARATOR = '_'
 
