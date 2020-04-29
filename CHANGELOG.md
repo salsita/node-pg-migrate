@@ -1,5 +1,22 @@
 # Change Log
 
+## [4.7.0](2020-04-29)
+
+### Aded
+
+- Export ColumnDefinition [#611](https://github.com/salsita/node-pg-migrate/pull/611)
+- feat: support for parsing `tsconfig.json` with comments [#606](https://github.com/salsita/node-pg-migrate/pull/606)
+
+### Fixed
+
+- pipe return writeable, should use close event [#608](https://github.com/salsita/node-pg-migrate/pull/608)
+
+## [4.6.2](2020-04-23)
+
+### Fixed
+
+- Fixing default options [#601](https://github.com/salsita/node-pg-migrate/pull/601)
+
 ## [4.6.1](2020-04-08)
 
 ### Fixed
