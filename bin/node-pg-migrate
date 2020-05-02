@@ -288,7 +288,6 @@ try {
   if (config.has(argv[configValueArg])) {
     const db = config.get(argv[configValueArg])
     readJson(db)
-    readTsconfig()
   }
   process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning
 } catch (err) {
@@ -302,8 +301,8 @@ if (configFileName) {
   // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
   const config = require(path.resolve(configFileName))
   readJson(config)
-  readTsconfig()
 }
+readTsconfig()
 
 const action = argv._.shift()
 
