@@ -212,32 +212,34 @@ let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
 let CHECK_ORDER = argv[checkOrderArg]
 let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
+let tsconfigPath = argv[tsconfigArg]
 
-const tsconfigPath = argv[tsconfigArg]
-if (tsconfigPath) {
-  let tsconfig
-  let tsnode
-  try {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const config = fs.readFileSync(path.resolve(process.cwd(), tsconfigPath), { encoding: 'utf-8' })
-    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,import/no-extraneous-dependencies
-    tsconfig = require('json5').parse(config)
-  } catch (err) {
-    console.error(`Can't load tsconfig.json: ${err.stack}`)
-  }
-  try {
-    // eslint-disable-next-line global-require,import/no-extraneous-dependencies
-    tsnode = require('ts-node')
-  } catch (err) {
-    console.error(`Can't load ts-node: ${err.stack}`)
-  }
-  if (tsconfig && tsnode) {
-    tsnode.register(tsconfig)
-    if (!MIGRATIONS_FILE_LANGUAGE) {
-      MIGRATIONS_FILE_LANGUAGE = 'ts'
+function readTsconfig() {
+  if (tsconfigPath) {
+    let tsconfig
+    let tsnode
+    try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const config = fs.readFileSync(path.resolve(process.cwd(), tsconfigPath), { encoding: 'utf-8' })
+      // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,import/no-extraneous-dependencies
+      tsconfig = require('json5').parse(config)
+    } catch (err) {
+      console.error(`Can't load tsconfig.json: ${err.stack}`)
     }
-  } else {
-    process.exit(1)
+    try {
+      // eslint-disable-next-line global-require,import/no-extraneous-dependencies
+      tsnode = require('ts-node')
+    } catch (err) {
+      console.error(`Can't load ts-node: ${err.stack}`)
+    }
+    if (tsconfig && tsnode) {
+      tsnode.register(tsconfig)
+      if (!MIGRATIONS_FILE_LANGUAGE) {
+        MIGRATIONS_FILE_LANGUAGE = 'ts'
+      }
+    } else {
+      process.exit(1)
+    }
   }
 }
 
@@ -256,6 +258,8 @@ function readJson(json) {
     CHECK_ORDER = typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg]
     VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg]
     DECAMELIZE = typeof DECAMELIZE !== 'undefined' ? DECAMELIZE : json[decamelizeArg]
+    DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : process.env[json[databaseUrlVarArg]]
+    tsconfigPath = typeof tsconfigPath !== 'undefined' ? tsconfigPath : json[tsconfigArg]
     if (json.url) {
       DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json.url
     } else if (json.host || json.port || json.name || json.database) {
@@ -298,6 +302,7 @@ if (configFileName) {
   const config = require(path.resolve(configFileName))
   readJson(config)
 }
+readTsconfig()
 
 const action = argv._.shift()
 
