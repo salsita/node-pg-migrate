@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.8.0](2020-05-04)
+
+### Aded
+
+- add DB env var and tsconfig path to config options [#613](https://github.com/salsita/node-pg-migrate/pull/613)
+
 ## [4.7.0](2020-04-29)
 
 ### Aded
