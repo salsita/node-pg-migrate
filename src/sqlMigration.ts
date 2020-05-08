@@ -1,8 +1,7 @@
 import fs from 'fs'
-import { promisify } from 'util'
 import { MigrationBuilderActions } from './types'
 
-const readFile = promisify(fs.readFile) // eslint-disable-line security/detect-non-literal-fs-filename
+const { readFile } = fs.promises
 
 const createMigrationCommentRegex = (direction: 'up' | 'down') =>
   new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im') // eslint-disable-line security/detect-non-literal-regexp
