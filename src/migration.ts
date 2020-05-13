@@ -66,7 +66,7 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
     }
   }
   logger.error(`Can't determine timestamp for ${prefix}`)
-  return 0
+  return Number(prefix) || 0
 }
 
 export interface RunMigration {
