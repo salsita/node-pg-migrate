@@ -183,6 +183,20 @@ jobs:
       - <<: *restore
       - <<: *postgres-wait
       - <<: *test-postgres
+  test-node-14:
+    docker:
+      - image: circleci/node:14
+        environment:
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+      - image: postgres:12.2-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-config:
     docker:
       - <<: *node-image
@@ -370,6 +384,9 @@ workflows:
           requires:
             - install
       - test-node-10:
+          requires:
+            - install
+      - test-node-14:
           requires:
             - install
       - test-config:
