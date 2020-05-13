@@ -31,6 +31,7 @@ const migrationsTableArg = 'migrations-table'
 const migrationsSchemaArg = 'migrations-schema'
 const createMigrationsSchemaArg = 'create-migrations-schema'
 const migrationFileLanguageArg = 'migration-file-language'
+const migrationFilenameFormatArg = 'migration-filename-format'
 const checkOrderArg = 'check-order'
 const configValueArg = 'config-value'
 const configFileArg = 'config-file'
@@ -133,9 +134,16 @@ const { argv } = yargs
 
   .option('j', {
     alias: migrationFileLanguageArg,
-    defaultDescription: 'last one used or js if there is no migration yet',
+    defaultDescription: 'last one used or "js" if there is no migration yet',
     choices: ['js', 'ts', 'sql'],
     describe: 'Language of the migration file (Only valid with the create action)',
+    type: 'string',
+  })
+
+  .option(migrationFilenameFormatArg, {
+    defaultDescription: '"timestamp"',
+    choices: ['timestamp', 'utc'],
+    describe: 'Prefix type of migration filename (Only valid with the create action)',
     type: 'string',
   })
 
@@ -209,6 +217,7 @@ let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg]
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg]
 let MIGRATIONS_TABLE = argv[migrationsTableArg]
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
+let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg]
 let CHECK_ORDER = argv[checkOrderArg]
 let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
@@ -254,6 +263,8 @@ function readJson(json) {
     MIGRATIONS_TABLE = typeof MIGRATIONS_TABLE !== 'undefined' ? MIGRATIONS_TABLE : json[migrationsTableArg]
     MIGRATIONS_FILE_LANGUAGE =
       typeof MIGRATIONS_FILE_LANGUAGE !== 'undefined' ? MIGRATIONS_FILE_LANGUAGE : json[migrationFileLanguageArg]
+    MIGRATIONS_FILENAME_FORMAT =
+      typeof MIGRATIONS_FILENAME_FORMAT !== 'undefined' ? MIGRATIONS_FILENAME_FORMAT : json[migrationFilenameFormatArg]
     IGNORE_PATTERN = typeof IGNORE_PATTERN !== 'undefined' ? IGNORE_PATTERN : json[ignorePatternArg]
     CHECK_ORDER = typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg]
     VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg]
@@ -326,7 +337,13 @@ if (action === 'create') {
     process.exit(1)
   }
 
-  Migration.create(newMigrationName, MIGRATIONS_DIR, MIGRATIONS_FILE_LANGUAGE, IGNORE_PATTERN)
+  Migration.create(
+    newMigrationName,
+    MIGRATIONS_DIR,
+    MIGRATIONS_FILE_LANGUAGE,
+    IGNORE_PATTERN,
+    MIGRATIONS_FILENAME_FORMAT,
+  )
     .then((migrationPath) => {
       console.log(util.format('Created migration -- %s', migrationPath))
       process.exit(0)

@@ -24,27 +24,29 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
   try {
     let shorthands: ColumnDefinitions = {}
     const files = await loadMigrationFiles(options.dir, options.ignorePattern)
-    return Promise.all(
-      files.map(async (file) => {
-        const filePath = `${options.dir}/${file}`
-        const actions: MigrationBuilderActions =
-          path.extname(filePath) === '.sql'
-            ? await migrateSqlFile(filePath)
-            : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-              require(path.relative(__dirname, filePath))
-        shorthands = { ...shorthands, ...actions.shorthands }
-        return new Migration(
-          db,
-          filePath,
-          actions,
-          options,
-          {
-            ...shorthands,
-          },
-          logger,
-        )
-      }),
-    )
+    return (
+      await Promise.all(
+        files.map(async (file) => {
+          const filePath = `${options.dir}/${file}`
+          const actions: MigrationBuilderActions =
+            path.extname(filePath) === '.sql'
+              ? await migrateSqlFile(filePath)
+              : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
+                require(path.relative(__dirname, filePath))
+          shorthands = { ...shorthands, ...actions.shorthands }
+          return new Migration(
+            db,
+            filePath,
+            actions,
+            options,
+            {
+              ...shorthands,
+            },
+            logger,
+          )
+        }),
+      )
+    ).sort((m1, m2) => m1.timestamp - m2.timestamp)
   } catch (err) {
     throw new Error(`Can't get migration files: ${err.stack}`)
   }
