@@ -25,5 +25,5 @@ exports.up = (pgm) => {
     string: 'text',
   }, {
     temporary: true,
-  }})
+  })
 }
