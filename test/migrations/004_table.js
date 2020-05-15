@@ -21,4 +21,9 @@ exports.up = (pgm) => {
       comment: exports.comment,
     },
   )
+  pgm.createTable('temp1', {
+    string: 'text',
+  }, {
+    temporary: true,
+  }})
 }
