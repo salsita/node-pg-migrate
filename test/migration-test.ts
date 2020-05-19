@@ -2,7 +2,7 @@
 import sinon, { SinonSpy } from 'sinon'
 import { expect } from 'chai'
 import { RunnerOption, Logger } from '../src/types'
-import { Migration } from '../src/migration'
+import { Migration, getTimestamp } from '../src/migration'
 import { DBConnection } from '../src/db'
 
 const callbackMigration = '1414549381268_names.js'
@@ -22,6 +22,18 @@ describe('lib/migration', () => {
   beforeEach(() => {
     queryMock = sinon.spy()
     dbMock.query = queryMock
+  })
+
+  describe('getTimestamp', () => {
+    it('Should get timestamp for normal timestamp', () => {
+      const now = Date.now()
+      expect(getTimestamp(logger, String(now))).to.eql(now)
+    })
+
+    it('Should get timestamp for shortened iso format', () => {
+      const now = new Date()
+      expect(getTimestamp(logger, now.toISOString().replace(/[^\d]/g, ''))).to.eql(now.valueOf())
+    })
   })
 
   describe('self.applyUp', () => {

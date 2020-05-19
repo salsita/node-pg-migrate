@@ -38,22 +38,58 @@ const getLastSuffix = async (dir: string, ignorePattern?: string) => {
   }
 }
 
+export const getTimestamp = (logger: Logger, filename: string): number => {
+  const prefix = filename.split(SEPARATOR)[0]
+  if (prefix && /^\d+$/.test(prefix)) {
+    if (prefix.length === 13) {
+      // timestamp: 1391877300255
+      return Number(prefix)
+    }
+    if (prefix && prefix.length === 17) {
+      // utc: 20200513070724505
+      const year = prefix.substr(0, 4)
+      const month = prefix.substr(4, 2)
+      const date = prefix.substr(6, 2)
+      const hours = prefix.substr(8, 2)
+      const minutes = prefix.substr(10, 2)
+      const seconds = prefix.substr(12, 2)
+      const ms = prefix.substr(14)
+      return new Date(`${year}-${month}-${date}T${hours}:${minutes}:${seconds}.${ms}Z`).valueOf()
+    }
+  }
+  logger.error(`Can't determine timestamp for ${prefix}`)
+  return Number(prefix) || 0
+}
+
 export interface RunMigration {
   readonly path: string
   readonly name: string
   readonly timestamp: number
 }
 
+export enum FilenameFormat {
+  timestamp = 'timestamp',
+  utc = 'utc',
+}
+
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
-  static async create(name: string, directory: string, language?: 'js' | 'ts' | 'sql', ignorePattern?: string) {
+  static async create(
+    name: string,
+    directory: string,
+    language?: 'js' | 'ts' | 'sql',
+    ignorePattern?: string,
+    filenameFormat = FilenameFormat.timestamp,
+  ) {
     // ensure the migrations directory exists
     mkdirp.sync(directory)
 
     const suffix = language || (await getLastSuffix(directory, ignorePattern)) || 'js'
 
+    const now = new Date()
+    const time = filenameFormat === FilenameFormat.utc ? now.toISOString().replace(/[^\d]/g, '') : now.valueOf()
     // file name looks like migrations/1391877300255_migration-title.js
-    const newFile = `${directory}/${Date.now()}${SEPARATOR}${name}.${suffix}`
+    const newFile = `${directory}/${time}${SEPARATOR}${name}.${suffix}`
 
     // copy the default migration template to the new file location
     await new Promise((resolve, reject) => {
@@ -97,7 +133,7 @@ export class Migration implements RunMigration {
     this.db = db
     this.path = migrationPath
     this.name = path.basename(migrationPath, path.extname(migrationPath))
-    this.timestamp = Number(this.name.split(SEPARATOR)[0]) || 0
+    this.timestamp = getTimestamp(logger, this.name)
     this.up = up
     this.down = down
     this.options = options
