@@ -1,5 +1,22 @@
 # Change Log
 
+## [5.0.0](2020-05-19)
+
+### Breaking changes
+
+- remove node 8 support [#615](https://github.com/salsita/node-pg-migrate/pull/615)
+- Ability to use sort of UTC time in filename [#622](https://github.com/salsita/node-pg-migrate/pull/622)
+
+  If you used a different format for migrations names than the default one it can potentially break the order of your migrations
+
+- Migration can be also symlink [#630](https://github.com/salsita/node-pg-migrate/pull/630)
+
+  If you have symlinks in the migration folder, migration can potentially break
+
+### Fixed
+
+- Fixed position of TEMPORARY clause in create table [#629](https://github.com/salsita/node-pg-migrate/pull/629)
+
 ## [4.8.0](2020-05-04)
 
 ### Aded
