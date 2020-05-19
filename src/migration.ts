@@ -15,20 +15,14 @@ import { MigrationAction, MigrationBuilderActions, MigrationDirection, RunnerOpt
 import { getMigrationTableSchema } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
 
-const { readdir, lstat } = fs.promises
+const { readdir } = fs.promises
 
 const SEPARATOR = '_'
 
 export const loadMigrationFiles = async (dir: string, ignorePattern?: string) => {
-  const dirContent = await readdir(`${dir}/`)
-  const files = (
-    await Promise.all(
-      dirContent.map(async (file) => {
-        const stats = await lstat(`${dir}/${file}`)
-        return stats.isFile() ? file : null
-      }),
-    )
-  )
+  const dirContent = await readdir(`${dir}/`, { withFileTypes: true })
+  const files = dirContent
+    .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
     .filter((file): file is string => Boolean(file))
     .sort()
   const filter = new RegExp(`^(${ignorePattern})$`) // eslint-disable-line security/detect-non-literal-regexp
