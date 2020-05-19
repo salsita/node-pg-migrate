@@ -289,7 +289,7 @@ export function createTable(mOptions: MigrationOptions) {
     const inheritsStr = inherits ? ` INHERITS (${mOptions.literal(inherits)})` : ''
     const tableNameStr = mOptions.literal(tableName)
 
-    const createTableQuery = `CREATE TABLE${temporaryStr}${ifNotExistsStr} ${tableNameStr} (
+    const createTableQuery = `CREATE${temporaryStr} TABLE${ifNotExistsStr} ${tableNameStr} (
 ${formatLines(tableDefinition)}
 )${inheritsStr};`
     const comments = [...columnComments, ...constraintComments]
