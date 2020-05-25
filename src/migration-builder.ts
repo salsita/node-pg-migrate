@@ -202,6 +202,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     // by default, all migrations are wrapped in a transaction
     this._useTransaction = true
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type OperationFn = (...args: any[]) => string | string[]
     type Operation = OperationFn & { reverse?: OperationFn }
 
@@ -328,6 +329,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.func = PgLiteral.create
 
     // expose DB so we can access database within transaction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapDB = <T extends any[], R>(operation: (...args: T) => R) => (...args: T) => {
       if (this._REVERSE_MODE) {
         throw new Error('Impossible to automatically infer down migration')

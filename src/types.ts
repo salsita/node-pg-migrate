@@ -21,6 +21,7 @@ import PgLiteral from './operations/PgLiteral'
 
 // see ClientBase in @types/pg
 export interface DB {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   query(queryConfig: QueryArrayConfig, values?: any[]): Promise<QueryArrayResult>
   query(queryConfig: QueryConfig): Promise<QueryResult>
   query(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<QueryResult>
@@ -28,6 +29,7 @@ export interface DB {
   select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>
   select(queryConfig: QueryConfig): Promise<any[]>
   select(queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 export interface MigrationBuilder {

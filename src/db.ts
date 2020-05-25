@@ -5,6 +5,7 @@ import { inspect } from 'util'
 import { ClientBase, Client, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { Logger, DB } from './types'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DBConnection extends DB {
   createConnection(): Promise<void>
 
