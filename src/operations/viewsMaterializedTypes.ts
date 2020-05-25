@@ -1,6 +1,6 @@
 import { Name, DropOptions, IfNotExistsOption } from './generalTypes'
 
-export type StorageParameters = { [key: string]: any }
+export type StorageParameters = { [key: string]: boolean | number }
 
 export interface CreateMaterializedViewOptions extends IfNotExistsOption {
   columns?: string | string[]

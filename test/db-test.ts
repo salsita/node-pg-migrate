@@ -6,11 +6,11 @@ class Client {
   /* eslint-disable */
   constructor() {}
 
-  connect() {}
+  async connect() {}
 
-  query(...args: any[]) {}
+  async query(...args: any[]) {}
 
-  end() {}
+  async end() {}
   /* eslint-enable */
 }
 
@@ -51,7 +51,7 @@ describe('lib/db', () => {
 
     it('should use external client', () => {
       const mockClient = new pgMock.Client()
-      const mocked = sandbox.stub(mockClient, 'query').returns(Promise.resolve() as any)
+      const mocked = sandbox.stub(mockClient, 'query').returns(Promise.resolve())
 
       db = Db(mockClient, log)
       return db.query('query').then(() => {
@@ -66,8 +66,8 @@ describe('lib/db', () => {
     let queryMock: SinonStub
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client)
-      connectMock = sandbox.stub(client, 'connect').returns(Promise.resolve() as any)
-      queryMock = sandbox.stub(client, 'query').returns(Promise.resolve() as any)
+      connectMock = sandbox.stub(client, 'connect').returns(Promise.resolve())
+      queryMock = sandbox.stub(client, 'query').returns(Promise.resolve())
       db = Db(undefined, log)
     })
     afterEach(() => {
@@ -76,14 +76,14 @@ describe('lib/db', () => {
 
     it('should call client.connect if this is the first query', () => {
       connectMock.callsFake((fn) => fn())
-      queryMock.returns(Promise.resolve() as any)
+      queryMock.returns(Promise.resolve())
       return db.query('query').then(() => {
         expect(connectMock).to.be.calledOnce
       })
     })
     it('should not call client.connect on subsequent queries', () => {
       connectMock.callsFake((fn) => fn())
-      queryMock.returns(Promise.resolve() as any)
+      queryMock.returns(Promise.resolve())
       return db
         .query('query_one')
         .then(() => db.query('query_two'))
@@ -93,7 +93,7 @@ describe('lib/db', () => {
     })
     it('should call client.query with query', () => {
       connectMock.callsFake((fn) => fn())
-      queryMock.returns(Promise.resolve() as any)
+      queryMock.returns(Promise.resolve())
       return db.query('query').then(() => {
         expect(queryMock.getCall(0).args[0]).to.equal('query')
       })
@@ -123,7 +123,7 @@ describe('lib/db', () => {
     let db: typeof Db
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client)
-      sandbox.stub(client, 'end').returns(Promise.resolve() as any)
+      sandbox.stub(client, 'end').returns(Promise.resolve())
       db = Db()
     })
     afterEach(() => {

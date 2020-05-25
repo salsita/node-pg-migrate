@@ -27,18 +27,18 @@ module.exports = {
     mocha: true,
   },
   rules: {
-    'no-underscore-dangle': 0,
-    'security/detect-object-injection': 0,
-    '@typescript-eslint/explicit-function-return-type': 0,
-    '@typescript-eslint/no-explicit-any': 0,
+    'no-underscore-dangle': 'off',
+    'security/detect-object-injection': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     'import/extensions': ['error', 'never'],
   },
   overrides: [
     {
       files: ['*.js', 'node-pg-migrate'],
       rules: {
-        '@typescript-eslint/no-var-requires': 0,
-        '@typescript-eslint/camelcase': 0,
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/camelcase': 'off',
       },
     },
   ],

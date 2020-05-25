@@ -105,7 +105,7 @@ type AddColumnsFn = (
 export type AddColumns = AddColumnsFn & { reverse: AddColumnsFn }
 export type DropColumns = (
   tableName: Name,
-  columns: string | string[] | { [name: string]: any },
+  columns: string | string[] | { [name: string]: unknown },
   dropOptions?: DropOptions,
 ) => string | string[]
 type RenameColumnFn = (tableName: Name, oldColumnName: string, newColumnName: string) => string | string[]
