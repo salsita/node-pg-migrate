@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.0.1](2020-06-02)
+
+### Fixed
+
+- Keep `this` bind in logger methods [#638](https://github.com/salsita/node-pg-migrate/pull/638)
+
 ## [5.0.0](2020-05-19)
 
 ### Breaking changes
