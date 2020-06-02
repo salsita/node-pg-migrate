@@ -161,7 +161,14 @@ const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
   } else if (typeof log === 'function') {
     loggerObject = { debug: log, info: log, warn: log, error: log }
   }
-  return verbose ? loggerObject : { ...loggerObject, debug: undefined }
+  return verbose
+    ? loggerObject
+    : {
+        debug: undefined,
+        info: loggerObject.info.bind(loggerObject),
+        warn: loggerObject.warn.bind(loggerObject),
+        error: loggerObject.error.bind(loggerObject),
+      }
 }
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
