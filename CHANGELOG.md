@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.0.2](2020-06-05)
+
+### Fixed
+
+- Fix alter column collation [#641](https://github.com/salsita/node-pg-migrate/pull/641)
+
 ## [5.0.1](2020-06-02)
 
 ### Fixed
