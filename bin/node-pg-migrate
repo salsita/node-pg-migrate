@@ -32,6 +32,7 @@ const migrationsSchemaArg = 'migrations-schema'
 const createMigrationsSchemaArg = 'create-migrations-schema'
 const migrationFileLanguageArg = 'migration-file-language'
 const migrationFilenameFormatArg = 'migration-filename-format'
+const templateFileNameArg = 'template-file-name'
 const checkOrderArg = 'check-order'
 const configValueArg = 'config-value'
 const configFileArg = 'config-file'
@@ -147,6 +148,11 @@ const { argv } = yargs
     type: 'string',
   })
 
+  .option(templateFileNameArg, {
+    describe: 'Path to template for creating migrations',
+    type: 'string',
+  })
+
   .option(tsconfigArg, {
     describe: 'path to tsconfig.json file',
     type: 'string',
@@ -218,6 +224,7 @@ let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg]
 let MIGRATIONS_TABLE = argv[migrationsTableArg]
 let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
 let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg]
+let TEMPLATE_FILE_NAME = argv[templateFileNameArg]
 let CHECK_ORDER = argv[checkOrderArg]
 let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
@@ -265,6 +272,7 @@ function readJson(json) {
       typeof MIGRATIONS_FILE_LANGUAGE !== 'undefined' ? MIGRATIONS_FILE_LANGUAGE : json[migrationFileLanguageArg]
     MIGRATIONS_FILENAME_FORMAT =
       typeof MIGRATIONS_FILENAME_FORMAT !== 'undefined' ? MIGRATIONS_FILENAME_FORMAT : json[migrationFilenameFormatArg]
+    TEMPLATE_FILE_NAME = typeof TEMPLATE_FILE_NAME !== 'undefined' ? TEMPLATE_FILE_NAME : json[templateFileNameArg]
     IGNORE_PATTERN = typeof IGNORE_PATTERN !== 'undefined' ? IGNORE_PATTERN : json[ignorePatternArg]
     CHECK_ORDER = typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg]
     VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg]
@@ -337,13 +345,12 @@ if (action === 'create') {
     process.exit(1)
   }
 
-  Migration.create(
-    newMigrationName,
-    MIGRATIONS_DIR,
-    MIGRATIONS_FILE_LANGUAGE,
-    IGNORE_PATTERN,
-    MIGRATIONS_FILENAME_FORMAT,
-  )
+  Migration.create(newMigrationName, MIGRATIONS_DIR, {
+    filenameFormat: MIGRATIONS_FILENAME_FORMAT,
+    templateFileName: TEMPLATE_FILE_NAME,
+    language: MIGRATIONS_FILE_LANGUAGE,
+    ignorePattern: IGNORE_PATTERN,
+  })
     .then((migrationPath) => {
       console.log(util.format('Created migration -- %s', migrationPath))
       process.exit(0)

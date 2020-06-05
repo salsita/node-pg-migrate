@@ -13,5 +13,5 @@
     "noImplicitAny": true,
     "noUnusedLocals": true
   },
-  "exclude": ["node_modules", "templates", "test", "dist", "bin"]
+  "exclude": ["node_modules", "templates", "test", "dist", "bin", "migrations"]
 }

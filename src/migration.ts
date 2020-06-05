@@ -29,10 +29,12 @@ export const loadMigrationFiles = async (dir: string, ignorePattern?: string) =>
   return ignorePattern === undefined ? files : files.filter((i) => !filter.test(i))
 }
 
+const getSuffixFromFileName = (fileName: string) => path.extname(fileName).substr(1)
+
 const getLastSuffix = async (dir: string, ignorePattern?: string) => {
   try {
     const files = await loadMigrationFiles(dir, ignorePattern)
-    return files.length > 0 ? path.extname(files[files.length - 1]).substr(1) : undefined
+    return files.length > 0 ? getSuffixFromFileName(files[files.length - 1]) : undefined
   } catch (err) {
     return undefined
   }
@@ -61,6 +63,9 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
   return Number(prefix) || 0
 }
 
+const resolveSuffix = async (directory: string, { language, ignorePattern }: CreateOptionsDefault) =>
+  language || (await getLastSuffix(directory, ignorePattern)) || 'js'
+
 export interface RunMigration {
   readonly path: string
   readonly name: string
@@ -72,29 +77,57 @@ export enum FilenameFormat {
   utc = 'utc',
 }
 
+export interface CreateOptionsTemplate {
+  templateFileName: string
+}
+
+export interface CreateOptionsDefault {
+  language?: 'js' | 'ts' | 'sql'
+  ignorePattern?: string
+}
+
+export type CreateOptions = {
+  filenameFormat?: FilenameFormat
+} & (CreateOptionsTemplate | CreateOptionsDefault)
+
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
   static async create(
     name: string,
     directory: string,
-    language?: 'js' | 'ts' | 'sql',
-    ignorePattern?: string,
-    filenameFormat = FilenameFormat.timestamp,
+    _language?: 'js' | 'ts' | 'sql' | CreateOptions,
+    _ignorePattern?: string,
+    _filenameFormat?: FilenameFormat,
   ) {
+    if (typeof _language === 'string') {
+      // eslint-disable-next-line no-console
+      console.warn('This usage is deprecated. Please use this method with options object argument')
+    }
+    const options =
+      typeof _language === 'object'
+        ? _language
+        : { language: _language, ignorePattern: _ignorePattern, filenameFormat: _filenameFormat }
+    const { filenameFormat = FilenameFormat.timestamp } = options
+
     // ensure the migrations directory exists
     mkdirp.sync(directory)
 
-    const suffix = language || (await getLastSuffix(directory, ignorePattern)) || 'js'
-
     const now = new Date()
     const time = filenameFormat === FilenameFormat.utc ? now.toISOString().replace(/[^\d]/g, '') : now.valueOf()
+
+    const templateFileName =
+      'templateFileName' in options
+        ? path.resolve(process.cwd(), options.templateFileName)
+        : path.resolve(__dirname, `../templates/migration-template.${await resolveSuffix(directory, options)}`)
+    const suffix = getSuffixFromFileName(templateFileName)
+
     // file name looks like migrations/1391877300255_migration-title.js
     const newFile = `${directory}/${time}${SEPARATOR}${name}.${suffix}`
 
     // copy the default migration template to the new file location
     await new Promise((resolve, reject) => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
-      fs.createReadStream(path.resolve(__dirname, `../templates/migration-template.${suffix}`))
+      fs.createReadStream(templateFileName)
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         .pipe(fs.createWriteStream(newFile))
         .on('close', resolve)
