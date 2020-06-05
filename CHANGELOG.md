@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.1.0](2020-06-05)
+
+### Added
+
+- Ability to specify own template file [#642](https://github.com/salsita/node-pg-migrate/pull/642)
+
 ## [5.0.2](2020-06-05)
 
 ### Fixed
