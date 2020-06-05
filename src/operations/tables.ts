@@ -361,7 +361,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     }
     if (type) {
       const typeStr = applyTypeAdapters(type)
-      const collationStr = collation ? `COLLATE ${collation}` : ''
+      const collationStr = collation ? ` COLLATE ${collation}` : ''
       const usingStr = using ? ` USING ${using}` : ''
       actions.push(`SET DATA TYPE ${typeStr}${collationStr}${usingStr}`)
     }
