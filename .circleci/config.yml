@@ -336,6 +336,20 @@ jobs:
       - run:
           name: test
           command: $(npm bin)/ts-node test/ts/customRunner.ts
+  test-create-migration:
+    docker:
+      - <<: *node-image
+    steps:
+      - <<: *restore
+      - run:
+          name: check dir does not exists
+          command: [ ! -d migrations ]
+      - run:
+          name: create migration
+          command: npm run migrate create test
+      - run:
+          name: check file was created
+          command: files=(migrations/*) [ ${#files[@]} -eq 1 ]
 
 workflows:
   version: 2
@@ -394,5 +408,8 @@ workflows:
           requires:
           - install
       - test-typescript-customrunner:
+          requires:
+          - install
+      - test-create-migration:
           requires:
           - install
