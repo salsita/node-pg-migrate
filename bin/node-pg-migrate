@@ -347,9 +347,12 @@ if (action === 'create') {
 
   Migration.create(newMigrationName, MIGRATIONS_DIR, {
     filenameFormat: MIGRATIONS_FILENAME_FORMAT,
-    templateFileName: TEMPLATE_FILE_NAME,
-    language: MIGRATIONS_FILE_LANGUAGE,
-    ignorePattern: IGNORE_PATTERN,
+    ...(TEMPLATE_FILE_NAME
+      ? { templateFileName: TEMPLATE_FILE_NAME }
+      : {
+          language: MIGRATIONS_FILE_LANGUAGE,
+          ignorePattern: IGNORE_PATTERN,
+        }),
   })
     .then((migrationPath) => {
       console.log(util.format('Created migration -- %s', migrationPath))
