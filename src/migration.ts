@@ -116,7 +116,7 @@ export class Migration implements RunMigration {
     const time = filenameFormat === FilenameFormat.utc ? now.toISOString().replace(/[^\d]/g, '') : now.valueOf()
 
     const templateFileName =
-      'templateFileName' in options
+      options.templateFileName
         ? path.resolve(process.cwd(), options.templateFileName)
         : path.resolve(__dirname, `../templates/migration-template.${await resolveSuffix(directory, options)}`)
     const suffix = getSuffixFromFileName(templateFileName)
