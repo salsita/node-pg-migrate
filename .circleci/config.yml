@@ -343,7 +343,8 @@ jobs:
       - <<: *restore
       - run:
           name: check dir does not exists
-          command: [ ! -d migrations ]
+          command: |
+            [ ! -d migrations ]
       - run:
           name: create migration
           command: npm run migrate create test
