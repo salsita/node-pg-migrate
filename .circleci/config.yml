@@ -350,7 +350,8 @@ jobs:
           command: npm run migrate create test
       - run:
           name: check file was created
-          command: files=(migrations/*) [ ${#files[@]} -eq 1 ]
+          command: |
+            [ $(ls -1 migrations | wc -l) -eq 1 ]
 
 workflows:
   version: 2
