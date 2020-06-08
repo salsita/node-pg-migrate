@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.1.1](2020-06-08)
+
+### Fixed
+
+- Fix creating migration [#646](https://github.com/salsita/node-pg-migrate/pull/646)
+
 ## [5.1.0](2020-06-05)
 
 ### Added
