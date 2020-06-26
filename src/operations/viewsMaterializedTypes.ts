@@ -1,4 +1,4 @@
-import { Name, DropOptions, IfNotExistsOption } from './generalTypes'
+import { Name, DropOptions, IfNotExistsOption, Nullable } from './generalTypes'
 
 export type StorageParameters = { [key: string]: boolean | number }
 
@@ -12,7 +12,7 @@ export interface CreateMaterializedViewOptions extends IfNotExistsOption {
 export interface AlterMaterializedViewOptions {
   cluster?: null | false | string
   extension?: string
-  storageParameters?: StorageParameters
+  storageParameters?: Nullable<StorageParameters>
 }
 
 export interface RefreshMaterializedViewOptions {

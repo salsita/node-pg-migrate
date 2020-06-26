@@ -1,8 +1,14 @@
 import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
-import { CreateView, DropView, AlterView, AlterViewColumn, RenameView } from './viewsTypes'
+import { CreateView, DropView, AlterView, AlterViewColumn, RenameView, ViewOptions } from './viewsTypes'
+import { Nullable } from './generalTypes'
 
-export { CreateView, DropView, AlterView, AlterViewColumn, RenameView }
+export { CreateView, DropView, AlterView, AlterViewColumn, RenameView, ViewOptions }
+
+const viewOptionStr = <T extends Nullable<ViewOptions>, K extends keyof T>(options: T) => (key: K) => {
+  const value = options[key] === true ? '' : ` = ${options[key]}`
+  return `${key}${value}`
+}
 
 export function dropView(mOptions: MigrationOptions) {
   const _drop: DropView = (viewName, options = {}) => {
@@ -16,34 +22,50 @@ export function dropView(mOptions: MigrationOptions) {
 }
 
 export function createView(mOptions: MigrationOptions) {
-  const _create: CreateView = (viewName, options, definition) => {
-    const { temporary, replace, recursive, columns = [], checkOption } = options
-    // prettier-ignore
-    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(", ");
+  const _create: CreateView = (viewName, viewOptions, definition) => {
+    const { temporary, replace, recursive, columns = [], options = {}, checkOption } = viewOptions
+    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(', ')
+    const withOptions = Object.keys(options).map(viewOptionStr(options)).join(', ')
+
     const replaceStr = replace ? ' OR REPLACE' : ''
     const temporaryStr = temporary ? ' TEMPORARY' : ''
     const recursiveStr = recursive ? ' RECURSIVE' : ''
     const columnStr = columnNames ? `(${columnNames})` : ''
+    const withOptionsStr = withOptions ? ` WITH (${withOptions})` : ''
     const checkOptionStr = checkOption ? ` WITH ${checkOption} CHECK OPTION` : ''
     const viewNameStr = mOptions.literal(viewName)
 
-    return `CREATE${replaceStr}${temporaryStr}${recursiveStr} VIEW ${viewNameStr}${columnStr} AS ${definition}${checkOptionStr};`
+    return `CREATE${replaceStr}${temporaryStr}${recursiveStr} VIEW ${viewNameStr}${columnStr}${withOptionsStr} AS ${definition}${checkOptionStr};`
   }
   _create.reverse = dropView(mOptions)
   return _create
 }
 
 export function alterView(mOptions: MigrationOptions) {
-  const _alter: AlterView = (viewName, options) => {
-    const { checkOption } = options
-    const clauses = []
+  const _alter: AlterView = (viewName, viewOptions) => {
+    const { checkOption, options = {} } = viewOptions
     if (checkOption !== undefined) {
-      if (checkOption) {
-        clauses.push(`SET check_option = ${checkOption}`)
+      if (options.check_option === undefined) {
+        options.check_option = checkOption
       } else {
-        clauses.push(`RESET check_option`)
+        throw new Error('"options.check_option" and "checkOption" can\'t be specified together')
       }
     }
+    const clauses = []
+    const withOptions = Object.keys(options)
+      .filter((key) => options[key] !== null)
+      .map(viewOptionStr(options))
+      .join(', ')
+    if (withOptions) {
+      clauses.push(`SET (${withOptions})`)
+    }
+    const resetOptions = Object.keys(options)
+      .filter((key) => options[key] === null)
+      .join(', ')
+    if (resetOptions) {
+      clauses.push(`RESET (${resetOptions})`)
+    }
+
     return clauses.map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`).join('\n')
   }
   return _alter

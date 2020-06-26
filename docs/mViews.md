@@ -42,7 +42,7 @@
 - `options` _[object]_ - options:
   - `cluster` _[string]_ - optional index name for clustering
   - `extension` _[string]_ - optional name of extension view is dependent on
-  - `storageParameters` _[object]_ - optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
+  - `storageParameters` _[object]_ - optional key value (`null` to reset) pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
 
 ---
 
