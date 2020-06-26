@@ -1,5 +1,5 @@
 exports.up = (pgm) => {
-  pgm.createTable('tv', {
+  pgm.createTable('tvo', {
     id: 'id',
     string: { type: 'text', notNull: true },
     created: {
@@ -9,23 +9,28 @@ exports.up = (pgm) => {
     },
   })
   pgm.createView(
-    'v',
+    'vo',
     {
       columns: ['id', 'str'],
       options: {
         check_option: 'LOCAL',
       },
     },
-    'SELECT id, string FROM tv',
+    'SELECT id, string FROM tvo',
   )
-  pgm.alterView('v', {
+  pgm.alterView('vo', {
     options: {
       check_option: 'CASCADED',
     },
   })
-  pgm.alterView('v', {
+  pgm.alterView('vo', {
     options: {
       check_option: null,
     },
   })
+}
+
+exports.down = (pgm) => {
+  pgm.dropView('vo')
+  pgm.dropTable('tvo')
 }
