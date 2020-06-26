@@ -16,35 +16,41 @@ export function dropView(mOptions: MigrationOptions) {
 }
 
 export function createView(mOptions: MigrationOptions) {
-  const _create: CreateView = (viewName, options, definition) => {
-    const { temporary, replace, recursive, columns = [], checkOption } = options
-    // prettier-ignore
-    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(", ");
+  const _create: CreateView = (viewName, viewOptions, definition) => {
+    const { temporary, replace, recursive, columns = [], options = {}, checkOption } = viewOptions
+    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(', ')
+    const withOptions = Object.keys(options)
+      .map((key) => (options[key] === true ? key : `${key} = ${options[key]}`))
+      .join(', ')
+
     const replaceStr = replace ? ' OR REPLACE' : ''
     const temporaryStr = temporary ? ' TEMPORARY' : ''
     const recursiveStr = recursive ? ' RECURSIVE' : ''
     const columnStr = columnNames ? `(${columnNames})` : ''
+    const withOptionsStr = withOptions ? ` WITH (${withOptions})` : ''
     const checkOptionStr = checkOption ? ` WITH ${checkOption} CHECK OPTION` : ''
     const viewNameStr = mOptions.literal(viewName)
 
-    return `CREATE${replaceStr}${temporaryStr}${recursiveStr} VIEW ${viewNameStr}${columnStr} AS ${definition}${checkOptionStr};`
+    return `CREATE${replaceStr}${temporaryStr}${recursiveStr} VIEW ${viewNameStr}${columnStr}${withOptionsStr} AS ${definition}${checkOptionStr};`
   }
   _create.reverse = dropView(mOptions)
   return _create
 }
 
 export function alterView(mOptions: MigrationOptions) {
-  const _alter: AlterView = (viewName, options) => {
-    const { checkOption } = options
-    const clauses = []
+  const _alter: AlterView = (viewName, viewOptions) => {
+    const { checkOption, options = {} } = viewOptions
     if (checkOption !== undefined) {
-      if (checkOption) {
-        clauses.push(`SET check_option = ${checkOption}`)
+      if (options.check_option === undefined) {
+        options.check_option = checkOption
       } else {
-        clauses.push(`RESET check_option`)
+        throw new Error('"options.check_option" and "checkOption" can\'t be specified together')
       }
     }
-    return clauses.map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`).join('\n')
+    return Object.keys(options)
+      .map((key) => (options[key] === null ? `RESET ${key}` : `SET ${key} = ${options[key]}`))
+      .map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`)
+      .join('\n')
   }
   return _alter
 }

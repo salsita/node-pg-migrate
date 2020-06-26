@@ -12,6 +12,7 @@
   - `replace` _[boolean]_ - default false
   - `recursive` _[boolean]_ - default false
   - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
+  - `options` _[object]_ - key value pairs of [View Options](https://www.postgresql.org/docs/current/sql-createview.html)
   - `checkOption` _[string]_ - `CASCADED` or `LOCAL`
 - `definition` _[string]_ - SQL of SELECT statement
 
@@ -40,7 +41,8 @@
 
 - `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
 - `options` _[object]_ - options:
-  - `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to drop
+  - `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to reset
+  - `options` _[object]_ - key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html)
 
 ---
 

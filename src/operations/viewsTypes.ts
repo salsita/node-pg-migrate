@@ -1,4 +1,6 @@
-import { Name, Value, DropOptions } from './generalTypes'
+import { Name, Value, DropOptions, Nullable } from './generalTypes'
+
+export type ViewOptions = { [key: string]: boolean | number | string }
 
 export interface CreateViewOptions {
   temporary?: boolean
@@ -6,10 +8,12 @@ export interface CreateViewOptions {
   recursive?: boolean
   columns?: string | string[]
   checkOption?: 'CASCADED' | 'LOCAL'
+  options?: ViewOptions
 }
 
 export interface AlterViewOptions {
-  checkOption?: null | false | 'CASCADED' | 'LOCAL'
+  checkOption?: null | 'CASCADED' | 'LOCAL'
+  options?: Nullable<ViewOptions>
 }
 
 export interface AlterViewColumnOptions {

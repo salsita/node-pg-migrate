@@ -39,8 +39,7 @@ export function dropMaterializedView(mOptions: MigrationOptions) {
 export function createMaterializedView(mOptions: MigrationOptions) {
   const _create: CreateMaterializedView = (viewName, options, definition) => {
     const { ifNotExists, columns = [], tablespace, storageParameters = {}, data } = options
-    // prettier-ignore
-    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(", ");
+    const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(', ')
     const withOptions = Object.keys(storageParameters).map(storageParameterStr(storageParameters)).join(', ')
 
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
