@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.2.0](2020-06-26)
+
+### Added
+
+- View options [#656](https://github.com/salsita/node-pg-migrate/pull/656)
+
 ## [5.1.1](2020-06-08)
 
 ### Fixed
