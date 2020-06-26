@@ -1,8 +1,14 @@
 import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
-import { CreateView, DropView, AlterView, AlterViewColumn, RenameView } from './viewsTypes'
+import { CreateView, DropView, AlterView, AlterViewColumn, RenameView, ViewOptions } from './viewsTypes'
+import { Nullable } from './generalTypes'
 
-export { CreateView, DropView, AlterView, AlterViewColumn, RenameView }
+export { CreateView, DropView, AlterView, AlterViewColumn, RenameView, ViewOptions }
+
+const viewOptionStr = <T extends Nullable<ViewOptions>, K extends keyof T>(options: T) => (key: K) => {
+  const value = options[key] === true ? '' : ` = ${options[key]}`
+  return `${key}${value}`
+}
 
 export function dropView(mOptions: MigrationOptions) {
   const _drop: DropView = (viewName, options = {}) => {
@@ -19,9 +25,7 @@ export function createView(mOptions: MigrationOptions) {
   const _create: CreateView = (viewName, viewOptions, definition) => {
     const { temporary, replace, recursive, columns = [], options = {}, checkOption } = viewOptions
     const columnNames = (Array.isArray(columns) ? columns : [columns]).map(mOptions.literal).join(', ')
-    const withOptions = Object.keys(options)
-      .map((key) => (options[key] === true ? key : `${key} = ${options[key]}`))
-      .join(', ')
+    const withOptions = Object.keys(options).map(viewOptionStr(options)).join(', ')
 
     const replaceStr = replace ? ' OR REPLACE' : ''
     const temporaryStr = temporary ? ' TEMPORARY' : ''
@@ -47,10 +51,22 @@ export function alterView(mOptions: MigrationOptions) {
         throw new Error('"options.check_option" and "checkOption" can\'t be specified together')
       }
     }
-    return Object.keys(options)
-      .map((key) => (options[key] === null ? `RESET ${key}` : `SET ${key} = ${options[key]}`))
-      .map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`)
-      .join('\n')
+    const clauses = []
+    const withOptions = Object.keys(options)
+      .filter((key) => options[key] !== null)
+      .map(viewOptionStr(options))
+      .join(', ')
+    if (withOptions) {
+      clauses.push(`SET (${withOptions})`)
+    }
+    const resetOptions = Object.keys(options)
+      .filter((key) => options[key] === null)
+      .join(', ')
+    if (resetOptions) {
+      clauses.push(`RESET (${resetOptions})`)
+    }
+
+    return clauses.map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`).join('\n')
   }
   return _alter
 }

@@ -9,6 +9,7 @@ import {
   RenameMaterializedViewColumn,
   RefreshMaterializedView,
 } from './viewsMaterializedTypes'
+import { Nullable } from './generalTypes'
 
 export {
   CreateMaterializedView,
@@ -20,7 +21,9 @@ export {
 }
 
 const dataClause = (data?: boolean) => (data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '')
-const storageParameterStr = <T extends StorageParameters, K extends keyof T>(storageParameters: T) => (key: K) => {
+const storageParameterStr = <T extends Nullable<StorageParameters>, K extends keyof T>(storageParameters: T) => (
+  key: K,
+) => {
   const value = storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`
   return `${key}${value}`
 }
@@ -70,14 +73,14 @@ export function alterMaterializedView(mOptions: MigrationOptions) {
       clauses.push(`DEPENDS ON EXTENSION ${mOptions.literal(extension)}`)
     }
     const withOptions = Object.keys(storageParameters)
-      .filter((key) => storageParameters[key])
+      .filter((key) => storageParameters[key] !== null)
       .map(storageParameterStr(storageParameters))
       .join(', ')
     if (withOptions) {
       clauses.push(`SET (${withOptions})`)
     }
     const resetOptions = Object.keys(storageParameters)
-      .filter((key) => !storageParameters[key])
+      .filter((key) => storageParameters[key] === null)
       .join(', ')
     if (resetOptions) {
       clauses.push(`RESET (${resetOptions})`)
