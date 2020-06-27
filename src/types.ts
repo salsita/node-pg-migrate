@@ -1,4 +1,4 @@
-import { ClientBase, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
+import { ClientBase, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { TlsOptions } from 'tls'
 import { Name } from './operations/generalTypes'
 
@@ -218,19 +218,6 @@ export interface RunnerOptionConfig {
   log?: LogFn
   logger?: Logger
   verbose?: boolean
-}
-
-export interface ConnectionConfig {
-  user?: string
-  database?: string
-  password?: string
-  port?: number
-  host?: string
-  connectionString?: string
-}
-
-export interface ClientConfig extends ConnectionConfig {
-  ssl?: boolean | TlsOptions
 }
 
 export interface RunnerOptionUrl {
