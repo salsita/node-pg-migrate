@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.3.0](2020-07-13)
+
+### Added
+
+- Display additional details when logging errors [#660](https://github.com/salsita/node-pg-migrate/pull/660)
+
 ## [5.2.0](2020-06-26)
 
 ### Added
