@@ -11,7 +11,7 @@ const ConnectionParameters = require('pg/lib/connection-parameters')
 const { default: migrationRunner, Migration } = require('../dist')
 
 process.on('uncaughtException', (err) => {
-  console.error(err.stack)
+  console.error(err)
   process.exit(1)
 })
 
@@ -240,13 +240,13 @@ function readTsconfig() {
       // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,import/no-extraneous-dependencies
       tsconfig = require('json5').parse(config)
     } catch (err) {
-      console.error(`Can't load tsconfig.json: ${err.stack}`)
+      console.error("Can't load tsconfig.json:", err)
     }
     try {
       // eslint-disable-next-line global-require,import/no-extraneous-dependencies
       tsnode = require('ts-node')
     } catch (err) {
-      console.error(`Can't load ts-node: ${err.stack}`)
+      console.error("Can't load ts-node:", err)
     }
     if (tsconfig && tsnode) {
       tsnode.register(tsconfig)
@@ -359,7 +359,7 @@ if (action === 'create') {
       process.exit(0)
     })
     .catch((err) => {
-      console.error(err.stack)
+      console.error(err)
       process.exit(1)
     })
 } else if (action === 'up' || action === 'down' || action === 'redo') {
@@ -439,7 +439,7 @@ if (action === 'create') {
       process.exit(0)
     })
     .catch((err) => {
-      console.error(err.stack)
+      console.error(err)
       process.exit(1)
     })
 } else {
