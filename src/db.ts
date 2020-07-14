@@ -18,7 +18,7 @@ export interface DBConnection extends DB {
 }
 
 const db = (connection: ClientBase | string | ClientConfig, logger: Logger = console): DBConnection => {
-  const isExternalClient = connection && typeof connection.query === 'function'
+  const isExternalClient = connection && typeof (connection as any).query === 'function'
   let clientActive = false
 
   const client: Client = isExternalClient ? (connection as Client) : new Client(connection as string | ClientConfig)
