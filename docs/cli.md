@@ -71,7 +71,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `migration-filename-format` - Choose prefix of file - either UTC (`20200605075829074`) or timestamp (`1591343909074`)
 - `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
 - `template-file-name` - Use your own template file for migrations (language will be determined from the extension of the template). The file must export the `up` method accepting `MigrationBuilder` instance.
-- `tsconfig` - Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overriden)
+- `tsconfig` - Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overridden)
 - `timestamp` - Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)
 - `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on the command line).
   (There should be no migration with timestamp lesser than last run migration.)
