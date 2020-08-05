@@ -11,7 +11,7 @@
 
 import { createSchemalize } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
-import { DB, MigrationBuilder, MigrationOptions } from './types'
+import { DB, MigrationBuilder, MigrationOptions, Logger } from './types'
 
 import * as domains from './operations/domains'
 import * as extensions from './operations/extensions'
@@ -196,7 +196,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   private _useTransaction: boolean
 
-  constructor(db: DB, typeShorthands: ColumnDefinitions | undefined, shouldDecamelize: boolean) {
+  constructor(db: DB, typeShorthands: ColumnDefinitions | undefined, shouldDecamelize: boolean, logger: Logger) {
     this._steps = []
     this._REVERSE_MODE = false
     // by default, all migrations are wrapped in a transaction
@@ -225,6 +225,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
       typeShorthands,
       schemalize: createSchemalize(shouldDecamelize, false),
       literal: createSchemalize(shouldDecamelize, true),
+      logger,
     }
 
     // defines the methods that are accessible via pgm in each migrations

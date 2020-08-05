@@ -6,6 +6,9 @@ export interface CreateIndexOptions {
   where?: string
   concurrently?: boolean
   ifNotExists?: boolean
+  /**
+   * @deprecated should be parameter of column
+   */
   opclass?: Name
   method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
   include?: string | string[]
@@ -18,9 +21,12 @@ export interface DropIndexOptions extends DropOptions {
 
 type CreateIndexFn = (
   tableName: Name,
-  columns: string | string[],
+  columns: string | (string | string[])[],
   options?: CreateIndexOptions & DropIndexOptions,
 ) => string | string[]
 export type CreateIndex = CreateIndexFn & { reverse: CreateIndexFn }
-export type AddIndex = (tableName: Name, columns: string | string[], options?: CreateIndexOptions) => string | string[]
-export type DropIndex = (tableName: Name, columns: string | string[], options?: DropIndexOptions) => string | string[]
+export type DropIndex = (
+  tableName: Name,
+  columns: string | (string | string[])[],
+  options?: DropIndexOptions,
+) => string | string[]

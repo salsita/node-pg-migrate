@@ -128,6 +128,7 @@ export interface MigrationOptions {
   typeShorthands?: tables.ColumnDefinitions
   schemalize: Literal
   literal: Literal
+  logger: Logger
 }
 
 // Note these currently don't contain the parameterized types like

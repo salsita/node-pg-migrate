@@ -5,11 +5,15 @@ import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from './
 
 export { CreateIndex, DropIndex }
 
-function generateIndexName(table: Name, columns: string | string[], options: CreateIndexOptions | DropIndexOptions) {
+function generateIndexName(
+  table: Name,
+  columns: (string | string[])[],
+  options: CreateIndexOptions | DropIndexOptions,
+) {
   if (options.name) {
     return typeof table === 'object' ? { schema: table.schema, name: options.name } : options.name
   }
-  const cols = _.isArray(columns) ? columns.join('_') : columns
+  const cols = columns.map((col) => (_.isArray(col) ? col[0] : col)).join('_')
   const uniq = 'unique' in options && options.unique ? '_unique' : ''
   return typeof table === 'object'
     ? {
@@ -20,23 +24,26 @@ function generateIndexName(table: Name, columns: string | string[], options: Cre
 }
 
 function generateColumnString(column: string, literal: Literal) {
-  const openingBracketPos = column.indexOf('(')
-  const closingBracketPos = column.indexOf(')')
-  const isFunction = openingBracketPos >= 0 && closingBracketPos > openingBracketPos
-  return isFunction
+  const isSpecial = /[. ()]/.test(column)
+  return isSpecial
     ? column // expression
     : literal(column) // single column
 }
 
-function generateColumnsString(columns: string | string[], literal: Literal) {
-  return _.isArray(columns)
-    ? columns.map((column) => generateColumnString(column, literal)).join(', ')
-    : generateColumnString(columns, literal)
+function generateColumnsString(columns: (string | string[])[], literal: Literal) {
+  return columns
+    .map((column) =>
+      _.isArray(column)
+        ? `${generateColumnString(column[0], literal)} ${column.slice(1).join(' ')}`
+        : generateColumnString(column, literal),
+    )
+    .join(', ')
 }
 
 export function dropIndex(mOptions: MigrationOptions) {
-  const _drop: DropIndex = (tableName, columns, options = {}) => {
+  const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
     const { concurrently, ifExists, cascade } = options
+    const columns = _.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : ''
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const indexName = generateIndexName(tableName, columns, options)
@@ -49,7 +56,7 @@ export function dropIndex(mOptions: MigrationOptions) {
 }
 
 export function createIndex(mOptions: MigrationOptions) {
-  const _create: CreateIndex = (tableName, columns, options = {}) => {
+  const _create: CreateIndex = (tableName, rawColumns, options = {}) => {
     /*
     columns - the column, columns, or expression to create the index on
 
@@ -59,9 +66,18 @@ export function createIndex(mOptions: MigrationOptions) {
     where - where clause
     concurrently -
     ifNotExists - optionally create index
-    opclass - name of an operator class
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
+    const columns = _.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
+    if (options.opclass) {
+      mOptions.logger.warn(
+        "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])",
+      )
+      const lastIndex = columns.length - 1
+      const lastColumn = columns[lastIndex]
+      const opclass = mOptions.schemalize(options.opclass)
+      columns[lastIndex] = typeof lastColumn === 'string' ? [lastColumn, opclass] : lastColumn.splice(1, 0, opclass)
+    }
     const indexName = generateIndexName(typeof tableName === 'object' ? tableName.name : tableName, columns, options)
     const columnsString = generateColumnsString(columns, mOptions.literal)
     const unique = options.unique ? ' UNIQUE' : ''
@@ -69,7 +85,6 @@ export function createIndex(mOptions: MigrationOptions) {
     const ifNotExistsStr = options.ifNotExists ? ' IF NOT EXISTS' : ''
     const method = options.method ? ` USING ${options.method}` : ''
     const where = options.where ? ` WHERE ${options.where}` : ''
-    const opclass = options.opclass ? ` ${mOptions.schemalize(options.opclass)}` : ''
     const include = options.include
       ? ` INCLUDE (${(_.isArray(options.include) ? options.include : [options.include])
           .map(mOptions.literal)
@@ -78,7 +93,7 @@ export function createIndex(mOptions: MigrationOptions) {
     const indexNameStr = mOptions.literal(indexName)
     const tableNameStr = mOptions.literal(tableName)
 
-    return `CREATE${unique} INDEX${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString}${opclass})${include}${where};`
+    return `CREATE${unique} INDEX${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString})${include}${where};`
   }
   _create.reverse = dropIndex(mOptions)
   return _create
