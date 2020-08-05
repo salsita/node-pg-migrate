@@ -77,8 +77,9 @@ export function createIndex(mOptions: MigrationOptions) {
       )
       const lastIndex = columns.length - 1
       const lastColumn = columns[lastIndex]
-      const opclass = mOptions.schemalize(options.opclass)
-      columns[lastIndex] = _.isArray(lastColumn) ? lastColumn.splice(1, 0, opclass) : [lastColumn, opclass]
+      columns[lastIndex] = _.isArray(lastColumn)
+        ? lastColumn.splice(1, 0, options.opclass)
+        : [lastColumn, options.opclass]
     }
     const indexName = generateIndexName(
       typeof tableName === 'object' ? tableName.name : tableName,

@@ -53,6 +53,22 @@ describe('lib/operations/indexes', () => {
       )
     })
 
+    it('add sort option', () => {
+      const args: CreateIndexParams = [
+        'xTable',
+        [['yName', 'DESC']],
+        {
+          method: 'gist',
+          name: 'zIndex',
+          where: 'some condition',
+        },
+      ]
+      const sql1 = Indexes.createIndex(options1)(...args)
+      const sql2 = Indexes.createIndex(options2)(...args)
+      expect(sql1).to.equal('CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" DESC) WHERE some condition;')
+      expect(sql2).to.equal('CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" desc) WHERE some condition;')
+    })
+
     it('add include option', () => {
       const args: CreateIndexParams = ['xTable', ['yName'], { name: 'zIndex', include: 'someOtherColumn' }]
       const sql1 = Indexes.createIndex(options1)(...args)
