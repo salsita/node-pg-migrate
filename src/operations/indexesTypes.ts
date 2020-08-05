@@ -21,12 +21,12 @@ export interface DropIndexOptions extends DropOptions {
 
 type CreateIndexFn = (
   tableName: Name,
-  columns: string | (string | string[])[],
+  columns: string | (Name | Name[])[],
   options?: CreateIndexOptions & DropIndexOptions,
 ) => string | string[]
 export type CreateIndex = CreateIndexFn & { reverse: CreateIndexFn }
 export type DropIndex = (
   tableName: Name,
-  columns: string | (string | string[])[],
+  columns: string | (Name | Name[])[],
   options?: DropIndexOptions,
 ) => string | string[]
