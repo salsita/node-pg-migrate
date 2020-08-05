@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.4.0](2020-08-05)
+
+### Changed
+
+- Update isExternalClient check [#664](https://github.com/salsita/node-pg-migrate/pull/664)
+
 ## [5.3.0](2020-07-13)
 
 ### Added
