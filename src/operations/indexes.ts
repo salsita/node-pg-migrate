@@ -1,20 +1,20 @@
 import _ from 'lodash'
 import { MigrationOptions, Literal } from '../types'
 import { Name } from './generalTypes'
-import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from './indexesTypes'
+import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions, IndexColumn } from './indexesTypes'
 
 export { CreateIndex, DropIndex }
 
 function generateIndexName(
   table: Name,
-  columns: (Name | Name[])[],
+  columns: (string | IndexColumn)[],
   options: CreateIndexOptions | DropIndexOptions,
   schemalize: Literal,
 ) {
   if (options.name) {
     return typeof table === 'object' ? { schema: table.schema, name: options.name } : options.name
   }
-  const cols = columns.map((col) => schemalize(_.isArray(col) ? col[0] : col)).join('_')
+  const cols = columns.map((col) => schemalize(typeof col === 'string' ? col : col.name)).join('_')
   const uniq = 'unique' in options && options.unique ? '_unique' : ''
   return typeof table === 'object'
     ? {
@@ -32,12 +32,18 @@ function generateColumnString(column: Name, mOptions: MigrationOptions) {
     : mOptions.literal(name) // single column
 }
 
-function generateColumnsString(columns: (Name | Name[])[], mOptions: MigrationOptions) {
+function generateColumnsString(columns: (string | IndexColumn)[], mOptions: MigrationOptions) {
   return columns
     .map((column) =>
-      _.isArray(column)
-        ? `${generateColumnString(column[0], mOptions)} ${column.slice(1).map(mOptions.schemalize).join(' ')}`
-        : generateColumnString(column, mOptions),
+      typeof column === 'string'
+        ? generateColumnString(column, mOptions)
+        : [
+            generateColumnString(column.name, mOptions),
+            column.opclass ? mOptions.literal(column.opclass) : undefined,
+            column.sort,
+          ]
+            .filter((s) => typeof s === 'string' && s !== '')
+            .join(' '),
     )
     .join(', ')
 }
@@ -77,9 +83,13 @@ export function createIndex(mOptions: MigrationOptions) {
       )
       const lastIndex = columns.length - 1
       const lastColumn = columns[lastIndex]
-      columns[lastIndex] = _.isArray(lastColumn)
-        ? lastColumn.splice(1, 0, options.opclass)
-        : [lastColumn, options.opclass]
+      if (typeof lastColumn === 'string') {
+        columns[lastIndex] = { name: lastColumn, opclass: options.opclass }
+      } else if (lastColumn.opclass) {
+        throw new Error("There is already defined opclass on column, can't override it with global one")
+      } else {
+        columns[lastIndex] = { ...lastColumn, opclass: options.opclass }
+      }
     }
     const indexName = generateIndexName(
       typeof tableName === 'object' ? tableName.name : tableName,

@@ -27,16 +27,18 @@ describe('lib/operations/indexes', () => {
       ]
       const sql1 = Indexes.createIndex(options1)(...args)
       const sql2 = Indexes.createIndex(options2)(...args)
-      expect(sql1).to.equal('CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" someOpclass) WHERE some condition;')
+      expect(sql1).to.equal(
+        'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someOpclass") WHERE some condition;',
+      )
       expect(sql2).to.equal(
-        'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" some_opclass) WHERE some condition;',
+        'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" "some_opclass") WHERE some condition;',
       )
     })
 
     it('add opclass option', () => {
       const args: CreateIndexParams = [
         'xTable',
-        [['yName', { schema: 'someSchema', name: 'someOpclass' }]],
+        [{ name: 'yName', opclass: { schema: 'someSchema', name: 'someOpclass' } }],
         {
           method: 'gist',
           name: 'zIndex',
@@ -46,17 +48,17 @@ describe('lib/operations/indexes', () => {
       const sql1 = Indexes.createIndex(options1)(...args)
       const sql2 = Indexes.createIndex(options2)(...args)
       expect(sql1).to.equal(
-        'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" someSchema.someOpclass) WHERE some condition;',
+        'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someSchema"."someOpclass") WHERE some condition;',
       )
       expect(sql2).to.equal(
-        'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" some_schema.some_opclass) WHERE some condition;',
+        'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" "some_schema"."some_opclass") WHERE some condition;',
       )
     })
 
     it('add sort option', () => {
       const args: CreateIndexParams = [
         'xTable',
-        [['yName', 'DESC']],
+        [{ name: 'yName', sort: 'DESC' }],
         {
           method: 'gist',
           name: 'zIndex',
@@ -66,7 +68,7 @@ describe('lib/operations/indexes', () => {
       const sql1 = Indexes.createIndex(options1)(...args)
       const sql2 = Indexes.createIndex(options2)(...args)
       expect(sql1).to.equal('CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" DESC) WHERE some condition;')
-      expect(sql2).to.equal('CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" desc) WHERE some condition;')
+      expect(sql2).to.equal('CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" DESC) WHERE some condition;')
     })
 
     it('add include option', () => {

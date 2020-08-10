@@ -13,8 +13,8 @@
 
   - `pgm.createIndex('table', 'column')` => `CREATE INDEX ON "table" ("column")`
   - `pgm.createIndex('table', ['col1', 'col2'])` => `CREATE INDEX ON "table" ("col1", "col2")`
-  - `pgm.createIndex('table', [['col1', 'ASC'], ['col2', 'DESC']])` => `CREATE INDEX ON "table" ("col1" ASC, "col2" DESC)`
-  - `pgm.createIndex('table', [['col1', { schema: 'schema'; name: 'opclass' }, 'ASC']])` => `CREATE INDEX ON "table" ("col1" schema.opclass ASC)`
+  - `pgm.createIndex('table', [{ name: 'col1', sort: 'ASC' }], { name: 'col2', sort: 'DESC' }])` => `CREATE INDEX ON "table" ("col1" ASC, "col2" DESC)`
+  - `pgm.createIndex('table', [{ name: 'col1', opclass: { schema: 'schema'; name: 'opclass' }, sort: 'ASC' }])` => `CREATE INDEX ON "table" ("col1" "schema"."opclass" ASC)`
 
 - `options` _[index options]_ - optional options:
   - `name` _[string]_ - name for the index (one will be inferred from table/columns if undefined)
