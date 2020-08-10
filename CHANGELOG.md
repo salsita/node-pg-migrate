@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.5.0](2020-08-10)
+
+### Changed
+
+- Allow opclass and sort per column in indexes [#671](https://github.com/salsita/node-pg-migrate/pull/671)
+
 ## [5.4.0](2020-08-05)
 
 ### Changed
