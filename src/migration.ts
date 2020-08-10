@@ -245,7 +245,7 @@ export class Migration implements RunMigration {
   }
 
   apply(direction: MigrationDirection) {
-    const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize))
+    const pgm = new MigrationBuilder(this.db, this.typeShorthands, Boolean(this.options.decamelize), this.logger)
     const action = this._getAction(direction)
 
     if (this.down === this.up) {
