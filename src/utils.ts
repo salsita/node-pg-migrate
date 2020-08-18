@@ -3,7 +3,6 @@ import { ColumnDefinitions, ColumnDefinition } from './operations/tablesTypes'
 import { Name, Type, Value } from './operations/generalTypes'
 import { MigrationOptions, Literal, RunnerOption } from './types'
 import { FunctionParam, FunctionParamType } from './operations/functionsTypes'
-import PgLiteral from './operations/PgLiteral'
 
 const identity = <T>(v: T) => v
 const quote = (str: string) => `"${str}"`
@@ -51,8 +50,8 @@ export const escapeValue = (val: Value): string | number => {
     const arrayStr = val.map(escapeValue).join(',').replace(/ARRAY/g, '')
     return `ARRAY[${arrayStr}]`
   }
-  if (val instanceof PgLiteral) {
-    return val.toString()
+  if (typeof val === 'object' && val.literal) {
+    return val.value
   }
   return ''
 }

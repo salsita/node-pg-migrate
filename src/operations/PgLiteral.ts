@@ -5,13 +5,12 @@ export default class PgLiteral {
     return new PgLiteral(str)
   }
 
-  private readonly _str: string
+  public readonly literal = true
 
-  constructor(str: string) {
-    this._str = str
-  }
+  // eslint-disable-next-line no-useless-constructor
+  constructor(public readonly value: string) {}
 
   toString(): string {
-    return this._str
+    return this.value
   }
 }
