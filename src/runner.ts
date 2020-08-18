@@ -237,9 +237,11 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       timestamp: m.timestamp,
     }))
   } finally {
-    if (!options.noLock) {
-      await unlock(db).catch((error) => logger.warn(error.message))
+    if (db.connected()) {
+      if (!options.noLock) {
+        await unlock(db).catch((error) => logger.warn(error.message))
+      }
+      db.close()
     }
-    db.close()
   }
 }

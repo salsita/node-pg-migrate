@@ -13,32 +13,44 @@ export interface DBConnection extends DB {
   column(columnName: string, queryConfig: QueryConfig): Promise<any[]>
   column(columnName: string, queryTextOrConfig: string | QueryConfig, values?: any[]): Promise<any[]>
 
+  connected: () => boolean
   addBeforeCloseListener: (listener: any) => number
   close(): Promise<void>
+}
+
+enum ConnectionStatus {
+  DISCONNECTED = 'DISCONNECTED',
+  CONNECTED = 'CONNECTED',
+  ERROR = 'ERROR',
 }
 
 const db = (connection: ClientBase | string | ClientConfig, logger: Logger = console): DBConnection => {
   const isExternalClient =
     typeof connection === 'object' && 'query' in connection && typeof connection.query === 'function'
-  let clientActive = false
+  let connectionStatus = ConnectionStatus.DISCONNECTED
 
   const client: Client = isExternalClient ? (connection as Client) : new Client(connection as string | ClientConfig)
 
   const beforeCloseListeners: any[] = []
 
   const createConnection: () => Promise<void> = () =>
-    new Promise((resolve, reject) =>
-      clientActive || isExternalClient
-        ? resolve()
-        : client.connect((err) => {
-            if (err) {
-              logger.error(`could not connect to postgres: ${inspect(err)}`)
-              return reject(err)
-            }
-            clientActive = true
-            return resolve()
-          }),
-    )
+    new Promise((resolve, reject) => {
+      if (isExternalClient || connectionStatus === ConnectionStatus.CONNECTED) {
+        resolve()
+      } else if (connectionStatus === ConnectionStatus.ERROR) {
+        reject(new Error('Connection already failed, do not try to connect again'))
+      } else {
+        client.connect((err) => {
+          if (err) {
+            connectionStatus = ConnectionStatus.ERROR
+            logger.error(`could not connect to postgres: ${inspect(err)}`)
+            return reject(err)
+          }
+          connectionStatus = ConnectionStatus.CONNECTED
+          return resolve()
+        })
+      }
+    })
 
   const query: DBConnection['query'] = async (
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
@@ -95,15 +107,15 @@ ${err}
     select,
     column,
 
+    connected: () => connectionStatus === ConnectionStatus.CONNECTED,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
-
     close: async () => {
       await beforeCloseListeners.reduce(
         (promise, listener) => promise.then(listener).catch((err: any) => logger.error(err.stack || err)),
         Promise.resolve(),
       )
       if (!isExternalClient) {
-        clientActive = false
+        connectionStatus = ConnectionStatus.DISCONNECTED
         client.end()
       }
     },
