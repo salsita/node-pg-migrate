@@ -1,40 +1,42 @@
 import { resolve } from 'path'
+import { Client } from 'pg'
 import runner, { RunnerOption } from '../../dist'
 
+type Options = { databaseUrl: string } | { dbClient: Client }
+
 /* eslint-disable no-console */
-const run = async () => {
+// eslint-disable-next-line import/prefer-default-export
+export const run = async (options: Options): Promise<boolean> => {
+  const opts: Omit<RunnerOption, 'direction'> & Options = {
+    migrationsTable: 'migrations',
+    dir: resolve(__dirname, 'migrations'),
+    count: Infinity,
+    ...options,
+  }
   try {
-    const options: Omit<RunnerOption, 'direction'> & { databaseUrl: string } = {
-      migrationsTable: 'migrations',
-      dir: resolve(__dirname, 'migrations'),
-      count: Infinity,
-      databaseUrl: String(process.env.DATABASE_URL),
-    }
     const upResult = await runner({
-      ...options,
+      ...opts,
       direction: 'up',
     })
     if (upResult.length !== 1) {
       console.error('There should be exactly one migration processed')
-      process.exit(1)
+      return false
     }
     console.log('Up success')
     console.log(upResult)
     const downResult = await runner({
-      ...options,
+      ...opts,
       direction: 'down',
     })
     if (downResult.length !== 1) {
       console.error('There should be exactly one migration processed')
-      process.exit(1)
+      return false
     }
     console.log('Down success')
     console.log(downResult)
-    process.exit(0)
+    return true
   } catch (err) {
     console.error(err)
-    process.exit(1)
+    return false
   }
 }
-
-run()
