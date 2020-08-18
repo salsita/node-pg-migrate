@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.5.1](2020-08-18)
+
+### Fixed
+
+- Do not try to unlock DB if connection failed [#677](https://github.com/salsita/node-pg-migrate/pull/677)
+
 ## [5.5.0](2020-08-10)
 
 ### Changed
