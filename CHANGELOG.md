@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.6.0](2020-08-19)
+
+### PgLiteral can be serialized
+
+- Do not try to unlock DB if connection failed [#678](https://github.com/salsita/node-pg-migrate/pull/678)
+
 ## [5.5.1](2020-08-18)
 
 ### Fixed
