@@ -320,7 +320,7 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- --tsconfig tsconfig.json -m test/ts/migrations && npm run migrate down 0 -- --tsconfig tsconfig.json -m test/ts/migrations --timestamps
-  test-typescript-customrunner:
+  test-typescript-customrunner-url:
     docker:
       - <<: *node-image
         environment:
@@ -335,7 +335,23 @@ jobs:
       - <<: *postgres-wait
       - run:
           name: test
-          command: $(npm bin)/ts-node test/ts/customRunner.ts
+          command: $(npm bin)/ts-node test/ts/customRunnerDBUrl.ts
+  test-typescript-customrunner-client:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+      - image: postgres:12.4-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: $(npm bin)/ts-node test/ts/customRunnerDBClient.ts
   test-create-migration:
     docker:
       - <<: *node-image
@@ -409,7 +425,10 @@ workflows:
       - test-typescript-migration:
           requires:
           - install
-      - test-typescript-customrunner:
+      - test-typescript-customrunner-url:
+          requires:
+          - install
+      - test-typescript-customrunner-client:
           requires:
           - install
       - test-create-migration:
