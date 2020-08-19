@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import { escapeValue, applyType } from '../src/utils'
 import { ColumnDefinitions } from '../src/operations/tablesTypes'
 import PgLiteral from '../src/operations/PgLiteral'
+import { PgLiteralValue } from '../src/operations/generalTypes'
 
 describe('lib/utils', () => {
   describe('.escapeValue', () => {
@@ -41,6 +42,19 @@ describe('lib/utils', () => {
       const value = PgLiteral.create('@l|<e')
 
       expect(escapeValue(value)).to.equal('@l|<e')
+    })
+
+    it('parse object literal to unescaped string', () => {
+      const value: PgLiteralValue = { literal: true, value: '@l|<e' }
+
+      expect(escapeValue(value)).to.equal('@l|<e')
+    })
+
+    it('PgLiteral serialize to PgLiteralValue', () => {
+      const value = PgLiteral.create('@l|<e')
+      const literalValue = JSON.parse(JSON.stringify(value))
+
+      expect(escapeValue(literalValue)).to.equal('@l|<e')
     })
 
     it('parse unexpected type to empty string', () => {

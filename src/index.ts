@@ -3,6 +3,7 @@ import { Migration } from './migration'
 import { RunnerOption, MigrationBuilder, PgType } from './types'
 import PgLiteral from './operations/PgLiteral'
 import {
+  PgLiteralValue,
   Value,
   Name,
   Type,
@@ -124,6 +125,7 @@ export {
   PgType,
   MigrationBuilder,
   RunnerOption,
+  PgLiteralValue,
   Value,
   Name,
   Type,

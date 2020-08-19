@@ -2,10 +2,12 @@ import PgLiteral from './PgLiteral'
 
 // eslint-disable-next-line camelcase
 export type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never })
+export type PublicPart<T> = { [K in keyof T]: T[K] }
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }
 
-export type Value = null | boolean | string | number | PgLiteral | Value[]
+export type PgLiteralValue = PublicPart<PgLiteral>
+export type Value = null | boolean | string | number | PgLiteral | PgLiteralValue | Value[]
 
 export type Type = string | { type: string }
 
