@@ -83,6 +83,11 @@ const defaultTypeShorthands: ColumnDefinitions = {
 export const applyTypeAdapters = (type: string): string =>
   type in typeAdapters ? typeAdapters[type as keyof typeof typeAdapters] : type
 
+const toType = (type: string | ColumnDefinition): ColumnDefinition => (typeof type === 'string' ? { type } : type)
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const removeType = ({ type, ...rest }: Partial<ColumnDefinition>) => rest
+
 export const applyType = (
   type: Type,
   extendingTypeShorthands: ColumnDefinitions = {},
@@ -91,28 +96,24 @@ export const applyType = (
     ...defaultTypeShorthands,
     ...extendingTypeShorthands,
   }
-  const options = typeof type === 'string' ? { type } : type
+  const options = toType(type)
   let ext: ColumnDefinition | null = null
   const types: string[] = [options.type]
   while (typeShorthands[types[types.length - 1]]) {
-    if (ext) {
-      delete ext.type
+    ext = {
+      ...toType(typeShorthands[types[types.length - 1]]),
+      ...(ext === null ? {} : removeType(ext)),
     }
-    const t = typeShorthands[types[types.length - 1]]
-    ext = { ...(typeof t === 'string' ? { type: t } : t), ...(ext === null ? {} : ext) }
     if (types.includes(ext.type)) {
       throw new Error(`Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`)
     } else {
       types.push(ext.type)
     }
   }
-  if (!ext) {
-    ext = { type: options.type }
-  }
   return {
     ...ext,
     ...options,
-    type: applyTypeAdapters(ext.type),
+    type: applyTypeAdapters(ext?.type ?? options.type),
   }
 }
 
