@@ -46,7 +46,7 @@
     "decamelize": "^4.0.0",
     "lodash": "~4.17.0",
     "mkdirp": "~1.0.0",
-    "yargs": "~15.4.0"
+    "yargs": "~16.0.0"
   },
   "devDependencies": {
     "@types/chai": "4.2.12",
