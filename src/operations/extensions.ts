@@ -5,9 +5,9 @@ import { CreateExtension, DropExtension } from './extensionsTypes'
 export { CreateExtension, DropExtension }
 
 export function dropExtension(mOptions: MigrationOptions) {
-  const _drop: DropExtension = (extensions, options = {}) => {
+  const _drop: DropExtension = (_extensions, options = {}) => {
     const { ifExists, cascade } = options
-    if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
+    const extensions = _.isArray(_extensions) ? _extensions : [_extensions]
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     return _.map(extensions, (extension) => {
@@ -19,9 +19,9 @@ export function dropExtension(mOptions: MigrationOptions) {
 }
 
 export function createExtension(mOptions: MigrationOptions) {
-  const _create: CreateExtension = (extensions, options = {}) => {
+  const _create: CreateExtension = (_extensions, options = {}) => {
     const { ifNotExists, schema } = options
-    if (!_.isArray(extensions)) extensions = [extensions] // eslint-disable-line no-param-reassign
+    const extensions = _.isArray(_extensions) ? _extensions : [_extensions]
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : ''
     return _.map(extensions, (extension) => {

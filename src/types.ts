@@ -117,6 +117,8 @@ export interface MigrationBuilder {
 
 export type MigrationAction = (pgm: MigrationBuilder, run?: () => void) => Promise<void> | void
 export type Literal = (v: Name) => string
+export type LogFn = (msg: string) => void
+export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn }
 
 export interface MigrationBuilderActions {
   up?: MigrationAction | false
@@ -133,7 +135,7 @@ export interface MigrationOptions {
 
 // Note these currently don't contain the parameterized types like
 // bit(n), varchar(n) and so on, they have to be specified as strings
-export enum PgType { // eslint-disable-line import/prefer-default-export
+export enum PgType {
   BIGINT = 'bigint', // signed eight-byte integer
   INT8 = 'int8', // alias for bigint
   BIGSERIAL = 'bigserial', // autoincrementing eight-byte integer
@@ -194,9 +196,6 @@ export enum PgType { // eslint-disable-line import/prefer-default-export
 }
 
 export type MigrationDirection = 'up' | 'down'
-
-export type LogFn = (msg: string) => void
-export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn }
 
 export interface RunnerOptionConfig {
   migrationsTable: string

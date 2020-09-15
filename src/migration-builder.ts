@@ -30,7 +30,6 @@ import * as views from './operations/views'
 import * as mViews from './operations/viewsMaterialized'
 import PgLiteral from './operations/PgLiteral'
 
-/* eslint-disable security/detect-non-literal-fs-filename */
 export default class MigrationBuilderImpl implements MigrationBuilder {
   public readonly createExtension: (...args: Parameters<extensions.CreateExtension>) => void
 
