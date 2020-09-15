@@ -11,20 +11,13 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'import', 'security'],
   settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx'],
-    },
     'import/resolver': {
       typescript: {},
     },
-  },
-  env: {
-    node: true,
-    mocha: true,
   },
   rules: {
     'no-underscore-dangle': 'off',
