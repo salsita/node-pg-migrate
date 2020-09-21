@@ -3,6 +3,7 @@ import { ColumnDefinitions, ColumnDefinition } from './operations/tablesTypes'
 import { Name, Type, Value } from './operations/generalTypes'
 import { MigrationOptions, Literal, RunnerOption } from './types'
 import { FunctionParam, FunctionParamType } from './operations/functionsTypes'
+import { PgLiteral } from '.'
 
 const identity = <T>(v: T) => v
 const quote = (str: string) => `"${str}"`
@@ -20,12 +21,8 @@ export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean
   }
 }
 
-export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name }) =>
-  Object.keys(d || {}).reduce(
-    (str: string, p) =>
-      str.replace(new RegExp(`{${p}}`, 'g'), d === undefined || d[p] === undefined ? '' : literal(d[p])), // eslint-disable-line security/detect-non-literal-regexp
-    s,
-  )
+const isPgLiteral = (val: unknown): val is PgLiteral =>
+  typeof val === 'object' && val !== null && 'literal' in val && (val as { literal: unknown }).literal === true
 
 export const escapeValue = (val: Value): string | number => {
   if (val === null) {
@@ -50,11 +47,22 @@ export const escapeValue = (val: Value): string | number => {
     const arrayStr = val.map(escapeValue).join(',').replace(/ARRAY/g, '')
     return `ARRAY[${arrayStr}]`
   }
-  if (typeof val === 'object' && val.literal) {
+  if (isPgLiteral(val)) {
     return val.value
   }
   return ''
 }
+
+export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name | Value }) =>
+  Object.keys(d || {}).reduce((str: string, p) => {
+    const v = d?.[p]
+    return str.replace(
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      new RegExp(`{${p}}`, 'g'),
+      // eslint-disable-next-line no-nested-ternary
+      v === undefined ? '' : typeof v === 'object' && v !== null && 'name' in v ? literal(v) : String(escapeValue(v)),
+    )
+  }, s)
 
 export const getSchemas = (schema?: string | string[]): string[] => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
