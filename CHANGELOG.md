@@ -1,10 +1,16 @@
 # Change Log
 
+## [5.7.0](2020-09-21)
+
+### Added
+
+- `pgm.sql` can also accept `PgLiteral`, `number`, `boolean`, `null`, `array` [#695](https://github.com/salsita/node-pg-migrate/pull/695)
+
 ## [5.6.0](2020-08-19)
 
-### PgLiteral can be serialized
+### Added
 
-- Do not try to unlock DB if connection failed [#678](https://github.com/salsita/node-pg-migrate/pull/678)
+- PgLiteral can be serialized [#678](https://github.com/salsita/node-pg-migrate/pull/678)
 
 ## [5.5.1](2020-08-18)
 
