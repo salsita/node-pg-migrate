@@ -103,7 +103,7 @@ describe('lib/utils', () => {
   })
 
   describe('.createTransformer', () => {
-    it("parse null to 'NULL'", () => {
+    it('Do not escape PgLiteral', () => {
       const t = createTransformer(createSchemalize(true, true))
 
       expect(
@@ -111,6 +111,16 @@ describe('lib/utils', () => {
           values: new PgLiteral(['s1', 's2'].map((e) => `('${e}')`).join(', ')),
         }),
       ).to.equal("INSERT INTO s (id) VALUES ('s1'), ('s2');")
+    })
+
+    it('Can use number', () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('INSERT INTO s (id) VALUES ({values});', {
+          values: 1,
+        }),
+      ).to.equal('INSERT INTO s (id) VALUES (1);')
     })
   })
 })
