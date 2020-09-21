@@ -24,17 +24,6 @@ export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean
 const isPgLiteral = (val: unknown): val is PgLiteral =>
   typeof val === 'object' && val !== null && 'literal' in val && (val as { literal: unknown }).literal === true
 
-export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name | PgLiteral }) =>
-  Object.keys(d || {}).reduce((str: string, p) => {
-    const v = d?.[p]
-    return str.replace(
-      // eslint-disable-next-line security/detect-non-literal-regexp
-      new RegExp(`{${p}}`, 'g'),
-      // eslint-disable-next-line no-nested-ternary
-      v === undefined ? '' : isPgLiteral(v) ? v.value : literal(v),
-    )
-  }, s)
-
 export const escapeValue = (val: Value): string | number => {
   if (val === null) {
     return 'NULL'
@@ -63,6 +52,17 @@ export const escapeValue = (val: Value): string | number => {
   }
   return ''
 }
+
+export const createTransformer = (literal: Literal) => (s: string, d?: { [key: string]: Name | Value }) =>
+  Object.keys(d || {}).reduce((str: string, p) => {
+    const v = d?.[p]
+    return str.replace(
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      new RegExp(`{${p}}`, 'g'),
+      // eslint-disable-next-line no-nested-ternary
+      v === undefined ? '' : typeof v === 'object' && v !== null && 'name' in v ? literal(v) : String(escapeValue(v)),
+    )
+  }, s)
 
 export const getSchemas = (schema?: string | string[]): string[] => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
