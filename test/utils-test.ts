@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { escapeValue, applyType } from '../src/utils'
+import { escapeValue, applyType, createSchemalize, createTransformer } from '../src/utils'
 import { ColumnDefinitions } from '../src/operations/tablesTypes'
 import PgLiteral from '../src/operations/PgLiteral'
 import { PgLiteralValue } from '../src/operations/generalTypes'
@@ -99,6 +99,18 @@ describe('lib/utils', () => {
         user: { type: `ref`, references: `users` },
       }
       expect(() => applyType('user', shorthands)).to.throw()
+    })
+  })
+
+  describe('.createTransformer', () => {
+    it("parse null to 'NULL'", () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('INSERT INTO s (id) VALUES {values};', {
+          values: new PgLiteral(['s1', 's2'].map((e) => `('${e}')`).join(', ')),
+        }),
+      ).to.equal("INSERT INTO s (id) VALUES ('s1'), ('s2');")
     })
   })
 })
