@@ -60,7 +60,11 @@ export const createTransformer = (literal: Literal) => (s: string, d?: { [key: s
       // eslint-disable-next-line security/detect-non-literal-regexp
       new RegExp(`{${p}}`, 'g'),
       // eslint-disable-next-line no-nested-ternary
-      v === undefined ? '' : typeof v === 'object' && v !== null && 'name' in v ? literal(v) : String(escapeValue(v)),
+      v === undefined
+        ? ''
+        : typeof v === 'string' || (typeof v === 'object' && v !== null && 'name' in v)
+        ? literal(v)
+        : String(escapeValue(v)),
     )
   }, s)
 
