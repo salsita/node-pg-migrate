@@ -103,6 +103,17 @@ describe('lib/utils', () => {
   })
 
   describe('.createTransformer', () => {
+    it('handle string and Name', () => {
+      const t = createTransformer(createSchemalize(true, true))
+
+      expect(
+        t('CREATE INDEX {string} ON {name} (id);', {
+          string: 'string',
+          name: { schema: 'schema', name: 'name' },
+        }),
+      ).to.equal('CREATE INDEX "string" ON "schema"."name" (id);')
+    })
+
     it('Do not escape PgLiteral', () => {
       const t = createTransformer(createSchemalize(true, true))
 
