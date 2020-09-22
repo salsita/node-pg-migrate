@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.7.1](2020-09-22)
+
+### Fixed
+
+- Handle string params in backward compatible way [#696](https://github.com/salsita/node-pg-migrate/pull/696)
+
 ## [5.7.0](2020-09-21)
 
 ### Added
