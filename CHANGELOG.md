@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.8.0](2020-09-24)
+
+### Fixed
+
+- Using string ids for Dollar-string escaping [#698](https://github.com/salsita/node-pg-migrate/pull/698)
+
 ## [5.7.1](2020-09-22)
 
 ### Fixed
