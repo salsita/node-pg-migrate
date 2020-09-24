@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { escapeValue, applyType, createSchemalize, createTransformer } from '../src/utils'
+import { escapeValue, applyType, createSchemalize, createTransformer, StringIdGenerator } from '../src/utils'
 import { ColumnDefinitions } from '../src/operations/tablesTypes'
 import PgLiteral from '../src/operations/PgLiteral'
 import { PgLiteralValue } from '../src/operations/generalTypes'
@@ -21,7 +21,7 @@ describe('lib/utils', () => {
     it('escape string', () => {
       const value = '#escape_me'
 
-      expect(escapeValue(value)).to.equal('$pg1$#escape_me$pg1$')
+      expect(escapeValue(value)).to.equal('$pga$#escape_me$pga$')
     })
 
     it('keep number as is', () => {
@@ -35,7 +35,7 @@ describe('lib/utils', () => {
       const value2 = [['a'], ['b']]
 
       expect(escapeValue(value)).to.equal('ARRAY[[1],[2]]')
-      expect(escapeValue(value2)).to.equal('ARRAY[[$pg1$a$pg1$],[$pg1$b$pg1$]]')
+      expect(escapeValue(value2)).to.equal('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]')
     })
 
     it('parse PgLiteral to unescaped string', () => {
@@ -132,6 +132,43 @@ describe('lib/utils', () => {
           values: 1,
         }),
       ).to.equal('INSERT INTO s (id) VALUES (1);')
+    })
+  })
+
+  describe('.StringIdGenerator', () => {
+    it('generates correct sequence', () => {
+      const chars = 'abcd'
+
+      const ids = new StringIdGenerator(chars)
+      const results = [
+        'a',
+        'b',
+        'c',
+        'd',
+        'aa',
+        'ab',
+        'ac',
+        'ad',
+        'ba',
+        'bb',
+        'bc',
+        'bd',
+        'ca',
+        'cb',
+        'cc',
+        'cd',
+        'da',
+        'db',
+        'dc',
+        'dd',
+        'aaa',
+        'aab',
+        'aac',
+        'aad',
+      ]
+      results.forEach((res) => {
+        expect(ids.next()).to.equal(res)
+      })
     })
   })
 })

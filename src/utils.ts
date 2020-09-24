@@ -21,6 +21,31 @@ export const createSchemalize = (shouldDecamelize: boolean, shouldQuote: boolean
   }
 }
 
+// credits to https://stackoverflow.com/a/12504061/4790644
+export class StringIdGenerator {
+  private ids: number[] = [0]
+
+  // eslint-disable-next-line no-useless-constructor
+  constructor(private readonly chars = 'abcdefghijklmnopqrstuvwxyz') {}
+
+  next() {
+    const idsChars = this.ids.map((id) => this.chars[id])
+    this.increment()
+    return idsChars.join('')
+  }
+
+  private increment() {
+    for (let i = this.ids.length - 1; i >= 0; i -= 1) {
+      this.ids[i] += 1
+      if (this.ids[i] < this.chars.length) {
+        return
+      }
+      this.ids[i] = 0
+    }
+    this.ids.unshift(0)
+  }
+}
+
 const isPgLiteral = (val: unknown): val is PgLiteral =>
   typeof val === 'object' && val !== null && 'literal' in val && (val as { literal: unknown }).literal === true
 
@@ -33,9 +58,10 @@ export const escapeValue = (val: Value): string | number => {
   }
   if (typeof val === 'string') {
     let dollars: string
-    let index = 0
+    const ids = new StringIdGenerator()
+    let index: string
     do {
-      index += 1
+      index = ids.next()
       dollars = `$pg${index}$`
     } while (val.indexOf(dollars) >= 0)
     return `${dollars}${val}${dollars}`
