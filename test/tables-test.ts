@@ -276,12 +276,12 @@ describe('lib/operations/tables', () => {
   "colA" integer,
   CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable"
 );
-COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pg1$example comment$pg1$;`)
+COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$example comment$pga$;`)
       expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   CONSTRAINT "my_table_name_fk_col_a" FOREIGN KEY ("col_a") REFERENCES "other_table"
 );
-COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$example comment$pg1$;`)
+COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$example comment$pga$;`)
     })
 
     it('creates comments on column foreign keys', () => {
@@ -307,14 +307,14 @@ COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$exampl
   "colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a),
   "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo"
 );
-COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pg1$fk a comment$pg1$;
-COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pg1$fk b comment$pg1$;`)
+COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$fk a comment$pga$;
+COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pga$fk b comment$pga$;`)
       expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
   "col_a" integer CONSTRAINT "my_table_name_fk_col_a" REFERENCES otherTable (a),
   "col_b" integer CONSTRAINT "fk_col_b" REFERENCES "other_table_two"
 );
-COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pg1$fk a comment$pg1$;
-COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
+COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$fk a comment$pga$;
+COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
     })
 
     it('creates no comments on unnamed constraints', () => {
@@ -383,10 +383,10 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pg1$fk b comment$pg1$;`)
       const sql2 = Tables.addConstraint(options2)(...args)
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
   ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
-COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pg1$this is an important primary key$pg1$;`)
+COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an important primary key$pga$;`)
       expect(sql2).to.equal(`ALTER TABLE "my_table_name"
   ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
-COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pg1$this is an important primary key$pg1$;`)
+COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an important primary key$pga$;`)
     })
   })
 })
