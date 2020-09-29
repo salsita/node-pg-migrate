@@ -51,12 +51,13 @@ export interface CreateExtensionOptions extends IfNotExistsOption {
   schema?: string
 }
 
+type StringExtension = LiteralUnion<Extension>
 type CreateExtensionFn = (
-  extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+  extension: StringExtension | Array<StringExtension>,
   options?: CreateExtensionOptions & DropOptions,
 ) => string | string[]
 export type CreateExtension = CreateExtensionFn & { reverse: CreateExtensionFn }
 export type DropExtension = (
-  extension: LiteralUnion<Extension> | Array<LiteralUnion<Extension>>,
+  extension: StringExtension | Array<StringExtension>,
   dropOptions?: DropOptions,
 ) => string | string[]
