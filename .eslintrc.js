@@ -20,6 +20,8 @@ module.exports = {
     },
   },
   rules: {
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'error',
     'no-underscore-dangle': 'off',
     'security/detect-object-injection': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
