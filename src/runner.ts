@@ -187,6 +187,9 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       await db.query(`CREATE SCHEMA IF NOT EXISTS "${options.migrationsSchema}"`)
     }
 
+    // ensure the DB schema is created before migrations are run
+    await db.query(`CREATE SCHEMA IF NOT EXISTS "${options.schema}"`)
+
     await ensureMigrationsTable(db, options)
 
     if (!options.noLock) {
