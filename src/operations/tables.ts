@@ -376,7 +376,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       } else {
         const sequenceOptions = parseSequenceOptions(mOptions.typeShorthands, sequenceGenerated).join(' ')
         actions.push(
-          `SET GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
+          `ADD GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
         )
       }
     }
