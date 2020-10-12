@@ -110,7 +110,7 @@ const parseColumns = (
         deferrable,
         expressionGenerated,
       }: ColumnDefinition = options
-      const sequenceGenerated = options.sequenceGenerated ?? options.generated
+      const sequenceGenerated = options.sequenceGenerated === undefined ? options.generated : options.sequenceGenerated
       const constraints: string[] = []
       if (collation) {
         constraints.push(`COLLATE ${collation}`)
@@ -352,7 +352,7 @@ export function addColumns(mOptions: MigrationOptions) {
 export function alterColumn(mOptions: MigrationOptions): AlterColumn {
   return (tableName, columnName, options) => {
     const { default: defaultValue, type, collation, using, notNull, allowNull, comment } = options
-    const sequenceGenerated = options.sequenceGenerated ?? options.generated
+    const sequenceGenerated = options.sequenceGenerated === undefined ? options.generated : options.sequenceGenerated
     const actions: string[] = []
     if (defaultValue === null) {
       actions.push('DROP DEFAULT')
@@ -376,7 +376,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       } else {
         const sequenceOptions = parseSequenceOptions(mOptions.typeShorthands, sequenceGenerated).join(' ')
         actions.push(
-          `SET GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
+          `ADD GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`,
         )
       }
     }
