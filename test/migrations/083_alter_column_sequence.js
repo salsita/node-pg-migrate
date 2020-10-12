@@ -9,14 +9,15 @@ const isSupportedVersion = (major) => major >= 10
 exports.up = async (pgm) => {
   const major = await getMajorVersion(pgm)
   if (isSupportedVersion(major)) {
-    pgm.createType('list2', ['a', 'd', 'c'])
-    pgm.renameTypeValue('list2', 'd', 'b')
+    pgm.createTable('t083', { id: { type: 'integer', notNull: true } })
+    pgm.alterColumn('t083', 'id', { sequenceGenerated: { precedence: 'ALWAYS' } })
+    pgm.alterColumn('t083', 'id', { sequenceGenerated: null })
   }
 }
 
 exports.down = async (pgm) => {
   const major = await getMajorVersion(pgm)
   if (isSupportedVersion(major)) {
-    pgm.dropType('list2')
+    pgm.dropTable('t083')
   }
 }
