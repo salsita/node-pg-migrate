@@ -6,12 +6,12 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 - `type` _[string]_ - type of the sequence
 - `increment` _[number]_ - sets first value of sequence
-- `minvalue` _[number or boolean]_ - sets minimum value of sequence or `NO MINVALUE` (if value is false or null)
-- `maxvalue` _[number or boolean]_ - sets maximum value of sequencee or `NO MAXVALUE` (if value is false or null)
+- `minvalue` _[number or null or false]_ - sets minimum value of sequence or `NO MINVALUE` (if value is false or null)
+- `maxvalue` _[number or null or false]_ - sets maximum value of sequencee or `NO MAXVALUE` (if value is false or null)
 - `start` _[number]_ - sets first value of sequence
 - `cache` _[number]_ - sets how many sequence numbers should be preallocated
 - `cycle` _[boolean]_ - adds `CYCLE` or `NO CYCLE` clause if option is present
-- `owner` _[string or boolean]_ - sets owner of sequence or no owner (if value is false or null)
+- `owner` _[string or null or false]_ - sets owner of sequence or no owner (if value is false or null)
 
 ### `pgm.createSequence( sequence_name, options )`
 
@@ -51,7 +51,7 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 - `sequence_name` _[[Name](migrations.md#type)]_ - name of the new sequence
 - `options` _[object]_ - options:
   - sequence options -- see [sequence options section](#sequence-options)
-  - `restart` _[number or boolean]_ - sets first value of sequence or using `start` value (on true value)
+  - `restart` _[number or true]_ - sets first value of sequence or using `start` value (on true value)
 
 ---
 
