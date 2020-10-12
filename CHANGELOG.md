@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.8.1](2020-10-12)
+
+### Fixed
+
+- Fix sequence generated [#706](https://github.com/salsita/node-pg-migrate/pull/706)
+
 ## [5.8.0](2020-09-24)
 
 ### Fixed
