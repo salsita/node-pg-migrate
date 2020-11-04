@@ -210,6 +210,45 @@ jobs:
             EOF
       - <<: *postgres-wait
       - <<: *test-postgres
+  test-dotenv:
+    docker:
+      - <<: *node-image
+      - image: postgres:12.4-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            cat > .env << 'EOF'
+            DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+            EOF
+      - <<: *postgres-wait
+      - <<: *test-postgres
+  test-dotenv-expand:
+    docker:
+      - <<: *node-image
+      - image: postgres:12.4-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - run:
+          name: create-config
+          command: |
+            cat > .env << 'EOF'
+            POSTGRES_USER=ubuntu
+            POSTGRES_PASSWORD=ubuntu
+            POSTGRES_DB=circle_test
+            DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB
+            EOF
+      - <<: *postgres-wait
+      - <<: *test-postgres
   test-password-1:
     docker:
       - <<: *node-image
@@ -405,6 +444,12 @@ workflows:
           requires:
             - install
       - test-config:
+          requires:
+            - install
+      - test-dotenv:
+          requires:
+            - install
+      - test-dotenv-expand:
           requires:
             - install
       - test-password-1:
