@@ -68,6 +68,7 @@
     "cross-env": "7.0.2",
     "docsify-cli": "4.4.1",
     "dotenv": "8.2.0",
+    "dotenv-expand": "5.1.0",
     "eslint": "7.12.1",
     "eslint-config-airbnb-base": "14.2.0",
     "eslint-config-prettier": "6.15.0",

@@ -16,11 +16,14 @@ process.on('uncaughtException', (err) => {
 })
 
 try {
-  var dotenv = require('dotenv')
-  var dotenvExpand = require('dotenv-expand')
-
-  var myEnv = dotenv.config({ silent: true })
-  dotenvExpand(myEnv)
+  const myEnv = require('dotenv').config({ silent: true }) // eslint-disable-line global-require,import/no-extraneous-dependencies
+  try {
+    require('dotenv-expand')(myEnv) // eslint-disable-line global-require,import/no-extraneous-dependencies
+  } catch (err) {
+    if (err.code !== 'MODULE_NOT_FOUND') {
+      throw err
+    }
+  }
 } catch (err) {
   if (err.code !== 'MODULE_NOT_FOUND') {
     throw err
