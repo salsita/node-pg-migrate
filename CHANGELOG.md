@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.9.0](2020-11-04)
+
+### Added
+
+- Allow expanding dotenv with dotenv-expand [#712](https://github.com/salsita/node-pg-migrate/pull/712)
+
 ## [5.8.1](2020-10-12)
 
 ### Fixed
