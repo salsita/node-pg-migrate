@@ -188,7 +188,7 @@ jobs:
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
       - image: cockroachdb/cockroach:v20.2.1
-        command: ['start', '--insecure', '--host=localhost']
+        command: ['start-single-node', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
       - <<: *cockroach-wait
