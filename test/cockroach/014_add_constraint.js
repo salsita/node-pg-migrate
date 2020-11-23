@@ -5,3 +5,7 @@ exports.up = (pgm) => {
     check: 'id < 30',
   })
 }
+
+exports.down = () => {
+  // do nothing
+}
