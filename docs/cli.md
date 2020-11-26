@@ -5,7 +5,9 @@ You can specify your database connection information using [config](https://www.
 ```json
 // config/default.json
 {
-  "url": "postgres://postgres:password@localhost:5432/database"
+  "db": {
+    "url": "postgres://postgres:password@localhost:5432/database"
+  }
 }
 ```
 
@@ -14,11 +16,13 @@ or
 ```json
 // config/default.json
 {
-  "user": "postgres",
-  "password": "",
-  "host": "localhost",
-  "port": 5432,
-  "database": "database"
+  "db": {
+    "user": "postgres",
+    "password": "",
+    "host": "localhost",
+    "port": 5432,
+    "database": "database"
+  }
 }
 ```
 
@@ -60,6 +64,7 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 - `config-file` (`f`) - The file with migration JSON config (defaults to undefined)
+- `config-value` - Name of config section with db options (default to `db`)
 - `schema` (`s`) - The schema(s) on which migration will be run (defaults to `public`, used to set `search_path`)
 - `create-schema` - Create the configured schema if it doesn't exist (defaults to `false`)
 - `database-url-var` (`d`) - Name of env variable with database url string (defaults to `DATABASE_URL`)
