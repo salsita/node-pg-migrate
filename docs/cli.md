@@ -15,8 +15,8 @@ or
 
 ```json
 // config/default.json
-"db": {
-  {
+{
+  "db": {
     "user": "postgres",
     "password": "",
     "host": "localhost",
