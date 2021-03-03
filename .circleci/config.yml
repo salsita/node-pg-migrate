@@ -18,7 +18,7 @@ save: &save
     key: code-{{ .Revision }}
     paths:
       - .
-      - "~/.npm-global"
+      - '~/.npm-global'
 
 restore: &restore
   restore_cache:
@@ -333,16 +333,16 @@ jobs:
       - <<: *test-postgres
   test-env-vars:
     docker:
-    - <<: *node-image
-      environment:
-        - PGUSER=ubuntu
-        - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
-        - PGDATABASE=circle_test
-    - image: postgres:13.2-alpine
-      environment:
-        - POSTGRES_USER=ubuntu
-        - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
-        - POSTGRES_DB=circle_test
+      - <<: *node-image
+        environment:
+          - PGUSER=ubuntu
+          - PGPASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          - PGDATABASE=circle_test
+      - image: postgres:13.2-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          - POSTGRES_DB=circle_test
     steps:
       - <<: *restore
       - <<: *postgres-wait
@@ -509,22 +509,22 @@ workflows:
             - install
       - test-env-vars:
           requires:
-          - install
+            - install
       - test-schema:
           requires:
-          - install
+            - install
       - test-schemas:
           requires:
-          - install
+            - install
       - test-typescript-migration:
           requires:
-          - install
+            - install
       - test-typescript-customrunner-url:
           requires:
-          - install
+            - install
       - test-typescript-customrunner-client:
           requires:
-          - install
+            - install
       - test-create-migration:
           requires:
-          - install
+            - install
