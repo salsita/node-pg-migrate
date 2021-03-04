@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions, Literal } from '../types'
 import { Name } from './generalTypes'
 import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions, IndexColumn } from './indexesTypes'
@@ -51,7 +50,7 @@ function generateColumnsString(columns: (string | IndexColumn)[], mOptions: Migr
 export function dropIndex(mOptions: MigrationOptions) {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
     const { concurrently, ifExists, cascade } = options
-    const columns = _.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
+    const columns = Array.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : ''
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const indexName = generateIndexName(tableName, columns, options, mOptions.schemalize)
@@ -76,7 +75,7 @@ export function createIndex(mOptions: MigrationOptions) {
     ifNotExists - optionally create index
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
-    const columns = _.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
+    const columns = Array.isArray(rawColumns) ? rawColumns.slice() : [rawColumns]
     if (options.opclass) {
       mOptions.logger.warn(
         "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])",
@@ -104,7 +103,7 @@ export function createIndex(mOptions: MigrationOptions) {
     const method = options.method ? ` USING ${options.method}` : ''
     const where = options.where ? ` WHERE ${options.where}` : ''
     const include = options.include
-      ? ` INCLUDE (${(_.isArray(options.include) ? options.include : [options.include])
+      ? ` INCLUDE (${(Array.isArray(options.include) ? options.include : [options.include])
           .map(mOptions.literal)
           .join(', ')})`
       : ''

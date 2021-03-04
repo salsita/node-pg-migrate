@@ -38,7 +38,7 @@ export function dropType(mOptions: MigrationOptions) {
 
 export function createType(mOptions: MigrationOptions) {
   const _create: CreateType = (typeName, options) => {
-    if (_.isArray(options)) {
+    if (Array.isArray(options)) {
       const optionsStr = options.map(escapeValue).join(', ')
       const typeNameStr = mOptions.literal(typeName)
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`

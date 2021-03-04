@@ -174,7 +174,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
   let constraints = []
   const comments = []
   if (check) {
-    if (_.isArray(check)) {
+    if (Array.isArray(check)) {
       check.forEach((ch, i) => {
         const name = literal(optionName || `${tableName}_chck_${i + 1}`)
         constraints.push(`CONSTRAINT ${name} CHECK (${ch})`)
@@ -185,23 +185,23 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
     }
   }
   if (unique) {
-    const uniqueArray: Array<Name | Name[]> = _.isArray(unique) ? unique : [unique]
-    const isArrayOfArrays = uniqueArray.some((uniqueSet) => _.isArray(uniqueSet))
+    const uniqueArray: Array<Name | Name[]> = Array.isArray(unique) ? unique : [unique]
+    const isArrayOfArrays = uniqueArray.some((uniqueSet) => Array.isArray(uniqueSet))
     ;((isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>).forEach((uniqueSet) => {
-      const cols = _.isArray(uniqueSet) ? uniqueSet : [uniqueSet]
+      const cols = Array.isArray(uniqueSet) ? uniqueSet : [uniqueSet]
       const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`)
       constraints.push(`CONSTRAINT ${name} UNIQUE (${cols.map(literal).join(', ')})`)
     })
   }
   if (primaryKey) {
     const name = literal(optionName || `${tableName}_pkey`)
-    const key = (_.isArray(primaryKey) ? primaryKey : [primaryKey]).map(literal).join(', ')
+    const key = (Array.isArray(primaryKey) ? primaryKey : [primaryKey]).map(literal).join(', ')
     constraints.push(`CONSTRAINT ${name} PRIMARY KEY (${key})`)
   }
   if (foreignKeys) {
-    ;(_.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach((fk) => {
+    ;(Array.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach((fk) => {
       const { columns, referencesConstraintName, referencesConstraintComment } = fk
-      const cols = _.isArray(columns) ? columns : [columns]
+      const cols = Array.isArray(columns) ? columns : [columns]
       const name = literal(referencesConstraintName || optionName || `${tableName}_fk_${cols.join('_')}`)
       const key = cols.map(literal).join(', ')
       const referencesStr = parseReferences(fk, literal)
@@ -231,7 +231,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
 
 const parseLike = (like: Name | { table: Name; options?: LikeOptions }, literal: Literal) => {
   const formatOptions = (name: 'INCLUDING' | 'EXCLUDING', options?: Like | Like[]) =>
-    (_.isArray(options) ? options : [options])
+    (Array.isArray(options) ? options : [options])
       .filter((option): option is Like => option !== undefined)
       .map((option) => ` ${name} ${option}`)
       .join('')
@@ -321,7 +321,7 @@ export function dropColumns(mOptions: MigrationOptions) {
     const { ifExists, cascade } = options
     if (typeof columns === 'string') {
       columns = [columns] // eslint-disable-line no-param-reassign
-    } else if (!_.isArray(columns) && typeof columns === 'object') {
+    } else if (!Array.isArray(columns) && typeof columns === 'object') {
       columns = _.keys(columns) // eslint-disable-line no-param-reassign
     }
     const columnsStr = formatLines(
