@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { MigrationOptions, Literal } from '../types'
 import { applyType, applyTypeAdapters, makeComment, escapeValue, formatLines } from '../utils'
+import { FunctionParamType } from './functionsTypes'
 import { parseSequenceOptions } from './sequences'
 import {
   CreateTable,
@@ -70,7 +71,9 @@ const parseColumns = (
   comments: string[]
 } => {
   const extendingTypeShorthands = mOptions.typeShorthands
-  let columnsWithOptions = _.mapValues(columns, (column) => applyType(column, extendingTypeShorthands))
+  let columnsWithOptions = Object.keys(columns).reduce<{
+    [x: string]: ColumnDefinition & FunctionParamType
+  }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
 
   const primaryColumns = _.chain(columnsWithOptions)
     .map((options: ColumnDefinition, columnName) => (options.primaryKey ? columnName : null))
@@ -79,10 +82,18 @@ const parseColumns = (
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
-    columnsWithOptions = _.mapValues(columnsWithOptions, (options) => ({
-      ...options,
-      primaryKey: false,
-    }))
+    columnsWithOptions = Object.keys(columnsWithOptions).reduce<{
+      [x: string]: ColumnDefinition & FunctionParamType
+    }>(
+      (previous, options) => ({
+        ...previous,
+        [options]: {
+          ...columnsWithOptions[options],
+          primaryKey: false,
+        },
+      }),
+      {},
+    )
   }
 
   const comments = _.chain(columnsWithOptions)
