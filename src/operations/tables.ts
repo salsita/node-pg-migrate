@@ -333,7 +333,7 @@ export function dropColumns(mOptions: MigrationOptions) {
     if (typeof columns === 'string') {
       columns = [columns] // eslint-disable-line no-param-reassign
     } else if (!Array.isArray(columns) && typeof columns === 'object') {
-      columns = _.keys(columns) // eslint-disable-line no-param-reassign
+      columns = Object.keys(columns) // eslint-disable-line no-param-reassign
     }
     const columnsStr = formatLines(
       columns.map(mOptions.literal),
