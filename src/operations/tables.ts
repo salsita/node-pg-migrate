@@ -106,7 +106,8 @@ const parseColumns = (
     .value()
 
   return {
-    columns: _.map(columnsWithOptions, (options: ColumnDefinition, columnName) => {
+    columns: Object.keys(columnsWithOptions).map((columnName) => {
+      const options = columnsWithOptions[columnName]
       const {
         type,
         collation,

@@ -43,10 +43,13 @@ export function createType(mOptions: MigrationOptions) {
       const typeNameStr = mOptions.literal(typeName)
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`
     }
-    const attributes = _.map(options, (attribute, attributeName) => {
-      const typeStr = applyType(attribute, mOptions.typeShorthands).type
-      return `${mOptions.literal(attributeName)} ${typeStr}`
-    }).join(',\n')
+    const attributes = Object.keys(options)
+      .map((attributeName) => {
+        const attribute = options[attributeName]
+        const typeStr = applyType(attribute, mOptions.typeShorthands).type
+        return `${mOptions.literal(attributeName)} ${typeStr}`
+      })
+      .join(',\n')
     return `CREATE TYPE ${mOptions.literal(typeName)} AS (\n${attributes}\n);`
   }
   _create.reverse = dropType(mOptions)
