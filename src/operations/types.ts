@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions } from '../types'
 import { applyType, escapeValue } from '../utils'
 import {
