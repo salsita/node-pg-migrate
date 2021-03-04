@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions, Literal } from '../types'
 import { applyType, applyTypeAdapters, makeComment, escapeValue, formatLines } from '../utils'
 import { FunctionParamType } from './functionsTypes'
@@ -75,10 +74,10 @@ const parseColumns = (
     [x: string]: ColumnDefinition & FunctionParamType
   }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
 
-  const primaryColumns = _.chain(columnsWithOptions)
-    .map((options: ColumnDefinition, columnName) => (options.primaryKey ? columnName : null))
-    .filter((columnName): columnName is string => Boolean(columnName))
-    .value()
+  const primaryColumns = Object.keys(columnsWithOptions).filter((columnName) => {
+    const options = columnsWithOptions[columnName]
+    return options.primaryKey
+  })
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
@@ -96,14 +95,13 @@ const parseColumns = (
     )
   }
 
-  const comments = _.chain(columnsWithOptions)
-    .map(
-      (options: ColumnDefinition, columnName) =>
-        typeof options.comment !== 'undefined' &&
-        makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment),
+  const comments = Object.keys(columnsWithOptions).filter((columnName) => {
+    const options = columnsWithOptions[columnName]
+    return (
+      typeof options.comment !== 'undefined' &&
+      makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment)
     )
-    .filter((comment): comment is string => Boolean(comment))
-    .value()
+  })
 
   return {
     columns: Object.keys(columnsWithOptions).map((columnName) => {
