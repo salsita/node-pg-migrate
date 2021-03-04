@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions } from '../types'
 import { CreateExtension, DropExtension } from './extensionsTypes'
 
@@ -10,7 +9,7 @@ export function dropExtension(mOptions: MigrationOptions) {
     const extensions = Array.isArray(_extensions) ? _extensions : [_extensions]
     const ifExistsStr = ifExists ? ' IF EXISTS' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
-    return _.map(extensions, (extension) => {
+    return extensions.map((extension) => {
       const extensionStr = mOptions.literal(extension)
       return `DROP EXTENSION${ifExistsStr} ${extensionStr}${cascadeStr};`
     })
@@ -24,7 +23,7 @@ export function createExtension(mOptions: MigrationOptions) {
     const extensions = Array.isArray(_extensions) ? _extensions : [_extensions]
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : ''
     const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : ''
-    return _.map(extensions, (extension) => {
+    return extensions.map((extension) => {
       const extensionStr = mOptions.literal(extension)
       return `CREATE EXTENSION${ifNotExistsStr} ${extensionStr}${schemaStr};`
     })
