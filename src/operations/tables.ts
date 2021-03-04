@@ -74,10 +74,13 @@ const parseColumns = (
     [x: string]: ColumnDefinition & FunctionParamType
   }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
 
+  console.log('primaryColumns before:', Object.keys(columnsWithOptions))
   const primaryColumns = Object.keys(columnsWithOptions).filter((columnName) => {
     const options = columnsWithOptions[columnName]
     return options.primaryKey
   })
+  console.log('primaryColumns after:', primaryColumns)
+
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
@@ -95,6 +98,7 @@ const parseColumns = (
     )
   }
 
+  console.log('comments before:', Object.keys(columnsWithOptions))
   const comments = Object.keys(columnsWithOptions).filter((columnName) => {
     const options = columnsWithOptions[columnName]
     return (
@@ -102,6 +106,7 @@ const parseColumns = (
       makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment)
     )
   })
+  console.log('comments after:', comments)
 
   return {
     columns: Object.keys(columnsWithOptions).map((columnName) => {
