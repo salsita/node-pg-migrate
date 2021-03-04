@@ -277,7 +277,9 @@ export function createTable(mOptions: MigrationOptions) {
       columns,
       mOptions,
     )
-    const dupes = _.intersection(Object.keys(optionsConstraints), Object.keys(crossColumnConstraints))
+    const dupes = Object.keys(optionsConstraints).filter((optionsConstraint) =>
+      Object.keys(crossColumnConstraints).includes(optionsConstraint),
+    )
     if (dupes.length > 0) {
       const dupesStr = dupes.join(', ')
       throw new Error(`There is duplicate constraint definition in table and columns options: ${dupesStr}`)
