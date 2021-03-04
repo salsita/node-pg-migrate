@@ -15,6 +15,18 @@ process.on('uncaughtException', (err) => {
   process.exit(1)
 })
 
+function tryRequire(moduleName) {
+  try {
+    // eslint-disable-next-line import/no-dynamic-require,global-require,security/detect-non-literal-require
+    return require(moduleName)
+  } catch (err) {
+    if (err.code !== 'MODULE_NOT_FOUND') {
+      throw err
+    }
+    return null
+  }
+}
+
 const schemaArg = 'schema'
 const createSchemaArg = 'create-schema'
 const databaseUrlVarArg = 'database-url-var'
@@ -223,14 +235,13 @@ if (envPath) {
   dotenvConfig.path = envPath
 }
 
-try {
+const dotenv = tryRequire('dotenv')
+if (dotenv) {
   // Load config from ".env" file
-  const myEnv = require('dotenv').config(dotenvConfig) // eslint-disable-line global-require,import/no-extraneous-dependencies
-
-  require('dotenv-expand')(myEnv) // eslint-disable-line global-require,import/no-extraneous-dependencies
-} catch (err) {
-  if (err.code !== 'MODULE_NOT_FOUND') {
-    throw err
+  const myEnv = dotenv.config(dotenvConfig)
+  const dotenvExpand = tryRequire('dotenv-expand')
+  if (dotenvExpand) {
+    dotenvExpand(myEnv)
   }
 }
 
@@ -253,21 +264,20 @@ let tsconfigPath = argv[tsconfigArg]
 function readTsconfig() {
   if (tsconfigPath) {
     let tsconfig
-    let tsnode
+    const json5 = tryRequire('json5')
+
     try {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       const config = fs.readFileSync(path.resolve(process.cwd(), tsconfigPath), { encoding: 'utf-8' })
-      // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require,import/no-extraneous-dependencies
-      tsconfig = require('json5').parse(config)
+      tsconfig = json5 ? json5.parse(config) : JSON.parse(config)
     } catch (err) {
       console.error("Can't load tsconfig.json:", err)
     }
-    try {
-      // eslint-disable-next-line global-require,import/no-extraneous-dependencies
-      tsnode = require('ts-node')
-    } catch (err) {
-      console.error("Can't load ts-node:", err)
+    const tsnode = tryRequire('ts-node')
+    if (!tsnode) {
+      console.error("For TypeScript support, please install 'ts-node' module")
     }
+
     if (tsconfig && tsnode) {
       tsnode.register(tsconfig)
       if (!MIGRATIONS_FILE_LANGUAGE) {
@@ -319,27 +329,21 @@ function readJson(json) {
   }
 }
 
-try {
-  // Load config (and suppress the no-config-warning)
-  const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING
-  process.env.SUPPRESS_NO_CONFIG_WARNING = 1
-  const config = require('config') // eslint-disable-line global-require,import/no-extraneous-dependencies
-  if (config.has(argv[configValueArg])) {
-    const db = config.get(argv[configValueArg])
-    readJson(db)
-  }
-  process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning
-} catch (err) {
-  if (err.code !== 'MODULE_NOT_FOUND') {
-    throw err
-  }
+// Load config (and suppress the no-config-warning)
+const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING
+process.env.SUPPRESS_NO_CONFIG_WARNING = 1
+const config = tryRequire('config')
+if (config && config.has(argv[configValueArg])) {
+  const db = config.get(argv[configValueArg])
+  readJson(db)
 }
+process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning
 
 const configFileName = argv[configFileArg]
 if (configFileName) {
   // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-  const config = require(path.resolve(configFileName))
-  readJson(config)
+  const jsonConfig = require(path.resolve(configFileName))
+  readJson(jsonConfig)
 }
 readTsconfig()
 
