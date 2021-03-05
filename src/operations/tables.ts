@@ -75,16 +75,9 @@ const parseColumns = (
     [x: string]: ColumnDefinition & FunctionParamType
   }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
 
-  console.log('---')
-  console.log('columnsWithOptions before primaryColumns:', columnsWithOptions)
-  let primaryColumns = _.chain(columnsWithOptions)
-    .map((options: ColumnDefinition, columnName) => (options.primaryKey ? columnName : null))
-    .filter((columnName): columnName is string => Boolean(columnName))
-    .value()
-  console.log('primaryColumns with chain:', primaryColumns)
-  primaryColumns = Object.keys(columnsWithOptions).filter((columnName) => columnsWithOptions[columnName].primaryKey)
-  console.log('primaryColumns with native:', primaryColumns)
-
+  const primaryColumns = Object.keys(columnsWithOptions).filter(
+    (columnName) => columnsWithOptions[columnName].primaryKey,
+  )
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
@@ -102,25 +95,15 @@ const parseColumns = (
     )
   }
 
-  console.log('---')
-  console.log('columnsWithOptions before comments:', columnsWithOptions)
-  let comments = _.chain(columnsWithOptions)
-    .map(
-      (options: ColumnDefinition, columnName) =>
+  const comments = Object.keys(columnsWithOptions)
+    .map((columnName) => {
+      const options = columnsWithOptions[columnName]
+      return (
         typeof options.comment !== 'undefined' &&
-        makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment),
-    )
+        makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment)
+      )
+    })
     .filter((comment): comment is string => Boolean(comment))
-    .value()
-  console.log('comments with chain:', comments)
-  comments = Object.keys(columnsWithOptions).filter((columnName) => {
-    const options = columnsWithOptions[columnName]
-    return (
-      typeof options.comment !== 'undefined' &&
-      makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment)
-    )
-  })
-  console.log('comments with native:', comments)
 
   return {
     columns: Object.keys(columnsWithOptions).map((columnName) => {
