@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions, Literal } from '../types'
 import { applyType, applyTypeAdapters, makeComment, escapeValue, formatLines } from '../utils'
 import { FunctionParamType } from './functionsTypes'
