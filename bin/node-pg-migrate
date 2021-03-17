@@ -212,21 +212,7 @@ if (argv.help || argv._.length === 0) {
   process.exit(1)
 }
 
-let MIGRATIONS_DIR = argv[migrationsDirArg]
-let DB_CONNECTION = process.env[argv[databaseUrlVarArg]]
-let IGNORE_PATTERN = argv[ignorePatternArg]
-let SCHEMA = argv[schemaArg]
-let CREATE_SCHEMA = argv[createSchemaArg]
-let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg]
-let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg]
-let MIGRATIONS_TABLE = argv[migrationsTableArg]
-let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
-let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg]
-let TEMPLATE_FILE_NAME = argv[templateFileNameArg]
-let CHECK_ORDER = argv[checkOrderArg]
-let VERBOSE = argv[verboseArg]
-let DECAMELIZE = argv[decamelizeArg]
-let tsconfigPath = argv[tsconfigArg]
+/* Load env before accessing process.env */
 const envPath = argv[envPathArg]
 
 try {
@@ -251,6 +237,22 @@ try {
     throw err
   }
 }
+
+let MIGRATIONS_DIR = argv[migrationsDirArg]
+let DB_CONNECTION = process.env[argv[databaseUrlVarArg]]
+let IGNORE_PATTERN = argv[ignorePatternArg]
+let SCHEMA = argv[schemaArg]
+let CREATE_SCHEMA = argv[createSchemaArg]
+let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg]
+let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg]
+let MIGRATIONS_TABLE = argv[migrationsTableArg]
+let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg]
+let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg]
+let TEMPLATE_FILE_NAME = argv[templateFileNameArg]
+let CHECK_ORDER = argv[checkOrderArg]
+let VERBOSE = argv[verboseArg]
+let DECAMELIZE = argv[decamelizeArg]
+let tsconfigPath = argv[tsconfigArg]
 
 function readTsconfig() {
   if (tsconfigPath) {
