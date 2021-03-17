@@ -227,15 +227,15 @@ let CHECK_ORDER = argv[checkOrderArg]
 let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
 let tsconfigPath = argv[tsconfigArg]
-let envPath = argv[envPathArg]
+const envPath = argv[envPathArg]
 
 try {
   // Create default dotenv config
-  const dotenvConfig = { silent: true };
+  const dotenvConfig = { silent: true }
 
   // If the path has been configured, add it to the config, otherwise don't change the default dotenv path
   if (envPath) {
-    dotenvConfig.path = envPath;
+    dotenvConfig.path = envPath
   }
 
   const myEnv = require('dotenv').config(dotenvConfig) // eslint-disable-line global-require,import/no-extraneous-dependencies
