@@ -226,7 +226,7 @@ if (envPath) {
 try {
   // Load config from ".env" file
   const myEnv = require('dotenv').config(dotenvConfig) // eslint-disable-line global-require,import/no-extraneous-dependencies
-  
+
   require('dotenv-expand')(myEnv) // eslint-disable-line global-require,import/no-extraneous-dependencies
 } catch (err) {
   if (err.code !== 'MODULE_NOT_FOUND') {
