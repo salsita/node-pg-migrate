@@ -1,5 +1,5 @@
 import { MigrationOptions, Literal } from '../types'
-import { applyType, applyTypeAdapters, makeComment, escapeValue, formatLines } from '../utils'
+import { applyType, applyTypeAdapters, escapeValue, formatLines, intersection, makeComment } from '../utils'
 import { parseSequenceOptions } from './sequences'
 import {
   CreateTable,
@@ -275,9 +275,7 @@ export function createTable(mOptions: MigrationOptions) {
       columns,
       mOptions,
     )
-    const dupes = Object.keys(optionsConstraints).filter((optionsConstraint) =>
-      Object.keys(crossColumnConstraints).includes(optionsConstraint),
-    )
+    const dupes = intersection(Object.keys(optionsConstraints), Object.keys(crossColumnConstraints))
     if (dupes.length > 0) {
       const dupesStr = dupes.join(', ')
       throw new Error(`There is duplicate constraint definition in table and columns options: ${dupesStr}`)

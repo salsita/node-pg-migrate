@@ -186,3 +186,7 @@ export const formatLines = (lines: string[], replace = '  ', separator = ',') =>
     .map((line) => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)
     .replace(/^/gm, replace)
+
+export function intersection<T>(list1: T[], list2: T[]): T[] {
+  return list1.filter((element) => list2.includes(element))
+}
