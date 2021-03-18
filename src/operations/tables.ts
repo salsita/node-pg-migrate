@@ -1,6 +1,5 @@
 import { MigrationOptions, Literal } from '../types'
 import { applyType, applyTypeAdapters, makeComment, escapeValue, formatLines } from '../utils'
-import { FunctionParamType } from './functionsTypes'
 import { parseSequenceOptions } from './sequences'
 import {
   CreateTable,
@@ -70,23 +69,24 @@ const parseColumns = (
   comments: string[]
 } => {
   const extendingTypeShorthands = mOptions.typeShorthands
-  let columnsWithOptions = Object.keys(columns).reduce<{
-    [x: string]: ColumnDefinition & FunctionParamType
-  }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
-
-  const primaryColumns = Object.keys(columnsWithOptions).filter(
-    (columnName) => columnsWithOptions[columnName].primaryKey,
+  let columnsWithOptions = Object.fromEntries(
+    Object.entries(columns).map(([columnName, columnDefinition]) => [
+      columnName,
+      applyType(columnDefinition, extendingTypeShorthands),
+    ]),
   )
+
+  const primaryColumns = Object.entries(columnsWithOptions)
+    .filter(([, { primaryKey }]) => Boolean(primaryKey))
+    .map(([columnName]) => columnName)
   const multiplePrimaryColumns = primaryColumns.length > 1
 
   if (multiplePrimaryColumns) {
-    columnsWithOptions = Object.keys(columnsWithOptions).reduce<{
-      [x: string]: ColumnDefinition & FunctionParamType
-    }>(
-      (previous, options) => ({
+    columnsWithOptions = Object.entries(columnsWithOptions).reduce(
+      (previous, [columnName, options]) => ({
         ...previous,
-        [options]: {
-          ...columnsWithOptions[options],
+        [columnName]: {
+          ...options,
           primaryKey: false,
         },
       }),
@@ -94,19 +94,17 @@ const parseColumns = (
     )
   }
 
-  const comments = Object.keys(columnsWithOptions)
-    .map((columnName) => {
-      const options = columnsWithOptions[columnName]
+  const comments = Object.entries(columnsWithOptions)
+    .map(([columnName, { comment }]) => {
       return (
-        typeof options.comment !== 'undefined' &&
-        makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, options.comment)
+        typeof comment !== 'undefined' &&
+        makeComment('COLUMN', `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`, comment)
       )
     })
     .filter((comment): comment is string => Boolean(comment))
 
   return {
-    columns: Object.keys(columnsWithOptions).map((columnName) => {
-      const options = columnsWithOptions[columnName]
+    columns: Object.entries(columnsWithOptions).map(([columnName, options]) => {
       const {
         type,
         collation,

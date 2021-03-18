@@ -42,9 +42,8 @@ export function createType(mOptions: MigrationOptions) {
       const typeNameStr = mOptions.literal(typeName)
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`
     }
-    const attributes = Object.keys(options)
-      .map((attributeName) => {
-        const attribute = options[attributeName]
+    const attributes = Object.entries(options)
+      .map(([attributeName, attribute]) => {
         const typeStr = applyType(attribute, mOptions.typeShorthands).type
         return `${mOptions.literal(attributeName)} ${typeStr}`
       })
