@@ -45,7 +45,7 @@ You can specify custom JSON file with config (format is same as for `db` entry o
 }
 ```
 
-If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the node-pg-migrate binary.
+If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the node-pg-migrate binary. If the .env file is not on the same level where the command has been called, you can use the `--envPath` option to point to the location of your .env file.
 
 Depending on your project's setup, it may make sense to write some custom grunt/gulp/whatever tasks that set this env var and run your migration commands. More on that below.
 
@@ -77,6 +77,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
 - `template-file-name` - Use your own template file for migrations (language will be determined from the extension of the template). The file must export the `up` method accepting `MigrationBuilder` instance.
 - `tsconfig` - Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overridden)
+- `envPath` - Path to a .env file. The default finds the file on the same level where the command has been called. It might be useful if you have nested projects, but a global .env file that you need to point to.
 - `timestamp` - Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)
 - `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on the command line).
   (There should be no migration with timestamp lesser than last run migration.)
