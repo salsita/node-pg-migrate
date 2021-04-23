@@ -21,6 +21,7 @@ import {
   ColumnDefinitions,
 } from './tablesTypes'
 import { Name } from './generalTypes'
+import { FunctionParamType } from './functionsTypes'
 
 export {
   CreateTable,
@@ -69,12 +70,9 @@ const parseColumns = (
   comments: string[]
 } => {
   const extendingTypeShorthands = mOptions.typeShorthands
-  let columnsWithOptions = Object.fromEntries(
-    Object.entries(columns).map(([columnName, columnDefinition]) => [
-      columnName,
-      applyType(columnDefinition, extendingTypeShorthands),
-    ]),
-  )
+  let columnsWithOptions = Object.keys(columns).reduce<{
+    [x: string]: ColumnDefinition & FunctionParamType
+  }>((previous, column) => ({ ...previous, [column]: applyType(columns[column], extendingTypeShorthands) }), {})
 
   const primaryColumns = Object.entries(columnsWithOptions)
     .filter(([, { primaryKey }]) => Boolean(primaryKey))
