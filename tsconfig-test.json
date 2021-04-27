@@ -4,7 +4,7 @@
     "moduleResolution": "node",
     "baseUrl": "src",
     "outDir": "dist",
-    "lib": ["es2018"],
+    "lib": ["es2019"],
     "esModuleInterop": true,
     "sourceMap": false,
     "forceConsistentCasingInFileNames": true,

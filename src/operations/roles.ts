@@ -1,4 +1,3 @@
-import { isArray } from 'lodash'
 import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
 import { CreateRole, DropRole, AlterRole, RenameRole, RoleOptions } from './rolesTypes'
@@ -40,15 +39,15 @@ const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
     options.push(`VALID UNTIL ${valid}`)
   }
   if (roleOptions.inRole) {
-    const inRole = isArray(roleOptions.inRole) ? roleOptions.inRole.join(',') : roleOptions.inRole
+    const inRole = Array.isArray(roleOptions.inRole) ? roleOptions.inRole.join(',') : roleOptions.inRole
     options.push(`IN ROLE ${inRole}`)
   }
   if (roleOptions.role) {
-    const role = isArray(roleOptions.role) ? roleOptions.role.join(',') : roleOptions.role
+    const role = Array.isArray(roleOptions.role) ? roleOptions.role.join(',') : roleOptions.role
     options.push(`ROLE ${role}`)
   }
   if (roleOptions.admin) {
-    const admin = isArray(roleOptions.admin) ? roleOptions.admin.join(',') : roleOptions.admin
+    const admin = Array.isArray(roleOptions.admin) ? roleOptions.admin.join(',') : roleOptions.admin
     options.push(`ADMIN ${admin}`)
   }
 

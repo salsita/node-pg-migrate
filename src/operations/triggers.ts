@@ -1,4 +1,3 @@
-import { isArray } from 'lodash'
 import { MigrationOptions } from '../types'
 import { escapeValue } from '../utils'
 import { createFunction, dropFunction } from './functions'
@@ -29,7 +28,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   ) => {
     const { constraint, condition, operation, deferrable, deferred, functionParams = [] } = triggerOptions
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions
-    const operations = isArray(operation) ? operation.join(' OR ') : operation
+    const operations = Array.isArray(operation) ? operation.join(' OR ') : operation
     if (constraint) {
       when = 'AFTER'
     }

@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { MigrationOptions } from '../types'
 import { applyType, escapeValue } from '../utils'
 import {
@@ -38,15 +37,17 @@ export function dropType(mOptions: MigrationOptions) {
 
 export function createType(mOptions: MigrationOptions) {
   const _create: CreateType = (typeName, options) => {
-    if (_.isArray(options)) {
+    if (Array.isArray(options)) {
       const optionsStr = options.map(escapeValue).join(', ')
       const typeNameStr = mOptions.literal(typeName)
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`
     }
-    const attributes = _.map(options, (attribute, attributeName) => {
-      const typeStr = applyType(attribute, mOptions.typeShorthands).type
-      return `${mOptions.literal(attributeName)} ${typeStr}`
-    }).join(',\n')
+    const attributes = Object.entries(options)
+      .map(([attributeName, attribute]) => {
+        const typeStr = applyType(attribute, mOptions.typeShorthands).type
+        return `${mOptions.literal(attributeName)} ${typeStr}`
+      })
+      .join(',\n')
     return `CREATE TYPE ${mOptions.literal(typeName)} AS (\n${attributes}\n);`
   }
   _create.reverse = dropType(mOptions)
