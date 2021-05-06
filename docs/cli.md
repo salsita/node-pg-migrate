@@ -74,7 +74,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 - `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
 - `migration-filename-format` - Choose prefix of file - either UTC (`20200605075829074`) or timestamp (`1591343909074`)
-- `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
+- `migration-file-language` (`j`) - Language of the migration file to create (`js`, `sql`, or `ts`)
 - `template-file-name` - Use your own template file for migrations (language will be determined from the extension of the template). The file must export the `up` method accepting `MigrationBuilder` instance.
 - `tsconfig` - Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overridden)
 - `envPath` - Path to a .env file. The default finds the file on the same level where the command has been called. It might be useful if you have nested projects, but a global .env file that you need to point to.
