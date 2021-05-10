@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:14
+  image: circleci/node:15
 
 set-npm-global: &set-npm-global
   run:
@@ -197,7 +197,7 @@ jobs:
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-10:
     docker:
-      - image: circleci/node:10
+      - image: circleci/node:15
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:13.2-alpine
@@ -211,7 +211,7 @@ jobs:
       - <<: *test-postgres
   test-node-12:
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:15
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:13.2-alpine
