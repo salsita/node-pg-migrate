@@ -1,6 +1,2 @@
 dist
 templates
-
-# Ignore strange semicolon
-test/ts/customRunnerDBClient.ts
-test/ts/customRunnerDBUrl.ts
