@@ -1,5 +1,4 @@
 import { ClientBase, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
-import { TlsOptions } from 'tls'
 import { Name } from './operations/generalTypes'
 
 import * as domains from './operations/domainsTypes'
