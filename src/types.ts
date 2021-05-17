@@ -18,6 +18,8 @@ import * as views from './operations/viewsTypes'
 import * as mViews from './operations/viewsMaterializedTypes'
 import PgLiteral from './operations/PgLiteral'
 
+export { ClientConfig, ConnectionConfig } from 'pg'
+
 // see ClientBase in @types/pg
 export interface DB {
   /* eslint-disable @typescript-eslint/no-explicit-any */
