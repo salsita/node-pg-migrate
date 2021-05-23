@@ -1,5 +1,4 @@
-import { ClientBase, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
-import { TlsOptions } from 'tls'
+import { ClientBase, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { Name } from './operations/generalTypes'
 
 import * as domains from './operations/domainsTypes'
@@ -18,6 +17,8 @@ import * as types from './operations/typesTypes'
 import * as views from './operations/viewsTypes'
 import * as mViews from './operations/viewsMaterializedTypes'
 import PgLiteral from './operations/PgLiteral'
+
+export { ClientConfig, ConnectionConfig } from 'pg'
 
 // see ClientBase in @types/pg
 export interface DB {
@@ -218,19 +219,6 @@ export interface RunnerOptionConfig {
   log?: LogFn
   logger?: Logger
   verbose?: boolean
-}
-
-export interface ConnectionConfig {
-  user?: string
-  database?: string
-  password?: string
-  port?: number
-  host?: string
-  connectionString?: string
-}
-
-export interface ClientConfig extends ConnectionConfig {
-  ssl?: boolean | TlsOptions
 }
 
 export interface RunnerOptionUrl {
