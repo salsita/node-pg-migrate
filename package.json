@@ -95,6 +95,7 @@
     "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "migrate": "node bin/node-pg-migrate",
+    "format": "prettier --write .",
     "lint": "eslint . bin/* --ext .js,.ts",
     "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
     "prepare": "npm run build",
