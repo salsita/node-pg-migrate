@@ -268,11 +268,11 @@ export function dropTable(mOptions: MigrationOptions) {
 export function createTable(mOptions: MigrationOptions) {
   const _create: CreateTable = (tableName, columns, options = {}) => {
     const { temporary, ifNotExists, inherits, like, constraints: optionsConstraints = {}, comment } = options
-    const { columns: columnLines, constraints: crossColumnConstraints, comments: columnComments = [] } = parseColumns(
-      tableName,
-      columns,
-      mOptions,
-    )
+    const {
+      columns: columnLines,
+      constraints: crossColumnConstraints,
+      comments: columnComments = [],
+    } = parseColumns(tableName, columns, mOptions)
     const dupes = intersection(Object.keys(optionsConstraints), Object.keys(crossColumnConstraints))
     if (dupes.length > 0) {
       const dupesStr = dupes.join(', ')
