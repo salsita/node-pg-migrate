@@ -331,7 +331,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.func = PgLiteral.create
 
     // expose DB so we can access database within transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const wrapDB =
       <T extends any[], R>(operation: (...args: T) => R) =>
       (...args: T) => {
@@ -340,6 +340,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
         }
         return operation(...args)
       }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     this.db = {
       query: wrapDB(db.query),
       select: wrapDB(db.select),
