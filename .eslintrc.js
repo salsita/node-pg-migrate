@@ -26,7 +26,7 @@ module.exports = {
     'security/detect-object-injection': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    'import/extensions': ['error', 'never'],
+    'import/extensions': ['error', 'never', { json: 'always' }],
   },
   overrides: [
     {

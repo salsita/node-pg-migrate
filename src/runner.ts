@@ -118,9 +118,10 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
     const downMigrations: Array<string | Migration> = runNames
       .filter((migrationName) => !options.file || options.file === migrationName)
       .map((migrationName) => migrations.find(({ name }) => name === migrationName) || migrationName)
-    const toRun = (options.timestamp
-      ? downMigrations.filter((migration) => typeof migration === 'object' && migration.timestamp >= options.count)
-      : downMigrations.slice(-Math.abs(options.count === undefined ? 1 : options.count))
+    const toRun = (
+      options.timestamp
+        ? downMigrations.filter((migration) => typeof migration === 'object' && migration.timestamp >= options.count)
+        : downMigrations.slice(-Math.abs(options.count === undefined ? 1 : options.count))
     ).reverse()
     const deletedMigrations = toRun.filter((migration): migration is string => typeof migration === 'string')
     if (deletedMigrations.length) {

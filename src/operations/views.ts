@@ -5,10 +5,12 @@ import { Nullable } from './generalTypes'
 
 export { CreateView, DropView, AlterView, AlterViewColumn, RenameView, ViewOptions }
 
-const viewOptionStr = <T extends Nullable<ViewOptions>, K extends keyof T>(options: T) => (key: K) => {
-  const value = options[key] === true ? '' : ` = ${options[key]}`
-  return `${key}${value}`
-}
+const viewOptionStr =
+  <T extends Nullable<ViewOptions>, K extends keyof T>(options: T) =>
+  (key: K) => {
+    const value = options[key] === true ? '' : ` = ${options[key]}`
+    return `${key}${value}`
+  }
 
 export function dropView(mOptions: MigrationOptions) {
   const _drop: DropView = (viewName, options = {}) => {

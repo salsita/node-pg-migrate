@@ -208,17 +208,19 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     // this function wraps each operation within a function that either
     // calls the operation or its reverse, and appends the result (array of sql statements)
     // to the  steps array
-    const wrap = <T extends Operation>(operation: T) => (...args: Parameters<T>) => {
-      if (this._REVERSE_MODE) {
-        if (typeof operation.reverse !== 'function') {
-          const name = `pgm.${operation.name}()`
-          throw new Error(`Impossible to automatically infer down migration for "${name}"`)
+    const wrap =
+      <T extends Operation>(operation: T) =>
+      (...args: Parameters<T>) => {
+        if (this._REVERSE_MODE) {
+          if (typeof operation.reverse !== 'function') {
+            const name = `pgm.${operation.name}()`
+            throw new Error(`Impossible to automatically infer down migration for "${name}"`)
+          }
+          this._steps = this._steps.concat(operation.reverse(...args))
+        } else {
+          this._steps = this._steps.concat(operation(...args))
         }
-        this._steps = this._steps.concat(operation.reverse(...args))
-      } else {
-        this._steps = this._steps.concat(operation(...args))
       }
-    }
 
     const options: MigrationOptions = {
       typeShorthands,
@@ -329,13 +331,16 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.func = PgLiteral.create
 
     // expose DB so we can access database within transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wrapDB = <T extends any[], R>(operation: (...args: T) => R) => (...args: T) => {
-      if (this._REVERSE_MODE) {
-        throw new Error('Impossible to automatically infer down migration')
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const wrapDB =
+      <T extends any[], R>(operation: (...args: T) => R) =>
+      (...args: T) => {
+        if (this._REVERSE_MODE) {
+          throw new Error('Impossible to automatically infer down migration')
+        }
+        return operation(...args)
       }
-      return operation(...args)
-    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     this.db = {
       query: wrapDB(db.query),
       select: wrapDB(db.select),
