@@ -102,11 +102,6 @@
     "prepare": "npm run build",
     "docs:preview": "docsify serve docs"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.js": [
       "npm run lintfix"
