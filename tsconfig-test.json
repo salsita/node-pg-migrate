@@ -10,7 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "noImplicitOverride": true
   },
   "exclude": ["node_modules", "templates", "dist", "bin"]
 }
