@@ -195,6 +195,19 @@ jobs:
       - run:
           name: test
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
+  test-cockroach-21:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
+      - image: cockroachdb/cockroach:v21.1.1
+        command: ['start-single-node', '--insecure', '--host=localhost']
+    steps:
+      - <<: *restore
+      - <<: *cockroach-wait
+      - run:
+          name: test
+          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-10:
     docker:
       - image: circleci/node:10
@@ -498,6 +511,9 @@ workflows:
           requires:
             - install
       - test-cockroach-20:
+          requires:
+            - install
+      - test-cockroach-21:
           requires:
             - install
       - test-node-10:
