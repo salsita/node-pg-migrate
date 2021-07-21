@@ -46,7 +46,11 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
           )
         }),
       )
-    ).sort((m1, m2) => m1.timestamp - m2.timestamp)
+    ).sort((m1, m2) => {
+      const compare = m1.timestamp - m2.timestamp
+      if (compare !== 0) return compare
+      return m1.name.localeCompare(m2.name)
+    })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     throw new Error(`Can't get migration files: ${err.stack}`)
