@@ -47,7 +47,8 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
         }),
       )
     ).sort((m1, m2) => m1.timestamp - m2.timestamp)
-  } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     throw new Error(`Can't get migration files: ${err.stack}`)
   }
 }
@@ -95,7 +96,8 @@ const ensureMigrationsTable = async (db: DBConnection, options: RunnerOption): P
         `CREATE TABLE ${fullTableName} ( ${idColumn} SERIAL PRIMARY KEY, ${nameColumn} varchar(255) NOT NULL, ${runOnColumn} timestamp NOT NULL)`,
       )
     }
-  } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     throw new Error(`Unable to ensure migrations table: ${err.stack}`)
   }
 }

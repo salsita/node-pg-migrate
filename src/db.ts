@@ -59,7 +59,7 @@ const db = (connection: ClientBase | string | ClientConfig, logger: Logger = con
     await createConnection()
     try {
       return await client.query(queryTextOrConfig, values)
-    } catch (err) {
+    } catch (err: any) {
       const { message, position }: { message: string; position: number } = err
       const string: string = typeof queryTextOrConfig === 'string' ? queryTextOrConfig : queryTextOrConfig.text
       if (message && position >= 1) {
