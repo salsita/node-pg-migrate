@@ -1,5 +1,12 @@
 # Change Log
 
+## [5.10.0](2021-06-29)
+
+### Added
+
+- Make the json5 dependency optional (fallback to JSON.parse) [#752](https://github.com/salsita/node-pg-migrate/pull/752)
+- export ConnectionConfig, ClientConfig from pg [#657](https://github.com/salsita/node-pg-migrate/pull/657)
+
 ## [5.9.0](2020-11-04)
 
 ### Added
