@@ -199,33 +199,104 @@ export enum PgType {
 export type MigrationDirection = 'up' | 'down'
 
 export interface RunnerOptionConfig {
+  /**
+   * The table storing which migrations have been run.
+   */
   migrationsTable: string
+  /**
+   * The schema storing table which migrations have been run.
+   *
+   * (defaults to same value as `schema`)
+   */
   migrationsSchema?: string
+  /**
+   * The schema on which migration will be run.
+   *
+   * @default 'public'
+   */
   schema?: string | string[]
+  /**
+   * The directory containing your migration files.
+   */
   dir: string
+  /**
+   * Check order of migrations before running them.
+   */
   checkOrder?: boolean
+  /**
+   * Direction of migration-run.
+   */
   direction: MigrationDirection
+  /**
+   * Number of migration to run.
+   */
   count: number
+  /**
+   * Treats `count` as timestamp.
+   */
   timestamp?: boolean
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   */
   ignorePattern?: string
+  /**
+   * Run only migration with this name.
+   */
   file?: string
   dryRun?: boolean
+  /**
+   * Creates the configured schema if it doesn't exist.
+   */
   createSchema?: boolean
+  /**
+   * Creates the configured migration schema if it doesn't exist.
+   */
   createMigrationsSchema?: boolean
+  /**
+   * Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back.
+   *
+   * @default true
+   */
   singleTransaction?: boolean
+  /**
+   * Disables locking mechanism and checks.
+   */
   noLock?: boolean
+  /**
+   * Mark migrations as run without actually performing them (use with caution!).
+   */
   fake?: boolean
+  /**
+   * Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names.
+   */
   decamelize?: boolean
+  /**
+   * Redirect log messages to this function, rather than `console`.
+   */
   log?: LogFn
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
   logger?: Logger
+  /**
+   * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
+   */
   verbose?: boolean
 }
 
 export interface RunnerOptionUrl {
+  /**
+   * Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)
+   */
   databaseUrl: string | ClientConfig
 }
 
 export interface RunnerOptionClient {
+  /**
+   * Instance of [new pg.Client](https://node-postgres.com/api/client).
+   *
+   * Instance should be connected to DB and after finishing migration, user is responsible to close connection.
+   */
   dbClient: ClientBase
 }
 
