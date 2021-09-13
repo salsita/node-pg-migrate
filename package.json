@@ -34,7 +34,7 @@
     "api"
   ],
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=12.13.0"
   },
   "bugs": {
     "url": "https://github.com/salsita/node-pg-migrate/issues"
@@ -76,7 +76,7 @@
     "eslint-plugin-security": "1.4.0",
     "husky": "7.0.2",
     "json5": "2.2.0",
-    "lint-staged": "10.5.4",
+    "lint-staged": "11.1.2",
     "mocha": "9.1.1",
     "pg": "8.7.1",
     "prettier": "2.3.2",
