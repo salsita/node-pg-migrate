@@ -190,11 +190,11 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       await db.query(`CREATE SCHEMA IF NOT EXISTS "${options.migrationsSchema}"`)
     }
 
-    await ensureMigrationsTable(db, options)
-
     if (!options.noLock) {
       await lock(db)
     }
+
+    await ensureMigrationsTable(db, options)
 
     const [migrations, runNames] = await Promise.all([
       loadMigrations(db, options, logger),
