@@ -11,7 +11,7 @@
 
 import { createSchemalize } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
-import { DB, MigrationBuilder, MigrationOptions, Logger } from './types'
+import { DB, MigrationBuilder, MigrationOptions, Logger, RunnerOptionConfig } from './types'
 
 import * as domains from './operations/domains'
 import * as extensions from './operations/extensions'
@@ -195,7 +195,12 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   private _useTransaction: boolean
 
-  constructor(db: DB, typeShorthands: ColumnDefinitions | undefined, shouldDecamelize: boolean, logger: Logger) {
+  constructor(
+    db: DB,
+    typeShorthands: ColumnDefinitions | undefined,
+    formattingOptions: Required<Pick<RunnerOptionConfig, 'decamelize' | 'quoteEscape'>>,
+    logger: Logger,
+  ) {
     this._steps = []
     this._REVERSE_MODE = false
     // by default, all migrations are wrapped in a transaction
@@ -222,10 +227,11 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
         }
       }
 
+    const { decamelize, quoteEscape } = formattingOptions
     const options: MigrationOptions = {
       typeShorthands,
-      schemalize: createSchemalize(shouldDecamelize, false),
-      literal: createSchemalize(shouldDecamelize, true),
+      schemalize: createSchemalize(decamelize, quoteEscape),
+      literal: createSchemalize(decamelize, quoteEscape),
       logger,
     }
 

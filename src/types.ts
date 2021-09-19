@@ -271,6 +271,10 @@ export interface RunnerOptionConfig {
    */
   decamelize?: boolean
   /**
+   * Toggles whether tables, columns, etc. should be quote escaped. Defaults to `true`
+   */
+  quoteEscape?: boolean
+  /**
    * Redirect log messages to this function, rather than `console`.
    */
   log?: LogFn

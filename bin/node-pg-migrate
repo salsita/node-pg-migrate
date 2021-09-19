@@ -47,6 +47,7 @@ const timestampArg = 'timestamp'
 const dryRunArg = 'dry-run'
 const fakeArg = 'fake'
 const decamelizeArg = 'decamelize'
+const quoteEscapeArg = 'quote-escape'
 const tsconfigArg = 'tsconfig'
 const verboseArg = 'verbose'
 const rejectUnauthorizedArg = 'reject-unauthorized'
@@ -123,6 +124,12 @@ const { argv } = yargs
   .option(decamelizeArg, {
     defaultDescription: 'false',
     describe: 'Runs decamelize on table/columns/etc names',
+    type: 'boolean',
+  })
+
+  .option(quoteEscapeArg, {
+    defaultDescription: 'true',
+    describe: 'Toggles whether tables, columns, etc. should be quote escaped.',
     type: 'boolean',
   })
 
@@ -259,6 +266,7 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg]
 let CHECK_ORDER = argv[checkOrderArg]
 let VERBOSE = argv[verboseArg]
 let DECAMELIZE = argv[decamelizeArg]
+let QUOTE_ESCAPE = argv[quoteEscapeArg]
 let tsconfigPath = argv[tsconfigArg]
 
 function readTsconfig() {
@@ -307,6 +315,7 @@ function readJson(json) {
     CHECK_ORDER = typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg]
     VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg]
     DECAMELIZE = typeof DECAMELIZE !== 'undefined' ? DECAMELIZE : json[decamelizeArg]
+    QUOTE_ESCAPE = typeof QUOTE_ESCAPE !== 'undefined' ? QUOTE_ESCAPE : json[quoteEscapeArg]
     DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : process.env[json[databaseUrlVarArg]]
     tsconfigPath = typeof tsconfigPath !== 'undefined' ? tsconfigPath : json[tsconfigArg]
     if (json.url) {
@@ -451,6 +460,7 @@ if (action === 'create') {
       noLock,
       fake,
       decamelize: DECAMELIZE,
+      quoteEscape: QUOTE_ESCAPE,
     }
   }
   const promise =
