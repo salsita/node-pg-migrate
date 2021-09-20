@@ -187,7 +187,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v20.2.15
+      - image: cockroachdb/cockroach:v20.2.16
         command: ['start-single-node', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -210,7 +210,7 @@ jobs:
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-12:
     docker:
-      - image: circleci/node:12.13.0
+      - image: circleci/node:12.22.6
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:13.4-alpine
