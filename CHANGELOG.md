@@ -1,5 +1,15 @@
 # Change Log
 
+## [6.0.0](2021-09-20)
+
+### Breaking changes
+
+- Drop node 10 support [#808](https://github.com/salsita/node-pg-migrate/pull/808)
+
+### Fixed
+
+- Put migrations table check inside lock [#830](https://github.com/salsita/node-pg-migrate/pull/830)
+
 ## [5.10.0](2021-06-29)
 
 ### Added
