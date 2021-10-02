@@ -271,7 +271,7 @@ export interface RunnerOptionConfig {
    */
   decamelize?: boolean
   /**
-   * Toggles whether tables, columns, etc. should be quote escaped. Defaults to `true`
+   * Toggles whether tables, columns, etc. should be quote escaped.
    */
   quoteEscape?: boolean
   /**

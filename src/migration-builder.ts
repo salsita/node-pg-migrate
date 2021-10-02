@@ -198,7 +198,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
   constructor(
     db: DB,
     typeShorthands: ColumnDefinitions | undefined,
-    formattingOptions: Required<Pick<RunnerOptionConfig, 'decamelize' | 'quoteEscape'>>,
+    formattingOptions: Required<Pick<RunnerOptionConfig, 'decamelize'>> & Pick<RunnerOptionConfig, 'quoteEscape'>,
     logger: Logger,
   ) {
     this._steps = []
@@ -230,8 +230,8 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     const { decamelize, quoteEscape } = formattingOptions
     const options: MigrationOptions = {
       typeShorthands,
-      schemalize: createSchemalize(decamelize, quoteEscape),
-      literal: createSchemalize(decamelize, quoteEscape),
+      schemalize: createSchemalize(decamelize, quoteEscape ?? false),
+      literal: createSchemalize(decamelize, quoteEscape ?? true),
       logger,
     }
 

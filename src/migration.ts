@@ -250,7 +250,7 @@ export class Migration implements RunMigration {
       this.typeShorthands,
       {
         decamelize: Boolean(this.options.decamelize),
-        quoteEscape: this.options.quoteEscape ?? true,
+        quoteEscape: this.options.quoteEscape,
       },
       this.logger,
     )
