@@ -1,7 +1,7 @@
 version: 2
 
 node-image: &node-image
-  image: circleci/node:15
+  image: circleci/node:16
 
 set-npm-global: &set-npm-global
   run:
@@ -187,7 +187,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v20.2.15
+      - image: cockroachdb/cockroach:v20.2.16
         command: ['start-single-node', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
