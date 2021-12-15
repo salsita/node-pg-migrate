@@ -173,7 +173,7 @@ const formatParam = (mOptions: MigrationOptions) => (param: FunctionParam) => {
   return options.join(' ')
 }
 
-export const formatParams = (params: FunctionParam[] = [], mOptions: MigrationOptions) =>
+export const formatParams = (params: FunctionParam[], mOptions: MigrationOptions) =>
   `(${params.map(formatParam(mOptions)).join(', ')})`
 
 export const makeComment = (object: string, name: string, text?: string | null) => {

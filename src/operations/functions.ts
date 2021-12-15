@@ -17,6 +17,7 @@ export function dropFunction(mOptions: MigrationOptions) {
 }
 
 export function createFunction(mOptions: MigrationOptions) {
+  // eslint-disable-next-line default-param-last
   const _create: CreateFunction = (functionName, functionParams = [], functionOptions, definition) => {
     const { replace, returns = 'void', language, window, behavior = 'VOLATILE', onNull, parallel } = functionOptions
     const options = []
@@ -52,6 +53,7 @@ export function createFunction(mOptions: MigrationOptions) {
 }
 
 export function renameFunction(mOptions: MigrationOptions) {
+  // eslint-disable-next-line default-param-last
   const _rename: RenameFunction = (oldFunctionName, functionParams = [], newFunctionName) => {
     const paramsStr = formatParams(functionParams, mOptions)
     const oldFunctionNameStr = mOptions.literal(oldFunctionName)
