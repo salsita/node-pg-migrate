@@ -192,7 +192,9 @@ export class Migration implements RunMigration {
 
   async _apply(action: MigrationAction, pgm: MigrationBuilder) {
     if (action.length === 2) {
-      await new Promise<void>((resolve) => action(pgm, resolve))
+      await new Promise<void>((resolve) => {
+        action(pgm, resolve)
+      })
     } else {
       await action(pgm)
     }

@@ -119,7 +119,6 @@ import {
 } from './operations/viewsMaterializedTypes'
 
 export {
-  runner as default,
   PgLiteral,
   Migration,
   PgType,
@@ -237,3 +236,5 @@ export {
   AlterMaterializedViewOptions,
   RefreshMaterializedViewOptions,
 }
+
+export default runner
