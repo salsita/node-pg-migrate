@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@types/pg": "^8.0.0",
-    "decamelize": "^5.0.0",
+    "decamelize": "^6.0.0",
     "mkdirp": "~1.0.0",
     "yargs": "~17.3.0"
   },
