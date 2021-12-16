@@ -40,3 +40,6 @@
 - `columns` _[string or array of strings]_ - column names, used only to infer an index name
 - `options` _[index options]_ - optional options:
   - `name` _[string]_ - name of the index to drop
+  - `concurrently` _[boolean]_ - drop this index concurrently
+  - `ifExists` _[boolean]_ - default false
+  - `cascade` _[boolean]_ - default false
