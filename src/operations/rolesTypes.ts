@@ -20,6 +20,7 @@ export interface RoleOptions {
 type CreateRoleFn = (roleName: Name, roleOptions?: RoleOptions) => string | string[]
 export type CreateRole = CreateRoleFn & { reverse: CreateRoleFn }
 export type DropRole = (roleName: Name, options?: IfExistsOption) => string | string[]
+export type DropRoleReverse = (roleName: Name) => string | string[]
 export type AlterRole = (roleName: Name, roleOptions: RoleOptions) => string | string[]
 type RenameRoleFn = (oldRoleName: Name, newRoleName: Name) => string | string[]
 export type RenameRole = RenameRoleFn & { reverse: RenameRoleFn }
