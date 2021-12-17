@@ -486,6 +486,22 @@ jobs:
       - run:
           name: test
           command: $(npm bin)/ts-node test/ts/customRunnerDBClient.ts
+  test-typescript-customrunner-undef-count:
+    docker:
+      - <<: *node-image
+        environment:
+          - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
+      - image: postgres:14.1-alpine
+        environment:
+          - POSTGRES_USER=ubuntu
+          - POSTGRES_PASSWORD=ubuntu
+          - POSTGRES_DB=circle_test
+    steps:
+      - <<: *restore
+      - <<: *postgres-wait
+      - run:
+          name: test
+          command: $(npm bin)/ts-node test/ts/customRunnerUndefCount.ts
   test-create-migration:
     docker:
       - <<: *node-image
@@ -590,6 +606,9 @@ workflows:
           requires:
             - install
       - test-typescript-customrunner-client:
+          requires:
+            - install
+      - test-typescript-customrunner-undef-count:
           requires:
             - install
       - test-create-migration:

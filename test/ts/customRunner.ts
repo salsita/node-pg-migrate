@@ -2,7 +2,13 @@ import { resolve } from 'path'
 import { Client } from 'pg'
 import runner, { RunnerOption } from '../../dist'
 
-type Options = { databaseUrl: string } | { dbClient: Client }
+type TestOptions = {
+  count?: number
+  expectedUpLength?: number
+  expectedDownLength?: number
+}
+
+type Options = ({ databaseUrl: string } & TestOptions) | ({ dbClient: Client } & TestOptions)
 
 /* eslint-disable no-console */
 // eslint-disable-next-line import/prefer-default-export
@@ -10,7 +16,8 @@ export const run = async (options: Options): Promise<boolean> => {
   const opts: Omit<RunnerOption, 'direction'> & Options = {
     migrationsTable: 'migrations',
     dir: resolve(__dirname, 'migrations'),
-    count: Infinity,
+    expectedUpLength: 2,
+    expectedDownLength: 2,
     ...options,
   }
   try {
@@ -18,8 +25,8 @@ export const run = async (options: Options): Promise<boolean> => {
       ...opts,
       direction: 'up',
     })
-    if (upResult.length !== 1) {
-      console.error('There should be exactly one migration processed')
+    if (upResult.length !== opts.expectedUpLength) {
+      console.error(`There should be exactly ${opts.expectedUpLength} migrations processed`)
       return false
     }
     console.log('Up success')
@@ -28,8 +35,8 @@ export const run = async (options: Options): Promise<boolean> => {
       ...opts,
       direction: 'down',
     })
-    if (downResult.length !== 1) {
-      console.error('There should be exactly one migration processed')
+    if (downResult.length !== opts.expectedDownLength) {
+      console.error(`There should be exactly ${opts.expectedDownLength} migrations processed`)
       return false
     }
     console.log('Down success')

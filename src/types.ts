@@ -230,7 +230,7 @@ export interface RunnerOptionConfig {
   /**
    * Number of migration to run.
    */
-  count: number
+  count?: number
   /**
    * Treats `count` as timestamp.
    */
