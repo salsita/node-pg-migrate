@@ -21,6 +21,7 @@ export interface CreateIndexOptions {
 }
 
 export interface DropIndexOptions extends DropOptions {
+  unique?: boolean
   name?: string
   concurrently?: boolean
 }
