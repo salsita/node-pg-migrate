@@ -7,6 +7,6 @@ exports.up = (pgm) => {
 }
 
 exports.down = (pgm) => {
-  pgm.dropIndex('t_uniq_index', ['name'])
+  pgm.dropIndex('t_uniq_index', ['name'], { unique: true })
   pgm.dropTable('t_uniq_index')
 }
