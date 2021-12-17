@@ -126,7 +126,7 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
       .filter((migrationName) => !options.file || options.file === migrationName)
       .map((migrationName) => migrations.find(({ name }) => name === migrationName) || migrationName)
 
-    let toRun = null
+    let toRun
     if (count === undefined) {
       toRun = downMigrations.slice(-1)
     } else {
@@ -145,7 +145,7 @@ const getMigrationsToRun = (options: RunnerOption, runNames: string[], migration
   const upMigrations = migrations.filter(
     ({ name }) => runNames.indexOf(name) < 0 && (!options.file || options.file === name),
   )
-  let toRun = null
+  let toRun
   if (count === undefined) {
     toRun = upMigrations
   } else {
