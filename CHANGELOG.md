@@ -1,5 +1,9 @@
 # Change Log
 
+## [6.2.0](2021-12-17)
+
+- gh-754: Allow undefined count (#791) c69a4ef
+
 ## [6.1.0](2021-12-17)
 
 ### Added
