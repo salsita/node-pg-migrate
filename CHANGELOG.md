@@ -1,5 +1,12 @@
 # Change Log
 
+## [6.1.0](2021-12-17)
+
+### Added
+
+- gh-857: Add unique option to drop index (#858) 27c0ffb
+- gh-813: Stabilize sort for migration files (#818) c0082d9
+
 ## [6.0.0](2021-09-20)
 
 ### Breaking changes
