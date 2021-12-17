@@ -1,11 +1,15 @@
 # Change Log
 
+## [6.2.0](2021-12-17)
+
+- gh-754: Allow undefined count [#791](https://github.com/salsita/node-pg-migrate/pull/791)
+
 ## [6.1.0](2021-12-17)
 
 ### Added
 
-- gh-857: Add unique option to drop index (#858) 27c0ffb
-- gh-813: Stabilize sort for migration files (#818) c0082d9
+- gh-857: Add unique option to drop index [#858](https://github.com/salsita/node-pg-migrate/pull/858)
+- gh-813: Stabilize sort for migration files [#818](https://github.com/salsita/node-pg-migrate/pull/818)
 
 ## [6.0.0](2021-09-20)
 
