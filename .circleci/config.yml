@@ -224,7 +224,7 @@ jobs:
           command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-node-12:
     docker:
-      - image: circleci/node:12.20.0
+      - image: circleci/node:17.2.0
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:14.1-alpine
@@ -238,7 +238,7 @@ jobs:
       - <<: *test-postgres
   test-node-14:
     docker:
-      - image: circleci/node:14
+      - image: circleci/node:17
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:14.1-alpine
@@ -252,7 +252,7 @@ jobs:
       - <<: *test-postgres
   test-node-16:
     docker:
-      - image: circleci/node:16
+      - image: circleci/node:17
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
       - image: postgres:14.1-alpine
