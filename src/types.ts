@@ -16,6 +16,7 @@ import * as triggers from './operations/triggersTypes'
 import * as types from './operations/typesTypes'
 import * as views from './operations/viewsTypes'
 import * as mViews from './operations/viewsMaterializedTypes'
+import * as grants from './operations/grantsTypes'
 import PgLiteral from './operations/PgLiteral'
 
 export { ClientConfig, ConnectionConfig } from 'pg'
@@ -110,6 +111,13 @@ export interface MigrationBuilder {
   renameMaterializedView: (...args: Parameters<mViews.RenameMaterializedView>) => void
   renameMaterializedViewColumn: (...args: Parameters<mViews.RenameMaterializedViewColumn>) => void
   refreshMaterializedView: (...args: Parameters<mViews.RefreshMaterializedView>) => void
+  grantRoles: (...args: Parameters<grants.GrantRoles>) => void
+  grantTables: (...args: Parameters<grants.GrantTables>) => void
+  grantTablesAll: (...args: Parameters<grants.GrantTablesAll>) => void
+  grantAllTablesAll: (...args: Parameters<grants.GrantAllTablesAll>) => void
+  grantAllTables: (...args: Parameters<grants.GrantAllTables>) => void
+  grantSchema: (...args: Parameters<grants.GrantSchema>) => void
+  grantSchemaAll: (...args: Parameters<grants.GrantSchemaAll>) => void
   sql: (...args: Parameters<other.Sql>) => void
   func: (sql: string) => PgLiteral
   noTransaction: () => void
