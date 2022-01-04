@@ -198,6 +198,8 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   public readonly grantSchemaAll: (...args: Parameters<grants.GrantSchemaAll>) => void
 
+  public readonly grantOn: (...args: Parameters<grants.GrantOn>) => void
+
   public readonly sql: (...args: Parameters<other.Sql>) => void
 
   public readonly func: (sql: string) => PgLiteral
@@ -359,6 +361,10 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
     this.grantSchemaAll = () => {
       console.log('grantSchema')
+    }
+
+    this.grantOn = () => {
+      console.log('grantOn')
     }
 
     this.sql = wrap(other.sql(options))

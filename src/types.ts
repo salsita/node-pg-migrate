@@ -118,6 +118,7 @@ export interface MigrationBuilder {
   grantAllTables: (...args: Parameters<grants.GrantAllTables>) => void
   grantSchema: (...args: Parameters<grants.GrantSchema>) => void
   grantSchemaAll: (...args: Parameters<grants.GrantSchemaAll>) => void
+  grantOn: (...args: Parameters<grants.GrantOn>) => void
   sql: (...args: Parameters<other.Sql>) => void
   func: (sql: string) => PgLiteral
   noTransaction: () => void

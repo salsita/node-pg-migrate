@@ -13,10 +13,49 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     },
   })
   pgm.grantRoles([{ name: 'role1', schema: 'test' }, 'role4'], { name: 'role3' })
-  pgm.grantTables(['DELETE', 'INSERT'], ['table1', 'table2'], ['role1', 'role2'], { withGrantOption: true })
-  pgm.grantTables('ALL', ['table1', 'table2'], ['role1', 'role2'], { withGrantOption: true })
+  // pgm.grantTables(['DELETE', 'INSERT'], { tables: ['table1', 'table2'] }, ['role1', 'role2'], { withGrantOption: true })
+  // pgm.grantTables('ALL', { tables: ['table1', 'table2'] }, ['role1', 'role2'], { withGrantOption: true })
   // problem here is that you need this scheme parameter extra instead of tables - can it be typed?
-  pgm.grantTables('ALL', 'ALL', 'scheme1', ['role1', 'role2'], { withGrantOption: true })
+  // maybe scheme or tables via object... if one defined another ignored?
+  // pgm.grantTables('ALL', { scheme: '' }, ['role1', 'role2'], { withGrantOption: true })
+
+  pgm.grantTables({
+    privileges: ['DELETE'],
+    tables: 'ALL',
+    schema: 'schema1',
+    roles: ['role1', 'role2'],
+  })
+
+  pgm.grantOnTables({
+    privileges: ['DELETE'],
+    tables: 'ALL',
+    schema: 'schema1',
+    roles: ['role1'],
+  })
+
+  pgm.grantOnTables({
+    privileges: ['DELETE'],
+    tables: ['table1'],
+    roles: ['role1'],
+  })
+
+  pgm.grantOnColumns({
+    columns: [
+      {
+        privileges: 'ALL',
+        name: 'name',
+      },
+    ],
+    tables: ['table1', 'table2'],
+    roles: ['role1'],
+    withGrantOption: true,
+  })
+
+  pgm.grantOnSchemas({
+    privileges: ['CREATE', 'USAGE'],
+    schemas: ['schema1', 'schema2'],
+    roles: ['role1', 'role2'],
+  })
 
   pgm.grantRoles('rds_iam_role', 'approle')
   pgm.grantSchema('USAGE', 'schema1', 'appRole')
