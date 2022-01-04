@@ -205,19 +205,9 @@ const { argv } = yargs
     type: 'boolean',
   })
 
-  .option('i', {
-    alias: 'version',
-    default: false,
-    describe: 'Print version info',
-    type: 'boolean',
-  })
-
+  .version()
+  .alias('version', 'i')
   .help()
-
-if (argv.version) {
-  console.log(module.exports.version)
-  process.exit(0)
-}
 
 if (argv.help || argv._.length === 0) {
   yargs.showHelp()
