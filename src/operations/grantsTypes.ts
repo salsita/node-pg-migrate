@@ -13,7 +13,7 @@ type GrantRolesFn = (
   rolesTo: Name | Name[],
   roleOptions?: WithAdminOption,
 ) => string | string[]
-export type GrantRoles = GrantRolesFn & { reverse: GrantRoles }
+export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn }
 
 type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
 type SchemaPrivilege = 'CREATE' | 'USAGE'
@@ -35,7 +35,7 @@ type GrantOnTablesProps = (GrantOnSomeTablesProps | GrantOnAllTablesProps) & Wit
 
 type GrantOnTablesFn = (props: GrantOnTablesProps) => string | string[]
 
-export type GrantOnTables = GrantOnTablesFn & { reverse: GrantOnTables }
+export type GrantOnTables = GrantOnTablesFn & { reverse: GrantOnTablesFn }
 
 interface GrantOnSchemasProps {
   privileges: SchemaPrivilege | SchemaPrivilege[] | 'ALL'
