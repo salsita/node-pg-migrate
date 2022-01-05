@@ -186,19 +186,9 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   public readonly grantRoles: (...args: Parameters<grants.GrantRoles>) => void
 
-  public readonly grantTables: (...args: Parameters<grants.GrantTables>) => void
+  public readonly grantOnTables: (...args: Parameters<grants.GrantOnTables>) => void
 
-  public readonly grantTablesAll: (...args: Parameters<grants.GrantTablesAll>) => void
-
-  public readonly grantAllTablesAll: (...args: Parameters<grants.GrantAllTablesAll>) => void
-
-  public readonly grantAllTables: (...args: Parameters<grants.GrantAllTables>) => void
-
-  public readonly grantSchema: (...args: Parameters<grants.GrantSchema>) => void
-
-  public readonly grantSchemaAll: (...args: Parameters<grants.GrantSchemaAll>) => void
-
-  public readonly grantOn: (...args: Parameters<grants.GrantOn>) => void
+  public readonly grantOnSchemas: (...args: Parameters<grants.GrantOnSchemas>) => void
 
   public readonly sql: (...args: Parameters<other.Sql>) => void
 
@@ -339,32 +329,15 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.renameMaterializedView = wrap(mViews.renameMaterializedView(options))
     this.renameMaterializedViewColumn = wrap(mViews.renameMaterializedViewColumn(options))
     this.refreshMaterializedView = wrap(mViews.refreshMaterializedView(options))
+
     this.grantRoles = () => {
       console.log('grantRoles')
     }
-    this.grantTables = () => {
-      console.log('grantTables')
+    this.grantOnTables = () => {
+      console.log('grantOnTables')
     }
-    this.grantTablesAll = () => {
-      console.log('grantTablesAll')
-    }
-    this.grantAllTablesAll = () => {
-      console.log('grantAllTablesAll')
-    }
-    this.grantAllTables = () => {
-      console.log('grantAllTables')
-    }
-
-    this.grantSchema = () => {
-      console.log('grantSchema')
-    }
-
-    this.grantSchemaAll = () => {
-      console.log('grantSchema')
-    }
-
-    this.grantOn = () => {
-      console.log('grantOn')
+    this.grantOnSchemas = () => {
+      console.log('grantOnSchemas')
     }
 
     this.sql = wrap(other.sql(options))

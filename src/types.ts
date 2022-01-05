@@ -112,13 +112,8 @@ export interface MigrationBuilder {
   renameMaterializedViewColumn: (...args: Parameters<mViews.RenameMaterializedViewColumn>) => void
   refreshMaterializedView: (...args: Parameters<mViews.RefreshMaterializedView>) => void
   grantRoles: (...args: Parameters<grants.GrantRoles>) => void
-  grantTables: (...args: Parameters<grants.GrantTables>) => void
-  grantTablesAll: (...args: Parameters<grants.GrantTablesAll>) => void
-  grantAllTablesAll: (...args: Parameters<grants.GrantAllTablesAll>) => void
-  grantAllTables: (...args: Parameters<grants.GrantAllTables>) => void
-  grantSchema: (...args: Parameters<grants.GrantSchema>) => void
-  grantSchemaAll: (...args: Parameters<grants.GrantSchemaAll>) => void
-  grantOn: (...args: Parameters<grants.GrantOn>) => void
+  grantOnTables: (...args: Parameters<grants.GrantOnTables>) => void
+  grantOnSchemas: (...args: Parameters<grants.GrantOnSchemas>) => void
   sql: (...args: Parameters<other.Sql>) => void
   func: (sql: string) => PgLiteral
   noTransaction: () => void

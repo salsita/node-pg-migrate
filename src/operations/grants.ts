@@ -1,21 +1,3 @@
-import {
-  GrantRoles,
-  GrantTables,
-  GrantTablesAll,
-  GrantAllTablesAll,
-  GrantAllTables,
-  GrantSchemaAll,
-  GrantSchema,
-  GrantOn,
-} from './grantsTypes'
+import { GrantRoles, GrantOnTables, GrantOnSchemas } from './grantsTypes'
 
-export {
-  GrantRoles,
-  GrantTables,
-  GrantTablesAll,
-  GrantAllTables,
-  GrantAllTablesAll,
-  GrantSchemaAll,
-  GrantSchema,
-  GrantOn,
-}
+export { GrantRoles, GrantOnTables, GrantOnSchemas }

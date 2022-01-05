@@ -1,112 +1,47 @@
 import { Name } from '..'
 
-interface GrantRolesOptions {
-  readonly withAdminOption: true
+interface WithAdminOption {
+  readonly withAdminOption?: boolean
+}
+
+interface WithGrantOption {
+  readonly withGrantOption?: boolean
 }
 
 type GrantRolesFn = (
   rolesFrom: Name | Name[],
   rolesTo: Name | Name[],
-  roleOptions?: GrantRolesOptions,
+  roleOptions?: WithAdminOption,
 ) => string | string[]
 export type GrantRoles = GrantRolesFn & { reverse: GrantRoles }
 
-interface GrantTablesOptions {
-  readonly withGrantOption?: true
+type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
+type SchemaPrivilege = 'CREATE' | 'USAGE'
+
+interface GrantOnSomeTablesProps {
+  privileges: TablePrivilege | TablePrivilege[] | 'ALL'
+  tables: Name | Name[]
+  roles: Name | Name[]
 }
 
-type Privilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
-
-type GrantAllTablesProps = {
-  privileges: Privilege | Privilege[] | 'ALL'
+interface GrantOnAllTablesProps {
+  privileges: TablePrivilege | TablePrivilege[] | 'ALL'
   tables: 'ALL'
   schema: string
   roles: Name | Name[]
-} & GrantTablesOptions
-
-type GrantSomeTablesProps = {
-  privileges: Privilege | Privilege[] | 'ALL'
-  tables: Name | Name[]
-  roles: Name | Name[]
-} & GrantTablesOptions
-
-type GrantTablesProps = GrantAllTablesProps | GrantSomeTablesProps
-type GrantTablesFn = (props: GrantTablesProps) => string | string[]
-export type GrantTables = GrantTablesFn & { reverse: GrantTables }
-
-type GrantTablesAllFn = (
-  tables: Name | Name[],
-  roles: Name | Name[],
-  roleOptions?: GrantTablesOptions,
-) => string | string[]
-export type GrantTablesAll = GrantTablesAllFn & { reverse: GrantTablesAll }
-
-type GrantAllTablesAllFn = (
-  schemeName: string,
-  roles: Name | Name[],
-  roleOptions?: GrantTablesOptions,
-) => string | string[]
-export type GrantAllTablesAll = GrantAllTablesAllFn & { reverse: GrantAllTablesAll }
-
-type GrantAllTablesFn = (
-  privileges: Privilege | Privilege[],
-  schemeName: string,
-  roles: Name | Name[],
-  roleOptions?: GrantTablesOptions,
-) => string | string[]
-export type GrantAllTables = GrantAllTablesFn & { reverse: GrantAllTables }
-
-type SchemaPrivilege = 'CREATE' | 'USAGE'
-
-type GrantSchemaFn = (
-  privileges: SchemaPrivilege | SchemaPrivilege[],
-  schemas: Name | Name[],
-  roles: Name | Name[],
-  roleOptions?: GrantTablesOptions,
-) => string | string[]
-export type GrantSchema = GrantSchemaFn & { reverse: GrantSchemaFn }
-
-type GrantSchemaAllFn = (
-  schemas: Name | Name[],
-  roles: Name | Name[],
-  roleOptions?: GrantTablesOptions,
-) => string | string[]
-export type GrantSchemaAll = GrantSchemaAllFn & { reverse: GrantSchemaAllFn }
-
-interface ColumnPrivilege {
-  privileges: 'ALL' | 'SELECT' | 'INSERT'
-  name: string
 }
 
-interface GrantOnColumnsProps extends GrantTablesOptions {
-  columns: ColumnPrivilege[]
-  tableNames: Name | Name[]
-  roles: Name | Name[]
-}
+type GrantOnTablesProps = (GrantOnSomeTablesProps | GrantOnAllTablesProps) & WithGrantOption
 
-interface GrantOnSomeTablesProps extends GrantTablesOptions {
-  privileges: Privilege | Privilege[] | 'ALL'
-  tableNames: Name | Name[]
-  roles: Name | Name[]
-}
+type GrantOnTablesFn = (props: GrantOnTablesProps) => string | string[]
 
-interface GrantOnAllTablesProps extends GrantTablesOptions {
-  privileges: Privilege | Privilege[] | 'ALL'
-  tableNames: 'ALL'
-  schema: string
-  roles: Name | Name[]
-}
+export type GrantOnTables = GrantOnTablesFn & { reverse: GrantOnTables }
 
-interface GrantOnSchemasProps extends GrantTablesOptions {
+interface GrantOnSchemasProps {
   privileges: SchemaPrivilege | SchemaPrivilege[] | 'ALL'
   schemas: string[] | string
   roles: Name | Name[]
 }
 
-type GrantOnTablesProps = GrantOnSomeTablesProps | GrantOnAllTablesProps
-type GrantOnTablesFn = (dbObjectType: 'TABLES', props: GrantOnTablesProps) => string | string[]
-type GrantOnColumnsFn = (dbObjectType: 'COLUMNS', props: GrantOnColumnsProps) => string | string[]
-type GrantOnSchemasFn = (dbObjectType: 'SCHEMAS', props: GrantOnSchemasProps) => string | string[]
-
-type GrantOnFn = GrantOnTablesFn | GrantOnColumnsFn | GrantOnSchemasFn
-export type GrantOn = GrantOnFn & { reverse: GrantOnFn }
+type GrantOnSchemasFn = (props: GrantOnSchemasProps & WithGrantOption) => string | string[]
+export type GrantOnSchemas = GrantOnSchemasFn & { reverse: GrantOnSchemasFn }
