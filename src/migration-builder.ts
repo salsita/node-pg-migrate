@@ -332,9 +332,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
     this.grantRoles = wrap(grants.grantRoles(options))
     this.grantOnTables = wrap(grants.grantOnTables(options))
-    this.grantOnSchemas = () => {
-      console.log('grantOnSchemas')
-    }
+    this.grantOnSchemas = wrap(grants.grantOnSchemas(options))
 
     this.sql = wrap(other.sql(options))
 

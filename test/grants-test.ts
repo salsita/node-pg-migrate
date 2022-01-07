@@ -4,6 +4,7 @@ import { options1 } from './utils'
 
 type GrantRolesParameters = Parameters<ReturnType<typeof Grants.grantRoles>>
 type GrantOnTablesParameters = Parameters<ReturnType<typeof Grants.grantOnTables>>
+type GrantOnSchemasParameters = Parameters<ReturnType<typeof Grants.grantOnSchemas>>
 
 describe('lib/operations/grants', () => {
   describe('.grantRoles', () => {
@@ -54,6 +55,20 @@ describe('lib/operations/grants', () => {
 
       const sql = Grants.grantOnTables(options1)(...args)
       expect(sql).to.equal(`GRANT ALL ON ALL TABLES IN SCHEMA "schema1" TO "role1";`)
+    })
+  })
+
+  describe('.grantOnSchemas', () => {
+    it('grants schemas', () => {
+      const args: GrantOnSchemasParameters = [
+        {
+          privileges: 'USAGE',
+          schemas: 'schema1',
+          roles: 'role1',
+        },
+      ]
+      const sql = Grants.grantOnSchemas(options1)(...args)
+      expect(sql).to.equal(`GRANT USAGE ON SCHEMA "schema1" TO "role1";`)
     })
   })
 })

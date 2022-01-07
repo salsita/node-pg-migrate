@@ -48,3 +48,18 @@ export function grantOnTables(mOptions: MigrationOptions) {
   }
   return _grantOnTables
 }
+
+export function grantOnSchemas(mOptions: MigrationOptions) {
+  const _grantOnSchemas: GrantOnSchemas = ({ privileges, schemas, roles, withGrantOption }) => {
+    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
+    const privilegesStr = asArray(privileges).map(String).join(',')
+    const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
+    return `GRANT ${privilegesStr} ON SCHEMA ${schemasStr} TO ${rolesStr}${withGrantOptionStr};`
+  }
+  _grantOnSchemas.reverse = () => {
+    console.log('grantOnSchemas reverse')
+    return ''
+  }
+  return _grantOnSchemas
+}
