@@ -7,13 +7,15 @@ exports.up = async (pgm) => {
     AND grantee = 'bob1'
   `)
   const rows1 = await pgm.db.select(`
-    SELECT n.nspacl AS "Access privileges"
-    FROM pg_catalog.pg_namespace n
-    WHERE n.nspname !~ '^pg_' AND n.nspname = 'test_schema';
+    SELECT has_schema_privilege('bob1', 'test_schema', 'USAGE');
   `)
   console.log({ rows, rows1 })
   if (rows.length !== 7) {
     throw new Error('Incorrect number of priveleges')
+  }
+  const hasSchemaPrivilege = rows1.length && rows1[0].has_schema_privilege
+  if (!hasSchemaPrivilege) {
+    throw new Error('Bob should have a USAGE schema privelege')
   }
 }
 
