@@ -18,20 +18,20 @@ export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn }
 type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
 type SchemaPrivilege = 'CREATE' | 'USAGE'
 
-interface GrantOnSomeTablesProps {
+export interface GrantOnSomeTablesProps extends WithGrantOption {
   privileges: TablePrivilege | TablePrivilege[] | 'ALL'
   tables: Name | Name[]
   roles: Name | Name[]
 }
 
-interface GrantOnAllTablesProps {
+export interface GrantOnAllTablesProps extends WithGrantOption {
   privileges: TablePrivilege | TablePrivilege[] | 'ALL'
   tables: 'ALL'
   schema: string
   roles: Name | Name[]
 }
 
-type GrantOnTablesProps = (GrantOnSomeTablesProps | GrantOnAllTablesProps) & WithGrantOption
+export type GrantOnTablesProps = GrantOnSomeTablesProps | GrantOnAllTablesProps
 
 type GrantOnTablesFn = (props: GrantOnTablesProps) => string | string[]
 

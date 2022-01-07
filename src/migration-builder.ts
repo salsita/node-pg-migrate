@@ -331,9 +331,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.refreshMaterializedView = wrap(mViews.refreshMaterializedView(options))
 
     this.grantRoles = wrap(grants.grantRoles(options))
-    this.grantOnTables = () => {
-      console.log('grantOnTables')
-    }
+    this.grantOnTables = wrap(grants.grantOnTables(options))
     this.grantOnSchemas = () => {
       console.log('grantOnSchemas')
     }
