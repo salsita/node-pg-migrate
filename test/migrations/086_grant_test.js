@@ -9,7 +9,7 @@ const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
     WHERE table_name='${tableName}'
     AND grantee = '${role}'
   `)
-  const foundPrivileges = rows.map(({ privilegeType }) => privilegeType)
+  const foundPrivileges = rows.map((entry) => entry.privilege_type)
   console.log(foundPrivileges, privileges)
   return privileges.reduce((acc, privilege) => acc && foundPrivileges.includes(privilege), true)
 }
