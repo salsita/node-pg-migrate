@@ -186,9 +186,15 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   public readonly grantRoles: (...args: Parameters<grants.GrantRoles>) => void
 
+  public readonly revokeRoles: (...args: Parameters<grants.RevokeRoles>) => void
+
   public readonly grantOnTables: (...args: Parameters<grants.GrantOnTables>) => void
 
+  public readonly revokeOnTables: (...args: Parameters<grants.RevokeOnTables>) => void
+
   public readonly grantOnSchemas: (...args: Parameters<grants.GrantOnSchemas>) => void
+
+  public readonly revokeOnSchemas: (...args: Parameters<grants.RevokeOnSchemas>) => void
 
   public readonly sql: (...args: Parameters<other.Sql>) => void
 
@@ -331,8 +337,11 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.refreshMaterializedView = wrap(mViews.refreshMaterializedView(options))
 
     this.grantRoles = wrap(grants.grantRoles(options))
+    this.revokeRoles = wrap(grants.revokeRoles(options))
     this.grantOnTables = wrap(grants.grantOnTables(options))
+    this.revokeOnTables = wrap(grants.revokeOnTables(options))
     this.grantOnSchemas = wrap(grants.grantOnSchemas(options))
+    this.revokeOnSchemas = wrap(grants.revokeOnSchemas(options))
 
     this.sql = wrap(other.sql(options))
 

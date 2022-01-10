@@ -1,7 +1,16 @@
 import { MigrationOptions } from '../types'
-import { GrantRoles, GrantOnTables, GrantOnSchemas, GrantOnTablesProps, GrantOnAllTablesProps } from './grantsTypes'
+import {
+  GrantRoles,
+  GrantOnTables,
+  GrantOnSchemas,
+  GrantOnTablesProps,
+  GrantOnAllTablesProps,
+  RevokeRoles,
+  RevokeOnTables,
+  RevokeOnSchemas,
+} from './grantsTypes'
 
-export { GrantRoles, GrantOnTables, GrantOnSchemas }
+export { GrantRoles, RevokeRoles, GrantOnTables, RevokeOnTables, GrantOnSchemas, RevokeOnSchemas }
 
 const isArray = <T>(item: T | T[]): item is T[] => {
   return typeof item !== 'string' && Boolean((item as Array<T>).length !== undefined)
@@ -13,17 +22,24 @@ const isGrantOnAllTablesProps = (props: GrantOnTablesProps): props is GrantOnAll
   return 'schema' in props
 }
 
+export function revokeRoles(mOptions: MigrationOptions) {
+  const _revokeRoles: RevokeRoles = () => ''
+  return _revokeRoles
+}
+
 export function grantRoles(mOptions: MigrationOptions) {
-  const _grantRoles: GrantRoles = (rolesFrom, rolesTo) => {
+  const _grantRoles: GrantRoles = (rolesFrom, rolesTo, options) => {
     const rolesFromStr = asArray(rolesFrom).map(mOptions.literal).join(',')
     const rolesToStr = asArray(rolesTo).map(mOptions.literal).join(',')
     return `GRANT ${rolesFromStr} TO ${rolesToStr};`
   }
-  _grantRoles.reverse = () => {
-    console.log('reverse')
-    return ''
-  }
+  _grantRoles.reverse = revokeRoles(mOptions)
   return _grantRoles
+}
+
+export function revokeOnTables(mOptions: MigrationOptions) {
+  const _revokeOnTables: RevokeOnTables = () => ''
+  return _revokeOnTables
 }
 
 export function grantOnTables(mOptions: MigrationOptions) {
@@ -42,11 +58,13 @@ export function grantOnTables(mOptions: MigrationOptions) {
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
     return `GRANT ${privilegesStr} ON ${tablesStr} TO ${rolesStr}${withGrantOptionStr};`
   }
-  _grantOnTables.reverse = () => {
-    console.log('grantOnTables reverse')
-    return ''
-  }
+  _grantOnTables.reverse = revokeOnTables(mOptions)
   return _grantOnTables
+}
+
+export function revokeOnSchemas(mOptions: MigrationOptions) {
+  const _revokeOnSchemas: RevokeOnSchemas = () => ''
+  return _revokeOnSchemas
 }
 
 export function grantOnSchemas(mOptions: MigrationOptions) {
@@ -57,9 +75,6 @@ export function grantOnSchemas(mOptions: MigrationOptions) {
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
     return `GRANT ${privilegesStr} ON SCHEMA ${schemasStr} TO ${rolesStr}${withGrantOptionStr};`
   }
-  _grantOnSchemas.reverse = () => {
-    console.log('grantOnSchemas reverse')
-    return ''
-  }
+  _grantOnSchemas.reverse = revokeOnSchemas(mOptions)
   return _grantOnSchemas
 }
