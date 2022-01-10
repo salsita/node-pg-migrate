@@ -124,15 +124,15 @@ import {
   GrantRoles,
   GrantRolesOptions,
   GrantOnTables,
-  GrantOnTablesProps,
+  GrantOnTablesOptions,
   GrantOnSchemas,
-  GrantOnSchemasProps,
+  GrantOnSchemasOptions,
   RevokeRoles,
   RevokeRolesOptions,
   RevokeOnTables,
-  RevokeOnTablesProps,
+  RevokeOnTablesOptions,
   RevokeOnSchemas,
-  RevokeOnSchemasProps,
+  RevokeOnSchemasOptions,
 } from './operations/grants'
 
 export {
@@ -257,15 +257,15 @@ export {
   GrantRoles,
   GrantRolesOptions,
   GrantOnTables,
-  GrantOnTablesProps,
+  GrantOnTablesOptions,
   GrantOnSchemas,
-  GrantOnSchemasProps,
+  GrantOnSchemasOptions,
   RevokeRoles,
   RevokeRolesOptions,
   RevokeOnTables,
-  RevokeOnTablesProps,
+  RevokeOnTablesOptions,
   RevokeOnSchemas,
-  RevokeOnSchemasProps,
+  RevokeOnSchemasOptions,
 }
 
 export default runner

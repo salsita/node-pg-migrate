@@ -33,44 +33,44 @@ export type RevokeRoles = (
 export type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
 export type SchemaPrivilege = 'CREATE' | 'USAGE'
 
-interface CommonOnTablesProps {
+interface CommonOnTablesOptions {
   privileges: TablePrivilege | TablePrivilege[] | 'ALL'
   roles: Name | Name[]
 }
 
-type CommonGrantOnTablesProps = CommonOnTablesProps & WithGrantOption
+type CommonGrantOnTablesOptions = CommonOnTablesOptions & WithGrantOption
 
-interface OnlyGrantOnSomeTablesProps {
+interface OnlyGrantOnSomeTablesOptions {
   tables: Name | Name[]
 }
 
-interface OnlyGrantOnAllTablesProps {
+interface OnlyGrantOnAllTablesOptions {
   tables: 'ALL'
   schema: string
 }
 
-type RevokeOnObjectsProps = OnlyGrantOption & CascadeOption
+type RevokeOnObjectsOptions = OnlyGrantOption & CascadeOption
 
-export type GrantOnSomeTablesProps = CommonGrantOnTablesProps & OnlyGrantOnSomeTablesProps
-export type GrantOnAllTablesProps = CommonGrantOnTablesProps & OnlyGrantOnAllTablesProps
+export type GrantOnSomeTablesOptions = CommonGrantOnTablesOptions & OnlyGrantOnSomeTablesOptions
+export type GrantOnAllTablesOptions = CommonGrantOnTablesOptions & OnlyGrantOnAllTablesOptions
 
-export type GrantOnTablesProps = GrantOnSomeTablesProps | GrantOnAllTablesProps
-export type RevokeOnTablesProps = CommonOnTablesProps &
-  (OnlyGrantOnAllTablesProps | OnlyGrantOnSomeTablesProps) &
-  RevokeOnObjectsProps
+export type GrantOnTablesOptions = GrantOnSomeTablesOptions | GrantOnAllTablesOptions
+export type RevokeOnTablesOptions = CommonOnTablesOptions &
+  (OnlyGrantOnAllTablesOptions | OnlyGrantOnSomeTablesOptions) &
+  RevokeOnObjectsOptions
 
-type GrantOnTablesFn = (props: GrantOnTablesProps & RevokeOnObjectsProps) => string | string[]
+type GrantOnTablesFn = (options: GrantOnTablesOptions & RevokeOnObjectsOptions) => string | string[]
 
 export type GrantOnTables = GrantOnTablesFn & { reverse: GrantOnTablesFn }
-export type RevokeOnTables = (props: RevokeOnTablesProps) => string | string[]
+export type RevokeOnTables = (options: RevokeOnTablesOptions) => string | string[]
 
-export interface OnlyGrantOnSchemasProps {
+export interface OnlyGrantOnSchemasOptions {
   privileges: SchemaPrivilege | SchemaPrivilege[] | 'ALL'
   schemas: string[] | string
   roles: Name | Name[]
 }
-export type GrantOnSchemasProps = OnlyGrantOnSchemasProps & WithGrantOption & RevokeOnObjectsProps
-export type RevokeOnSchemasProps = OnlyGrantOnSchemasProps & RevokeOnObjectsProps
-type GrantOnSchemasFn = (props: GrantOnSchemasProps) => string | string[]
+export type GrantOnSchemasOptions = OnlyGrantOnSchemasOptions & WithGrantOption & RevokeOnObjectsOptions
+export type RevokeOnSchemasOptions = OnlyGrantOnSchemasOptions & RevokeOnObjectsOptions
+type GrantOnSchemasFn = (options: GrantOnSchemasOptions) => string | string[]
 export type GrantOnSchemas = GrantOnSchemasFn & { reverse: GrantOnSchemasFn }
-export type RevokeOnSchemas = (props: RevokeOnSchemasProps) => string | string[]
+export type RevokeOnSchemas = (options: RevokeOnSchemasOptions) => string | string[]

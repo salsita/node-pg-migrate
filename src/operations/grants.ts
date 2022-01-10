@@ -5,16 +5,16 @@ import {
   GrantRoles,
   GrantRolesOptions,
   GrantOnTables,
-  GrantOnTablesProps,
-  GrantOnAllTablesProps,
+  GrantOnTablesOptions,
+  GrantOnAllTablesOptions,
   GrantOnSchemas,
-  GrantOnSchemasProps,
+  GrantOnSchemasOptions,
   RevokeRoles,
   RevokeRolesOptions,
   RevokeOnTables,
-  RevokeOnTablesProps,
+  RevokeOnTablesOptions,
   RevokeOnSchemas,
-  RevokeOnSchemasProps,
+  RevokeOnSchemasOptions,
 } from './grantsTypes'
 
 export {
@@ -23,15 +23,15 @@ export {
   GrantRoles,
   GrantRolesOptions,
   GrantOnTables,
-  GrantOnTablesProps,
+  GrantOnTablesOptions,
   GrantOnSchemas,
-  GrantOnSchemasProps,
+  GrantOnSchemasOptions,
   RevokeRoles,
   RevokeRolesOptions,
   RevokeOnTables,
-  RevokeOnTablesProps,
+  RevokeOnTablesOptions,
   RevokeOnSchemas,
-  RevokeOnSchemasProps,
+  RevokeOnSchemasOptions,
 }
 
 const isArray = <T>(item: T | T[]): item is T[] => {
@@ -40,8 +40,8 @@ const isArray = <T>(item: T | T[]): item is T[] => {
 
 const asArray = <T>(item: T | T[]) => (isArray(item) ? item : [item])
 
-const isGrantOnAllTablesProps = (props: GrantOnTablesProps): props is GrantOnAllTablesProps => {
-  return 'schema' in props
+const isGrantOnAllTablesOptions = (options: GrantOnTablesOptions): options is GrantOnAllTablesOptions => {
+  return 'schema' in options
 }
 
 export function revokeRoles(mOptions: MigrationOptions) {
@@ -67,18 +67,18 @@ export function grantRoles(mOptions: MigrationOptions) {
 }
 
 export function revokeOnTables(mOptions: MigrationOptions) {
-  const _revokeOnTables: RevokeOnTables = (props) => {
-    const { privileges, roles, onlyGrantOption, cascade } = props
+  const _revokeOnTables: RevokeOnTables = (options) => {
+    const { privileges, roles, onlyGrantOption, cascade } = options
     const rolesStr = asArray(roles)
       .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
       .join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     let tablesStr
-    if (isGrantOnAllTablesProps(props)) {
-      const { schema } = props
+    if (isGrantOnAllTablesOptions(options)) {
+      const { schema } = options
       tablesStr = `ALL TABLES IN SCHEMA ${mOptions.literal(schema)}`
     } else {
-      const { tables } = props
+      const { tables } = options
       tablesStr = asArray(tables).map(mOptions.literal).join(',')
     }
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
@@ -89,18 +89,18 @@ export function revokeOnTables(mOptions: MigrationOptions) {
 }
 
 export function grantOnTables(mOptions: MigrationOptions) {
-  const _grantOnTables: GrantOnTables = (props) => {
-    const { privileges, roles, withGrantOption } = props
+  const _grantOnTables: GrantOnTables = (options) => {
+    const { privileges, roles, withGrantOption } = options
     const rolesStr = asArray(roles)
       .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
       .join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     let tablesStr
-    if (isGrantOnAllTablesProps(props)) {
-      const { schema } = props
+    if (isGrantOnAllTablesOptions(options)) {
+      const { schema } = options
       tablesStr = `ALL TABLES IN SCHEMA ${mOptions.literal(schema)}`
     } else {
-      const { tables } = props
+      const { tables } = options
       tablesStr = asArray(tables).map(mOptions.literal).join(',')
     }
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
