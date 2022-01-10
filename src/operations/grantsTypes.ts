@@ -12,15 +12,11 @@ interface OnlyGrantOption {
   readonly onlyGrantOption?: boolean
 }
 
-interface RestrictOption {
-  readonly restrict?: boolean
-}
-
 interface WithGrantOption {
   readonly withGrantOption?: boolean
 }
 
-export type RevokeRolesOptions = OnlyAdminOption & RestrictOption
+export type RevokeRolesOptions = OnlyAdminOption & CascadeOption
 export type GrantRolesOptions = WithAdminOption & RevokeRolesOptions
 type GrantRolesFn = (
   rolesFrom: Name | Name[],
@@ -31,7 +27,7 @@ export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn }
 export type RevokeRoles = (
   roles: Name | Name[],
   rolesFrom: Name | Name[],
-  RevokeRolesOptions?: RevokeRolesOptions,
+  revokeRolesOptions?: RevokeRolesOptions,
 ) => string | string[]
 
 export type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
@@ -53,7 +49,7 @@ interface OnlyGrantOnAllTablesProps {
   schema: string
 }
 
-type RevokeOnObjectsProps = OnlyGrantOption & RestrictOption & CascadeOption
+type RevokeOnObjectsProps = OnlyGrantOption & CascadeOption
 
 export type GrantOnSomeTablesProps = CommonGrantOnTablesProps & OnlyGrantOnSomeTablesProps
 export type GrantOnAllTablesProps = CommonGrantOnTablesProps & OnlyGrantOnAllTablesProps

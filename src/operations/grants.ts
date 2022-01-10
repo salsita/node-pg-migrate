@@ -45,7 +45,13 @@ const isGrantOnAllTablesProps = (props: GrantOnTablesProps): props is GrantOnAll
 }
 
 export function revokeRoles(mOptions: MigrationOptions) {
-  const _revokeRoles: RevokeRoles = () => ''
+  const _revokeRoles: RevokeRoles = (roles, rolesFrom, options) => {
+    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const rolesToStr = asArray(rolesFrom).map(mOptions.literal).join(',')
+    const onlyAdminOptionStr = options && options.onlyAdminOption ? ' ADMIN OPTION FOR' : ''
+    const cascadeStr = options && options.cascade ? ' CASCADE' : ''
+    return `REVOKE${onlyAdminOptionStr} ${rolesStr} FROM ${rolesToStr}${cascadeStr};`
+  }
   return _revokeRoles
 }
 
@@ -60,7 +66,21 @@ export function grantRoles(mOptions: MigrationOptions) {
 }
 
 export function revokeOnTables(mOptions: MigrationOptions) {
-  const _revokeOnTables: RevokeOnTables = () => ''
+  const _revokeOnTables: RevokeOnTables = (props) => {
+    const { privileges, roles, onlyGrantOption } = props
+    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const privilegesStr = asArray(privileges).map(String).join(',')
+    let tablesStr
+    if (isGrantOnAllTablesProps(props)) {
+      const { schema } = props
+      tablesStr = `ALL TABLES IN SCHEMA ${mOptions.literal(schema)}`
+    } else {
+      const { tables } = props
+      tablesStr = asArray(tables).map(mOptions.literal).join(',')
+    }
+    const onlyGrantOptionStr = onlyGrantOption ? 'GRANT OPTION FOR' : ''
+    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON ${tablesStr} FROM ${rolesStr};`
+  }
   return _revokeOnTables
 }
 
@@ -85,7 +105,13 @@ export function grantOnTables(mOptions: MigrationOptions) {
 }
 
 export function revokeOnSchemas(mOptions: MigrationOptions) {
-  const _revokeOnSchemas: RevokeOnSchemas = () => ''
+  const _revokeOnSchemas: RevokeOnSchemas = ({ privileges, schemas, roles, onlyGrantOption }) => {
+    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
+    const privilegesStr = asArray(privileges).map(String).join(',')
+    const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
+    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON SCHEMA ${schemasStr} FROM ${rolesStr};`
+  }
   return _revokeOnSchemas
 }
 
