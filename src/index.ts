@@ -118,6 +118,23 @@ import {
   RefreshMaterializedViewOptions,
 } from './operations/viewsMaterializedTypes'
 
+import {
+  TablePrivilege,
+  SchemaPrivilege,
+  GrantRoles,
+  GrantRolesOptions,
+  GrantOnTables,
+  GrantOnTablesProps,
+  GrantOnSchemas,
+  GrantOnSchemasProps,
+  RevokeRoles,
+  RevokeRolesOptions,
+  RevokeOnTables,
+  RevokeOnTablesProps,
+  RevokeOnSchemas,
+  RevokeOnSchemasProps,
+} from './operations/grants'
+
 export {
   PgLiteral,
   Migration,
@@ -235,6 +252,20 @@ export {
   CreateMaterializedViewOptions,
   AlterMaterializedViewOptions,
   RefreshMaterializedViewOptions,
+  TablePrivilege,
+  SchemaPrivilege,
+  GrantRoles,
+  GrantRolesOptions,
+  GrantOnTables,
+  GrantOnTablesProps,
+  GrantOnSchemas,
+  GrantOnSchemasProps,
+  RevokeRoles,
+  RevokeRolesOptions,
+  RevokeOnTables,
+  RevokeOnTablesProps,
+  RevokeOnSchemas,
+  RevokeOnSchemasProps,
 }
 
 export default runner

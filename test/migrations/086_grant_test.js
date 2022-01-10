@@ -28,6 +28,8 @@ const isMemberOf = async (pgm, role, roleGroups) => {
   return roleGroups.reduce((acc, roleGroup) => acc && foundRoleGroups.includes(roleGroup), true)
 }
 
+exports.utils = { hasTablePrivileges, hasSchemaPrivilege, isMemberOf }
+
 exports.up = async (pgm) => {
   const hasGrantedTablePrivileges = await hasTablePrivileges(pgm, role1, table, tablePrivileges)
   if (!hasGrantedTablePrivileges) {

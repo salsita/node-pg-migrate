@@ -1,16 +1,38 @@
 import { MigrationOptions } from '../types'
 import {
+  TablePrivilege,
+  SchemaPrivilege,
   GrantRoles,
+  GrantRolesOptions,
   GrantOnTables,
-  GrantOnSchemas,
   GrantOnTablesProps,
   GrantOnAllTablesProps,
+  GrantOnSchemas,
+  GrantOnSchemasProps,
   RevokeRoles,
+  RevokeRolesOptions,
   RevokeOnTables,
+  RevokeOnTablesProps,
   RevokeOnSchemas,
+  RevokeOnSchemasProps,
 } from './grantsTypes'
 
-export { GrantRoles, RevokeRoles, GrantOnTables, RevokeOnTables, GrantOnSchemas, RevokeOnSchemas }
+export {
+  TablePrivilege,
+  SchemaPrivilege,
+  GrantRoles,
+  GrantRolesOptions,
+  GrantOnTables,
+  GrantOnTablesProps,
+  GrantOnSchemas,
+  GrantOnSchemasProps,
+  RevokeRoles,
+  RevokeRolesOptions,
+  RevokeOnTables,
+  RevokeOnTablesProps,
+  RevokeOnSchemas,
+  RevokeOnSchemasProps,
+}
 
 const isArray = <T>(item: T | T[]): item is T[] => {
   return typeof item !== 'string' && Boolean((item as Array<T>).length !== undefined)

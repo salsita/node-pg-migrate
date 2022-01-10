@@ -20,22 +20,22 @@ interface WithGrantOption {
   readonly withGrantOption?: boolean
 }
 
-type DropRolesOptions = OnlyAdminOption & RestrictOption
-
+export type RevokeRolesOptions = OnlyAdminOption & RestrictOption
+export type GrantRolesOptions = WithAdminOption & RevokeRolesOptions
 type GrantRolesFn = (
   rolesFrom: Name | Name[],
   rolesTo: Name | Name[],
-  grantRolesOptions?: WithAdminOption & DropRolesOptions,
+  grantRolesOptions?: GrantRolesOptions,
 ) => string | string[]
 export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn }
 export type RevokeRoles = (
   roles: Name | Name[],
   rolesFrom: Name | Name[],
-  dropRolesOptions?: DropRolesOptions,
+  RevokeRolesOptions?: RevokeRolesOptions,
 ) => string | string[]
 
-type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
-type SchemaPrivilege = 'CREATE' | 'USAGE'
+export type TablePrivilege = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER'
+export type SchemaPrivilege = 'CREATE' | 'USAGE'
 
 interface CommonOnTablesProps {
   privileges: TablePrivilege | TablePrivilege[] | 'ALL'
@@ -68,12 +68,13 @@ type GrantOnTablesFn = (props: GrantOnTablesProps & RevokeOnObjectsProps) => str
 export type GrantOnTables = GrantOnTablesFn & { reverse: GrantOnTablesFn }
 export type RevokeOnTables = (props: RevokeOnTablesProps) => string | string[]
 
-interface GrantOnSchemasProps {
+export interface OnlyGrantOnSchemasProps {
   privileges: SchemaPrivilege | SchemaPrivilege[] | 'ALL'
   schemas: string[] | string
   roles: Name | Name[]
 }
-
-type GrantOnSchemasFn = (props: GrantOnSchemasProps & WithGrantOption & RevokeOnObjectsProps) => string | string[]
+export type GrantOnSchemasProps = OnlyGrantOnSchemasProps & WithGrantOption & RevokeOnObjectsProps
+export type RevokeOnSchemasProps = OnlyGrantOnSchemasProps & RevokeOnObjectsProps
+type GrantOnSchemasFn = (props: GrantOnSchemasProps) => string | string[]
 export type GrantOnSchemas = GrantOnSchemasFn & { reverse: GrantOnSchemasFn }
-export type RevokeOnSchemas = (props: GrantOnSchemasProps & RevokeOnObjectsProps) => string | string[]
+export type RevokeOnSchemas = (props: RevokeOnSchemasProps) => string | string[]
