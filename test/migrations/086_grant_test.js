@@ -10,7 +10,6 @@ const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
     AND grantee = '${role}'
   `)
   const foundPrivileges = rows.map((entry) => entry.privilege_type)
-  console.log(foundPrivileges, privileges)
   return privileges.reduce((acc, privilege) => acc && foundPrivileges.includes(privilege), true)
 }
 
@@ -21,20 +20,27 @@ const hasSchemaPrivilege = async (pgm, role, schemaName, privilege) => {
   return rows.length && rows[0].has_schema_privilege
 }
 
-const checkGrantedPrivileges = async (pgm, role) => {
-  const hasGrantedTablePrivileges = await hasTablePrivileges(pgm, role, table, tablePrivileges)
-  if (!hasGrantedTablePrivileges) {
-    throw new Error(`${role} misses granted table privileges`)
-  }
-  const hasGrantedSchemaPrivilege = await hasSchemaPrivilege(pgm, role, schema, schemaPrivilege)
-  if (!hasGrantedSchemaPrivilege) {
-    throw new Error(`${role} misses USAGE schema privilege`)
-  }
+const isMemberOf = async (pgm, role, roleGroups) => {
+  const rows = await pgm.db.select(`
+    SELECT rolname FROM pg_roles WHERE pg_has_role('${role}', oid, 'member') AND rolname <> '${role}';
+  `)
+  const foundRoleGroups = rows.map((entry) => entry.rolname)
+  return roleGroups.reduce((acc, roleGroup) => acc && foundRoleGroups.includes(roleGroup), true)
 }
 
 exports.up = async (pgm) => {
-  await checkGrantedPrivileges(pgm, role1)
-  await checkGrantedPrivileges(pgm, role2)
+  const hasGrantedTablePrivileges = await hasTablePrivileges(pgm, role1, table, tablePrivileges)
+  if (!hasGrantedTablePrivileges) {
+    throw new Error(`${role1} misses granted table privileges`)
+  }
+  const hasGrantedSchemaPrivilege = await hasSchemaPrivilege(pgm, role1, schema, schemaPrivilege)
+  if (!hasGrantedSchemaPrivilege) {
+    throw new Error(`${role1} misses USAGE schema privilege`)
+  }
+  const isMemberOfRole1 = await isMemberOf(pgm, role2, [role1])
+  if (!isMemberOfRole1) {
+    throw new Error(`${role2} is not a member of ${role1}`)
+  }
 }
 
 exports.down = () => null
