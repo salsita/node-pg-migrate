@@ -59,7 +59,8 @@ export function grantRoles(mOptions: MigrationOptions) {
   const _grantRoles: GrantRoles = (rolesFrom, rolesTo, options) => {
     const rolesFromStr = asArray(rolesFrom).map(mOptions.literal).join(',')
     const rolesToStr = asArray(rolesTo).map(mOptions.literal).join(',')
-    return `GRANT ${rolesFromStr} TO ${rolesToStr};`
+    const withAdminOptionStr = options && options.withAdminOption ? ' WITH ADMIN OPTION' : ''
+    return `GRANT ${rolesFromStr} TO ${rolesToStr}${withAdminOptionStr};`
   }
   _grantRoles.reverse = revokeRoles(mOptions)
   return _grantRoles
@@ -67,8 +68,10 @@ export function grantRoles(mOptions: MigrationOptions) {
 
 export function revokeOnTables(mOptions: MigrationOptions) {
   const _revokeOnTables: RevokeOnTables = (props) => {
-    const { privileges, roles, onlyGrantOption } = props
-    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const { privileges, roles, onlyGrantOption, cascade } = props
+    const rolesStr = asArray(roles)
+      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
+      .join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     let tablesStr
     if (isGrantOnAllTablesProps(props)) {
@@ -78,8 +81,9 @@ export function revokeOnTables(mOptions: MigrationOptions) {
       const { tables } = props
       tablesStr = asArray(tables).map(mOptions.literal).join(',')
     }
-    const onlyGrantOptionStr = onlyGrantOption ? 'GRANT OPTION FOR' : ''
-    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON ${tablesStr} FROM ${rolesStr};`
+    const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
+    const cascadeStr = cascade ? ' CASCADE' : ''
+    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON ${tablesStr} FROM ${rolesStr}${cascadeStr};`
   }
   return _revokeOnTables
 }
@@ -87,7 +91,9 @@ export function revokeOnTables(mOptions: MigrationOptions) {
 export function grantOnTables(mOptions: MigrationOptions) {
   const _grantOnTables: GrantOnTables = (props) => {
     const { privileges, roles, withGrantOption } = props
-    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const rolesStr = asArray(roles)
+      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
+      .join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     let tablesStr
     if (isGrantOnAllTablesProps(props)) {
@@ -105,19 +111,24 @@ export function grantOnTables(mOptions: MigrationOptions) {
 }
 
 export function revokeOnSchemas(mOptions: MigrationOptions) {
-  const _revokeOnSchemas: RevokeOnSchemas = ({ privileges, schemas, roles, onlyGrantOption }) => {
-    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+  const _revokeOnSchemas: RevokeOnSchemas = ({ privileges, schemas, roles, onlyGrantOption, cascade }) => {
+    const rolesStr = asArray(roles)
+      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
+      .join(',')
     const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
-    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON SCHEMA ${schemasStr} FROM ${rolesStr};`
+    const cascadeStr = cascade ? ' CASCADE' : ''
+    return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON SCHEMA ${schemasStr} FROM ${rolesStr}${cascadeStr};`
   }
   return _revokeOnSchemas
 }
 
 export function grantOnSchemas(mOptions: MigrationOptions) {
   const _grantOnSchemas: GrantOnSchemas = ({ privileges, schemas, roles, withGrantOption }) => {
-    const rolesStr = asArray(roles).map(mOptions.literal).join(',')
+    const rolesStr = asArray(roles)
+      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
+      .join(',')
     const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
