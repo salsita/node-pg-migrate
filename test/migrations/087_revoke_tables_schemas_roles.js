@@ -15,3 +15,5 @@ exports.up = (pgm) => {
     roles: role1,
   })
 }
+
+exports.down = () => null
