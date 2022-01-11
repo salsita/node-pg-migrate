@@ -40,23 +40,23 @@ interface CommonOnTablesOptions {
 
 type CommonGrantOnTablesOptions = CommonOnTablesOptions & WithGrantOption
 
-interface OnlyGrantOnSomeTablesOptions {
+export interface SomeTablesOptions {
   tables: Name | Name[]
 }
 
-interface OnlyGrantOnAllTablesOptions {
+export interface AllTablesOptions {
   tables: 'ALL'
   schema: string
 }
 
 type RevokeOnObjectsOptions = OnlyGrantOption & CascadeOption
 
-export type GrantOnSomeTablesOptions = CommonGrantOnTablesOptions & OnlyGrantOnSomeTablesOptions
-export type GrantOnAllTablesOptions = CommonGrantOnTablesOptions & OnlyGrantOnAllTablesOptions
+export type GrantOnSomeTablesOptions = CommonGrantOnTablesOptions & SomeTablesOptions
+export type GrantOnAllTablesOptions = CommonGrantOnTablesOptions & AllTablesOptions
 
 export type GrantOnTablesOptions = GrantOnSomeTablesOptions | GrantOnAllTablesOptions
 export type RevokeOnTablesOptions = CommonOnTablesOptions &
-  (OnlyGrantOnAllTablesOptions | OnlyGrantOnSomeTablesOptions) &
+  (AllTablesOptions | SomeTablesOptions) &
   RevokeOnObjectsOptions
 
 type GrantOnTablesFn = (options: GrantOnTablesOptions & RevokeOnObjectsOptions) => string | string[]

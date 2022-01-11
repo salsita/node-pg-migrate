@@ -1,3 +1,4 @@
+import { Name } from '..'
 import { MigrationOptions } from '../types'
 import {
   TablePrivilege,
@@ -6,7 +7,6 @@ import {
   GrantRolesOptions,
   GrantOnTables,
   GrantOnTablesOptions,
-  GrantOnAllTablesOptions,
   GrantOnSchemas,
   GrantOnSchemasOptions,
   RevokeRoles,
@@ -15,6 +15,8 @@ import {
   RevokeOnTablesOptions,
   RevokeOnSchemas,
   RevokeOnSchemasOptions,
+  AllTablesOptions,
+  SomeTablesOptions,
 } from './grantsTypes'
 
 export {
@@ -34,15 +36,23 @@ export {
   RevokeOnSchemasOptions,
 }
 
-const isArray = <T>(item: T | T[]): item is T[] => {
-  return typeof item !== 'string' && Boolean((item as Array<T>).length !== undefined)
-}
+const isArray = <T>(item: T | T[]): item is T[] =>
+  typeof item !== 'string' && Boolean((item as Array<T>).length !== undefined)
 
 const asArray = <T>(item: T | T[]) => (isArray(item) ? item : [item])
 
-const isGrantOnAllTablesOptions = (options: GrantOnTablesOptions): options is GrantOnAllTablesOptions => {
-  return 'schema' in options
-}
+const isAllTablesOptions = (options: AllTablesOptions | SomeTablesOptions): options is AllTablesOptions =>
+  'schema' in options
+
+const asRolesStr = (roles: Name | Name[], mOptions: MigrationOptions) =>
+  asArray(roles)
+    .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
+    .join(',')
+
+const asTablesStr = (options: AllTablesOptions | SomeTablesOptions, mOptions: MigrationOptions) =>
+  isAllTablesOptions(options)
+    ? `ALL TABLES IN SCHEMA ${mOptions.literal(options.schema)}`
+    : asArray(options.tables).map(mOptions.literal).join(',')
 
 export function revokeRoles(mOptions: MigrationOptions) {
   const _revokeRoles: RevokeRoles = (roles, rolesFrom, options) => {
@@ -69,18 +79,9 @@ export function grantRoles(mOptions: MigrationOptions) {
 export function revokeOnTables(mOptions: MigrationOptions) {
   const _revokeOnTables: RevokeOnTables = (options) => {
     const { privileges, roles, onlyGrantOption, cascade } = options
-    const rolesStr = asArray(roles)
-      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
-      .join(',')
+    const rolesStr = asRolesStr(roles, mOptions)
     const privilegesStr = asArray(privileges).map(String).join(',')
-    let tablesStr
-    if (isGrantOnAllTablesOptions(options)) {
-      const { schema } = options
-      tablesStr = `ALL TABLES IN SCHEMA ${mOptions.literal(schema)}`
-    } else {
-      const { tables } = options
-      tablesStr = asArray(tables).map(mOptions.literal).join(',')
-    }
+    const tablesStr = asTablesStr(options, mOptions)
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
     const cascadeStr = cascade ? ' CASCADE' : ''
     return `REVOKE${onlyGrantOptionStr} ${privilegesStr} ON ${tablesStr} FROM ${rolesStr}${cascadeStr};`
@@ -91,18 +92,9 @@ export function revokeOnTables(mOptions: MigrationOptions) {
 export function grantOnTables(mOptions: MigrationOptions) {
   const _grantOnTables: GrantOnTables = (options) => {
     const { privileges, roles, withGrantOption } = options
-    const rolesStr = asArray(roles)
-      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
-      .join(',')
+    const rolesStr = asRolesStr(roles, mOptions)
     const privilegesStr = asArray(privileges).map(String).join(',')
-    let tablesStr
-    if (isGrantOnAllTablesOptions(options)) {
-      const { schema } = options
-      tablesStr = `ALL TABLES IN SCHEMA ${mOptions.literal(schema)}`
-    } else {
-      const { tables } = options
-      tablesStr = asArray(tables).map(mOptions.literal).join(',')
-    }
+    const tablesStr = asTablesStr(options, mOptions)
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
     return `GRANT ${privilegesStr} ON ${tablesStr} TO ${rolesStr}${withGrantOptionStr};`
   }
@@ -112,9 +104,7 @@ export function grantOnTables(mOptions: MigrationOptions) {
 
 export function revokeOnSchemas(mOptions: MigrationOptions) {
   const _revokeOnSchemas: RevokeOnSchemas = ({ privileges, schemas, roles, onlyGrantOption, cascade }) => {
-    const rolesStr = asArray(roles)
-      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
-      .join(',')
+    const rolesStr = asRolesStr(roles, mOptions)
     const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : ''
@@ -126,9 +116,7 @@ export function revokeOnSchemas(mOptions: MigrationOptions) {
 
 export function grantOnSchemas(mOptions: MigrationOptions) {
   const _grantOnSchemas: GrantOnSchemas = ({ privileges, schemas, roles, withGrantOption }) => {
-    const rolesStr = asArray(roles)
-      .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
-      .join(',')
+    const rolesStr = asRolesStr(roles, mOptions)
     const schemasStr = asArray(schemas).map(mOptions.literal).join(',')
     const privilegesStr = asArray(privileges).map(String).join(',')
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : ''
