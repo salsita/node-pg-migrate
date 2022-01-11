@@ -5,8 +5,6 @@ const role2 = 'test_grant_reverse_bob2'
 const tablePrivileges = ['SELECT', 'UPDATE']
 const schemaPrivilege = 'USAGE'
 
-exports.constants = { schema, table, role1, role2, tablePrivileges, schemaPrivilege }
-
 exports.up = (pgm) => {
   pgm.createTable(table, {
     id: 'id',
