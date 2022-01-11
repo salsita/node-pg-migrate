@@ -13,7 +13,7 @@ exports.up = async (pgm) => {
   }
   const hasGrantedSchemaPrivilege = await hasSchemaPrivilege(pgm, role1, schema, schemaPrivilege)
   if (hasGrantedSchemaPrivilege) {
-    throw new Error(`${role1}'s USAGE schema privilege was not revoked`)
+    throw new Error(`${role1}'s ${schemaPrivilege} schema privilege was not revoked`)
   }
   const isMemberOfRole1 = await isMemberOf(pgm, role2, [role1])
   if (isMemberOfRole1) {

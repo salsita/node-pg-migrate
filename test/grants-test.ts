@@ -52,7 +52,7 @@ describe('lib/operations/grants', () => {
   })
 
   describe('.grantOnTables', () => {
-    it('grants one privilege with grant privilege', () => {
+    it('grants one privilege with grant option', () => {
       const args: GrantOnTablesParameters = [
         {
           privileges: 'INSERT',
