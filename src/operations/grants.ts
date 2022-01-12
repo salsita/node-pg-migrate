@@ -36,10 +36,7 @@ export {
   RevokeOnSchemasOptions,
 }
 
-const isArray = <T>(item: T | T[]): item is T[] =>
-  typeof item !== 'string' && Boolean((item as Array<T>).length !== undefined)
-
-const asArray = <T>(item: T | T[]) => (isArray(item) ? item : [item])
+const asArray = <T>(item: T | T[]) => (Array.isArray(item) ? item : [item])
 
 const isAllTablesOptions = (options: AllTablesOptions | SomeTablesOptions): options is AllTablesOptions =>
   'schema' in options
