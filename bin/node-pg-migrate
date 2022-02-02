@@ -231,7 +231,7 @@ if (dotenv) {
   const myEnv = dotenv.config(dotenvConfig)
   const dotenvExpand = tryRequire('dotenv-expand')
   if (dotenvExpand) {
-    dotenvExpand(myEnv)
+    dotenvExpand.expand(myEnv)
   }
 }
 
