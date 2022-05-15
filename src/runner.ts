@@ -32,7 +32,7 @@ const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: L
             path.extname(filePath) === '.sql'
               ? await migrateSqlFile(filePath)
               : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-                require(path.relative(__dirname, filePath))
+                await import(path.relative(__dirname, filePath))
           shorthands = { ...shorthands, ...actions.shorthands }
           return new Migration(
             db,
