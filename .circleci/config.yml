@@ -78,7 +78,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:9.6-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -92,7 +92,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:10.19-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -106,7 +106,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:11.14-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -120,7 +120,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:12.9-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -134,7 +134,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:13.5-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
@@ -269,7 +269,7 @@ jobs:
       - image: circleci/node:17
         environment:
           - DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/circle_test
-      - image: postgres:13.5-alpine
+      - image: postgres:14.4-alpine
         environment:
           - POSTGRES_USER=ubuntu
           - POSTGRES_PASSWORD=ubuntu
