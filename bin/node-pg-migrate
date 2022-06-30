@@ -230,8 +230,8 @@ if (dotenv) {
   // Load config from ".env" file
   const myEnv = dotenv.config(dotenvConfig)
   const dotenvExpand = tryRequire('dotenv-expand')
-  if (dotenvExpand) {
-    dotenvExpand(myEnv)
+  if (dotenvExpand && dotenvExpand.expand) {
+    dotenvExpand.expand(myEnv)
   }
 }
 
