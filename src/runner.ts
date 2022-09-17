@@ -7,6 +7,7 @@ import {
   MigrationDirection,
   RunnerOptionClient,
   RunnerOptionUrl,
+  RunnerOptionMigrations,
   RunnerOption,
   Logger,
 } from './types'
@@ -20,19 +21,41 @@ const idColumn = 'id'
 const nameColumn = 'name'
 const runOnColumn = 'run_on'
 
+const isMigrationsOptions = (options: unknown): options is RunnerOptionMigrations =>
+  !!(options as RunnerOptionMigrations).migrations
+
+const importMigration = async (
+  filePath: string,
+  module: string | MigrationBuilderActions | (() => MigrationBuilderActions | Promise<MigrationBuilderActions>),
+): Promise<MigrationBuilderActions> => {
+  if (typeof module === 'string') {
+    // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
+    return require(path.relative(__dirname, filePath))
+  }
+
+  if (typeof module === 'function') {
+    // eslint-disable-next-line no-return-await
+    return await module()
+  }
+
+  return module
+}
+
 const loadMigrations = async (db: DBConnection, options: RunnerOption, logger: Logger) => {
   try {
     let shorthands: ColumnDefinitions = {}
-    const files = await loadMigrationFiles(options.dir, options.ignorePattern)
+
+    const files = isMigrationsOptions(options)
+      ? options.migrations
+      : Object.fromEntries(
+          (await loadMigrationFiles(options.dir, options.ignorePattern)).map((f) => [`${options.dir}/${f}`, f]),
+        )
+
     return (
       await Promise.all(
-        files.map(async (file) => {
-          const filePath = `${options.dir}/${file}`
-          const actions: MigrationBuilderActions =
-            path.extname(filePath) === '.sql'
-              ? await migrateSqlFile(filePath)
-              : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-                require(path.relative(__dirname, filePath))
+        Object.entries(files).map(async ([filePath, module]) => {
+          const actions =
+            path.extname(filePath) === '.sql' ? await migrateSqlFile(filePath) : await importMigration(filePath, module)
           shorthands = { ...shorthands, ...actions.shorthands }
           return new Migration(
             db,

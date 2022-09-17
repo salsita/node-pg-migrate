@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { Client } from 'pg'
 import runner, { RunnerOption } from '../../dist'
+import { RunnerOptionDir, RunnerOptionMigrations } from '../../dist/types'
 
 type TestOptions = {
   count?: number
@@ -13,7 +14,7 @@ type Options = ({ databaseUrl: string } & TestOptions) | ({ dbClient: Client } &
 /* eslint-disable no-console */
 // eslint-disable-next-line import/prefer-default-export
 export const run = async (options: Options): Promise<boolean> => {
-  const opts: Omit<RunnerOption, 'direction'> & Options = {
+  const opts: Omit<RunnerOption, 'direction'> & Options & (RunnerOptionDir | RunnerOptionMigrations) = {
     migrationsTable: 'migrations',
     dir: resolve(__dirname, 'migrations'),
     expectedUpLength: 2,
