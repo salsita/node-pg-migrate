@@ -162,7 +162,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v1.1.9
+      - image: cockroachdb/cockroach:v22.2.8
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -175,7 +175,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v2.1.11
+      - image: cockroachdb/cockroach:v22.2.8
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -188,7 +188,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v19.2.12
+      - image: cockroachdb/cockroach:v22.2.8
         command: ['start', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -201,7 +201,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v20.2.18
+      - image: cockroachdb/cockroach:v22.2.8
         command: ['start-single-node', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
@@ -214,7 +214,7 @@ jobs:
       - <<: *node-image
         environment:
           - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v21.2.3
+      - image: cockroachdb/cockroach:v22.2.8
         command: ['start-single-node', '--insecure', '--host=localhost']
     steps:
       - <<: *restore
