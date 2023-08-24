@@ -214,7 +214,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
       const referencesStr = parseReferences(fk, literal)
       constraints.push(`CONSTRAINT ${name} FOREIGN KEY (${key}) ${referencesStr}`)
       if (referencesConstraintComment) {
-        comments.push(makeComment(`CONSTRAINT ${name} ON`, literal(tableName), referencesConstraintComment))
+        comments.push(makeComment(`CONSTRAINT ${name} ON`, literal(table), referencesConstraintComment))
       }
     })
   }
@@ -228,7 +228,7 @@ const parseConstraints = (table: Name, options: ConstraintOptions, optionName: s
   }
   if (comment) {
     if (!optionName) throw new Error('cannot comment on unspecified constraints')
-    comments.push(makeComment(`CONSTRAINT ${literal(optionName)} ON`, literal(tableName), comment))
+    comments.push(makeComment(`CONSTRAINT ${literal(optionName)} ON`, literal(table), comment))
   }
   return {
     constraints,
