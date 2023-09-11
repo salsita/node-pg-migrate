@@ -1,6 +1,7 @@
 import { ClientBase, ClientConfig, QueryArrayResult, QueryResult, QueryArrayConfig, QueryConfig } from 'pg'
 import { Name } from './operations/generalTypes'
 
+import * as casts from './operations/castsTypes'
 import * as domains from './operations/domainsTypes'
 import * as extensions from './operations/extensionsTypes'
 import * as functions from './operations/functionsTypes'
@@ -77,6 +78,8 @@ export interface MigrationBuilder {
   createSchema: (...args: Parameters<schemas.CreateSchema>) => void
   dropSchema: (...args: Parameters<schemas.DropSchema>) => void
   renameSchema: (...args: Parameters<schemas.RenameSchema>) => void
+  createCast: (...args: Parameters<casts.CreateCast>) => void
+  dropCast: (...args: Parameters<casts.DropCast>) => void
   createDomain: (...args: Parameters<domains.CreateDomain>) => void
   dropDomain: (...args: Parameters<domains.DropDomain>) => void
   alterDomain: (...args: Parameters<domains.AlterDomain>) => void
