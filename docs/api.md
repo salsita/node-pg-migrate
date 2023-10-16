@@ -25,3 +25,4 @@ which takes options argument with following structure (similar to [command line 
 - `logger` _[object with debug/info/warn/error methods]_ - Redirect messages to this logger object, rather than `console`
 - `verbose` _[boolean]_ - Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method)
 - `decamelize` _[boolean]_ - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names
+- `onNoMigrationsToRunMessage` _[string or boolean]_ - Custom message to print if there are no migrations to run. Set to `false` to print nothing

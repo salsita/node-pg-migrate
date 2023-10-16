@@ -282,6 +282,10 @@ export interface RunnerOptionConfig {
    * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
    */
   verbose?: boolean
+  /**
+   * Custom message to print if there are no migrations to run. If false, nothing will be printed.
+   */
+  onNoMigrationsToRunMessage?: string | boolean
 }
 
 export interface RunnerOptionUrl {
