@@ -17,6 +17,7 @@ export interface FunctionOptions {
   behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE'
   onNull?: boolean
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE'
+  options?: string[]
 }
 
 type CreateFunctionFn = (
