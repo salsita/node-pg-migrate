@@ -19,7 +19,16 @@ export function dropFunction(mOptions: MigrationOptions) {
 export function createFunction(mOptions: MigrationOptions) {
   // eslint-disable-next-line default-param-last
   const _create: CreateFunction = (functionName, functionParams = [], functionOptions, definition) => {
-    const { replace, returns = 'void', language, window, behavior = 'VOLATILE', onNull, parallel, options = [] } = functionOptions
+    const { 
+      replace,
+      returns = 'void',
+      language,
+      window,
+      behavior = 'VOLATILE',
+      onNull,
+      parallel,
+      options = [],
+    } = functionOptions
     if (behavior) {
       options.push(behavior)
     }
