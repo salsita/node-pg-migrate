@@ -15,12 +15,13 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
+        postgres_version: [9.6, 10.23, 11.22, 12.18, 13.14, 14.11]
       fail-fast: false
     timeout-minutes: 10
 
     services:
       postgres:
-        image: postgres:9.6-alpine
+        image: postgres:${{ matrix.postgres_version }}-alpine
         env:
           POSTGRES_USER: ubuntu
           POSTGRES_PASSWORD: ubuntu
@@ -35,7 +36,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-    name: 'Postgres Test: pg-9.6, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'Postgres Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
