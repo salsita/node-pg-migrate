@@ -78,7 +78,7 @@
     "@types/sinon-chai": "3.2.6",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
-    "chai": "4.3.4",
+    "chai": "5.1.0",
     "chai-as-promised": "7.1.1",
     "config": "3.3.6",
     "cross-env": "7.0.3",
