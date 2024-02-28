@@ -44,7 +44,7 @@
     },
     {
       "groupName": "prettier",
-      "matchPackageNames": ["@types/prettier", "prettier"]
+      "matchPackageNames": ["prettier"]
     },
     {
       "groupName": "typescript",
