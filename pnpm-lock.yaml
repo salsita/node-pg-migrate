@@ -95,8 +95,8 @@ devDependencies:
     specifier: 7.0.4
     version: 7.0.4
   json5:
-    specifier: 2.2.0
-    version: 2.2.0
+    specifier: 2.2.2
+    version: 2.2.2
   lint-staged:
     specifier: 12.1.2
     version: 12.1.2
@@ -901,7 +901,7 @@ packages:
     resolution: {integrity: sha512-Hj5916C5HFawjYJat1epbyY2PlAgLpBtDUlr0MxGLgo3p5+7kylyvnRY18PqJHgnNWXcdd0eWDemT7eYWuFgwg==}
     engines: {node: '>= 10.0.0'}
     dependencies:
-      json5: 2.2.0
+      json5: 2.2.2
     dev: true
 
   /configstore@5.0.1:
@@ -2324,12 +2324,10 @@ packages:
       minimist: 1.2.8
     dev: true
 
-  /json5@2.2.0:
-    resolution: {integrity: sha512-f+8cldu7X/y7RAJurMEJmdoKXGB/X550w2Nr3tTbezL6RwEE/iMcm+tZnXeoZtKuOq6ft8+CqzEkrIgx1fPoQA==}
+  /json5@2.2.2:
+    resolution: {integrity: sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==}
     engines: {node: '>=6'}
     hasBin: true
-    dependencies:
-      minimist: 1.2.8
     dev: true
 
   /jsonfile@4.0.0:
