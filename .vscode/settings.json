@@ -1,4 +1,8 @@
 {
-  "deepcode.review.results.hideInformationIssues": false,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  // Always use the `package.json`'s `typescript`
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  "files.associations": {
+    "*.json5": "jsonc"
+  }
 }
