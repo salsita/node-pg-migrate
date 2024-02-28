@@ -1,4 +1,4 @@
-name: Postgres Test
+name: Cockroach Test
 
 on:
   push:
@@ -14,29 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [18, 20]
-        postgres_version: [9.6, 10.23, 11.22, 12.18, 13.14, 14.11]
+        node_version: [20]
+        cockroach_version: [19.2.12]
       fail-fast: false
     timeout-minutes: 10
 
     services:
-      postgres:
-        image: postgres:${{ matrix.postgres_version }}-alpine
+      cockroach:
+        image: cockroachdb/cockroach:v${{ matrix.cockroach_version }}
         env:
-          POSTGRES_USER: ubuntu
-          POSTGRES_PASSWORD: ubuntu
-          POSTGRES_DB: integration_test
-        # Set health checks to wait until postgres has started
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test
+        # Set health checks to wait until cockroach has started
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          start
+          --insecure
+          --host=localhost
         ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
+          # Maps tcp port 26257 on service container to the host
+          - 26257:26257
 
-    name: 'Postgres Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'Cockroach Test: cockroach-${{ matrix.cockroach_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -60,6 +57,6 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock --timestamps
         env:
-          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test
