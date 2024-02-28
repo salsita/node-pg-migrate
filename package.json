@@ -90,6 +90,7 @@
   "peerDependencies": {
     "pg": ">=4.3.0 <9.0.0"
   },
+  "packageManager": "pnpm@8.15.4",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
