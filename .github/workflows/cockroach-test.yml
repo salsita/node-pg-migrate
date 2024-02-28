@@ -46,6 +46,7 @@ jobs:
         run: |
           docker pull cockroachdb/cockroach:v${{ matrix.cockroach_version }}
           docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:v${{ matrix.cockroach_version }} start --insecure
+          dockerize -wait tcp://127.0.0.1:26257 -timeout 60s
           docker exec roach bash -c "echo 'CREATE DATABASE integration_test;' | cockroach sql --insecure"
 
       - name: Integration Test
