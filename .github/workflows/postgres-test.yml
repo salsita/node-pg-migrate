@@ -31,6 +31,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
 
     name: 'Postgres Test: pg-9.6, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
@@ -58,4 +61,4 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -- -m test/migrations && pnpm run migrate down 0 -- -m test/migrations --timestamps
         env:
-          DATABASE_URL: postgres://ubuntu:ubuntu@postgres:5432/integration_test
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
