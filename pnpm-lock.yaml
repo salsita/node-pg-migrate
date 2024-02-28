@@ -80,11 +80,11 @@ devDependencies:
     specifier: 8.3.0
     version: 8.3.0(eslint@8.4.1)
   eslint-import-resolver-typescript:
-    specifier: 2.5.0
-    version: 2.5.0(eslint-plugin-import@2.25.3)(eslint@8.4.1)
+    specifier: 3.6.1
+    version: 3.6.1(@typescript-eslint/parser@5.7.0)(eslint-plugin-import@2.25.3)(eslint@8.4.1)
   eslint-plugin-import:
     specifier: 2.25.3
-    version: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1)
+    version: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1)
   eslint-plugin-prettier:
     specifier: 4.0.0
     version: 4.0.0(eslint-config-prettier@8.3.0)(eslint@8.4.1)(prettier@2.5.1)
@@ -1230,6 +1230,14 @@ packages:
       once: 1.4.0
     dev: true
 
+  /enhanced-resolve@5.15.1:
+    resolution: {integrity: sha512-3d3JRbwsCLJsYgvb6NuWEG44jjPSOMuS73L/6+7BZuoKm3W+qXnSoIYVHi8dG7Qcg4inAY4jbzkZ7MnskePeDg==}
+    engines: {node: '>=10.13.0'}
+    dependencies:
+      graceful-fs: 4.2.11
+      tapable: 2.2.1
+    dev: true
+
   /enquirer@2.4.1:
     resolution: {integrity: sha512-rRqJg/6gd538VHvR3PSrdRBb/1Vy2YfzHqzvbhGIQpDRKIa4FgV/54b5Q1xYSxOOwKvjXweS26E0Q+nAMwp2pQ==}
     engines: {node: '>=8.6'}
@@ -1353,7 +1361,7 @@ packages:
     dependencies:
       confusing-browser-globals: 1.0.11
       eslint: 8.4.1
-      eslint-plugin-import: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1)
+      eslint-plugin-import: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1)
       object.assign: 4.1.5
       object.entries: 1.1.7
       semver: 6.3.1
@@ -1378,25 +1386,30 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-import-resolver-typescript@2.5.0(eslint-plugin-import@2.25.3)(eslint@8.4.1):
-    resolution: {integrity: sha512-qZ6e5CFr+I7K4VVhQu3M/9xGv9/YmwsEXrsm3nimw8vWaVHRDrQRp26BgCypTxBp3vUp4o5aVEJRiy0F2DFddQ==}
-    engines: {node: '>=4'}
+  /eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.7.0)(eslint-plugin-import@2.25.3)(eslint@8.4.1):
+    resolution: {integrity: sha512-xgdptdoi5W3niYeuQxKmzVDTATvLYqhpwmykwsh7f6HIOStGWEIL9iqZgQDF9u9OEzrRwR8no5q2VT+bjAujTg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       eslint: '*'
       eslint-plugin-import: '*'
     dependencies:
       debug: 4.3.4(supports-color@9.4.0)
+      enhanced-resolve: 5.15.1
       eslint: 8.4.1
-      eslint-plugin-import: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1)
-      glob: 7.2.3
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1)
+      eslint-plugin-import: 2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1)
+      fast-glob: 3.3.2
+      get-tsconfig: 4.7.2
+      is-core-module: 2.13.1
       is-glob: 4.0.3
-      resolve: 1.22.8
-      tsconfig-paths: 3.15.0
     transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - eslint-import-resolver-node
+      - eslint-import-resolver-webpack
       - supports-color
     dev: true
 
-  /eslint-module-utils@2.8.1(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1):
+  /eslint-module-utils@2.8.1(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1):
     resolution: {integrity: sha512-rXDXR3h7cs7dy9RNpUlQf80nX31XWJEyGq1tRMo+6GsO5VmTe4UTwtmonAD4ZkAsrfMVDA2wlGJ3790Ys+D49Q==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -1421,12 +1434,12 @@ packages:
       debug: 3.2.7
       eslint: 8.4.1
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 2.5.0(eslint-plugin-import@2.25.3)(eslint@8.4.1)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.7.0)(eslint-plugin-import@2.25.3)(eslint@8.4.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /eslint-plugin-import@2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1):
+  /eslint-plugin-import@2.25.3(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1):
     resolution: {integrity: sha512-RzAVbby+72IB3iOEL8clzPLzL3wpDrlwjsTBAQXgyp5SeTqqY+0bFubwuo+y/HLhNZcXV4XqTBO4LGsfyHIDXg==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -1443,7 +1456,7 @@ packages:
       doctrine: 2.1.0
       eslint: 8.4.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@2.5.0)(eslint@8.4.1)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.7.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.4.1)
       has: 1.0.4
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -1834,6 +1847,12 @@ packages:
       call-bind: 1.0.7
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
+    dev: true
+
+  /get-tsconfig@4.7.2:
+    resolution: {integrity: sha512-wuMsz4leaj5hbGgg4IvDU0bqJagpftG5l5cXIAvo8uZrqn0NJqwtfupTN00VnkQJPcIRrxYrm1Ue24btpCha2A==}
+    dependencies:
+      resolve-pkg-maps: 1.0.0
     dev: true
 
   /glob-parent@5.1.2:
@@ -3178,6 +3197,10 @@ packages:
     resolution: {integrity: sha512-C7rARubxI8bXFNB/hqcp/4iUeIXJhJZvFPFPiSPRnhU5UPxzMFIl+2E6yY6c4k9giDJAhtV+enfA+G89N6Csng==}
     dev: true
 
+  /resolve-pkg-maps@1.0.0:
+    resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
+    dev: true
+
   /resolve@1.22.8:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
     hasBin: true
@@ -3589,6 +3612,11 @@ packages:
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+    dev: true
+
+  /tapable@2.2.1:
+    resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
+    engines: {node: '>=6'}
     dev: true
 
   /term-size@2.2.1:
