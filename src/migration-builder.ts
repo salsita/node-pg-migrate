@@ -13,6 +13,7 @@ import { createSchemalize } from './utils'
 import { ColumnDefinitions } from './operations/tablesTypes'
 import { DB, MigrationBuilder, MigrationOptions, Logger } from './types'
 
+import * as casts from './operations/casts'
 import * as domains from './operations/domains'
 import * as extensions from './operations/extensions'
 import * as functions from './operations/functions'
@@ -183,6 +184,10 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   public readonly refreshMaterializedView: (...args: Parameters<mViews.RefreshMaterializedView>) => void
 
+  public readonly createCast: (...args: Parameters<casts.CreateCast>) => void
+
+  public readonly dropCast: (...args: Parameters<casts.DropCast>) => void
+
   public readonly sql: (...args: Parameters<other.Sql>) => void
 
   public readonly func: (sql: string) => PgLiteral
@@ -322,6 +327,9 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.renameMaterializedView = wrap(mViews.renameMaterializedView(options))
     this.renameMaterializedViewColumn = wrap(mViews.renameMaterializedViewColumn(options))
     this.refreshMaterializedView = wrap(mViews.refreshMaterializedView(options))
+
+    this.createCast = wrap(casts.createCast(options))
+    this.dropCast = wrap(casts.dropCast(options))
 
     this.sql = wrap(other.sql(options))
 

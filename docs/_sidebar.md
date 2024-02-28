@@ -17,6 +17,7 @@
   - [Operators](operators.md)
   - [Roles](roles.md)
   - [Policies](policies.md)
+  - [Casts](casts.md)
   - [Extensions](extensions.md)
   - [Miscellaneous](misc.md)
 - [Transpiling migrations](transpiling.md)
