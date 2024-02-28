@@ -10,7 +10,7 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
-  integration-test:
+  migration-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -61,5 +61,696 @@ jobs:
 
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+  config-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Config Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Write config
+        run: |
+          mkdir -p config
+          cat > config/default.json << 'EOF'
+          {
+            "db": {
+              "user": "ubuntu",
+              "password": "ubuntu",
+              "host": "localhost",
+              "port": "5432",
+              "database": "integration_test"
+            }
+          }
+          EOF
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+
+  dotenv-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Dotenv Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Write config
+        run: |
+          cat > .env << 'EOF'
+          DATABASE_URL=postgres://ubuntu:ubuntu@localhost:5432/integration_test
+          EOF
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+
+  dotenv-expand-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Dotenv Expand Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Write config
+        run: |
+          cat > .env << 'EOF'
+          POSTGRES_USER=ubuntu
+          POSTGRES_PASSWORD=ubuntu
+          POSTGRES_DB=integration_test
+          DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB
+          EOF
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+
+  password-1-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Password 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
+          POSTGRES_DB: integration_test
+
+  password-2-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Password 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Write config
+        run: |
+          mkdir -p config
+          cat > config/default.json << 'EOF'
+          {
+            "db": {
+              "user": "ubuntu",
+              "password": "123456abcdefghABCDEFGH~`!@#$%^&*-_=+{}[]()<>,.;:\"'?|/\\",
+              "host": "localhost",
+              "port": "5432",
+              "database": "integration_test"
+            }
+          }
+          EOF
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+
+  env-vars-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Env Vars Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        env:
+          PGUSER: ubuntu
+          PGPASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          PGDATABASE: integration_test
+
+  schema-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Schema Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -s myschema --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema -m test/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+          SCHEMA: myschema
+
+  schemas-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'Schemas Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+          SCHEMA: myschema
+
+  typescript-migration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'TypeScript Migration Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up --tsconfig tsconfig.json -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json -m test/ts/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+  typescript-customrunner-url-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'TypeScript Customrunner Url Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: $(npm bin)/ts-node test/ts/customRunnerDBUrl.ts
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+  typescript-customrunner-client-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'TypeScript Customrunner Client Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: $(npm bin)/ts-node test/ts/customRunnerDBClient.ts
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+  typescript-customrunner-undef-count-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'TypeScript Customrunner undef count Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: $(npm bin)/ts-node test/ts/customRunnerUndefCount.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
