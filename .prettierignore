@@ -1,3 +1,6 @@
-dist
-templates
+.pnpm-store/
+coverage/
+dist/
+templates/
+CHANGELOG.md
 pnpm-lock.yaml
