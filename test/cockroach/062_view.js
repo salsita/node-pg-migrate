@@ -1,5 +1,5 @@
 exports.up = (pgm) => {
-  pgm.noTransaction()
+  pgm.noTransaction();
   pgm.createTable('tv', {
     id: 'id',
     string: { type: 'text', notNull: true },
@@ -8,12 +8,12 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createView(
     'v',
     {
       columns: ['id', 'str'],
     },
-    'SELECT id, string FROM tv',
-  )
-}
+    'SELECT id, string FROM tv'
+  );
+};

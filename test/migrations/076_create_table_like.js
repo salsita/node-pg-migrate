@@ -10,8 +10,8 @@ exports.up = (pgm) => {
           excluding: ['INDEXES', 'STORAGE'],
         },
       },
-    },
-  )
-}
+    }
+  );
+};
 
-exports.down = () => null
+exports.down = () => null;

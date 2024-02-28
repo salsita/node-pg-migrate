@@ -7,7 +7,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createTable(
     't2',
     {
@@ -16,6 +16,6 @@ exports.up = (pgm) => {
     },
     {
       ifNotExists: true,
-    },
-  )
-}
+    }
+  );
+};
