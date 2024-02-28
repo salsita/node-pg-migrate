@@ -58,4 +58,4 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -- -m test/migrations && pnpm run migrate down 0 -- -m test/migrations --timestamps
         env:
-          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+          DATABASE_URL: postgres://ubuntu:ubuntu@postgres:5432/integration_test
