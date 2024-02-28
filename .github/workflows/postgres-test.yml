@@ -319,7 +319,7 @@ jobs:
         image: postgres:${{ matrix.postgres_version }}-alpine
         env:
           POSTGRES_USER: ubuntu
-          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~`!@#$%^&*-_=+{}[]()<>,.;:\"'?|/\\
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
           POSTGRES_DB: integration_test
         # Set health checks to wait until postgres has started
         options: >-
@@ -361,7 +361,7 @@ jobs:
           {
             "db": {
               "user": "ubuntu",
-              "password": "123456abcdefghABCDEFGH~`!@#$%^&*-_=+{}[]()<>,.;:\"'?|/\\",
+              "password": "123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\",
               "host": "localhost",
               "port": "5432",
               "database": "integration_test"
