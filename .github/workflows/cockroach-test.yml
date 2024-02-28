@@ -1,0 +1,56 @@
+name: Cockroach Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        cockroach_version: [22.2.19, 23.1.16]
+      fail-fast: false
+    timeout-minutes: 10
+
+    name: 'Cockroach Test: cockroach-${{ matrix.cockroach_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Init Cockroach
+        env:
+          COCKROACHDB_DOCKER_TAG: cockroachdb/cockroach:v${{ matrix.cockroach_version }}
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test
+        run: |
+          docker pull $COCKROACHDB_DOCKER_TAG
+          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 $COCKROACHDB_DOCKER_TAG start-single-node --insecure
+          sudo apt update && sudo apt install wait-for-it -y
+          wait-for-it -h localhost -p 26257
+          docker exec roach bash -c "./cockroach sql --execute=\"CREATE DATABASE integration_test;\" --insecure"
+
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock --timestamps
+        env:
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test
