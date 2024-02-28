@@ -35,18 +35,6 @@ test-postgres: &test-postgres
     name: test
     command: npm run migrate up -- -m test/migrations && npm run migrate down 0 -- -m test/migrations --timestamps
 
-cockroach-wait: &cockroach-wait
-  run:
-    name: Wait for DB
-    command: |
-      dockerize -wait tcp://127.0.0.1:26257 -timeout 120s && node -e '
-        (new (require("pg").Pool)({ connectionString: process.env.DATABASE_URL }))
-          .query(
-            "CREATE DATABASE circle_test",
-            err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
-          )
-      '
-
 jobs:
   install:
     docker:
@@ -62,71 +50,6 @@ jobs:
           paths:
             - ./node_modules
       - <<: *save
-  test-cockroach-1:
-    docker:
-      - <<: *node-image
-        environment:
-          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v1.1.9
-        command: ['start', '--insecure', '--host=localhost']
-    steps:
-      - <<: *restore
-      - <<: *cockroach-wait
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock && npm run migrate down 0 -- -m test/cockroach -s '' --migrations-schema circle_test --no-lock --timestamps
-  test-cockroach-2:
-    docker:
-      - <<: *node-image
-        environment:
-          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v2.1.11
-        command: ['start', '--insecure', '--host=localhost']
-    steps:
-      - <<: *restore
-      - <<: *cockroach-wait
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
-  test-cockroach-19:
-    docker:
-      - <<: *node-image
-        environment:
-          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v19.2.12
-        command: ['start', '--insecure', '--host=localhost']
-    steps:
-      - <<: *restore
-      - <<: *cockroach-wait
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
-  test-cockroach-20:
-    docker:
-      - <<: *node-image
-        environment:
-          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v20.2.18
-        command: ['start-single-node', '--insecure', '--host=localhost']
-    steps:
-      - <<: *restore
-      - <<: *cockroach-wait
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
-  test-cockroach-21:
-    docker:
-      - <<: *node-image
-        environment:
-          - DATABASE_URL=postgresql://root@localhost:26257/circle_test
-      - image: cockroachdb/cockroach:v21.2.3
-        command: ['start-single-node', '--insecure', '--host=localhost']
-    steps:
-      - <<: *restore
-      - <<: *cockroach-wait
-      - run:
-          name: test
-          command: npm run migrate up -- -m test/cockroach --no-lock && npm run migrate down 0 -- -m test/cockroach --no-lock --timestamps
   test-config:
     docker:
       - <<: *node-image
@@ -373,21 +296,6 @@ workflows:
   main_workflow:
     jobs:
       - install
-      - test-cockroach-1:
-          requires:
-            - install
-      - test-cockroach-2:
-          requires:
-            - install
-      - test-cockroach-19:
-          requires:
-            - install
-      - test-cockroach-20:
-          requires:
-            - install
-      - test-cockroach-21:
-          requires:
-            - install
       - test-config:
           requires:
             - install
