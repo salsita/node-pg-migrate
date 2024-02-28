@@ -24,6 +24,12 @@ jobs:
         image: cockroachdb/cockroach:v${{ matrix.cockroach_version }}
         env:
           DATABASE_URL: postgresql://root@localhost:26257/integration_test
+        # Set health checks to wait until cockroach has started
+        options: >-
+          --health-cmd "cockroach node status --insecure"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           # Maps tcp port 26257 on service container to the host
           - 26257:26257
@@ -50,6 +56,16 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+      - name: Init Cockroach
+        run: |
+          dockerize -wait tcp://127.0.0.1:26257 -timeout 60s && node -e '
+            (new (require("pg").Pool)({ connectionString: process.env.DATABASE_URL }))
+              .query(
+                "CREATE DATABASE integration_test",
+                err => (process.exitCode = err ? 1 : 0) && process.stdout.write(err.stack)
+              )
+          '
 
       - name: Integration Test
         run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock --timestamps
