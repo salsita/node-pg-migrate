@@ -2,16 +2,35 @@
   "name": "node-pg-migrate",
   "version": "6.2.2",
   "description": "Postgresql database migration management tool for node.js",
-  "author": "Theo Ephraim",
-  "contributors": [
-    "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
-  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
+    "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
+    "migrate": "node bin/node-pg-migrate",
+    "format": "prettier --write .",
+    "lint": "eslint . bin/* --ext .js,.ts",
+    "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
+    "prepare": "npm run build",
+    "docs:preview": "docsify serve docs"
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm run lintfix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "author": "Theo Ephraim",
+  "contributors": [
+    "Salsita Software <jando@salsitasoft.com>",
+    "Christopher Quadflieg <chrissi92@hotmail.de>"
+  ],
   "keywords": [
     "db",
     "database",
@@ -33,13 +52,11 @@
     "programable",
     "api"
   ],
-  "engines": {
-    "node": ">=12.20.0"
-  },
   "bugs": {
     "url": "https://github.com/salsita/node-pg-migrate/issues"
   },
   "license": "MIT",
+  "homepage": "https://github.com/salsita/node-pg-migrate",
   "repository": {
     "type": "git",
     "url": "https://github.com/salsita/node-pg-migrate.git"
@@ -92,23 +109,7 @@
     "pg": ">=4.3.0 <9.0.0"
   },
   "packageManager": "pnpm@8.15.4",
-  "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "tsc --removeComments && tsc --declaration --emitDeclarationOnly",
-    "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
-    "migrate": "node bin/node-pg-migrate",
-    "format": "prettier --write .",
-    "lint": "eslint . bin/* --ext .js,.ts",
-    "lintfix": "npm run lint -- --fix && prettier --write *.json *.md docs/*.md",
-    "prepare": "npm run build",
-    "docs:preview": "docsify serve docs"
-  },
-  "lint-staged": {
-    "*.js": [
-      "npm run lintfix"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+  "engines": {
+    "node": ">=12.20.0"
   }
 }
