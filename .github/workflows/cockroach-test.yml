@@ -24,11 +24,6 @@ jobs:
         image: cockroachdb/cockroach:v${{ matrix.cockroach_version }}
         env:
           DATABASE_URL: postgresql://root@localhost:26257/integration_test
-        # Set health checks to wait until cockroach has started
-        options: >-
-          start
-          --insecure
-          --host=localhost
         ports:
           # Maps tcp port 26257 on service container to the host
           - 26257:26257
