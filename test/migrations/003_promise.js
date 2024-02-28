@@ -1,4 +1,4 @@
 exports.up = () =>
   new Promise((resolve) => {
-    setTimeout(resolve, 10)
-  })
+    setTimeout(resolve, 10);
+  });

@@ -3,11 +3,11 @@
 When you run `node-pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.shorthands = undefined
+exports.shorthands = undefined;
 
-exports.up = function up(pgm) {}
+exports.up = function up(pgm) {};
 
-exports.down = function down(pgm) {}
+exports.down = function down(pgm) {};
 ```
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
@@ -32,9 +32,9 @@ In some cases, you may want to perform some async operation during a migration, 
 ```javascript
 exports.up = function up(pgm, run) {
   doSomethingAsync(function () {
-    run()
-  })
-}
+    run();
+  });
+};
 ```
 
 Another way how to perform some async operation is to return [Promise](https://promisesaplus.com/) from `up` or `down` function. Example:
@@ -43,9 +43,9 @@ Another way how to perform some async operation is to return [Promise](https://p
 exports.up = function (pgm) {
   return new Promise((resolve) => {
     // doSomethingAsync
-    resolve()
-  })
-}
+    resolve();
+  });
+};
 ```
 
 or
@@ -53,7 +53,7 @@ or
 ```javascript
 exports.up = async (pgm) => {
   // doSomethingAsync
-}
+};
 ```
 
 ### Using schemas
@@ -73,7 +73,7 @@ CREATE TABLE "my_schema"."my_table_name" (
 #### Type
 
 ```ts
-type Name = string | { schema: string; name: string }
+type Name = string | { schema: string; name: string };
 ```
 
 ### Locking

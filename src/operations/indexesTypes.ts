@@ -1,39 +1,39 @@
-import { Name, DropOptions } from './generalTypes'
+import { DropOptions, Name } from './generalTypes';
 
 export interface IndexColumn {
-  name: string
-  opclass?: Name
-  sort?: 'ASC' | 'DESC'
+  name: string;
+  opclass?: Name;
+  sort?: 'ASC' | 'DESC';
 }
 
 export interface CreateIndexOptions {
-  name?: string
-  unique?: boolean
-  where?: string
-  concurrently?: boolean
-  ifNotExists?: boolean
+  name?: string;
+  unique?: boolean;
+  where?: string;
+  concurrently?: boolean;
+  ifNotExists?: boolean;
   /**
    * @deprecated should be parameter of IndexColumn
    */
-  opclass?: Name
-  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin'
-  include?: string | string[]
+  opclass?: Name;
+  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
+  include?: string | string[];
 }
 
 export interface DropIndexOptions extends DropOptions {
-  unique?: boolean
-  name?: string
-  concurrently?: boolean
+  unique?: boolean;
+  name?: string;
+  concurrently?: boolean;
 }
 
 type CreateIndexFn = (
   tableName: Name,
   columns: string | (string | IndexColumn)[],
-  options?: CreateIndexOptions & DropIndexOptions,
-) => string | string[]
-export type CreateIndex = CreateIndexFn & { reverse: CreateIndexFn }
+  options?: CreateIndexOptions & DropIndexOptions
+) => string | string[];
+export type CreateIndex = CreateIndexFn & { reverse: CreateIndexFn };
 export type DropIndex = (
   tableName: Name,
   columns: string | (string | IndexColumn)[],
-  options?: DropIndexOptions,
-) => string | string[]
+  options?: DropIndexOptions
+) => string | string[];

@@ -7,7 +7,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createMaterializedView(
     'mvx',
     {
@@ -17,9 +17,9 @@ exports.up = (pgm) => {
         autovacuum_vacuum_threshold: 50,
       },
     },
-    'SELECT id, string FROM tmv',
-  )
-  pgm.renameMaterializedView('mvx', 'mv')
-  pgm.renameMaterializedViewColumn('mv', 'strx', 'str')
-  pgm.refreshMaterializedView('mv')
-}
+    'SELECT id, string FROM tmv'
+  );
+  pgm.renameMaterializedView('mvx', 'mv');
+  pgm.renameMaterializedViewColumn('mv', 'strx', 'str');
+  pgm.refreshMaterializedView('mv');
+};

@@ -4,7 +4,7 @@ exports.up = (pgm) => {
       autovacuum_enabled: false,
       autovacuum_vacuum_threshold: 10,
     },
-  })
-}
+  });
+};
 
-exports.down = () => null
+exports.down = () => null;

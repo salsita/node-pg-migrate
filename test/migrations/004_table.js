@@ -1,4 +1,4 @@
-exports.comment = 'comment on table t2'
+exports.comment = 'comment on table t2';
 
 exports.up = (pgm) => {
   pgm.createTable('t1', {
@@ -9,7 +9,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createTable(
     't2',
     {
@@ -19,6 +19,6 @@ exports.up = (pgm) => {
     {
       ifNotExists: true,
       comment: exports.comment,
-    },
-  )
-}
+    }
+  );
+};

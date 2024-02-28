@@ -1,4 +1,4 @@
-exports.params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }]
+exports.params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }];
 
 exports.up = (pgm) => {
   pgm.createFunction(
@@ -12,6 +12,6 @@ exports.up = (pgm) => {
 BEGIN
   return $1 + arg2;
 END;
-  `,
-  )
-}
+  `
+  );
+};
