@@ -93,7 +93,7 @@ See all by running `node-pg-migrate --help`.
 Most of the configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
-e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/main/CHANGELOG.md#v260) will take it into account)
 
 ### JSON Configuration
 
