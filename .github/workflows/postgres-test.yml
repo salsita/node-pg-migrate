@@ -264,6 +264,7 @@ jobs:
         image: postgres:${{ matrix.postgres_version }}-alpine
         env:
           POSTGRES_USER: ubuntu
+          # can't use characters @#?/ in password - they have special meaning in url
           POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
           POSTGRES_DB: integration_test
         # Set health checks to wait until postgres has started
@@ -302,9 +303,7 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
         env:
-          POSTGRES_USER: ubuntu
-          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\
-          POSTGRES_DB: integration_test
+          DATABASE_URL: postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/integration_test
 
   password-2-test:
     runs-on: ubuntu-latest
@@ -320,6 +319,7 @@ jobs:
         image: postgres:${{ matrix.postgres_version }}-alpine
         env:
           POSTGRES_USER: ubuntu
+          # can't use characters @#?/ in password - they have special meaning in url
           POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
           POSTGRES_DB: integration_test
         # Set health checks to wait until postgres has started
@@ -643,7 +643,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: $(npm bin)/ts-node test/ts/customRunnerDBUrl.ts
+        run: pnpm ts-node test/ts/customRunnerDBUrl.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -697,7 +697,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: $(npm bin)/ts-node test/ts/customRunnerDBClient.ts
+        run: pnpm ts-node test/ts/customRunnerDBClient.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -751,6 +751,6 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: $(npm bin)/ts-node test/ts/customRunnerUndefCount.ts
+        run: pnpm ts-node test/ts/customRunnerUndefCount.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
