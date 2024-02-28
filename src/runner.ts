@@ -215,7 +215,14 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
     const toRun: Migration[] = getMigrationsToRun(options, runNames, migrations)
 
     if (!toRun.length) {
-      logger.info('No migrations to run!')
+      const messageToPrint = typeof options.onNoMigrationsToRunMessage === 'undefined'
+        ? 'No migrations to run!'
+        : options.onNoMigrationsToRunMessage;
+
+      if (messageToPrint) {
+        logger.info('No migrations to run!')
+      }
+      
       return []
     }
 
