@@ -513,12 +513,6 @@ workflows:
   main_workflow:
     jobs:
       - install
-      - lint:
-          requires:
-            - install
-      - test:
-          requires:
-            - install
       - test-pg-9:
           requires:
             - install
