@@ -319,8 +319,7 @@ jobs:
         image: postgres:${{ matrix.postgres_version }}-alpine
         env:
           POSTGRES_USER: ubuntu
-          # can't use characters @#?/ in password - they have special meaning in url
-          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
+          POSTGRES_PASSWORD: 123456abcdefghABCDEFGH~`!@#$%^&*-_=+{}[]()<>,.;:\"'?|/\\
           POSTGRES_DB: integration_test
         # Set health checks to wait until postgres has started
         options: >-
