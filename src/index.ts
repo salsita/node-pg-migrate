@@ -1,6 +1,6 @@
 import runner from './runner'
 import { Migration } from './migration'
-import { RunnerOption, MigrationBuilder, PgType } from './types'
+import { RunnerOption, MigrationBuilder, MigrationBuilderActions, PgType } from './types'
 import PgLiteral from './operations/PgLiteral'
 import {
   PgLiteralValue,
@@ -119,10 +119,11 @@ import {
 } from './operations/viewsMaterializedTypes'
 
 export {
+  PgType,
   PgLiteral,
   Migration,
-  PgType,
   MigrationBuilder,
+  MigrationBuilderActions,
   RunnerOption,
   PgLiteralValue,
   Value,

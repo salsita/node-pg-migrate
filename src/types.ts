@@ -216,10 +216,6 @@ export interface RunnerOptionConfig {
    */
   schema?: string | string[]
   /**
-   * The directory containing your migration files.
-   */
-  dir: string
-  /**
    * Check order of migrations before running them.
    */
   checkOrder?: boolean
@@ -235,10 +231,6 @@ export interface RunnerOptionConfig {
    * Treats `count` as timestamp.
    */
   timestamp?: boolean
-  /**
-   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
-   */
-  ignorePattern?: string
   /**
    * Run only migration with this name.
    */
@@ -284,6 +276,29 @@ export interface RunnerOptionConfig {
   verbose?: boolean
 }
 
+export interface RunnerOptionDir {
+  /**
+   * The directory containing your migration files.
+   */
+  dir: string
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   */
+  ignorePattern?: string
+}
+
+export interface RunnerOptionMigrations {
+  /**
+   * A dictionary containing migrations to run.
+   *
+   * The object can follow th
+   */
+  migrations: Record<
+    string,
+    string | MigrationBuilderActions | (() => MigrationBuilderActions | Promise<MigrationBuilderActions>)
+  >
+}
+
 export interface RunnerOptionUrl {
   /**
    * Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)
@@ -300,4 +315,6 @@ export interface RunnerOptionClient {
   dbClient: ClientBase
 }
 
-export type RunnerOption = RunnerOptionConfig & (RunnerOptionClient | RunnerOptionUrl)
+export type RunnerOption = RunnerOptionConfig &
+  (RunnerOptionClient | RunnerOptionUrl) &
+  (RunnerOptionDir | RunnerOptionMigrations)
