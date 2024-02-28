@@ -260,6 +260,9 @@ function readTsconfig() {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       const config = fs.readFileSync(path.resolve(process.cwd(), tsconfigPath), { encoding: 'utf-8' })
       tsconfig = json5 ? json5.parse(config) : JSON.parse(config)
+      if (tsconfig['ts-node']) {
+        tsconfig = { ...tsconfig, ...tsconfig['ts-node'] }
+      }
     } catch (err) {
       console.error("Can't load tsconfig.json:", err)
     }
