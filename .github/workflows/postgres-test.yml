@@ -1,0 +1,61 @@
+name: Postgres Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:9.6-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    name: 'Postgres Test: pg-9.6, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          # Required for docs/versions tests
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up -- -m test/migrations && pnpm run migrate down 0 -- -m test/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
