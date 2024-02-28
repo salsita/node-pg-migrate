@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node_version: [18, 20]
-        postgres_version: [9.6, 10.23, 11.22, 12.18, 13.14, 14.11]
+        postgres_version: [12.18, 13.14, 14.11, 15.6, 16.2]
       fail-fast: false
     timeout-minutes: 10
 
