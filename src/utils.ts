@@ -21,6 +21,7 @@ export const createSchemalize = (
       const { schema, name } = v;
       return (schema ? `${transform(schema)}.` : '') + transform(name);
     }
+
     return transform(v);
   };
 };
@@ -29,7 +30,6 @@ export const createSchemalize = (
 export class StringIdGenerator {
   private ids: number[] = [0];
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(private readonly chars = 'abcdefghijklmnopqrstuvwxyz') {}
 
   next() {
@@ -44,8 +44,10 @@ export class StringIdGenerator {
       if (this.ids[i] < this.chars.length) {
         return;
       }
+
       this.ids[i] = 0;
     }
+
     this.ids.unshift(0);
   }
 }
@@ -60,9 +62,11 @@ export const escapeValue = (val: Value): string | number => {
   if (val === null) {
     return 'NULL';
   }
+
   if (typeof val === 'boolean') {
     return val.toString();
   }
+
   if (typeof val === 'string') {
     let dollars: string;
     const ids = new StringIdGenerator();
@@ -71,18 +75,23 @@ export const escapeValue = (val: Value): string | number => {
       index = ids.next();
       dollars = `$pg${index}$`;
     } while (val.indexOf(dollars) >= 0);
+
     return `${dollars}${val}${dollars}`;
   }
+
   if (typeof val === 'number') {
     return val;
   }
+
   if (Array.isArray(val)) {
     const arrayStr = val.map(escapeValue).join(',').replace(/ARRAY/g, '');
     return `ARRAY[${arrayStr}]`;
   }
+
   if (isPgLiteral(val)) {
     return val.value;
   }
+
   return '';
 };
 
@@ -91,9 +100,7 @@ export const createTransformer =
     Object.keys(d || {}).reduce((str: string, p) => {
       const v = d?.[p];
       return str.replace(
-        // eslint-disable-next-line security/detect-non-literal-regexp
         new RegExp(`{${p}}`, 'g'),
-        // eslint-disable-next-line no-nested-ternary
         v === undefined
           ? ''
           : typeof v === 'string' ||
@@ -135,7 +142,6 @@ export const applyTypeAdapters = (type: string): string =>
 const toType = (type: string | ColumnDefinition): ColumnDefinition =>
   typeof type === 'string' ? { type } : type;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const removeType = ({ type, ...rest }: Partial<ColumnDefinition>) => rest;
 
 export const applyType = (
@@ -162,6 +168,7 @@ export const applyType = (
       types.push(ext.type);
     }
   }
+
   return {
     ...ext,
     ...options,
@@ -180,15 +187,19 @@ const formatParam = (mOptions: MigrationOptions) => (param: FunctionParam) => {
   if (mode) {
     options.push(mode);
   }
+
   if (name) {
     options.push(mOptions.literal(name));
   }
+
   if (type) {
     options.push(type);
   }
+
   if (defaultValue) {
     options.push(`DEFAULT ${escapeValue(defaultValue)}`);
   }
+
   return options.join(' ');
 };
 

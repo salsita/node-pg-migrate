@@ -14,6 +14,7 @@ export function dropExtension(mOptions: MigrationOptions) {
       return `DROP EXTENSION${ifExistsStr} ${extensionStr}${cascadeStr};`;
     });
   };
+
   return _drop;
 }
 
@@ -28,6 +29,7 @@ export function createExtension(mOptions: MigrationOptions) {
       return `CREATE EXTENSION${ifNotExistsStr} ${extensionStr}${schemaStr};`;
     });
   };
+
   _create.reverse = dropExtension(mOptions);
   return _create;
 }

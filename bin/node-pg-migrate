@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable strict, no-console */
 
 'use strict';
 
@@ -17,7 +16,6 @@ process.on('uncaughtException', (err) => {
 
 function tryRequire(moduleName) {
   try {
-    // eslint-disable-next-line import/no-dynamic-require,global-require,security/detect-non-literal-require
     return require(moduleName);
   } catch (err) {
     if (err.code !== 'MODULE_NOT_FOUND') {
@@ -260,7 +258,6 @@ function readTsconfig() {
     const json5 = tryRequire('json5');
 
     try {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const config = fs.readFileSync(
         path.resolve(process.cwd(), tsconfigPath),
         { encoding: 'utf-8' }
@@ -368,7 +365,6 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName = argv[configFileArg];
 if (configFileName) {
-  // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
   const jsonConfig = require(path.resolve(configFileName));
   readJson(jsonConfig);
 }
@@ -449,7 +445,6 @@ if (action === 'create') {
   let migrationName;
 
   if (updownArg !== null) {
-    // eslint-disable-next-line eqeqeq
     if (parseInt(updownArg, 10) == updownArg) {
       numMigrations = parseInt(updownArg, 10);
     } else {

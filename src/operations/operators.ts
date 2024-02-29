@@ -40,6 +40,7 @@ export function dropOperator(mOptions: MigrationOptions) {
 
     return `DROP OPERATOR${ifExistsStr} ${operatorNameStr}(${leftStr}, ${rightStr})${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -62,30 +63,39 @@ export function createOperator(mOptions: MigrationOptions) {
     if (left) {
       defs.push(`LEFTARG = ${mOptions.literal(left)}`);
     }
+
     if (right) {
       defs.push(`RIGHTARG = ${mOptions.literal(right)}`);
     }
+
     if (commutator) {
       defs.push(`COMMUTATOR = ${mOptions.schemalize(commutator)}`);
     }
+
     if (negator) {
       defs.push(`NEGATOR = ${mOptions.schemalize(negator)}`);
     }
+
     if (restrict) {
       defs.push(`RESTRICT = ${mOptions.literal(restrict)}`);
     }
+
     if (join) {
       defs.push(`JOIN = ${mOptions.literal(join)}`);
     }
+
     if (hashes) {
       defs.push('HASHES');
     }
+
     if (merges) {
       defs.push('MERGES');
     }
+
     const operatorNameStr = mOptions.schemalize(operatorName);
     return `CREATE OPERATOR ${operatorNameStr} (${defs.join(', ')});`;
   };
+
   _create.reverse = dropOperator(mOptions);
   return _create;
 }
@@ -102,6 +112,7 @@ export function dropOperatorFamily(mOptions: MigrationOptions) {
     const cascadeStr = cascade ? ' CASCADE' : '';
     return `DROP OPERATOR FAMILY ${ifExistsStr} ${operatorFamilyNameStr} USING ${indexMethod}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -110,6 +121,7 @@ export function createOperatorFamily(mOptions: MigrationOptions) {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     return `CREATE OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod};`;
   };
+
   _create.reverse = dropOperatorFamily(mOptions);
   return _create;
 }
@@ -122,6 +134,7 @@ const operatorMap =
       if (params.length > 2) {
         throw new Error("Operator can't have more than 2 parameters");
       }
+
       const paramsStr = params.length > 0 ? formatParams(params, mOptions) : '';
 
       return `OPERATOR ${number} ${nameStr}${paramsStr}`;
@@ -149,8 +162,10 @@ export const removeFromOperatorFamily = (mOptions: MigrationOptions) => {
     return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} DROP
   ${operatorListStr};`;
   };
+
   return method;
 };
+
 export const addToOperatorFamily = (mOptions: MigrationOptions) => {
   const method: AddToOperatorFamily = (
     operatorFamilyName,
@@ -165,6 +180,7 @@ export const addToOperatorFamily = (mOptions: MigrationOptions) => {
     return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} ADD
   ${operatorListStr};`;
   };
+
   method.reverse = removeFromOperatorFamily(mOptions);
   return method;
 };
@@ -180,6 +196,7 @@ export function renameOperatorFamily(mOptions: MigrationOptions) {
 
     return `ALTER OPERATOR FAMILY ${oldOperatorFamilyNameStr} USING ${indexMethod} RENAME TO ${newOperatorFamilyNameStr};`;
   };
+
   _rename.reverse = (
     oldOperatorFamilyName,
     indexMethod,
@@ -201,6 +218,7 @@ export function dropOperatorClass(mOptions: MigrationOptions) {
 
     return `DROP OPERATOR CLASS ${ifExistsStr} ${operatorClassNameStr} USING ${indexMethod}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -225,6 +243,7 @@ export function createOperatorClass(mOptions: MigrationOptions) {
     return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr} ${familyStr} AS
   ${operatorListStr};`;
   };
+
   _create.reverse = (
     operatorClassName,
     type,
@@ -246,6 +265,7 @@ export function renameOperatorClass(mOptions: MigrationOptions) {
 
     return `ALTER OPERATOR CLASS ${oldOperatorClassNameStr} USING ${indexMethod} RENAME TO ${newOperatorClassNameStr};`;
   };
+
   _rename.reverse = (oldOperatorClassName, indexMethod, newOperatorClassName) =>
     _rename(newOperatorClassName, indexMethod, oldOperatorClassName);
   return _rename;

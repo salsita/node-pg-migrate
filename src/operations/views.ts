@@ -34,6 +34,7 @@ export function dropView(mOptions: MigrationOptions) {
     const viewNameStr = mOptions.literal(viewName);
     return `DROP VIEW${ifExistsStr} ${viewNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -66,6 +67,7 @@ export function createView(mOptions: MigrationOptions) {
 
     return `CREATE${replaceStr}${temporaryStr}${recursiveStr} VIEW ${viewNameStr}${columnStr}${withOptionsStr} AS ${definition}${checkOptionStr};`;
   };
+
   _create.reverse = dropView(mOptions);
   return _create;
 }
@@ -82,6 +84,7 @@ export function alterView(mOptions: MigrationOptions) {
         );
       }
     }
+
     const clauses = [];
     const withOptions = Object.keys(options)
       .filter((key) => options[key] !== null)
@@ -90,6 +93,7 @@ export function alterView(mOptions: MigrationOptions) {
     if (withOptions) {
       clauses.push(`SET (${withOptions})`);
     }
+
     const resetOptions = Object.keys(options)
       .filter((key) => options[key] === null)
       .join(', ');
@@ -101,6 +105,7 @@ export function alterView(mOptions: MigrationOptions) {
       .map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`)
       .join('\n');
   };
+
   return _alter;
 }
 
@@ -113,6 +118,7 @@ export function alterViewColumn(mOptions: MigrationOptions) {
     } else if (defaultValue !== undefined) {
       actions.push(`SET DEFAULT ${escapeValue(defaultValue)}`);
     }
+
     const viewNameStr = mOptions.literal(viewName);
     const columnNameStr = mOptions.literal(columnName);
     return actions
@@ -122,6 +128,7 @@ export function alterViewColumn(mOptions: MigrationOptions) {
       )
       .join('\n');
   };
+
   return _alter;
 }
 
@@ -131,6 +138,7 @@ export function renameView(mOptions: MigrationOptions) {
     const newViewNameStr = mOptions.literal(newViewName);
     return `ALTER VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`;
   };
+
   _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
   return _rename;
 }

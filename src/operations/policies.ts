@@ -15,12 +15,15 @@ const makeClauses = ({ role, using, check }: PolicyOptions) => {
   if (roles) {
     clauses.push(`TO ${roles}`);
   }
+
   if (using) {
     clauses.push(`USING (${using})`);
   }
+
   if (check) {
     clauses.push(`WITH CHECK (${check})`);
   }
+
   return clauses;
 };
 
@@ -32,6 +35,7 @@ export function dropPolicy(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `DROP POLICY${ifExistsStr} ${policyNameStr} ON ${tableNameStr};`;
   };
+
   return _drop;
 }
 
@@ -50,6 +54,7 @@ export function createPolicy(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `CREATE POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`;
   };
+
   _create.reverse = dropPolicy(mOptions);
   return _create;
 }
@@ -61,6 +66,7 @@ export function alterPolicy(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `ALTER POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`;
   };
+
   return _alter;
 }
 
@@ -71,6 +77,7 @@ export function renamePolicy(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `ALTER POLICY ${policyNameStr} ON ${tableNameStr} RENAME TO ${newPolicyNameStr};`;
   };
+
   _rename.reverse = (tableName, policyName, newPolicyName) =>
     _rename(tableName, newPolicyName, policyName);
   return _rename;

@@ -12,8 +12,6 @@ type Options =
   | ({ databaseUrl: string } & TestOptions)
   | ({ dbClient: Client } & TestOptions);
 
-/* eslint-disable no-console */
-// eslint-disable-next-line import/prefer-default-export
 export const run = async (options: Options): Promise<boolean> => {
   const opts: Omit<RunnerOption, 'direction'> & Options = {
     migrationsTable: 'migrations',
@@ -33,6 +31,7 @@ export const run = async (options: Options): Promise<boolean> => {
       );
       return false;
     }
+
     console.log('Up success');
     console.log(upResult);
     const downResult = await runner({
@@ -45,6 +44,7 @@ export const run = async (options: Options): Promise<boolean> => {
       );
       return false;
     }
+
     console.log('Down success');
     console.log(downResult);
     return true;

@@ -71,6 +71,7 @@ const db = (
             logger.error(`could not connect to postgres: ${inspect(err)}`);
             return reject(err);
           }
+
           connectionStatus = ConnectionStatus.CONNECTED;
           return resolve();
         });
@@ -110,6 +111,7 @@ ${string}
 ${err}
 `);
       }
+
       throw err;
     }
   };
@@ -121,6 +123,7 @@ ${err}
     const { rows } = await query(queryTextOrConfig, values);
     return rows;
   };
+
   const column: DBConnection['column'] = async (
     columnName: string,
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,

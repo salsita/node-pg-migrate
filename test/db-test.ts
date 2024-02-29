@@ -14,8 +14,6 @@ class Client {
   /* eslint-enable */
 }
 
-/* eslint-disable no-unused-expressions */
-
 const pgMock = {
   Client,
 };

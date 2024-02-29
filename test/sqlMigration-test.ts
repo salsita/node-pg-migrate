@@ -2,8 +2,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { getActions } from '../src/sqlMigration';
 
-/* eslint-disable no-unused-expressions */
-
 describe('lib/sqlMigration', () => {
   describe('getActions', () => {
     it('without comments', () => {

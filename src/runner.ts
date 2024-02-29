@@ -35,8 +35,7 @@ const loadMigrations = async (
           const actions: MigrationBuilderActions =
             path.extname(filePath) === '.sql'
               ? await migrateSqlFile(filePath)
-              : // eslint-disable-next-line global-require,import/no-dynamic-require,security/detect-non-literal-require
-                require(path.relative(__dirname, filePath));
+              : require(path.relative(__dirname, filePath));
           shorthands = { ...shorthands, ...actions.shorthands };
           return new Migration(
             db,
@@ -167,8 +166,10 @@ const getMigrationsToRun = (
         `Definitions of migrations ${deletedMigrationsStr} have been deleted.`
       );
     }
+
     return toRun as Migration[];
   }
+
   const upMigrations = migrations.filter(
     ({ name }) =>
       runNames.indexOf(name) < 0 && (!options.file || options.file === name)
@@ -210,6 +211,7 @@ const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
   } else if (typeof log === 'function') {
     loggerObject = { debug: log, info: log, warn: log, error: log };
   }
+
   return verbose
     ? loggerObject
     : {
@@ -243,10 +245,12 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
           )
         );
       }
+
       await db.query(
         `SET search_path TO ${schemas.map((s) => `"${s}"`).join(', ')}`
       );
     }
+
     if (options.migrationsSchema && options.createMigrationsSchema) {
       await db.query(
         `CREATE SCHEMA IF NOT EXISTS "${options.migrationsSchema}"`
@@ -307,6 +311,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       if (!options.noLock) {
         await unlock(db).catch((error) => logger.warn(error.message));
       }
+
       db.close();
     }
   }

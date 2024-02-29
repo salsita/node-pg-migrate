@@ -12,7 +12,7 @@ export { CreateIndex, DropIndex };
 
 function generateIndexName(
   table: Name,
-  columns: (string | IndexColumn)[],
+  columns: Array<string | IndexColumn>,
   options: CreateIndexOptions | DropIndexOptions,
   schemalize: Literal
 ) {
@@ -21,6 +21,7 @@ function generateIndexName(
       ? { schema: table.schema, name: options.name }
       : options.name;
   }
+
   const cols = columns
     .map((col) => schemalize(typeof col === 'string' ? col : col.name))
     .join('_');
@@ -42,7 +43,7 @@ function generateColumnString(column: Name, mOptions: MigrationOptions) {
 }
 
 function generateColumnsString(
-  columns: (string | IndexColumn)[],
+  columns: Array<string | IndexColumn>,
   mOptions: MigrationOptions
 ) {
   return columns
@@ -79,6 +80,7 @@ export function dropIndex(mOptions: MigrationOptions) {
 
     return `DROP INDEX${concurrentlyStr}${ifExistsStr} ${indexNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -114,6 +116,7 @@ export function createIndex(mOptions: MigrationOptions) {
         columns[lastIndex] = { ...lastColumn, opclass: options.opclass };
       }
     }
+
     const indexName = generateIndexName(
       typeof tableName === 'object' ? tableName.name : tableName,
       columns,
@@ -139,6 +142,7 @@ export function createIndex(mOptions: MigrationOptions) {
 
     return `CREATE${unique} INDEX${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString})${include}${where};`;
   };
+
   _create.reverse = dropIndex(mOptions);
   return _create;
 }

@@ -17,6 +17,7 @@ export function dropDomain(mOptions: MigrationOptions) {
     const domainNameStr = mOptions.literal(domainName);
     return `DROP DOMAIN${ifExistsStr} ${domainNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -33,15 +34,18 @@ export function createDomain(mOptions: MigrationOptions) {
     if (collation) {
       constraints.push(`COLLATE ${collation}`);
     }
+
     if (defaultValue !== undefined) {
       constraints.push(`DEFAULT ${escapeValue(defaultValue)}`);
     }
+
     if (notNull && check) {
       throw new Error('"notNull" and "check" can\'t be specified together');
     } else if (notNull || check) {
       if (constraintName) {
         constraints.push(`CONSTRAINT ${mOptions.literal(constraintName)}`);
       }
+
       if (notNull) {
         constraints.push('NOT NULL');
       } else if (check) {
@@ -58,6 +62,7 @@ export function createDomain(mOptions: MigrationOptions) {
 
     return `CREATE DOMAIN ${domainNameStr} AS ${typeStr}${constraintsStr};`;
   };
+
   _create.reverse = (domainName, type, options) =>
     dropDomain(mOptions)(domainName, options);
   return _create;
@@ -78,11 +83,13 @@ export function alterDomain(mOptions: MigrationOptions) {
     } else if (defaultValue !== undefined) {
       actions.push(`SET DEFAULT ${escapeValue(defaultValue)}`);
     }
+
     if (notNull) {
       actions.push('SET NOT NULL');
     } else if (notNull === false || allowNull) {
       actions.push('DROP NOT NULL');
     }
+
     if (check) {
       actions.push(
         `${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}CHECK (${check})`
@@ -91,6 +98,7 @@ export function alterDomain(mOptions: MigrationOptions) {
 
     return `${actions.map((action) => `ALTER DOMAIN ${mOptions.literal(domainName)} ${action}`).join(';\n')};`;
   };
+
   return _alter;
 }
 
@@ -100,6 +108,7 @@ export function renameDomain(mOptions: MigrationOptions) {
     const newDomainNameStr = mOptions.literal(newDomainName);
     return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`;
   };
+
   _rename.reverse = (domainName, newDomainName) =>
     _rename(newDomainName, domainName);
   return _rename;

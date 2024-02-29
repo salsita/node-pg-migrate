@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 import { expect } from 'chai';
 import sinon, { SinonSpy } from 'sinon';
 import { DBConnection } from '../src/db';
@@ -9,8 +8,8 @@ const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
 const migrationsTable = 'pgmigrations';
 
-const actionsCallback = require(`./${callbackMigration}`); // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
-const actionsPromise = require(`./${promiseMigration}`); // eslint-disable-line import/no-dynamic-require,security/detect-non-literal-require,@typescript-eslint/no-var-requires
+const actionsCallback = require(`./${callbackMigration}`);
+const actionsPromise = require(`./${promiseMigration}`);
 
 describe('lib/migration', () => {
   const dbMock = {} as DBConnection;
@@ -122,6 +121,7 @@ describe('lib/migration', () => {
       } catch (err) {
         error = err;
       }
+
       // expecting outside the catch block ensures that the test will fail if the
       // an exception is not caught
       expect(error.toString()).to.include(

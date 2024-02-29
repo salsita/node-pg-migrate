@@ -4,7 +4,7 @@ import { MigrationBuilderActions } from './types';
 const { readFile } = fs.promises;
 
 const createMigrationCommentRegex = (direction: 'up' | 'down') =>
-  new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im'); // eslint-disable-line security/detect-non-literal-regexp
+  new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
 
 export const getActions = (content: string): MigrationBuilderActions => {
   const upMigrationCommentRegex = createMigrationCommentRegex('up');

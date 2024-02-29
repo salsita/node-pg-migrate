@@ -332,6 +332,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
               `Impossible to automatically infer down migration for "${name}"`
             );
           }
+
           this._steps = this._steps.concat(operation.reverse(...args));
         } else {
           this._steps = this._steps.concat(operation(...args));
@@ -460,8 +461,10 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
         if (this._REVERSE_MODE) {
           throw new Error('Impossible to automatically infer down migration');
         }
+
         return operation(...args);
       };
+
     /* eslint-enable @typescript-eslint/no-explicit-any */
     this.db = {
       query: wrapDB(db.query),
@@ -492,4 +495,3 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     return this._REVERSE_MODE ? this._steps.slice().reverse() : this._steps;
   }
 }
-/* eslint-enable security/detect-non-literal-fs-filename */

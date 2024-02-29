@@ -21,6 +21,7 @@ export function dropTrigger(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `DROP TRIGGER${ifExistsStr} ${triggerNameStr} ON ${tableNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -48,13 +49,16 @@ export function createTrigger(mOptions: MigrationOptions) {
     if (constraint) {
       when = 'AFTER';
     }
+
     if (!when) {
       throw new Error('"when" (BEFORE/AFTER/INSTEAD OF) have to be specified');
     }
+
     const isInsteadOf = /instead\s+of/i.test(when);
     if (isInsteadOf) {
       level = 'ROW';
     }
+
     if (definition) {
       functionName = functionName === undefined ? triggerName : functionName;
     }
@@ -62,9 +66,11 @@ export function createTrigger(mOptions: MigrationOptions) {
     if (!functionName) {
       throw new Error("Can't determine function name");
     }
+
     if (isInsteadOf && condition) {
       throw new Error("INSTEAD OF trigger can't have condition specified");
     }
+
     if (!operations) {
       throw new Error(
         '"operation" (INSERT/UPDATE[ OF ...]/DELETE/TRUNCATE) have to be specified'
@@ -128,6 +134,7 @@ export function renameTrigger(mOptions: MigrationOptions) {
     const newTriggerNameStr = mOptions.literal(newTriggerName);
     return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`;
   };
+
   _rename.reverse = (tableName, oldTriggerName, newTriggerName) =>
     _rename(tableName, newTriggerName, oldTriggerName);
   return _rename;

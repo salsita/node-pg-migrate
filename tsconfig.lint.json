@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "strict": true,
+    "noEmit": true,
+    "lib": ["ES2019"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noImplicitOverride": true,
+    "allowJs": true
+  }
+}
