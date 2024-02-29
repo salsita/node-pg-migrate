@@ -21,6 +21,7 @@ function tryRequire(moduleName) {
     if (err.code !== 'MODULE_NOT_FOUND') {
       throw err;
     }
+
     return null;
   }
 }
@@ -266,6 +267,7 @@ function readTsconfig() {
     } catch (err) {
       console.error("Can't load tsconfig.json:", err);
     }
+
     const tsnode = tryRequire('ts-node');
     if (!tsnode) {
       console.error("For TypeScript support, please install 'ts-node' module");
@@ -361,6 +363,7 @@ if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
 }
+
 process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName = argv[configFileArg];
@@ -368,6 +371,7 @@ if (configFileName) {
   const jsonConfig = require(path.resolve(configFileName));
   readJson(jsonConfig);
 }
+
 readTsconfig();
 
 const action = argv._.shift();
@@ -423,6 +427,7 @@ if (action === 'create') {
       );
       process.exit(1);
     }
+
     DB_CONNECTION = cp;
   }
 
@@ -445,6 +450,7 @@ if (action === 'create') {
   let migrationName;
 
   if (updownArg !== null) {
+    // eslint-disable-next-line eqeqeq
     if (parseInt(updownArg, 10) == updownArg) {
       numMigrations = parseInt(updownArg, 10);
     } else {
@@ -487,6 +493,7 @@ if (action === 'create') {
       decamelize: DECAMELIZE,
     };
   };
+
   const promise =
     action === 'redo'
       ? migrationRunner(options('down')).then(() =>
