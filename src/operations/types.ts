@@ -32,6 +32,7 @@ export function dropType(mOptions: MigrationOptions) {
     const typeNameStr = mOptions.literal(typeName);
     return `DROP TYPE${ifExistsStr} ${typeNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -42,6 +43,7 @@ export function createType(mOptions: MigrationOptions) {
       const typeNameStr = mOptions.literal(typeName);
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`;
     }
+
     const attributes = Object.entries(options)
       .map(([attributeName, attribute]) => {
         const typeStr = applyType(attribute, mOptions.typeShorthands).type;
@@ -50,6 +52,7 @@ export function createType(mOptions: MigrationOptions) {
       .join(',\n');
     return `CREATE TYPE ${mOptions.literal(typeName)} AS (\n${attributes}\n);`;
   };
+
   _create.reverse = dropType(mOptions);
   return _create;
 }
@@ -65,6 +68,7 @@ export function dropTypeAttribute(mOptions: MigrationOptions) {
     const attributeNameStr = mOptions.literal(attributeName);
     return `ALTER TYPE ${typeNameStr} DROP ATTRIBUTE ${attributeNameStr}${ifExistsStr};`;
   };
+
   return _drop;
 }
 
@@ -80,6 +84,7 @@ export function addTypeAttribute(mOptions: MigrationOptions) {
 
     return `ALTER TYPE ${typeNameStr} ADD ATTRIBUTE ${attributeNameStr} ${typeStr};`;
   };
+
   _alterAttributeAdd.reverse = dropTypeAttribute(mOptions);
   return _alterAttributeAdd;
 }
@@ -101,6 +106,7 @@ export function addTypeValue(mOptions: MigrationOptions) {
     if (before && after) {
       throw new Error('"before" and "after" can\'t be specified together');
     }
+
     const beforeStr = before ? ` BEFORE ${escapeValue(before)}` : '';
     const afterStr = after ? ` AFTER ${escapeValue(after)}` : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -109,6 +115,7 @@ export function addTypeValue(mOptions: MigrationOptions) {
 
     return `ALTER TYPE ${typeNameStr} ADD VALUE${ifNotExistsStr} ${valueStr}${beforeStr}${afterStr};`;
   };
+
   return _add;
 }
 
@@ -118,6 +125,7 @@ export function renameType(mOptions: MigrationOptions) {
     const newTypeNameStr = mOptions.literal(newTypeName);
     return `ALTER TYPE ${typeNameStr} RENAME TO ${newTypeNameStr};`;
   };
+
   _rename.reverse = (typeName, newTypeName) => _rename(newTypeName, typeName);
   return _rename;
 }
@@ -133,6 +141,7 @@ export function renameTypeAttribute(mOptions: MigrationOptions) {
     const newAttributeNameStr = mOptions.literal(newAttributeName);
     return `ALTER TYPE ${typeNameStr} RENAME ATTRIBUTE ${attributeNameStr} TO ${newAttributeNameStr};`;
   };
+
   _rename.reverse = (typeName, attributeName, newAttributeName) =>
     _rename(typeName, newAttributeName, attributeName);
   return _rename;
@@ -145,6 +154,7 @@ export function renameTypeValue(mOptions: MigrationOptions) {
     const typeNameStr = mOptions.literal(typeName);
     return `ALTER TYPE ${typeNameStr} RENAME VALUE ${valueStr} TO ${newValueStr};`;
   };
+
   _rename.reverse = (typeName, value, newValue) =>
     _rename(typeName, newValue, value);
   return _rename;

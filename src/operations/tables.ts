@@ -56,12 +56,15 @@ const parseReferences = (options: ReferencesOptions, literal: Literal) => {
   if (match) {
     clauses.push(`MATCH ${match}`);
   }
+
   if (onDelete) {
     clauses.push(`ON DELETE ${onDelete}`);
   }
+
   if (onUpdate) {
     clauses.push(`ON UPDATE ${onUpdate}`);
   }
+
   return clauses.join(' ');
 };
 
@@ -143,21 +146,27 @@ const parseColumns = (
       if (collation) {
         constraints.push(`COLLATE ${collation}`);
       }
+
       if (defaultValue !== undefined) {
         constraints.push(`DEFAULT ${escapeValue(defaultValue)}`);
       }
+
       if (unique) {
         constraints.push('UNIQUE');
       }
+
       if (primaryKey) {
         constraints.push('PRIMARY KEY');
       }
+
       if (notNull) {
         constraints.push('NOT NULL');
       }
+
       if (check) {
         constraints.push(`CHECK (${check})`);
       }
+
       if (references) {
         const name =
           referencesConstraintName ||
@@ -178,9 +187,11 @@ const parseColumns = (
           );
         }
       }
+
       if (deferrable) {
         constraints.push(parseDeferrable(options));
       }
+
       if (sequenceGenerated) {
         const sequenceOptions = parseSequenceOptions(
           extendingTypeShorthands,
@@ -190,6 +201,7 @@ const parseColumns = (
           `GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`
         );
       }
+
       if (expressionGenerated) {
         constraints.push(`GENERATED ALWAYS AS (${expressionGenerated}) STORED`);
       }
@@ -236,6 +248,7 @@ const parseConstraints = (
       constraints.push(`CONSTRAINT ${name} CHECK (${check})`);
     }
   }
+
   if (unique) {
     const uniqueArray: Array<Name | Name[]> = Array.isArray(unique)
       ? unique
@@ -253,6 +266,7 @@ const parseConstraints = (
       );
     });
   }
+
   if (primaryKey) {
     const name = literal(optionName || `${tableName}_pkey`);
     const key = (Array.isArray(primaryKey) ? primaryKey : [primaryKey])
@@ -260,6 +274,7 @@ const parseConstraints = (
       .join(', ');
     constraints.push(`CONSTRAINT ${name} PRIMARY KEY (${key})`);
   }
+
   if (foreignKeys) {
     (Array.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach((fk) => {
       const { columns, referencesConstraintName, referencesConstraintComment } =
@@ -286,6 +301,7 @@ const parseConstraints = (
       }
     });
   }
+
   if (exclude) {
     const name = literal(optionName || `${tableName}_excl`);
     constraints.push(`CONSTRAINT ${name} EXCLUDE ${exclude}`);
@@ -296,6 +312,7 @@ const parseConstraints = (
       (constraint) => `${constraint} ${parseDeferrable(options)}`
     );
   }
+
   if (comment) {
     if (!optionName)
       throw new Error('cannot comment on unspecified constraints');
@@ -307,6 +324,7 @@ const parseConstraints = (
       )
     );
   }
+
   return {
     constraints,
     comments,
@@ -349,6 +367,7 @@ export function dropTable(mOptions: MigrationOptions) {
     const tableNameStr = mOptions.literal(tableName);
     return `DROP TABLE${ifExistsStr} ${tableNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -402,8 +421,10 @@ ${formatLines(tableDefinition)}
     if (typeof comment !== 'undefined') {
       comments.push(makeComment('TABLE', mOptions.literal(tableName), comment));
     }
+
     return `${createTableQuery}${comments.length > 0 ? `\n${comments.join('\n')}` : ''}`;
   };
+
   _create.reverse = dropTable(mOptions);
   return _create;
 }
@@ -414,9 +435,11 @@ export function alterTable(mOptions: MigrationOptions) {
     if (options.levelSecurity) {
       alterDefinition.push(`${options.levelSecurity} ROW LEVEL SECURITY`);
     }
+
     return `ALTER TABLE ${mOptions.literal(tableName)}
   ${formatLines(alterDefinition)};`;
   };
+
   return _alter;
 }
 
@@ -426,10 +449,11 @@ export function dropColumns(mOptions: MigrationOptions) {
   const _drop: DropColumns = (tableName, columns, options = {}) => {
     const { ifExists, cascade } = options;
     if (typeof columns === 'string') {
-      columns = [columns]; // eslint-disable-line no-param-reassign
+      columns = [columns];
     } else if (!Array.isArray(columns) && typeof columns === 'object') {
-      columns = Object.keys(columns); // eslint-disable-line no-param-reassign
+      columns = Object.keys(columns);
     }
+
     const columnsStr = formatLines(
       columns.map(mOptions.literal),
       `  DROP ${ifExists ? ' IF EXISTS' : ''}`,
@@ -438,6 +462,7 @@ export function dropColumns(mOptions: MigrationOptions) {
     return `ALTER TABLE ${mOptions.literal(tableName)}
 ${columnsStr};`;
   };
+
   return _drop;
 }
 
@@ -456,6 +481,7 @@ export function addColumns(mOptions: MigrationOptions) {
       columnComments.length > 0 ? `\n${columnComments.join('\n')}` : '';
     return `${alterTableQuery}${columnCommentsStr}`;
   };
+
   _add.reverse = dropColumns(mOptions);
   return _add;
 }
@@ -481,17 +507,20 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     } else if (defaultValue !== undefined) {
       actions.push(`SET DEFAULT ${escapeValue(defaultValue)}`);
     }
+
     if (type) {
       const typeStr = applyTypeAdapters(type);
       const collationStr = collation ? ` COLLATE ${collation}` : '';
       const usingStr = using ? ` USING ${using}` : '';
       actions.push(`SET DATA TYPE ${typeStr}${collationStr}${usingStr}`);
     }
+
     if (notNull) {
       actions.push('SET NOT NULL');
     } else if (notNull === false || allowNull) {
       actions.push('DROP NOT NULL');
     }
+
     if (sequenceGenerated !== undefined) {
       if (!sequenceGenerated) {
         actions.push('DROP IDENTITY');
@@ -516,6 +545,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
         `ALTER TABLE ${mOptions.literal(tableName)}\n${columnsStr};`
       );
     }
+
     if (typeof comment !== 'undefined') {
       queries.push(
         makeComment(
@@ -525,6 +555,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
         )
       );
     }
+
     return queries.join('\n');
   };
 }
@@ -535,6 +566,7 @@ export function renameTable(mOptions: MigrationOptions) {
     const newNameStr = mOptions.literal(newName);
     return `ALTER TABLE ${tableNameStr} RENAME TO ${newNameStr};`;
   };
+
   _rename.reverse = (tableName, newName) => _rename(newName, tableName);
   return _rename;
 }
@@ -546,6 +578,7 @@ export function renameColumn(mOptions: MigrationOptions) {
     const newNameStr = mOptions.literal(newName);
     return `ALTER TABLE ${tableNameStr} RENAME ${columnNameStr} TO ${newNameStr};`;
   };
+
   _rename.reverse = (tableName, columnName, newName) =>
     _rename(tableName, newName, columnName);
   return _rename;
@@ -558,6 +591,7 @@ export function renameConstraint(mOptions: MigrationOptions) {
     const newNameStr = mOptions.literal(newName);
     return `ALTER TABLE ${tableNameStr} RENAME CONSTRAINT ${constraintNameStr} TO ${newNameStr};`;
   };
+
   _rename.reverse = (tableName, constraintName, newName) =>
     _rename(tableName, newName, constraintName);
   return _rename;
@@ -572,8 +606,10 @@ export function dropConstraint(mOptions: MigrationOptions) {
     const constraintNameStr = mOptions.literal(constraintName);
     return `ALTER TABLE ${tableNameStr} DROP CONSTRAINT${ifExistsStr} ${constraintNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
+
 export function addConstraint(mOptions: MigrationOptions) {
   const _add: CreateConstraint = (tableName, constraintName, expression) => {
     const { constraints, comments } =
@@ -596,13 +632,16 @@ export function addConstraint(mOptions: MigrationOptions) {
       ...comments,
     ].join('\n');
   };
+
   _add.reverse = (tableName, constraintName, options) => {
     if (constraintName === null) {
       throw new Error(
         `Impossible to automatically infer down migration for addConstraint without naming constraint`
       );
     }
+
     return dropConstraint(mOptions)(tableName, constraintName, options);
   };
+
   return _add;
 }

@@ -1,6 +1,5 @@
 import PgLiteral from './PgLiteral';
 
-// eslint-disable-next-line camelcase
 export type LiteralUnion<T extends string> =
   | T
   | (string & { zz_IGNORE_ME?: never });

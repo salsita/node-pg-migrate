@@ -53,13 +53,13 @@ export interface CreateExtensionOptions extends IfNotExistsOption {
 
 type StringExtension = LiteralUnion<Extension>;
 type CreateExtensionFn = (
-  extension: StringExtension | Array<StringExtension>,
+  extension: StringExtension | StringExtension[],
   options?: CreateExtensionOptions & DropOptions
 ) => string | string[];
 export type CreateExtension = CreateExtensionFn & {
   reverse: CreateExtensionFn;
 };
 export type DropExtension = (
-  extension: StringExtension | Array<StringExtension>,
+  extension: StringExtension | StringExtension[],
   dropOptions?: DropOptions
 ) => string | string[];

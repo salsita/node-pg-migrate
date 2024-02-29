@@ -25,6 +25,7 @@ exports.up = async (pgm) => {
     });
     pgm.sql('INSERT INTO "t_sequenceGenerated" DEFAULT VALUES');
   }
+
   if (isSupportedExpressionGeneratedVersion(major)) {
     pgm.createTable('t_expressionGenerated', {
       id: 'id',
@@ -43,6 +44,7 @@ exports.down = async (pgm) => {
   if (isSupportedSequenceGeneratedVersion(major)) {
     pgm.dropTable('t_sequenceGenerated');
   }
+
   if (isSupportedExpressionGeneratedVersion(major)) {
     pgm.dropTable('t_expressionGenerated');
   }

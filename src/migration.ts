@@ -58,7 +58,7 @@ export const loadMigrationFiles = async (
     .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
     .filter((file): file is string => Boolean(file))
     .sort();
-  const filter = new RegExp(`^(${ignorePattern})$`); // eslint-disable-line security/detect-non-literal-regexp
+  const filter = new RegExp(`^(${ignorePattern})$`);
   return ignorePattern === undefined
     ? files
     : files.filter((i) => !filter.test(i));
@@ -85,6 +85,7 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
       // timestamp: 1391877300255
       return Number(prefix);
     }
+
     if (prefix && prefix.length === 17) {
       // utc: 20200513070724505
       const year = prefix.substr(0, 4);
@@ -99,6 +100,7 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
       ).valueOf();
     }
   }
+
   logger.error(`Can't determine timestamp for ${prefix}`);
   return Number(prefix) || 0;
 };
@@ -118,11 +120,11 @@ export class Migration implements RunMigration {
     _filenameFormat?: FilenameFormat
   ) {
     if (typeof _language === 'string') {
-      // eslint-disable-next-line no-console
       console.warn(
         'This usage is deprecated. Please use this method with options object argument'
       );
     }
+
     const options =
       typeof _language === 'object'
         ? _language
@@ -156,9 +158,7 @@ export class Migration implements RunMigration {
 
     // copy the default migration template to the new file location
     await new Promise((resolve, reject) => {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.createReadStream(templateFileName)
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         .pipe(fs.createWriteStream(newFile))
         .on('close', resolve)
         .on('error', reject);

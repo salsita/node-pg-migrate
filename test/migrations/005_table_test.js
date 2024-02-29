@@ -15,22 +15,24 @@ exports.up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_reference;');
   try {
     await pgm.db.query('INSERT INTO t2(id2) VALUES (1);');
-    throw 1; // eslint-disable-line no-throw-literal
+    throw 1;
   } catch (err) {
     if (err === 1) {
       throw new Error('Missing reference clause');
     }
+
     await pgm.db.query('ROLLBACK TO SAVEPOINT sp_reference;');
   }
 
   await pgm.db.query('SAVEPOINT sp_not_null;');
   try {
     await pgm.db.query('INSERT INTO t1(created) VALUES (current_timestamp); ');
-    throw 1; // eslint-disable-line no-throw-literal
+    throw 1;
   } catch (err) {
     if (err === 1) {
       throw new Error('Missing not null clause');
     }
+
     await pgm.db.query('ROLLBACK TO SAVEPOINT sp_not_null;');
   }
 

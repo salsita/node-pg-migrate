@@ -13,6 +13,7 @@ export function sql(mOptions: MigrationOptions): Sql {
     if (s.lastIndexOf(';') !== s.length - 1) {
       s += ';';
     }
+
     return s;
   };
 }

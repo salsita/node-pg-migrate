@@ -17,13 +17,13 @@ export function dropFunction(mOptions: MigrationOptions) {
     const functionNameStr = mOptions.literal(functionName);
     return `DROP FUNCTION${ifExistsStr} ${functionNameStr}${paramsStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
 export function createFunction(mOptions: MigrationOptions) {
   const _create: CreateFunction = (
     functionName,
-    // eslint-disable-next-line default-param-last
     functionParams = [],
     functionOptions,
     definition
@@ -41,6 +41,7 @@ export function createFunction(mOptions: MigrationOptions) {
     if (behavior) {
       options.push(behavior);
     }
+
     if (language) {
       options.push(`LANGUAGE ${language}`);
     } else {
@@ -48,12 +49,15 @@ export function createFunction(mOptions: MigrationOptions) {
         `Language for function ${functionName} have to be specified`
       );
     }
+
     if (window) {
       options.push('WINDOW');
     }
+
     if (onNull) {
       options.push('RETURNS NULL ON NULL INPUT');
     }
+
     if (parallel) {
       options.push(`PARALLEL ${parallel}`);
     }
@@ -67,6 +71,7 @@ export function createFunction(mOptions: MigrationOptions) {
   AS ${escapeValue(definition)}
   ${options.join('\n  ')};`;
   };
+
   _create.reverse = dropFunction(mOptions);
   return _create;
 }
@@ -74,7 +79,6 @@ export function createFunction(mOptions: MigrationOptions) {
 export function renameFunction(mOptions: MigrationOptions) {
   const _rename: RenameFunction = (
     oldFunctionName,
-    // eslint-disable-next-line default-param-last
     functionParams = [],
     newFunctionName
   ) => {
@@ -83,6 +87,7 @@ export function renameFunction(mOptions: MigrationOptions) {
     const newFunctionNameStr = mOptions.literal(newFunctionName);
     return `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`;
   };
+
   _rename.reverse = (oldFunctionName, functionParams, newFunctionName) =>
     _rename(newFunctionName, functionParams, oldFunctionName);
   return _rename;

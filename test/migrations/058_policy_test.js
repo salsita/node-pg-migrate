@@ -9,11 +9,13 @@ exports.up = async (pgm) => {
   if (adminLength !== 3) {
     throw new Error('Policy is not enforced');
   }
+
   await pgm.db.query('set role alice;');
   const { length: aliceLength } = await pgm.db.select('SELECT * FROM tp;');
   if (aliceLength !== 1) {
     throw new Error('Policy is not enforced');
   }
+
   await pgm.db.query('reset role;');
 };
 

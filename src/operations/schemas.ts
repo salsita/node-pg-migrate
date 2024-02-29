@@ -11,6 +11,7 @@ export function dropSchema(mOptions: MigrationOptions) {
     const schemaNameStr = mOptions.literal(schemaName);
     return `DROP SCHEMA${ifExistsStr} ${schemaNameStr}${cascadeStr};`;
   };
+
   return _drop;
 }
 
@@ -24,6 +25,7 @@ export function createSchema(mOptions: MigrationOptions) {
       : '';
     return `CREATE SCHEMA${ifNotExistsStr} ${schemaNameStr}${authorizationStr};`;
   };
+
   _create.reverse = dropSchema(mOptions);
   return _create;
 }
@@ -34,6 +36,7 @@ export function renameSchema(mOptions: MigrationOptions) {
     const newSchemaNameStr = mOptions.literal(newSchemaName);
     return `ALTER SCHEMA ${schemaNameStr} RENAME TO ${newSchemaNameStr};`;
   };
+
   _rename.reverse = (schemaName, newSchemaName) =>
     _rename(newSchemaName, schemaName);
   return _rename;
