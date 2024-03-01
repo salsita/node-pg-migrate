@@ -96,7 +96,6 @@ module.exports = defineConfig({
     '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/prefer-includes': 'off',
     '@typescript-eslint/prefer-promise-reject-errors': 'off',
     '@typescript-eslint/require-await': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',

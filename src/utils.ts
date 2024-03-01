@@ -80,7 +80,7 @@ export const escapeValue = (val: Value): string | number => {
     do {
       index = ids.next();
       dollars = `$pg${index}$`;
-    } while (val.indexOf(dollars) >= 0);
+    } while (val.includes(dollars));
 
     return `${dollars}${val}${dollars}`;
   }
