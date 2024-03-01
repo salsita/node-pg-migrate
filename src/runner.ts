@@ -311,7 +311,9 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
   } finally {
     if (db.connected()) {
       if (!options.noLock) {
-        await unlock(db).catch((error) => logger.warn(error.message));
+        await unlock(db).catch((error) => {
+          logger.warn(error.message);
+        });
       }
 
       db.close();
