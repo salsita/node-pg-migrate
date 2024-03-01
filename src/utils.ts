@@ -1,9 +1,15 @@
 import decamelize from 'decamelize';
-import { PgLiteral } from '.';
-import { FunctionParam, FunctionParamType } from './operations/functionsTypes';
-import { Name, Type, Value } from './operations/generalTypes';
-import { ColumnDefinition, ColumnDefinitions } from './operations/tablesTypes';
-import { Literal, MigrationOptions, RunnerOption } from './types';
+import type { PgLiteral } from '.';
+import type {
+  FunctionParam,
+  FunctionParamType,
+} from './operations/functionsTypes';
+import type { Name, Type, Value } from './operations/generalTypes';
+import type {
+  ColumnDefinition,
+  ColumnDefinitions,
+} from './operations/tablesTypes';
+import type { Literal, MigrationOptions, RunnerOption } from './types';
 
 const identity = <T>(v: T) => v;
 const quote = (str: string) => `"${str}"`;

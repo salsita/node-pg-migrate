@@ -35,11 +35,10 @@ module.exports = defineConfig({
       'error',
       { default: 'array-simple', readonly: 'generic' },
     ],
-    // TODO @Shinigami92 2024-02-29: Enable consistent-type-imports later
-    // '@typescript-eslint/consistent-type-imports': 'error',
-    // TODO @Shinigami92 2024-02-29: Enable consistent-type-imports later
+    '@typescript-eslint/consistent-type-imports': 'error',
+    // TODO @Shinigami92 2024-02-29: Enable explicit-module-boundary-types later
     // '@typescript-eslint/explicit-module-boundary-types': 'error',
-    // TODO @Shinigami92 2024-02-29: Enable consistent-type-imports later
+    // TODO @Shinigami92 2024-02-29: Enable naming-convention later
     // '@typescript-eslint/naming-convention': [
     //   'error',
     //   {
@@ -69,7 +68,7 @@ module.exports = defineConfig({
       { blankLine: 'always', prev: 'block-like', next: '*' },
     ],
     '@typescript-eslint/prefer-regexp-exec': 'error',
-    // TODO @Shinigami92 2024-02-29: Enable consistent-type-imports later
+    // TODO @Shinigami92 2024-02-29: Enable restrict-template-expressions later
     // '@typescript-eslint/restrict-template-expressions': [
     //   'error',
     //   { allowNumber: true, allowBoolean: true },

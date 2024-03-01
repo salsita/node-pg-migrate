@@ -1,4 +1,9 @@
-import { DropOptions, IfNotExistsOption, Name, Type } from './generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Type,
+} from './generalTypes';
 
 export interface SequenceOptions {
   type?: Type;

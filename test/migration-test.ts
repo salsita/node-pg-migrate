@@ -1,8 +1,9 @@
 import { expect } from 'chai';
-import sinon, { SinonSpy } from 'sinon';
-import { DBConnection } from '../src/db';
+import type { SinonSpy } from 'sinon';
+import sinon from 'sinon';
+import type { DBConnection } from '../src/db';
 import { getTimestamp, Migration } from '../src/migration';
-import { Logger, RunnerOption } from '../src/types';
+import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';

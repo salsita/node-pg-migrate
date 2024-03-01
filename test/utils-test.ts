@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { PgLiteralValue } from '../src/operations/generalTypes';
+import type { PgLiteralValue } from '../src/operations/generalTypes';
 import PgLiteral from '../src/operations/PgLiteral';
-import { ColumnDefinitions } from '../src/operations/tablesTypes';
+import type { ColumnDefinitions } from '../src/operations/tablesTypes';
 import {
   applyType,
   createSchemalize,

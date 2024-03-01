@@ -1,4 +1,4 @@
-import PgLiteral from './PgLiteral';
+import type PgLiteral from './PgLiteral';
 
 export type LiteralUnion<T extends string> =
   | T

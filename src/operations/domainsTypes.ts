@@ -1,4 +1,4 @@
-import { DropOptions, Name, Type, Value } from './generalTypes';
+import type { DropOptions, Name, Type, Value } from './generalTypes';
 
 export interface DomainOptions {
   default?: Value;

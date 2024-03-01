@@ -9,10 +9,10 @@
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import { DBConnection } from './db';
+import type { DBConnection } from './db';
 import MigrationBuilder from './migration-builder';
-import { ColumnDefinitions } from './operations/tablesTypes';
-import {
+import type { ColumnDefinitions } from './operations/tablesTypes';
+import type {
   Logger,
   MigrationAction,
   MigrationBuilderActions,

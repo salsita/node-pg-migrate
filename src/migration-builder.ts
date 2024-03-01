@@ -21,12 +21,12 @@ import * as roles from './operations/roles';
 import * as schemas from './operations/schemas';
 import * as sequences from './operations/sequences';
 import * as tables from './operations/tables';
-import { ColumnDefinitions } from './operations/tablesTypes';
+import type { ColumnDefinitions } from './operations/tablesTypes';
 import * as triggers from './operations/triggers';
 import * as types from './operations/types';
 import * as views from './operations/views';
 import * as mViews from './operations/viewsMaterialized';
-import { DB, Logger, MigrationBuilder, MigrationOptions } from './types';
+import type { DB, Logger, MigrationBuilder, MigrationOptions } from './types';
 import { createSchemalize } from './utils';
 
 export default class MigrationBuilderImpl implements MigrationBuilder {

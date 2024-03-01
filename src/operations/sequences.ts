@@ -1,13 +1,13 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { applyType } from '../utils';
+import type { SequenceOptions } from './sequencesTypes';
 import {
   AlterSequence,
   CreateSequence,
   DropSequence,
   RenameSequence,
-  SequenceOptions,
 } from './sequencesTypes';
-import { ColumnDefinitions } from './tablesTypes';
+import type { ColumnDefinitions } from './tablesTypes';
 
 export { CreateSequence, DropSequence, AlterSequence, RenameSequence };
 

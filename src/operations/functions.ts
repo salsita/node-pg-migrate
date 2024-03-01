@@ -1,4 +1,4 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { escapeValue, formatParams } from '../utils';
 import { CreateFunction, DropFunction, RenameFunction } from './functionsTypes';
 

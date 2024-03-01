@@ -1,9 +1,9 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
+import type { PolicyOptions } from './policiesTypes';
 import {
   AlterPolicy,
   CreatePolicy,
   DropPolicy,
-  PolicyOptions,
   RenamePolicy,
 } from './policiesTypes';
 

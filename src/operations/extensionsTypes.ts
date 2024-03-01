@@ -1,4 +1,8 @@
-import { DropOptions, IfNotExistsOption, LiteralUnion } from './generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  LiteralUnion,
+} from './generalTypes';
 
 export type Extension =
   | 'adminpack'

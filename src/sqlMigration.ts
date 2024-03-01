@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { MigrationBuilderActions } from './types';
+import type { MigrationBuilderActions } from './types';
 
 const { readFile } = fs.promises;
 

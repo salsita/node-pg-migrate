@@ -1,4 +1,4 @@
-import { DropOptions, IfNotExistsOption } from './generalTypes';
+import type { DropOptions, IfNotExistsOption } from './generalTypes';
 
 export interface CreateSchemaOptions extends IfNotExistsOption {
   authorization?: string;

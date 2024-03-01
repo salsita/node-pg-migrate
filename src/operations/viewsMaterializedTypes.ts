@@ -1,4 +1,9 @@
-import { DropOptions, IfNotExistsOption, Name, Nullable } from './generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Nullable,
+} from './generalTypes';
 
 export type StorageParameters = { [key: string]: boolean | number };
 
