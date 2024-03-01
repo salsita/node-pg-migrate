@@ -174,7 +174,7 @@ const getMigrationsToRun = (
 
   const upMigrations = migrations.filter(
     ({ name }) =>
-      runNames.indexOf(name) < 0 && (!options.file || options.file === name)
+      !runNames.includes(name) && (!options.file || options.file === name)
   );
   const { count = Infinity } = options;
   return options.timestamp
