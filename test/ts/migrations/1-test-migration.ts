@@ -1,4 +1,4 @@
-import { ColumnDefinitions, MigrationBuilder } from '../../../dist';
+import type { ColumnDefinitions, MigrationBuilder } from '../../../dist';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 

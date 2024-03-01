@@ -1,4 +1,4 @@
-import { IfExistsOption, Name } from './generalTypes';
+import type { IfExistsOption, Name } from './generalTypes';
 
 export interface PolicyOptions {
   role?: string | string[];

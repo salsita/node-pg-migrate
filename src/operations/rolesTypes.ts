@@ -1,4 +1,4 @@
-import { IfExistsOption, Name, Value } from './generalTypes';
+import type { IfExistsOption, Name, Value } from './generalTypes';
 
 export interface RoleOptions {
   superuser?: boolean;

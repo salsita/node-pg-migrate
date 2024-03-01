@@ -1,6 +1,7 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { formatLines } from '../utils';
-import { Nullable } from './generalTypes';
+import type { Nullable } from './generalTypes';
+import type { StorageParameters } from './viewsMaterializedTypes';
 import {
   AlterMaterializedView,
   CreateMaterializedView,
@@ -8,7 +9,6 @@ import {
   RefreshMaterializedView,
   RenameMaterializedView,
   RenameMaterializedViewColumn,
-  StorageParameters,
 } from './viewsMaterializedTypes';
 
 export {

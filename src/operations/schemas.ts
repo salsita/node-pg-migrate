@@ -1,4 +1,4 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { CreateSchema, DropSchema, RenameSchema } from './schemasTypes';
 
 export { CreateSchema, DropSchema, RenameSchema };

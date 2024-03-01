@@ -1,5 +1,5 @@
-import { FunctionParam } from './functionsTypes';
-import { DropOptions, Name, Type } from './generalTypes';
+import type { FunctionParam } from './functionsTypes';
+import type { DropOptions, Name, Type } from './generalTypes';
 
 export interface CreateOperatorOptions {
   procedure: Name;

@@ -1,12 +1,11 @@
-import { Literal, MigrationOptions } from '../types';
-import { Name } from './generalTypes';
-import {
-  CreateIndex,
+import type { Literal, MigrationOptions } from '../types';
+import type { Name } from './generalTypes';
+import type {
   CreateIndexOptions,
-  DropIndex,
   DropIndexOptions,
   IndexColumn,
 } from './indexesTypes';
+import { CreateIndex, DropIndex } from './indexesTypes';
 
 export { CreateIndex, DropIndex };
 

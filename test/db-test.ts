@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import proxyquire from 'proxyquire';
-import sinon, { SinonSandbox, SinonStub } from 'sinon';
+import type { SinonSandbox, SinonStub } from 'sinon';
+import sinon from 'sinon';
 
 class Client {
   /* eslint-disable */

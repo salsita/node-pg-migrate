@@ -1,4 +1,4 @@
-import { MigrationOptions } from '../src/types';
+import type { MigrationOptions } from '../src/types';
 import { createSchemalize } from '../src/utils';
 
 export const options1: MigrationOptions = {

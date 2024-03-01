@@ -1,9 +1,11 @@
 import path from 'path';
-import Db, { DBConnection } from './db';
-import { loadMigrationFiles, Migration, RunMigration } from './migration';
-import { ColumnDefinitions } from './operations/tablesTypes';
+import type { DBConnection } from './db';
+import Db from './db';
+import type { RunMigration } from './migration';
+import { loadMigrationFiles, Migration } from './migration';
+import type { ColumnDefinitions } from './operations/tablesTypes';
 import migrateSqlFile from './sqlMigration';
-import {
+import type {
   Logger,
   MigrationBuilderActions,
   MigrationDirection,

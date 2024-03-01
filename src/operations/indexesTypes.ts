@@ -1,4 +1,4 @@
-import { DropOptions, Name } from './generalTypes';
+import type { DropOptions, Name } from './generalTypes';
 
 export interface IndexColumn {
   name: string;

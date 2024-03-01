@@ -1,6 +1,6 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
-import { Nullable } from './generalTypes';
+import type { Nullable } from './generalTypes';
 import {
   AlterView,
   AlterViewColumn,

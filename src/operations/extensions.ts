@@ -1,4 +1,4 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { CreateExtension, DropExtension } from './extensionsTypes';
 
 export { CreateExtension, DropExtension };

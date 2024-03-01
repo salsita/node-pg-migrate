@@ -1,4 +1,4 @@
-import { Literal, MigrationOptions } from '../types';
+import type { Literal, MigrationOptions } from '../types';
 import {
   applyType,
   applyTypeAdapters,
@@ -7,24 +7,26 @@ import {
   intersection,
   makeComment,
 } from '../utils';
-import { FunctionParamType } from './functionsTypes';
-import { Name } from './generalTypes';
+import type { FunctionParamType } from './functionsTypes';
+import type { Name } from './generalTypes';
 import { parseSequenceOptions } from './sequences';
+import type {
+  ColumnDefinition,
+  ColumnDefinitions,
+  ConstraintOptions,
+  Like,
+  LikeOptions,
+  ReferencesOptions,
+} from './tablesTypes';
 import {
   AddColumns,
   AlterColumn,
   AlterTable,
-  ColumnDefinition,
-  ColumnDefinitions,
-  ConstraintOptions,
   CreateConstraint,
   CreateTable,
   DropColumns,
   DropConstraint,
   DropTable,
-  Like,
-  LikeOptions,
-  ReferencesOptions,
   RenameColumn,
   RenameConstraint,
   RenameTable,

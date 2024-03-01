@@ -1,14 +1,10 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
 import { createFunction, dropFunction } from './functions';
-import { FunctionOptions } from './functionsTypes';
-import { DropOptions, Name, Value } from './generalTypes';
-import {
-  CreateTrigger,
-  DropTrigger,
-  RenameTrigger,
-  TriggerOptions,
-} from './triggersTypes';
+import type { FunctionOptions } from './functionsTypes';
+import type { DropOptions, Name, Value } from './generalTypes';
+import type { TriggerOptions } from './triggersTypes';
+import { CreateTrigger, DropTrigger, RenameTrigger } from './triggersTypes';
 
 export { CreateTrigger, DropTrigger, RenameTrigger };
 

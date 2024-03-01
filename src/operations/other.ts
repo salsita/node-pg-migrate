@@ -1,4 +1,4 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { createTransformer } from '../utils';
 import { Sql } from './othersTypes';
 

@@ -1,6 +1,7 @@
 import { resolve } from 'path';
-import { Client } from 'pg';
-import runner, { RunnerOption } from '../../dist';
+import type { Client } from 'pg';
+import type { RunnerOption } from '../../dist';
+import runner from '../../dist';
 
 type TestOptions = {
   count?: number;

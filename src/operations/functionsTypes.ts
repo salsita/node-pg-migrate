@@ -1,4 +1,4 @@
-import { DropOptions, Name, Value } from './generalTypes';
+import type { DropOptions, Name, Value } from './generalTypes';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';

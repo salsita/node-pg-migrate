@@ -1,5 +1,10 @@
-import { DropOptions, IfNotExistsOption, Name, Value } from './generalTypes';
-import { SequenceOptions } from './sequencesTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Value,
+} from './generalTypes';
+import type { SequenceOptions } from './sequencesTypes';
 
 export type Action =
   | 'NO ACTION'

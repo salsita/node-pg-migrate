@@ -1,4 +1,4 @@
-import { DropOptions, Name, Nullable, Value } from './generalTypes';
+import type { DropOptions, Name, Nullable, Value } from './generalTypes';
 
 export type ViewOptions = { [key: string]: boolean | number | string };
 

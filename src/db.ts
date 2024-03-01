@@ -1,8 +1,7 @@
 /*
  This file just manages the database connection and provides a query method
  */
-import {
-  Client,
+import type {
   ClientBase,
   ClientConfig,
   QueryArrayConfig,
@@ -10,8 +9,9 @@ import {
   QueryConfig,
   QueryResult,
 } from 'pg';
+import { Client } from 'pg';
 import { inspect } from 'util';
-import { DB, Logger } from './types';
+import type { DB, Logger } from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DBConnection extends DB {

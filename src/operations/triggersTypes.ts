@@ -1,5 +1,5 @@
-import { FunctionOptions } from './functionsTypes';
-import { DropOptions, Name, Value } from './generalTypes';
+import type { FunctionOptions } from './functionsTypes';
+import type { DropOptions, Name, Value } from './generalTypes';
 
 export interface TriggerOptions {
   when?: 'BEFORE' | 'AFTER' | 'INSTEAD OF';

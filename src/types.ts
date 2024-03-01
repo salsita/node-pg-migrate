@@ -1,4 +1,4 @@
-import {
+import type {
   ClientBase,
   ClientConfig,
   QueryArrayConfig,
@@ -6,23 +6,23 @@ import {
   QueryConfig,
   QueryResult,
 } from 'pg';
-import * as domains from './operations/domainsTypes';
-import * as extensions from './operations/extensionsTypes';
-import * as functions from './operations/functionsTypes';
-import { Name } from './operations/generalTypes';
-import * as indexes from './operations/indexesTypes';
-import * as operators from './operations/operatorsTypes';
-import * as other from './operations/othersTypes';
-import PgLiteral from './operations/PgLiteral';
-import * as policies from './operations/policiesTypes';
-import * as roles from './operations/rolesTypes';
-import * as schemas from './operations/schemasTypes';
-import * as sequences from './operations/sequencesTypes';
-import * as tables from './operations/tablesTypes';
-import * as triggers from './operations/triggersTypes';
-import * as types from './operations/typesTypes';
-import * as mViews from './operations/viewsMaterializedTypes';
-import * as views from './operations/viewsTypes';
+import type * as domains from './operations/domainsTypes';
+import type * as extensions from './operations/extensionsTypes';
+import type * as functions from './operations/functionsTypes';
+import type { Name } from './operations/generalTypes';
+import type * as indexes from './operations/indexesTypes';
+import type * as operators from './operations/operatorsTypes';
+import type * as other from './operations/othersTypes';
+import type PgLiteral from './operations/PgLiteral';
+import type * as policies from './operations/policiesTypes';
+import type * as roles from './operations/rolesTypes';
+import type * as schemas from './operations/schemasTypes';
+import type * as sequences from './operations/sequencesTypes';
+import type * as tables from './operations/tablesTypes';
+import type * as triggers from './operations/triggersTypes';
+import type * as types from './operations/typesTypes';
+import type * as mViews from './operations/viewsMaterializedTypes';
+import type * as views from './operations/viewsTypes';
 
 export { ClientConfig, ConnectionConfig } from 'pg';
 

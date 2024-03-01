@@ -1,12 +1,7 @@
-import { MigrationOptions } from '../types';
+import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
-import {
-  AlterRole,
-  CreateRole,
-  DropRole,
-  RenameRole,
-  RoleOptions,
-} from './rolesTypes';
+import type { RoleOptions } from './rolesTypes';
+import { AlterRole, CreateRole, DropRole, RenameRole } from './rolesTypes';
 
 export { CreateRole, DropRole, AlterRole, RenameRole };
 
