@@ -69,11 +69,12 @@ const db = (
           if (err) {
             connectionStatus = ConnectionStatus.ERROR;
             logger.error(`could not connect to postgres: ${inspect(err)}`);
-            return reject(err);
+            reject(err);
+            return;
           }
 
           connectionStatus = ConnectionStatus.CONNECTED;
-          return resolve();
+          resolve();
         });
       }
     });
@@ -144,9 +145,9 @@ ${err}
     close: async () => {
       await beforeCloseListeners.reduce(
         (promise, listener) =>
-          promise
-            .then(listener)
-            .catch((err: any) => logger.error(err.stack || err)),
+          promise.then(listener).catch((err: any) => {
+            logger.error(err.stack || err);
+          }),
         Promise.resolve()
       );
       if (!isExternalClient) {
