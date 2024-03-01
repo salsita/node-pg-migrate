@@ -20,9 +20,19 @@
     "node-pg-migrate": "bin/node-pg-migrate.js"
   },
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
-    "./*": "./*"
+    "./dist/operations/*": "./dist/operations/*",
+    "./dist/*": "./dist/*",
+    "./bin/node-pg-migrate": "./bin/node-pg-migrate.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "bin",
