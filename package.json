@@ -24,6 +24,11 @@
   "exports": {
     "./*": "./*"
   },
+  "files": [
+    "bin",
+    "dist",
+    "templates"
+  ],
   "author": "Theo Ephraim",
   "contributors": [
     "Salsita Software <jando@salsitasoft.com>",
