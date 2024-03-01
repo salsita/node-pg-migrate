@@ -19,6 +19,7 @@
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"
   },
+  "type": "commonjs",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
