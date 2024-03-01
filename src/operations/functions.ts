@@ -4,7 +4,7 @@ import { CreateFunction, DropFunction, RenameFunction } from './functionsTypes';
 
 export { CreateFunction, DropFunction, RenameFunction };
 
-export function dropFunction(mOptions: MigrationOptions) {
+export function dropFunction(mOptions: MigrationOptions): DropFunction {
   const _drop: DropFunction = (
     functionName,
     functionParams = [],
@@ -21,7 +21,7 @@ export function dropFunction(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createFunction(mOptions: MigrationOptions) {
+export function createFunction(mOptions: MigrationOptions): CreateFunction {
   const _create: CreateFunction = (
     functionName,
     functionParams = [],
@@ -76,7 +76,7 @@ export function createFunction(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function renameFunction(mOptions: MigrationOptions) {
+export function renameFunction(mOptions: MigrationOptions): RenameFunction {
   const _rename: RenameFunction = (
     oldFunctionName,
     functionParams = [],

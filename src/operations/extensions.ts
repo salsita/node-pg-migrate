@@ -3,7 +3,7 @@ import { CreateExtension, DropExtension } from './extensionsTypes';
 
 export { CreateExtension, DropExtension };
 
-export function dropExtension(mOptions: MigrationOptions) {
+export function dropExtension(mOptions: MigrationOptions): DropExtension {
   const _drop: DropExtension = (_extensions, options = {}) => {
     const { ifExists, cascade } = options;
     const extensions = Array.isArray(_extensions) ? _extensions : [_extensions];
@@ -18,7 +18,7 @@ export function dropExtension(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createExtension(mOptions: MigrationOptions) {
+export function createExtension(mOptions: MigrationOptions): CreateExtension {
   const _create: CreateExtension = (_extensions, options = {}) => {
     const { ifNotExists, schema } = options;
     const extensions = Array.isArray(_extensions) ? _extensions : [_extensions];

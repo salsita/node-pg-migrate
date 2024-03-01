@@ -9,6 +9,7 @@
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
+import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migration-builder';
 import type { ColumnDefinitions } from './operations/tablesTypes';
@@ -52,7 +53,7 @@ const SEPARATOR = '_';
 export const loadMigrationFiles = async (
   dir: string,
   ignorePattern?: string
-) => {
+): Promise<string[]> => {
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true });
   const files = dirContent
     .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
@@ -118,7 +119,7 @@ export class Migration implements RunMigration {
     _language?: 'js' | 'ts' | 'sql' | CreateOptions,
     _ignorePattern?: string,
     _filenameFormat?: FilenameFormat
-  ) {
+  ): Promise<string> {
     if (typeof _language === 'string') {
       console.warn(
         'This usage is deprecated. Please use this method with options object argument'
@@ -204,7 +205,7 @@ export class Migration implements RunMigration {
     this.logger = logger;
   }
 
-  _getMarkAsRun(action: MigrationAction) {
+  _getMarkAsRun(action: MigrationAction): string {
     const schema = getMigrationTableSchema(this.options);
     const { migrationsTable } = this.options;
     const { name } = this;
@@ -220,7 +221,10 @@ export class Migration implements RunMigration {
     }
   }
 
-  async _apply(action: MigrationAction, pgm: MigrationBuilder) {
+  async _apply(
+    action: MigrationAction,
+    pgm: MigrationBuilder
+  ): Promise<unknown> {
     if (action.length === 2) {
       await new Promise<void>((resolve) => {
         action(pgm, resolve);
@@ -259,7 +263,7 @@ export class Migration implements RunMigration {
     );
   }
 
-  _getAction(direction: MigrationDirection) {
+  _getAction(direction: MigrationDirection): MigrationAction {
     if (direction === 'down' && this.down === undefined) {
       this.down = this.up;
     }
@@ -281,7 +285,7 @@ export class Migration implements RunMigration {
     return action;
   }
 
-  apply(direction: MigrationDirection) {
+  apply(direction: MigrationDirection): Promise<unknown> {
     const pgm = new MigrationBuilder(
       this.db,
       this.typeShorthands,
@@ -298,7 +302,7 @@ export class Migration implements RunMigration {
     return this._apply(action, pgm);
   }
 
-  markAsRun(direction: MigrationDirection) {
+  markAsRun(direction: MigrationDirection): Promise<QueryResult> {
     return this.db.query(this._getMarkAsRun(this._getAction(direction)));
   }
 }

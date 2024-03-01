@@ -60,7 +60,7 @@ function generateColumnsString(
     .join(', ');
 }
 
-export function dropIndex(mOptions: MigrationOptions) {
+export function dropIndex(mOptions: MigrationOptions): DropIndex {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
     const { concurrently, ifExists, cascade } = options;
     const columns = Array.isArray(rawColumns)
@@ -83,7 +83,7 @@ export function dropIndex(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createIndex(mOptions: MigrationOptions) {
+export function createIndex(mOptions: MigrationOptions): CreateIndex {
   const _create: CreateIndex = (tableName, rawColumns, options = {}) => {
     /*
     columns - the column, columns, or expression to create the index on

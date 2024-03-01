@@ -36,8 +36,7 @@ module.exports = defineConfig({
       { default: 'array-simple', readonly: 'generic' },
     ],
     '@typescript-eslint/consistent-type-imports': 'error',
-    // TODO @Shinigami92 2024-02-29: Enable explicit-module-boundary-types later
-    // '@typescript-eslint/explicit-module-boundary-types': 'error',
+    '@typescript-eslint/explicit-module-boundary-types': 'error',
     // TODO @Shinigami92 2024-02-29: Enable naming-convention later
     // '@typescript-eslint/naming-convention': [
     //   'error',

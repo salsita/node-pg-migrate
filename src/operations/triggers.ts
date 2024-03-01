@@ -8,7 +8,7 @@ import { CreateTrigger, DropTrigger, RenameTrigger } from './triggersTypes';
 
 export { CreateTrigger, DropTrigger, RenameTrigger };
 
-export function dropTrigger(mOptions: MigrationOptions) {
+export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
   const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -21,7 +21,7 @@ export function dropTrigger(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createTrigger(mOptions: MigrationOptions) {
+export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
   const _create: CreateTrigger = (
     tableName: Name,
     triggerName: string,
@@ -119,7 +119,7 @@ export function createTrigger(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function renameTrigger(mOptions: MigrationOptions) {
+export function renameTrigger(mOptions: MigrationOptions): RenameTrigger {
   const _rename: RenameTrigger = (
     tableName,
     oldTriggerName,

@@ -17,7 +17,7 @@ const quote = (str: string) => `"${str}"`;
 export const createSchemalize = (
   shouldDecamelize: boolean,
   shouldQuote: boolean
-) => {
+): ((v: Name) => string) => {
   const transform = [
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity,
@@ -38,7 +38,7 @@ export class StringIdGenerator {
 
   constructor(private readonly chars = 'abcdefghijklmnopqrstuvwxyz') {}
 
-  next() {
+  next(): string {
     const idsChars = this.ids.map((id) => this.chars[id]);
     this.increment();
     return idsChars.join('');
@@ -102,7 +102,8 @@ export const escapeValue = (val: Value): string | number => {
 };
 
 export const createTransformer =
-  (literal: Literal) => (s: string, d?: { [key: string]: Name | Value }) =>
+  (literal: Literal) =>
+  (s: string, d?: { [key: string]: Name | Value }): string =>
     Object.keys(d || {}).reduce((str: string, p) => {
       const v = d?.[p];
       return str.replace(
@@ -212,18 +213,22 @@ const formatParam = (mOptions: MigrationOptions) => (param: FunctionParam) => {
 export const formatParams = (
   params: FunctionParam[],
   mOptions: MigrationOptions
-) => `(${params.map(formatParam(mOptions)).join(', ')})`;
+): string => `(${params.map(formatParam(mOptions)).join(', ')})`;
 
 export const makeComment = (
   object: string,
   name: string,
   text?: string | null
-) => {
+): string => {
   const cmt = escapeValue(text || null);
   return `COMMENT ON ${object} ${name} IS ${cmt};`;
 };
 
-export const formatLines = (lines: string[], replace = '  ', separator = ',') =>
+export const formatLines = (
+  lines: string[],
+  replace = '  ',
+  separator = ','
+): string =>
   lines
     .map((line) => line.replace(/(?:\r\n|\r|\n)+/g, ' '))
     .join(`${separator}\n`)

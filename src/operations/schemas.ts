@@ -3,7 +3,7 @@ import { CreateSchema, DropSchema, RenameSchema } from './schemasTypes';
 
 export { CreateSchema, DropSchema, RenameSchema };
 
-export function dropSchema(mOptions: MigrationOptions) {
+export function dropSchema(mOptions: MigrationOptions): DropSchema {
   const _drop: DropSchema = (schemaName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -15,7 +15,7 @@ export function dropSchema(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createSchema(mOptions: MigrationOptions) {
+export function createSchema(mOptions: MigrationOptions): CreateSchema {
   const _create: CreateSchema = (schemaName: string, options = {}) => {
     const { ifNotExists, authorization } = options;
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -30,7 +30,7 @@ export function createSchema(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function renameSchema(mOptions: MigrationOptions) {
+export function renameSchema(mOptions: MigrationOptions): RenameSchema {
   const _rename: RenameSchema = (schemaName, newSchemaName) => {
     const schemaNameStr = mOptions.literal(schemaName);
     const newSchemaNameStr = mOptions.literal(newSchemaName);

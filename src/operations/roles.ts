@@ -76,7 +76,7 @@ const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
   return options.join(' ');
 };
 
-export function dropRole(mOptions: MigrationOptions) {
+export function dropRole(mOptions: MigrationOptions): DropRole {
   const _drop: DropRole = (roleName, options = {}) => {
     const { ifExists } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -87,7 +87,7 @@ export function dropRole(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createRole(mOptions: MigrationOptions) {
+export function createRole(mOptions: MigrationOptions): CreateRole {
   const _create: CreateRole = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions({
       ...roleOptions,
@@ -106,7 +106,7 @@ export function createRole(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function alterRole(mOptions: MigrationOptions) {
+export function alterRole(mOptions: MigrationOptions): AlterRole {
   const _alter: AlterRole = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions(roleOptions);
     return options
@@ -117,7 +117,7 @@ export function alterRole(mOptions: MigrationOptions) {
   return _alter;
 }
 
-export function renameRole(mOptions: MigrationOptions) {
+export function renameRole(mOptions: MigrationOptions): RenameRole {
   const _rename: RenameRole = (oldRoleName, newRoleName) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName);
     const newRoleNameStr = mOptions.literal(newRoleName);

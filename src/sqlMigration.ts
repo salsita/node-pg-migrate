@@ -34,7 +34,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
   };
 };
 
-export default async (sqlPath: string) => {
+export default async (sqlPath: string): Promise<MigrationBuilderActions> => {
   const content = await readFile(sqlPath, 'utf-8');
   return getActions(content);
 };

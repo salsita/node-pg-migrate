@@ -9,7 +9,7 @@ import {
 
 export { CreateDomain, DropDomain, AlterDomain, RenameDomain };
 
-export function dropDomain(mOptions: MigrationOptions) {
+export function dropDomain(mOptions: MigrationOptions): DropDomain {
   const _drop: DropDomain = (domainName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -21,7 +21,7 @@ export function dropDomain(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createDomain(mOptions: MigrationOptions) {
+export function createDomain(mOptions: MigrationOptions): CreateDomain {
   const _create: CreateDomain = (domainName, type, options = {}) => {
     const {
       default: defaultValue,
@@ -68,7 +68,7 @@ export function createDomain(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function alterDomain(mOptions: MigrationOptions) {
+export function alterDomain(mOptions: MigrationOptions): AlterDomain {
   const _alter: AlterDomain = (domainName, options) => {
     const {
       default: defaultValue,
@@ -102,7 +102,7 @@ export function alterDomain(mOptions: MigrationOptions) {
   return _alter;
 }
 
-export function renameDomain(mOptions: MigrationOptions) {
+export function renameDomain(mOptions: MigrationOptions): RenameDomain {
   const _rename: RenameDomain = (domainName, newDomainName) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);

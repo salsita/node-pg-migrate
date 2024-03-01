@@ -27,7 +27,7 @@ export {
   RemoveFromOperatorFamily,
 };
 
-export function dropOperator(mOptions: MigrationOptions) {
+export function dropOperator(mOptions: MigrationOptions): DropOperator {
   const _drop: DropOperator = (operatorName, options = {}) => {
     const { ifExists, cascade, left, right } = options;
 
@@ -44,7 +44,7 @@ export function dropOperator(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createOperator(mOptions: MigrationOptions) {
+export function createOperator(mOptions: MigrationOptions): CreateOperator {
   const _create: CreateOperator = (operatorName, options) => {
     const {
       procedure,
@@ -100,7 +100,9 @@ export function createOperator(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function dropOperatorFamily(mOptions: MigrationOptions) {
+export function dropOperatorFamily(
+  mOptions: MigrationOptions
+): DropOperatorFamily {
   const _drop: DropOperatorFamily = (
     operatorFamilyName,
     indexMethod,
@@ -116,7 +118,9 @@ export function dropOperatorFamily(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createOperatorFamily(mOptions: MigrationOptions) {
+export function createOperatorFamily(
+  mOptions: MigrationOptions
+): CreateOperatorFamily {
   const _create: CreateOperatorFamily = (operatorFamilyName, indexMethod) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     return `CREATE OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod};`;
@@ -148,7 +152,9 @@ const operatorMap =
     throw new Error('Operator "type" must be either "function" or "operator"');
   };
 
-export const removeFromOperatorFamily = (mOptions: MigrationOptions) => {
+export const removeFromOperatorFamily = (
+  mOptions: MigrationOptions
+): RemoveFromOperatorFamily => {
   const method: RemoveFromOperatorFamily = (
     operatorFamilyName,
     indexMethod,
@@ -166,7 +172,9 @@ export const removeFromOperatorFamily = (mOptions: MigrationOptions) => {
   return method;
 };
 
-export const addToOperatorFamily = (mOptions: MigrationOptions) => {
+export const addToOperatorFamily = (
+  mOptions: MigrationOptions
+): AddToOperatorFamily => {
   const method: AddToOperatorFamily = (
     operatorFamilyName,
     indexMethod,
@@ -185,7 +193,9 @@ export const addToOperatorFamily = (mOptions: MigrationOptions) => {
   return method;
 };
 
-export function renameOperatorFamily(mOptions: MigrationOptions) {
+export function renameOperatorFamily(
+  mOptions: MigrationOptions
+): RenameOperatorFamily {
   const _rename: RenameOperatorFamily = (
     oldOperatorFamilyName,
     indexMethod,
@@ -205,7 +215,9 @@ export function renameOperatorFamily(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function dropOperatorClass(mOptions: MigrationOptions) {
+export function dropOperatorClass(
+  mOptions: MigrationOptions
+): DropOperatorClass {
   const _drop: DropOperatorClass = (
     operatorClassName,
     indexMethod,
@@ -222,7 +234,9 @@ export function dropOperatorClass(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createOperatorClass(mOptions: MigrationOptions) {
+export function createOperatorClass(
+  mOptions: MigrationOptions
+): CreateOperatorClass {
   const _create: CreateOperatorClass = (
     operatorClassName,
     type,
@@ -254,7 +268,9 @@ export function createOperatorClass(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function renameOperatorClass(mOptions: MigrationOptions) {
+export function renameOperatorClass(
+  mOptions: MigrationOptions
+): RenameOperatorClass {
   const _rename: RenameOperatorClass = (
     oldOperatorClassName,
     indexMethod,

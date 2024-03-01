@@ -361,7 +361,7 @@ const parseLike = (
 };
 
 // TABLE
-export function dropTable(mOptions: MigrationOptions) {
+export function dropTable(mOptions: MigrationOptions): DropTable {
   const _drop: DropTable = (tableName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -373,7 +373,7 @@ export function dropTable(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createTable(mOptions: MigrationOptions) {
+export function createTable(mOptions: MigrationOptions): CreateTable {
   const _create: CreateTable = (tableName, columns, options = {}) => {
     const {
       temporary,
@@ -431,7 +431,7 @@ ${formatLines(tableDefinition)}
   return _create;
 }
 
-export function alterTable(mOptions: MigrationOptions) {
+export function alterTable(mOptions: MigrationOptions): AlterTable {
   const _alter: AlterTable = (tableName, options) => {
     const alterDefinition = [];
     if (options.levelSecurity) {
@@ -447,7 +447,7 @@ export function alterTable(mOptions: MigrationOptions) {
 
 // COLUMNS
 
-export function dropColumns(mOptions: MigrationOptions) {
+export function dropColumns(mOptions: MigrationOptions): DropColumns {
   const _drop: DropColumns = (tableName, columns, options = {}) => {
     const { ifExists, cascade } = options;
     if (typeof columns === 'string') {
@@ -468,7 +468,7 @@ ${columnsStr};`;
   return _drop;
 }
 
-export function addColumns(mOptions: MigrationOptions) {
+export function addColumns(mOptions: MigrationOptions): AddColumns {
   const _add: AddColumns = (tableName, columns, options = {}) => {
     const { ifNotExists } = options;
     const { columns: columnLines, comments: columnComments = [] } =
@@ -562,7 +562,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
   };
 }
 
-export function renameTable(mOptions: MigrationOptions) {
+export function renameTable(mOptions: MigrationOptions): RenameTable {
   const _rename: RenameTable = (tableName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const newNameStr = mOptions.literal(newName);
@@ -573,7 +573,7 @@ export function renameTable(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function renameColumn(mOptions: MigrationOptions) {
+export function renameColumn(mOptions: MigrationOptions): RenameColumn {
   const _rename: RenameColumn = (tableName, columnName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const columnNameStr = mOptions.literal(columnName);
@@ -586,7 +586,7 @@ export function renameColumn(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function renameConstraint(mOptions: MigrationOptions) {
+export function renameConstraint(mOptions: MigrationOptions): RenameConstraint {
   const _rename: RenameConstraint = (tableName, constraintName, newName) => {
     const tableNameStr = mOptions.literal(tableName);
     const constraintNameStr = mOptions.literal(constraintName);
@@ -599,7 +599,7 @@ export function renameConstraint(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function dropConstraint(mOptions: MigrationOptions) {
+export function dropConstraint(mOptions: MigrationOptions): DropConstraint {
   const _drop: DropConstraint = (tableName, constraintName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -612,7 +612,7 @@ export function dropConstraint(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function addConstraint(mOptions: MigrationOptions) {
+export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
   const _add: CreateConstraint = (tableName, constraintName, expression) => {
     const { constraints, comments } =
       typeof expression === 'string'

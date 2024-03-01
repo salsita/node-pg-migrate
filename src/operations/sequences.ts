@@ -14,7 +14,7 @@ export { CreateSequence, DropSequence, AlterSequence, RenameSequence };
 export const parseSequenceOptions = (
   typeShorthands: ColumnDefinitions | undefined,
   options: SequenceOptions
-) => {
+): string[] => {
   const { type, increment, minvalue, maxvalue, start, cache, cycle, owner } =
     options;
   const clauses: string[] = [];
@@ -61,7 +61,7 @@ export const parseSequenceOptions = (
   return clauses;
 };
 
-export function dropSequence(mOptions: MigrationOptions) {
+export function dropSequence(mOptions: MigrationOptions): DropSequence {
   const _drop: DropSequence = (sequenceName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -73,7 +73,7 @@ export function dropSequence(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createSequence(mOptions: MigrationOptions) {
+export function createSequence(mOptions: MigrationOptions): CreateSequence {
   const _create: CreateSequence = (sequenceName, options = {}) => {
     const { temporary, ifNotExists } = options;
     const temporaryStr = temporary ? ' TEMPORARY' : '';
@@ -108,7 +108,7 @@ export function alterSequence(mOptions: MigrationOptions): AlterSequence {
   };
 }
 
-export function renameSequence(mOptions: MigrationOptions) {
+export function renameSequence(mOptions: MigrationOptions): RenameSequence {
   const _rename: RenameSequence = (sequenceName, newSequenceName) => {
     const sequenceNameStr = mOptions.literal(sequenceName);
     const newSequenceNameStr = mOptions.literal(newSequenceName);

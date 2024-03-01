@@ -32,7 +32,9 @@ const storageParameterStr =
     return `${key}${value}`;
   };
 
-export function dropMaterializedView(mOptions: MigrationOptions) {
+export function dropMaterializedView(
+  mOptions: MigrationOptions
+): DropMaterializedView {
   const _drop: DropMaterializedView = (viewName, options = {}) => {
     const { ifExists, cascade } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
@@ -44,7 +46,9 @@ export function dropMaterializedView(mOptions: MigrationOptions) {
   return _drop;
 }
 
-export function createMaterializedView(mOptions: MigrationOptions) {
+export function createMaterializedView(
+  mOptions: MigrationOptions
+): CreateMaterializedView {
   const _create: CreateMaterializedView = (viewName, options, definition) => {
     const {
       ifNotExists,
@@ -76,7 +80,9 @@ export function createMaterializedView(mOptions: MigrationOptions) {
   return _create;
 }
 
-export function alterMaterializedView(mOptions: MigrationOptions) {
+export function alterMaterializedView(
+  mOptions: MigrationOptions
+): AlterMaterializedView {
   const _alter: AlterMaterializedView = (viewName, options) => {
     const { cluster, extension, storageParameters = {} } = options;
     const clauses = [];
@@ -115,7 +121,9 @@ export function alterMaterializedView(mOptions: MigrationOptions) {
   return _alter;
 }
 
-export function renameMaterializedView(mOptions: MigrationOptions) {
+export function renameMaterializedView(
+  mOptions: MigrationOptions
+): RenameMaterializedView {
   const _rename: RenameMaterializedView = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
@@ -126,7 +134,9 @@ export function renameMaterializedView(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function renameMaterializedViewColumn(mOptions: MigrationOptions) {
+export function renameMaterializedViewColumn(
+  mOptions: MigrationOptions
+): RenameMaterializedViewColumn {
   const _rename: RenameMaterializedViewColumn = (
     viewName,
     columnName,
@@ -143,7 +153,9 @@ export function renameMaterializedViewColumn(mOptions: MigrationOptions) {
   return _rename;
 }
 
-export function refreshMaterializedView(mOptions: MigrationOptions) {
+export function refreshMaterializedView(
+  mOptions: MigrationOptions
+): RefreshMaterializedView {
   const _refresh: RefreshMaterializedView = (viewName, options = {}) => {
     const { concurrently, data } = options;
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
