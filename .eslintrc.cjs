@@ -37,23 +37,28 @@ module.exports = defineConfig({
     ],
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/explicit-module-boundary-types': 'error',
-    // TODO @Shinigami92 2024-02-29: Enable naming-convention later
-    // '@typescript-eslint/naming-convention': [
-    //   'error',
-    //   {
-    //     format: ['PascalCase'],
-    //     selector: ['class', 'interface', 'typeAlias', 'enumMember'],
-    //     leadingUnderscore: 'forbid',
-    //     trailingUnderscore: 'forbid',
-    //   },
-    //   {
-    //     format: ['PascalCase'],
-    //     selector: ['typeParameter'],
-    //     prefix: ['T'],
-    //     leadingUnderscore: 'forbid',
-    //     trailingUnderscore: 'forbid',
-    //   },
-    // ],
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        format: ['PascalCase'],
+        selector: ['class', 'interface', 'typeAlias'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },
+      {
+        format: ['UPPER_CASE', 'snake_case'],
+        selector: ['enumMember'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },
+      {
+        format: ['PascalCase'],
+        selector: ['typeParameter'],
+        prefix: ['T'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },
+    ],
     '@typescript-eslint/no-inferrable-types': [
       'error',
       { ignoreParameters: true },
@@ -79,7 +84,6 @@ module.exports = defineConfig({
     '@typescript-eslint/unbound-method': 'off',
 
     // TODO @Shinigami92 2024-02-29: Remove these later
-    '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/no-base-to-string': 'off',
     '@typescript-eslint/no-confusing-void-expression': 'off',
     '@typescript-eslint/no-floating-promises': 'off',

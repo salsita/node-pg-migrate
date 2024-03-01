@@ -456,7 +456,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     // expose DB so we can access database within transaction
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const wrapDB =
-      <T extends any[], R>(operation: (...args: T) => R) =>
+      <T extends any[], TResult>(operation: (...args: T) => TResult) =>
       (...args: T) => {
         if (this._REVERSE_MODE) {
           throw new Error('Impossible to automatically infer down migration');

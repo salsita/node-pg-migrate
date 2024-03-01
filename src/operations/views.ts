@@ -20,8 +20,10 @@ export {
 };
 
 const viewOptionStr =
-  <T extends Nullable<ViewOptions>, K extends keyof T>(options: T) =>
-  (key: K) => {
+  <TViewOptions extends Nullable<ViewOptions>, TKey extends keyof TViewOptions>(
+    options: TViewOptions
+  ) =>
+  (key: TKey) => {
     const value = options[key] === true ? '' : ` = ${options[key]}`;
     return `${key}${value}`;
   };
