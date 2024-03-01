@@ -5,8 +5,8 @@
   "scripts": {
     "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
     "build:clean": "rimraf dist",
-    "build:code": "tsc --removeComments",
-    "build:types": "tsc --declaration --emitDeclarationOnly",
+    "build:code": "tsup-node",
+    "build:types": "tsc --project tsconfig.build.json",
     "build": "run-s build:clean build:code build:types",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
@@ -19,10 +19,34 @@
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"
   },
+  "type": "commonjs",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
-    "./*": "./*"
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.js",
+      "import": "./dist/*.mjs",
+      "default": "./dist/*.js"
+    },
+    "./bin/node-pg-migrate": {
+      "require": "./bin/node-pg-migrate.js",
+      "default": "./bin/node-pg-migrate.js"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.js",
+      "import": "./dist/*.mjs",
+      "default": "./dist/*.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "bin",
@@ -106,6 +130,7 @@
     "sinon": "12.0.1",
     "sinon-chai": "3.7.0",
     "ts-node": "10.4.0",
+    "tsup": "8.0.2",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

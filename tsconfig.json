@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "rootDir": "src",
-    "outDir": "dist",
-    "lib": ["es2019"],
+    "target": "ES2017",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES2019"],
+    "noEmit": true,
     "esModuleInterop": true,
     "sourceMap": false,
     "forceConsistentCasingInFileNames": true,
