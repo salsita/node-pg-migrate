@@ -12,15 +12,23 @@
     "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "docs:dev": "docsify serve docs",
-    "migrate": "node bin/node-pg-migrate",
+    "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test"
   },
   "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate"
+    "node-pg-migrate": "bin/node-pg-migrate.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    "./*": "./*"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "templates"
+  ],
   "author": "Theo Ephraim",
   "contributors": [
     "Salsita Software <jando@salsitasoft.com>",
