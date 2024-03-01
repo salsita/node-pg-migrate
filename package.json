@@ -24,14 +24,27 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
-    "./dist/operations/*": "./dist/operations/*",
-    "./dist/*": "./dist/*",
-    "./bin/node-pg-migrate": "./bin/node-pg-migrate.js",
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.js",
+      "import": "./dist/*.mjs",
+      "default": "./dist/*.js"
+    },
+    "./bin/node-pg-migrate": {
+      "require": "./bin/node-pg-migrate.js",
+      "default": "./bin/node-pg-migrate.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "require": "./dist/*.js",
+      "import": "./dist/*.mjs",
+      "default": "./dist/*.js"
     },
     "./package.json": "./package.json"
   },
