@@ -35,3 +35,4 @@ jobs:
             build
             infra
             revert
+            release
