@@ -115,6 +115,7 @@ describe('lib/db', () => {
     it('should reject promise if query throws error', () => {
       connectMock.callsFake((fn) => fn());
       const error = 'error';
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       queryMock.returns(Promise.reject(error));
       return expect(db.query('query')).to.eventually.be.rejectedWith(error);
     });
