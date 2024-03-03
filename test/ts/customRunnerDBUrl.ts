@@ -6,7 +6,7 @@ async function start() {
     databaseUrl: String(process.env.DATABASE_URL),
     count: Infinity,
   });
-  process.exit(result === true ? 0 : 1);
+  process.exit(result ? 0 : 1);
 }
 
 start();

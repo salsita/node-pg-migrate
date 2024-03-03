@@ -7,7 +7,7 @@ async function start() {
   await dbClient.connect();
   const result = await run({ dbClient, count: Infinity });
   // dbClient.end()
-  process.exit(result === true ? 0 : 1);
+  process.exit(result ? 0 : 1);
 }
 
 start();

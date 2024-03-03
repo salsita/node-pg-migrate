@@ -7,7 +7,7 @@ async function start() {
     expectedUpLength: 2,
     expectedDownLength: 1,
   });
-  process.exit(result === true ? 0 : 1);
+  process.exit(result ? 0 : 1);
 }
 
 start();
