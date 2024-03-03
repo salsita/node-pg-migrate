@@ -86,12 +86,18 @@ module.exports = defineConfig({
     // TODO @Shinigami92 2024-02-29: Remove these later
     '@typescript-eslint/no-base-to-string': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
-    '@typescript-eslint/no-redundant-type-constituents': 'off',
-    '@typescript-eslint/no-throw-literal': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
     '@typescript-eslint/unified-signatures': 'off',
   },
+  overrides: [
+    {
+      files: ['test/migrations/*.js'],
+      rules: {
+        '@typescript-eslint/no-throw-literal': 'off',
+      },
+    },
+  ],
 });
