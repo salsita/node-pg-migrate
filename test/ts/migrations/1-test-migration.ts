@@ -2,7 +2,7 @@ import type { ColumnDefinitions, MigrationBuilder } from '../../../dist';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
-export async function up(pgm: MigrationBuilder): Promise<void> {
+export function up(pgm: MigrationBuilder): void {
   pgm.createTable('t1', {
     id: 'id',
     string: { type: 'text', notNull: true },
