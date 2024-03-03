@@ -149,6 +149,7 @@ export const applyTypeAdapters = (type: string): string =>
 const toType = (type: string | ColumnDefinition): ColumnDefinition =>
   typeof type === 'string' ? { type } : type;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const removeType = ({ type, ...rest }: Partial<ColumnDefinition>) => rest;
 
 export const applyType = (
