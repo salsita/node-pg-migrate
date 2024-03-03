@@ -624,7 +624,7 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
           }
         : parseConstraints(
             tableName,
-            expression as Exclude<typeof expression, string>,
+            expression,
             constraintName,
             mOptions.literal
           );
