@@ -1,0 +1,31 @@
+name: "\U0001F680 New feature proposal"
+description: Propose a new feature to be added to node-pg-migrate
+labels: ['s: pending triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in the project and taking the time to fill out this feature report!
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Description
+      description: 'Clear and concise description of the problem. Please make the reason and usecases as detailed as possible. If you intend to submit a PR for this issue, tell us in the description. Thanks!'
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-solution
+    attributes:
+      label: Suggested solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternative
+      description: Clear and concise description of any alternative solutions or features you've considered.
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any other context or screenshots about the feature request here.
