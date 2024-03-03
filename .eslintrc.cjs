@@ -86,7 +86,6 @@ module.exports = defineConfig({
     // TODO @Shinigami92 2024-02-29: Remove these later
     '@typescript-eslint/no-base-to-string': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
-    '@typescript-eslint/no-implied-eval': 'off',
     '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-throw-literal': 'off',
     '@typescript-eslint/no-unsafe-argument': 'off',
