@@ -116,24 +116,8 @@ export class Migration implements RunMigration {
   static async create(
     name: string,
     directory: string,
-    _language?: 'js' | 'ts' | 'sql' | CreateOptions,
-    _ignorePattern?: string,
-    _filenameFormat?: FilenameFormat
+    options: CreateOptions = {}
   ): Promise<string> {
-    if (typeof _language === 'string') {
-      console.warn(
-        'This usage is deprecated. Please use this method with options object argument'
-      );
-    }
-
-    const options =
-      typeof _language === 'object'
-        ? _language
-        : {
-            language: _language,
-            ignorePattern: _ignorePattern,
-            filenameFormat: _filenameFormat,
-          };
     const { filenameFormat = FilenameFormat.timestamp } = options;
 
     // ensure the migrations directory exists
