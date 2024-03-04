@@ -12,6 +12,7 @@ import type {
 import type { Literal, MigrationOptions, RunnerOption } from './types';
 
 const identity = <T>(v: T) => v;
+
 const quote = (str: string) => `"${str}"`;
 
 export const createSchemalize = (
@@ -22,6 +23,7 @@ export const createSchemalize = (
     shouldDecamelize ? decamelize : identity,
     shouldQuote ? quote : identity,
   ].reduce((acc, fn) => (fn === identity ? acc : (x: string) => acc(fn(x))));
+
   return (v: Name) => {
     if (typeof v === 'object') {
       const { schema, name } = v;
@@ -44,7 +46,7 @@ export class StringIdGenerator {
     return idsChars.join('');
   }
 
-  private increment() {
+  private increment(): void {
     for (let i = this.ids.length - 1; i >= 0; i -= 1) {
       this.ids[i] += 1;
       if (this.ids[i] < this.chars.length) {
@@ -77,6 +79,7 @@ export const escapeValue = (val: Value): string | number => {
     let dollars: string;
     const ids = new StringIdGenerator();
     let index: string;
+
     do {
       index = ids.next();
       dollars = `$pg${index}$`;
@@ -121,6 +124,7 @@ export const getSchemas = (schema?: string | string[]): string[] => {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
     (s): s is string => typeof s === 'string' && s.length > 0
   );
+
   return schemas.length > 0 ? schemas : ['public'];
 };
 
@@ -160,14 +164,18 @@ export const applyType = (
     ...defaultTypeShorthands,
     ...extendingTypeShorthands,
   };
+
   const options = toType(type);
+
   let ext: ColumnDefinition | null = null;
   const types: string[] = [options.type];
+
   while (typeShorthands[types[types.length - 1]]) {
     ext = {
       ...toType(typeShorthands[types[types.length - 1]]),
       ...(ext === null ? {} : removeType(ext)),
     };
+
     if (types.includes(ext.type)) {
       throw new Error(
         `Shorthands contain cyclic dependency: ${types.join(', ')}, ${ext.type}`
@@ -191,7 +199,9 @@ const formatParam = (mOptions: MigrationOptions) => (param: FunctionParam) => {
     type,
     default: defaultValue,
   } = applyType(param, mOptions.typeShorthands);
+
   const options: string[] = [];
+
   if (mode) {
     options.push(mode);
   }
@@ -222,6 +232,7 @@ export const makeComment = (
   text?: string | null
 ): string => {
   const cmt = escapeValue(text || null);
+
   return `COMMENT ON ${object} ${name} IS ${cmt};`;
 };
 

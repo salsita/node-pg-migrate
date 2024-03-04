@@ -52,20 +52,24 @@ export interface MigrationBuilder {
   createExtension: (...args: Parameters<extensions.CreateExtension>) => void;
   dropExtension: (...args: Parameters<extensions.DropExtension>) => void;
   addExtension: (...args: Parameters<extensions.CreateExtension>) => void;
+
   createTable: (...args: Parameters<tables.CreateTable>) => void;
   dropTable: (...args: Parameters<tables.DropTable>) => void;
   renameTable: (...args: Parameters<tables.RenameTable>) => void;
   alterTable: (...args: Parameters<tables.AlterTable>) => void;
+
   addColumns: (...args: Parameters<tables.AddColumns>) => void;
   dropColumns: (...args: Parameters<tables.DropColumns>) => void;
   renameColumn: (...args: Parameters<tables.RenameColumn>) => void;
   alterColumn: (...args: Parameters<tables.AlterColumn>) => void;
   addColumn: (...args: Parameters<tables.AddColumns>) => void;
   dropColumn: (...args: Parameters<tables.DropColumns>) => void;
+
   addConstraint: (...args: Parameters<tables.CreateConstraint>) => void;
   dropConstraint: (...args: Parameters<tables.DropConstraint>) => void;
   renameConstraint: (...args: Parameters<tables.RenameConstraint>) => void;
   createConstraint: (...args: Parameters<tables.CreateConstraint>) => void;
+
   createType: (...args: Parameters<types.CreateType>) => void;
   dropType: (...args: Parameters<types.DropType>) => void;
   addType: (...args: Parameters<types.CreateType>) => void;
@@ -76,30 +80,38 @@ export interface MigrationBuilder {
   dropTypeAttribute: (...args: Parameters<types.DropTypeAttribute>) => void;
   setTypeAttribute: (...args: Parameters<types.SetTypeAttribute>) => void;
   addTypeValue: (...args: Parameters<types.AddTypeValue>) => void;
+
   createIndex: (...args: Parameters<indexes.CreateIndex>) => void;
   dropIndex: (...args: Parameters<indexes.DropIndex>) => void;
   addIndex: (...args: Parameters<indexes.CreateIndex>) => void;
+
   createRole: (...args: Parameters<roles.CreateRole>) => void;
   dropRole: (...args: Parameters<roles.DropRole>) => void;
   alterRole: (...args: Parameters<roles.AlterRole>) => void;
   renameRole: (...args: Parameters<roles.RenameRole>) => void;
+
   createFunction: (...args: Parameters<functions.CreateFunction>) => void;
   dropFunction: (...args: Parameters<functions.DropFunction>) => void;
   renameFunction: (...args: Parameters<functions.RenameFunction>) => void;
+
   createTrigger: (...args: Parameters<triggers.CreateTrigger>) => void;
   dropTrigger: (...args: Parameters<triggers.DropTrigger>) => void;
   renameTrigger: (...args: Parameters<triggers.RenameTrigger>) => void;
+
   createSchema: (...args: Parameters<schemas.CreateSchema>) => void;
   dropSchema: (...args: Parameters<schemas.DropSchema>) => void;
   renameSchema: (...args: Parameters<schemas.RenameSchema>) => void;
+
   createDomain: (...args: Parameters<domains.CreateDomain>) => void;
   dropDomain: (...args: Parameters<domains.DropDomain>) => void;
   alterDomain: (...args: Parameters<domains.AlterDomain>) => void;
   renameDomain: (...args: Parameters<domains.RenameDomain>) => void;
+
   createSequence: (...args: Parameters<sequences.CreateSequence>) => void;
   dropSequence: (...args: Parameters<sequences.DropSequence>) => void;
   alterSequence: (...args: Parameters<sequences.AlterSequence>) => void;
   renameSequence: (...args: Parameters<sequences.RenameSequence>) => void;
+
   createOperator: (...args: Parameters<operators.CreateOperator>) => void;
   dropOperator: (...args: Parameters<operators.DropOperator>) => void;
   createOperatorClass: (
@@ -124,15 +136,18 @@ export interface MigrationBuilder {
   removeFromOperatorFamily: (
     ...args: Parameters<operators.RemoveFromOperatorFamily>
   ) => void;
+
   createPolicy: (...args: Parameters<policies.CreatePolicy>) => void;
   dropPolicy: (...args: Parameters<policies.DropPolicy>) => void;
   alterPolicy: (...args: Parameters<policies.AlterPolicy>) => void;
   renamePolicy: (...args: Parameters<policies.RenamePolicy>) => void;
+
   createView: (...args: Parameters<views.CreateView>) => void;
   dropView: (...args: Parameters<views.DropView>) => void;
   alterView: (...args: Parameters<views.AlterView>) => void;
   alterViewColumn: (...args: Parameters<views.AlterViewColumn>) => void;
   renameView: (...args: Parameters<views.RenameView>) => void;
+
   createMaterializedView: (
     ...args: Parameters<mViews.CreateMaterializedView>
   ) => void;
@@ -151,9 +166,13 @@ export interface MigrationBuilder {
   refreshMaterializedView: (
     ...args: Parameters<mViews.RefreshMaterializedView>
   ) => void;
+
   sql: (...args: Parameters<other.Sql>) => void;
+
   func: (sql: string) => PgLiteral;
+
   noTransaction: () => void;
+
   db: DB;
 }
 
@@ -161,20 +180,33 @@ export type MigrationAction = (
   pgm: MigrationBuilder,
   run?: () => void
 ) => Promise<void> | void;
+
 export type Literal = (v: Name) => string;
+
 export type LogFn = (msg: string) => void;
-export type Logger = { debug?: LogFn; info: LogFn; warn: LogFn; error: LogFn };
+
+export type Logger = {
+  debug?: LogFn;
+  info: LogFn;
+  warn: LogFn;
+  error: LogFn;
+};
 
 export interface MigrationBuilderActions {
   up?: MigrationAction | false;
+
   down?: MigrationAction | false;
+
   shorthands?: tables.ColumnDefinitions;
 }
 
 export interface MigrationOptions {
   typeShorthands?: tables.ColumnDefinitions;
+
   schemalize: Literal;
+
   literal: Literal;
+
   logger: Logger;
 }
 
@@ -247,81 +279,100 @@ export interface RunnerOptionConfig {
    * The table storing which migrations have been run.
    */
   migrationsTable: string;
+
   /**
    * The schema storing table which migrations have been run.
    *
    * (defaults to same value as `schema`)
    */
   migrationsSchema?: string;
+
   /**
    * The schema on which migration will be run.
    *
    * @default 'public'
    */
   schema?: string | string[];
+
   /**
    * The directory containing your migration files.
    */
   dir: string;
+
   /**
    * Check order of migrations before running them.
    */
   checkOrder?: boolean;
+
   /**
    * Direction of migration-run.
    */
   direction: MigrationDirection;
+
   /**
    * Number of migration to run.
    */
   count?: number;
+
   /**
    * Treats `count` as timestamp.
    */
   timestamp?: boolean;
+
   /**
    * Regex pattern for file names to ignore (ignores files starting with `.` by default).
    */
   ignorePattern?: string;
+
   /**
    * Run only migration with this name.
    */
   file?: string;
+
   dryRun?: boolean;
+
   /**
    * Creates the configured schema if it doesn't exist.
    */
   createSchema?: boolean;
+
   /**
    * Creates the configured migration schema if it doesn't exist.
    */
   createMigrationsSchema?: boolean;
+
   /**
    * Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back.
    *
    * @default true
    */
   singleTransaction?: boolean;
+
   /**
    * Disables locking mechanism and checks.
    */
   noLock?: boolean;
+
   /**
    * Mark migrations as run without actually performing them (use with caution!).
    */
   fake?: boolean;
+
   /**
    * Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names.
    */
   decamelize?: boolean;
+
   /**
    * Redirect log messages to this function, rather than `console`.
    */
   log?: LogFn;
+
   /**
    * Redirect messages to this logger object, rather than `console`.
    */
   logger?: Logger;
+
   /**
    * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
    */

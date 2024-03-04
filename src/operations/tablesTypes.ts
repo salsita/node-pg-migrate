@@ -15,10 +15,15 @@ export type Action =
 
 export interface ReferencesOptions {
   referencesConstraintName?: string;
+
   referencesConstraintComment?: string;
+
   references: Name;
+
   onDelete?: Action;
+
   onUpdate?: Action;
+
   match?: 'FULL' | 'SIMPLE';
 }
 
@@ -28,20 +33,32 @@ type SequenceGeneratedOptions = {
 
 export interface ColumnDefinition extends Partial<ReferencesOptions> {
   type: string;
+
   collation?: string;
+
   unique?: boolean;
+
   primaryKey?: boolean;
+
   notNull?: boolean;
+
   default?: Value;
+
   check?: string;
+
   deferrable?: boolean;
+
   deferred?: boolean;
+
   comment?: string | null;
+
   /**
    * @deprecated use sequenceGenerated
    */
   generated?: SequenceGeneratedOptions;
+
   sequenceGenerated?: SequenceGeneratedOptions;
+
   expressionGenerated?: string;
 }
 
@@ -61,6 +78,7 @@ export type Like =
 
 export interface LikeOptions {
   including?: Like | Like[];
+
   excluding?: Like | Like[];
 }
 
@@ -70,20 +88,31 @@ export interface ForeignKeyOptions extends ReferencesOptions {
 
 export interface ConstraintOptions {
   check?: string | string[];
+
   unique?: Name | Array<Name | Name[]>;
+
   primaryKey?: Name | Name[];
+
   foreignKeys?: ForeignKeyOptions | ForeignKeyOptions[];
+
   exclude?: string;
+
   deferrable?: boolean;
+
   deferred?: boolean;
+
   comment?: string;
 }
 
 export interface TableOptions extends IfNotExistsOption {
   temporary?: boolean;
+
   inherits?: Name;
+
   like?: Name | { table: Name; options?: LikeOptions };
+
   constraints?: ConstraintOptions;
+
   comment?: string | null;
 }
 
@@ -93,16 +122,24 @@ export interface AlterTableOptions {
 
 export interface AlterColumnOptions {
   type?: string;
+
   default?: Value;
+
   notNull?: boolean;
+
   allowNull?: boolean;
+
   collation?: string;
+
   using?: string;
+
   comment?: string | null;
+
   /**
    * @deprecated use sequenceGenerated
    */
   generated?: null | false | SequenceGeneratedOptions;
+
   sequenceGenerated?: null | false | SequenceGeneratedOptions;
 }
 
@@ -111,13 +148,18 @@ type CreateTableFn = (
   columns: ColumnDefinitions,
   options?: TableOptions & DropOptions
 ) => string | string[];
+
 export type CreateTable = CreateTableFn & { reverse: CreateTableFn };
+
 export type DropTable = (
   tableName: Name,
   dropOptions?: DropOptions
 ) => string | string[];
+
 type RenameTableFn = (tableName: Name, newtableName: Name) => string | string[];
+
 export type RenameTable = RenameTableFn & { reverse: RenameTableFn };
+
 export type AlterTable = (
   tableName: Name,
   alterOptions: AlterTableOptions
@@ -128,18 +170,23 @@ type AddColumnsFn = (
   newColumns: ColumnDefinitions,
   addOptions?: IfNotExistsOption & DropOptions
 ) => string | string[];
+
 export type AddColumns = AddColumnsFn & { reverse: AddColumnsFn };
+
 export type DropColumns = (
   tableName: Name,
   columns: string | string[] | { [name: string]: unknown },
   dropOptions?: DropOptions
 ) => string | string[];
+
 type RenameColumnFn = (
   tableName: Name,
   oldColumnName: string,
   newColumnName: string
 ) => string | string[];
+
 export type RenameColumn = RenameColumnFn & { reverse: RenameColumnFn };
+
 export type AlterColumn = (
   tableName: Name,
   columnName: string,
@@ -151,19 +198,23 @@ type CreateConstraintFn = (
   constraintName: string | null,
   expression: (string | ConstraintOptions) & DropOptions
 ) => string | string[];
+
 export type CreateConstraint = CreateConstraintFn & {
   reverse: CreateConstraintFn;
 };
+
 export type DropConstraint = (
   tableName: Name,
   constraintName: string,
   options?: DropOptions
 ) => string | string[];
+
 type RenameConstraintFn = (
   tableName: Name,
   oldConstraintName: string,
   newConstraintName: string
 ) => string | string[];
+
 export type RenameConstraint = RenameConstraintFn & {
   reverse: RenameConstraintFn;
 };

@@ -207,17 +207,24 @@ export class Migration implements RunMigration {
 
   _getMarkAsRun(action: MigrationAction): string {
     const schema = getMigrationTableSchema(this.options);
+
     const { migrationsTable } = this.options;
     const { name } = this;
+
     switch (action) {
-      case this.down:
+      case this.down: {
         this.logger.info(`### MIGRATION ${this.name} (DOWN) ###`);
         return `DELETE FROM "${schema}"."${migrationsTable}" WHERE name='${name}';`;
-      case this.up:
+      }
+
+      case this.up: {
         this.logger.info(`### MIGRATION ${this.name} (UP) ###`);
         return `INSERT INTO "${schema}"."${migrationsTable}" (name, run_on) VALUES ('${name}', NOW());`;
-      default:
+      }
+
+      default: {
         throw new Error('Unknown direction');
+      }
     }
   }
 

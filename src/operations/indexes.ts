@@ -26,6 +26,7 @@ function generateIndexName(
     .map((col) => schemalize(typeof col === 'string' ? col : col.name))
     .join('_');
   const uniq = 'unique' in options && options.unique ? '_unique' : '';
+
   return typeof table === 'object'
     ? {
         schema: table.schema,
@@ -37,6 +38,7 @@ function generateIndexName(
 function generateColumnString(column: Name, mOptions: MigrationOptions) {
   const name = mOptions.schemalize(column);
   const isSpecial = /[. ()]/.test(name);
+
   return isSpecial
     ? name // expression
     : mOptions.literal(name); // single column
@@ -64,6 +66,7 @@ function generateColumnsString(
 export function dropIndex(mOptions: MigrationOptions): DropIndex {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
     const { concurrently, ifExists, cascade } = options;
+
     const columns = Array.isArray(rawColumns)
       ? rawColumns.slice()
       : [rawColumns];
@@ -100,12 +103,14 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     const columns = Array.isArray(rawColumns)
       ? rawColumns.slice()
       : [rawColumns];
+
     if (options.opclass) {
       mOptions.logger.warn(
         "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])"
       );
       const lastIndex = columns.length - 1;
       const lastColumn = columns[lastIndex];
+
       if (typeof lastColumn === 'string') {
         columns[lastIndex] = { name: lastColumn, opclass: options.opclass };
       } else if (lastColumn.opclass) {
@@ -144,5 +149,6 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
   };
 
   _create.reverse = dropIndex(mOptions);
+
   return _create;
 }

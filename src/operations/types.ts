@@ -27,9 +27,11 @@ export type {
 export function dropType(mOptions: MigrationOptions): DropType {
   const _drop: DropType = (typeName, options = {}) => {
     const { ifExists, cascade } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const typeNameStr = mOptions.literal(typeName);
+
     return `DROP TYPE${ifExistsStr} ${typeNameStr}${cascadeStr};`;
   };
 
@@ -41,19 +43,23 @@ export function createType(mOptions: MigrationOptions): CreateType {
     if (Array.isArray(options)) {
       const optionsStr = options.map(escapeValue).join(', ');
       const typeNameStr = mOptions.literal(typeName);
+
       return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`;
     }
 
     const attributes = Object.entries(options)
       .map(([attributeName, attribute]) => {
         const typeStr = applyType(attribute, mOptions.typeShorthands).type;
+
         return `${mOptions.literal(attributeName)} ${typeStr}`;
       })
       .join(',\n');
+
     return `CREATE TYPE ${mOptions.literal(typeName)} AS (\n${attributes}\n);`;
   };
 
   _create.reverse = dropType(mOptions);
+
   return _create;
 }
 
@@ -68,6 +74,7 @@ export function dropTypeAttribute(
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const typeNameStr = mOptions.literal(typeName);
     const attributeNameStr = mOptions.literal(attributeName);
+
     return `ALTER TYPE ${typeNameStr} DROP ATTRIBUTE ${attributeNameStr}${ifExistsStr};`;
   };
 
@@ -88,6 +95,7 @@ export function addTypeAttribute(mOptions: MigrationOptions): AddTypeAttribute {
   };
 
   _alterAttributeAdd.reverse = dropTypeAttribute(mOptions);
+
   return _alterAttributeAdd;
 }
 
@@ -125,10 +133,12 @@ export function renameType(mOptions: MigrationOptions): RenameType {
   const _rename: RenameType = (typeName, newTypeName) => {
     const typeNameStr = mOptions.literal(typeName);
     const newTypeNameStr = mOptions.literal(newTypeName);
+
     return `ALTER TYPE ${typeNameStr} RENAME TO ${newTypeNameStr};`;
   };
 
   _rename.reverse = (typeName, newTypeName) => _rename(newTypeName, typeName);
+
   return _rename;
 }
 
@@ -143,11 +153,13 @@ export function renameTypeAttribute(
     const typeNameStr = mOptions.literal(typeName);
     const attributeNameStr = mOptions.literal(attributeName);
     const newAttributeNameStr = mOptions.literal(newAttributeName);
+
     return `ALTER TYPE ${typeNameStr} RENAME ATTRIBUTE ${attributeNameStr} TO ${newAttributeNameStr};`;
   };
 
   _rename.reverse = (typeName, attributeName, newAttributeName) =>
     _rename(typeName, newAttributeName, attributeName);
+
   return _rename;
 }
 
@@ -156,10 +168,12 @@ export function renameTypeValue(mOptions: MigrationOptions): RenameTypeValue {
     const valueStr = escapeValue(value);
     const newValueStr = escapeValue(newValue);
     const typeNameStr = mOptions.literal(typeName);
+
     return `ALTER TYPE ${typeNameStr} RENAME VALUE ${valueStr} TO ${newValueStr};`;
   };
 
   _rename.reverse = (typeName, value, newValue) =>
     _rename(typeName, newValue, value);
+
   return _rename;
 }

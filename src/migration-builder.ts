@@ -321,7 +321,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
     // this function wraps each operation within a function that either
     // calls the operation or its reverse, and appends the result (array of sql statements)
-    // to the  steps array
+    // to the steps array
     const wrap =
       <T extends Operation>(operation: T) =>
       (...args: Parameters<T>) => {

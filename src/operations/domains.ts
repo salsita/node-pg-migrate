@@ -12,9 +12,11 @@ export type { CreateDomain, DropDomain, AlterDomain, RenameDomain };
 export function dropDomain(mOptions: MigrationOptions): DropDomain {
   const _drop: DropDomain = (domainName, options = {}) => {
     const { ifExists, cascade } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const domainNameStr = mOptions.literal(domainName);
+
     return `DROP DOMAIN${ifExistsStr} ${domainNameStr}${cascadeStr};`;
   };
 
@@ -30,7 +32,9 @@ export function createDomain(mOptions: MigrationOptions): CreateDomain {
       check,
       constraintName,
     } = options;
+
     const constraints = [];
+
     if (collation) {
       constraints.push(`COLLATE ${collation}`);
     }
@@ -77,7 +81,9 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
       check,
       constraintName,
     } = options;
+
     const actions = [];
+
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');
     } else if (defaultValue !== undefined) {
@@ -106,10 +112,12 @@ export function renameDomain(mOptions: MigrationOptions): RenameDomain {
   const _rename: RenameDomain = (domainName, newDomainName) => {
     const domainNameStr = mOptions.literal(domainName);
     const newDomainNameStr = mOptions.literal(newDomainName);
+
     return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`;
   };
 
   _rename.reverse = (domainName, newDomainName) =>
     _rename(newDomainName, domainName);
+
   return _rename;
 }
