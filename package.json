@@ -10,11 +10,12 @@
     "build": "run-s build:clean build:code build:types",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
+    "ts-check": "tsc",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "docs:dev": "docsify serve docs",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
-    "preflight": "pnpm install && run-s format build lint test"
+    "preflight": "pnpm install && run-s format build lint test ts-check"
   },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"
