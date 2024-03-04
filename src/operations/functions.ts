@@ -15,10 +15,12 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
     options = {}
   ) => {
     const { ifExists, cascade } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const paramsStr = formatParams(functionParams, mOptions);
     const functionNameStr = mOptions.literal(functionName);
+
     return `DROP FUNCTION${ifExistsStr} ${functionNameStr}${paramsStr}${cascadeStr};`;
   };
 
@@ -41,7 +43,9 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       onNull,
       parallel,
     } = functionOptions;
-    const options = [];
+
+    const options: string[] = [];
+
     if (behavior) {
       options.push(behavior);
     }
@@ -77,6 +81,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
   };
 
   _create.reverse = dropFunction(mOptions);
+
   return _create;
 }
 
@@ -89,10 +94,12 @@ export function renameFunction(mOptions: MigrationOptions): RenameFunction {
     const paramsStr = formatParams(functionParams, mOptions);
     const oldFunctionNameStr = mOptions.literal(oldFunctionName);
     const newFunctionNameStr = mOptions.literal(newFunctionName);
+
     return `ALTER FUNCTION ${oldFunctionNameStr}${paramsStr} RENAME TO ${newFunctionNameStr};`;
   };
 
   _rename.reverse = (oldFunctionName, functionParams, newFunctionName) =>
     _rename(newFunctionName, functionParams, oldFunctionName);
+
   return _rename;
 }

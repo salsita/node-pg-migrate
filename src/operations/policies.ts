@@ -12,6 +12,7 @@ export type { CreatePolicy, DropPolicy, AlterPolicy, RenamePolicy };
 const makeClauses = ({ role, using, check }: PolicyOptions) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');
   const clauses: string[] = [];
+
   if (roles) {
     clauses.push(`TO ${roles}`);
   }
@@ -30,9 +31,11 @@ const makeClauses = ({ role, using, check }: PolicyOptions) => {
 export function dropPolicy(mOptions: MigrationOptions): DropPolicy {
   const _drop: DropPolicy = (tableName, policyName, options = {}) => {
     const { ifExists } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
+
     return `DROP POLICY${ifExistsStr} ${policyNameStr} ON ${tableNameStr};`;
   };
 
@@ -52,10 +55,12 @@ export function createPolicy(mOptions: MigrationOptions): CreatePolicy {
     const clausesStr = clauses.join(' ');
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
+
     return `CREATE POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`;
   };
 
   _create.reverse = dropPolicy(mOptions);
+
   return _create;
 }
 
@@ -64,6 +69,7 @@ export function alterPolicy(mOptions: MigrationOptions): AlterPolicy {
     const clausesStr = makeClauses(options).join(' ');
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
+
     return `ALTER POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`;
   };
 
@@ -75,10 +81,12 @@ export function renamePolicy(mOptions: MigrationOptions): RenamePolicy {
     const policyNameStr = mOptions.literal(policyName);
     const newPolicyNameStr = mOptions.literal(newPolicyName);
     const tableNameStr = mOptions.literal(tableName);
+
     return `ALTER POLICY ${policyNameStr} ON ${tableNameStr} RENAME TO ${newPolicyNameStr};`;
   };
 
   _rename.reverse = (tableName, policyName, newPolicyName) =>
     _rename(tableName, newPolicyName, policyName);
+
   return _rename;
 }

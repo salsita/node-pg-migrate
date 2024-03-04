@@ -56,13 +56,16 @@ export interface CreateExtensionOptions extends IfNotExistsOption {
 }
 
 type StringExtension = LiteralUnion<Extension>;
+
 type CreateExtensionFn = (
   extension: StringExtension | StringExtension[],
   options?: CreateExtensionOptions & DropOptions
 ) => string | string[];
+
 export type CreateExtension = CreateExtensionFn & {
   reverse: CreateExtensionFn;
 };
+
 export type DropExtension = (
   extension: StringExtension | StringExtension[],
   dropOptions?: DropOptions

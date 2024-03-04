@@ -25,6 +25,7 @@ const viewOptionStr =
   ) =>
   (key: TKey) => {
     const value = options[key] === true ? '' : ` = ${options[key]}`;
+
     // @ts-expect-error: Implicit conversion of a 'symbol' to a 'string' will fail at runtime. Consider wrapping this expression in 'String(...)'. ts(2731)
     return `${key}${value}`;
   };
@@ -32,9 +33,11 @@ const viewOptionStr =
 export function dropView(mOptions: MigrationOptions): DropView {
   const _drop: DropView = (viewName, options = {}) => {
     const { ifExists, cascade } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const viewNameStr = mOptions.literal(viewName);
+
     return `DROP VIEW${ifExistsStr} ${viewNameStr}${cascadeStr};`;
   };
 
@@ -51,6 +54,7 @@ export function createView(mOptions: MigrationOptions): CreateView {
       options = {},
       checkOption,
     } = viewOptions;
+
     const columnNames = (Array.isArray(columns) ? columns : [columns])
       .map(mOptions.literal)
       .join(', ');
@@ -72,12 +76,14 @@ export function createView(mOptions: MigrationOptions): CreateView {
   };
 
   _create.reverse = dropView(mOptions);
+
   return _create;
 }
 
 export function alterView(mOptions: MigrationOptions): AlterView {
   const _alter: AlterView = (viewName, viewOptions) => {
     const { checkOption, options = {} } = viewOptions;
+
     if (checkOption !== undefined) {
       if (options.check_option === undefined) {
         options.check_option = checkOption;
@@ -93,6 +99,7 @@ export function alterView(mOptions: MigrationOptions): AlterView {
       .filter((key) => options[key] !== null)
       .map(viewOptionStr(options))
       .join(', ');
+
     if (withOptions) {
       clauses.push(`SET (${withOptions})`);
     }
@@ -100,6 +107,7 @@ export function alterView(mOptions: MigrationOptions): AlterView {
     const resetOptions = Object.keys(options)
       .filter((key) => options[key] === null)
       .join(', ');
+
     if (resetOptions) {
       clauses.push(`RESET (${resetOptions})`);
     }
@@ -115,7 +123,9 @@ export function alterView(mOptions: MigrationOptions): AlterView {
 export function alterViewColumn(mOptions: MigrationOptions): AlterViewColumn {
   const _alter: AlterViewColumn = (viewName, columnName, options) => {
     const { default: defaultValue } = options;
-    const actions = [];
+
+    const actions: string[] = [];
+
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');
     } else if (defaultValue !== undefined) {
@@ -124,6 +134,7 @@ export function alterViewColumn(mOptions: MigrationOptions): AlterViewColumn {
 
     const viewNameStr = mOptions.literal(viewName);
     const columnNameStr = mOptions.literal(columnName);
+
     return actions
       .map(
         (action) =>
@@ -139,9 +150,11 @@ export function renameView(mOptions: MigrationOptions): RenameView {
   const _rename: RenameView = (viewName, newViewName) => {
     const viewNameStr = mOptions.literal(viewName);
     const newViewNameStr = mOptions.literal(newViewName);
+
     return `ALTER VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`;
   };
 
   _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
+
   return _rename;
 }

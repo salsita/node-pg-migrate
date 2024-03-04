@@ -15,10 +15,12 @@ export type { CreateTrigger, DropTrigger, RenameTrigger };
 export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
   const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
     const { ifExists, cascade } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
     const triggerNameStr = mOptions.literal(triggerName);
     const tableNameStr = mOptions.literal(tableName);
+
     return `DROP TRIGGER${ifExistsStr} ${triggerNameStr} ON ${tableNameStr}${cascadeStr};`;
   };
 
@@ -42,10 +44,13 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       deferred,
       functionParams = [],
     } = triggerOptions;
+
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
+
     const operations = Array.isArray(operation)
       ? operation.join(' OR ')
       : operation;
+
     if (constraint) {
       when = 'AFTER';
     }
@@ -100,6 +105,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
           definition
         )}\n`
       : '';
+
     return `${fnSQL}${triggerSQL}`;
   };
 
@@ -117,6 +123,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
     const fnSQL = definition
       ? `\n${dropFunction(mOptions)(triggerOptions.function || triggerName, [], triggerOptions)}`
       : '';
+
     return `${triggerSQL}${fnSQL}`;
   };
 
@@ -132,10 +139,12 @@ export function renameTrigger(mOptions: MigrationOptions): RenameTrigger {
     const oldTriggerNameStr = mOptions.literal(oldTriggerName);
     const tableNameStr = mOptions.literal(tableName);
     const newTriggerNameStr = mOptions.literal(newTriggerName);
+
     return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`;
   };
 
   _rename.reverse = (tableName, oldTriggerName, newTriggerName) =>
     _rename(tableName, newTriggerName, oldTriggerName);
+
   return _rename;
 }

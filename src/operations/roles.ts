@@ -11,7 +11,8 @@ import type {
 export type { CreateRole, DropRole, AlterRole, RenameRole };
 
 const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
-  const options = [];
+  const options: string[] = [];
+
   if (roleOptions.superuser !== undefined) {
     options.push(roleOptions.superuser ? 'SUPERUSER' : 'NOSUPERUSER');
   }
@@ -84,8 +85,10 @@ const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
 export function dropRole(mOptions: MigrationOptions): DropRole {
   const _drop: DropRole = (roleName, options = {}) => {
     const { ifExists } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const roleNameStr = mOptions.literal(roleName);
+
     return `DROP ROLE${ifExistsStr} ${roleNameStr};`;
   };
 
@@ -104,16 +107,19 @@ export function createRole(mOptions: MigrationOptions): CreateRole {
       replication: roleOptions.replication || false,
     });
     const optionsStr = options ? ` WITH ${options}` : '';
+
     return `CREATE ROLE ${mOptions.literal(roleName)}${optionsStr};`;
   };
 
   _create.reverse = dropRole(mOptions);
+
   return _create;
 }
 
 export function alterRole(mOptions: MigrationOptions): AlterRole {
   const _alter: AlterRole = (roleName, roleOptions = {}) => {
     const options = formatRoleOptions(roleOptions);
+
     return options
       ? `ALTER ROLE ${mOptions.literal(roleName)} WITH ${options};`
       : '';
@@ -126,10 +132,12 @@ export function renameRole(mOptions: MigrationOptions): RenameRole {
   const _rename: RenameRole = (oldRoleName, newRoleName) => {
     const oldRoleNameStr = mOptions.literal(oldRoleName);
     const newRoleNameStr = mOptions.literal(newRoleName);
+
     return `ALTER ROLE ${oldRoleNameStr} RENAME TO ${newRoleNameStr};`;
   };
 
   _rename.reverse = (oldRoleName, newRoleName) =>
     _rename(newRoleName, oldRoleName);
+
   return _rename;
 }

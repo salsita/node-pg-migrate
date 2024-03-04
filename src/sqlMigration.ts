@@ -20,6 +20,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
           downMigrationStart < upMigrationStart ? undefined : downMigrationStart
         )
       : content;
+
   const downSql =
     downMigrationStart >= 0
       ? content.substr(
@@ -32,6 +33,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
     up: (pgm) => {
       pgm.sql(upSql);
     },
+
     down:
       downSql === undefined
         ? false
@@ -43,5 +45,6 @@ export const getActions = (content: string): MigrationBuilderActions => {
 
 export default async (sqlPath: string): Promise<MigrationBuilderActions> => {
   const content = await readFile(sqlPath, 'utf-8');
+
   return getActions(content);
 };

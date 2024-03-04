@@ -30,7 +30,9 @@ export interface DBConnection extends DB {
   ): Promise<any[]>;
 
   connected: () => boolean;
+
   addBeforeCloseListener: (listener: any) => number;
+
   close(): Promise<void>;
 }
 
@@ -88,10 +90,12 @@ const db = (
       return await client.query(queryTextOrConfig, values);
     } catch (err: any) {
       const { message, position }: { message: string; position: number } = err;
+
       const string: string =
         typeof queryTextOrConfig === 'string'
           ? queryTextOrConfig
           : queryTextOrConfig.text;
+
       if (message && position >= 1) {
         const endLineWrapIndexOf = string.indexOf('\n', position);
         const endLineWrapPos =

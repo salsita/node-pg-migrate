@@ -15,7 +15,9 @@ import type {
 } from './types';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
 
-// Random but well-known identifier shared by all instances of node-pg-migrate
+/**
+ * Random but well-known identifier shared by all instances of `node-pg-migrate`.
+ */
 const PG_MIGRATE_LOCK_ID = 7241865325823964;
 
 const idColumn = 'id';
@@ -30,6 +32,7 @@ const loadMigrations = async (
   try {
     let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
+
     return (
       await Promise.all(
         files.map(async (file) => {
@@ -39,6 +42,7 @@ const loadMigrations = async (
               ? await migrateSqlFile(filePath)
               : require(path.relative(__dirname, filePath));
           shorthands = { ...shorthands, ...actions.shorthands };
+
           return new Migration(
             db,
             filePath,
@@ -53,7 +57,11 @@ const loadMigrations = async (
       )
     ).sort((m1, m2) => {
       const compare = m1.timestamp - m2.timestamp;
-      if (compare !== 0) return compare;
+
+      if (compare !== 0) {
+        return compare;
+      }
+
       return m1.name.localeCompare(m2.name);
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,6 +74,7 @@ const lock = async (db: DBConnection): Promise<void> => {
   const [result] = await db.select(
     `select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`
   );
+
   if (!result.lockObtained) {
     throw new Error('Another migration is already running');
   }
@@ -104,6 +113,7 @@ const ensureMigrationsTable = async (
       const primaryKeyConstraints = await db.select(
         `SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}' AND constraint_type = 'PRIMARY KEY'`
       );
+
       if (!primaryKeyConstraints || primaryKeyConstraints.length !== 1) {
         await db.query(
           `ALTER TABLE ${fullTableName} ADD PRIMARY KEY (${idColumn})`
@@ -130,6 +140,7 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
     schema,
     name: migrationsTable,
   });
+
   return db.column(
     nameColumn,
     `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
@@ -150,7 +161,9 @@ const getMigrationsToRun = (
         (migrationName) =>
           migrations.find(({ name }) => name === migrationName) || migrationName
       );
+
     const { count = 1 } = options;
+
     const toRun = (
       options.timestamp
         ? downMigrations.filter(
@@ -159,9 +172,11 @@ const getMigrationsToRun = (
           )
         : downMigrations.slice(-Math.abs(count))
     ).reverse();
+
     const deletedMigrations = toRun.filter(
       (migration): migration is string => typeof migration === 'string'
     );
+
     if (deletedMigrations.length) {
       const deletedMigrationsStr = deletedMigrations.join(', ');
       throw new Error(
@@ -176,7 +191,9 @@ const getMigrationsToRun = (
     ({ name }) =>
       !runNames.includes(name) && (!options.file || options.file === name)
   );
+
   const { count = Infinity } = options;
+
   return options.timestamp
     ? upMigrations.filter(({ timestamp }) => timestamp <= count)
     : upMigrations.slice(0, Math.abs(count));
@@ -184,9 +201,11 @@ const getMigrationsToRun = (
 
 const checkOrder = (runNames: string[], migrations: Migration[]) => {
   const len = Math.min(runNames.length, migrations.length);
+
   for (let i = 0; i < len; i += 1) {
     const runName = runNames[i];
     const migrationName = migrations[i].name;
+
     if (runName !== migrationName) {
       throw new Error(
         `Not run migration ${migrationName} is preceding already run migration ${runName}`
@@ -206,12 +225,20 @@ const runMigrations = (
     Promise.resolve()
   );
 
-const getLogger = ({ log, logger, verbose }: RunnerOption): Logger => {
+const getLogger: (options: RunnerOption) => Logger = (options) => {
+  const { log, logger, verbose } = options;
+
   let loggerObject: Logger = console;
+
   if (typeof logger === 'object') {
     loggerObject = logger;
   } else if (typeof log === 'function') {
-    loggerObject = { debug: log, info: log, warn: log, error: log };
+    loggerObject = {
+      debug: log,
+      info: log,
+      warn: log,
+      error: log,
+    };
   }
 
   return verbose
@@ -231,6 +258,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       (options as RunnerOptionUrl).databaseUrl,
     logger
   );
+
   try {
     await db.createConnection();
 
@@ -240,6 +268,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
 
     if (options.schema) {
       const schemas = getSchemas(options.schema);
+
       if (options.createSchema) {
         await Promise.all(
           schemas.map((schema) =>
@@ -291,6 +320,7 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       await runMigrations(toRun, 'markAsRun', options.direction);
     } else if (options.singleTransaction) {
       await db.query('BEGIN');
+
       try {
         await runMigrations(toRun, 'apply', options.direction);
         await db.query('COMMIT');
