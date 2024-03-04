@@ -1,7 +1,6 @@
 import type { MigrationOptions } from '../types';
 import { applyType, formatParams } from '../utils';
-import type { OperatorListDefinition } from './operatorsTypes';
-import {
+import type {
   AddToOperatorFamily,
   CreateOperator,
   CreateOperatorClass,
@@ -9,12 +8,13 @@ import {
   DropOperator,
   DropOperatorClass,
   DropOperatorFamily,
+  OperatorListDefinition,
   RemoveFromOperatorFamily,
   RenameOperatorClass,
   RenameOperatorFamily,
 } from './operatorsTypes';
 
-export {
+export type {
   CreateOperator,
   DropOperator,
   CreateOperatorClass,

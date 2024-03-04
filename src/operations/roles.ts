@@ -1,9 +1,14 @@
 import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
-import type { RoleOptions } from './rolesTypes';
-import { AlterRole, CreateRole, DropRole, RenameRole } from './rolesTypes';
+import type {
+  AlterRole,
+  CreateRole,
+  DropRole,
+  RenameRole,
+  RoleOptions,
+} from './rolesTypes';
 
-export { CreateRole, DropRole, AlterRole, RenameRole };
+export type { CreateRole, DropRole, AlterRole, RenameRole };
 
 const formatRoleOptions = (roleOptions: RoleOptions = {}) => {
   const options = [];

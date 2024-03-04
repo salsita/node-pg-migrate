@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../types';
-import { CreateSchema, DropSchema, RenameSchema } from './schemasTypes';
+import type { CreateSchema, DropSchema, RenameSchema } from './schemasTypes';
 
-export { CreateSchema, DropSchema, RenameSchema };
+export type { CreateSchema, DropSchema, RenameSchema };
 
 export function dropSchema(mOptions: MigrationOptions): DropSchema {
   const _drop: DropSchema = (schemaName, options = {}) => {

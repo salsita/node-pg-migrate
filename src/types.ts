@@ -24,7 +24,7 @@ import type * as types from './operations/typesTypes';
 import type * as mViews from './operations/viewsMaterializedTypes';
 import type * as views from './operations/viewsTypes';
 
-export { ClientConfig, ConnectionConfig } from 'pg';
+export type { ClientConfig, ConnectionConfig } from 'pg';
 
 // see ClientBase in @types/pg
 export interface DB {
