@@ -8,7 +8,7 @@
     "build:clean": "rimraf dist",
     "build:code": "tsup-node",
     "build:types": "tsc --project tsconfig.build.json",
-    "build": "run-s build:clean build:code build:types",
+    "build": "run-s build:clean build:code build:types build:bin",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
     "ts-check": "tsc",
@@ -35,6 +35,7 @@
     },
     "./bin/node-pg-migrate": {
       "require": "./bin/node-pg-migrate.js",
+      "import": "./bin/node-pg-migrate.mjs",
       "default": "./bin/node-pg-migrate.js"
     },
     ".": {
@@ -108,6 +109,7 @@
     "@types/proxyquire": "1.3.31",
     "@types/sinon": "10.0.20",
     "@types/sinon-chai": "3.2.12",
+    "@types/yargs": "17.0.32",
     "@typescript-eslint/eslint-plugin": "7.1.0",
     "@typescript-eslint/parser": "7.1.0",
     "chai": "4.4.1",
