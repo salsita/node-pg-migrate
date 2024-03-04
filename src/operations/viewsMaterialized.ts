@@ -32,6 +32,7 @@ const storageParameterStr =
   (key: TKey) => {
     const value =
       storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`;
+    // @ts-expect-error: Implicit conversion of a 'symbol' to a 'string' will fail at runtime. Consider wrapping this expression in 'String(...)'. ts(2731)
     return `${key}${value}`;
   };
 
