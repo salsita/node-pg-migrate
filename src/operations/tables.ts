@@ -11,28 +11,26 @@ import type { FunctionParamType } from './functionsTypes';
 import type { Name } from './generalTypes';
 import { parseSequenceOptions } from './sequences';
 import type {
-  ColumnDefinition,
-  ColumnDefinitions,
-  ConstraintOptions,
-  Like,
-  LikeOptions,
-  ReferencesOptions,
-} from './tablesTypes';
-import {
   AddColumns,
   AlterColumn,
   AlterTable,
+  ColumnDefinition,
+  ColumnDefinitions,
+  ConstraintOptions,
   CreateConstraint,
   CreateTable,
   DropColumns,
   DropConstraint,
   DropTable,
+  Like,
+  LikeOptions,
+  ReferencesOptions,
   RenameColumn,
   RenameConstraint,
   RenameTable,
 } from './tablesTypes';
 
-export {
+export type {
   CreateTable,
   DropTable,
   AlterTable,

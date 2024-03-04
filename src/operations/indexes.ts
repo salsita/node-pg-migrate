@@ -1,13 +1,14 @@
 import type { Literal, MigrationOptions } from '../types';
 import type { Name } from './generalTypes';
 import type {
+  CreateIndex,
   CreateIndexOptions,
+  DropIndex,
   DropIndexOptions,
   IndexColumn,
 } from './indexesTypes';
-import { CreateIndex, DropIndex } from './indexesTypes';
 
-export { CreateIndex, DropIndex };
+export type { CreateIndex, DropIndex };
 
 function generateIndexName(
   table: Name,

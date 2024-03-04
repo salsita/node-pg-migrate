@@ -1,17 +1,17 @@
 import type { MigrationOptions } from '../types';
 import { formatLines } from '../utils';
 import type { Nullable } from './generalTypes';
-import type { StorageParameters } from './viewsMaterializedTypes';
-import {
+import type {
   AlterMaterializedView,
   CreateMaterializedView,
   DropMaterializedView,
   RefreshMaterializedView,
   RenameMaterializedView,
   RenameMaterializedViewColumn,
+  StorageParameters,
 } from './viewsMaterializedTypes';
 
-export {
+export type {
   CreateMaterializedView,
   DropMaterializedView,
   AlterMaterializedView,

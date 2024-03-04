@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../types';
 import { applyType, escapeValue } from '../utils';
-import {
+import type {
   AddTypeAttribute,
   AddTypeValue,
   CreateType,
@@ -12,7 +12,7 @@ import {
   SetTypeAttribute,
 } from './typesTypes';
 
-export {
+export type {
   CreateType,
   DropType,
   RenameType,

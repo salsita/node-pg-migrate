@@ -1,15 +1,15 @@
 import type { MigrationOptions } from '../types';
 import { applyType } from '../utils';
-import type { SequenceOptions } from './sequencesTypes';
-import {
+import type {
   AlterSequence,
   CreateSequence,
   DropSequence,
   RenameSequence,
+  SequenceOptions,
 } from './sequencesTypes';
 import type { ColumnDefinitions } from './tablesTypes';
 
-export { CreateSequence, DropSequence, AlterSequence, RenameSequence };
+export type { CreateSequence, DropSequence, AlterSequence, RenameSequence };
 
 export const parseSequenceOptions = (
   typeShorthands: ColumnDefinitions | undefined,

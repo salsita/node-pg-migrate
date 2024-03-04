@@ -1,8 +1,12 @@
 import type { MigrationOptions } from '../types';
 import { escapeValue, formatParams } from '../utils';
-import { CreateFunction, DropFunction, RenameFunction } from './functionsTypes';
+import type {
+  CreateFunction,
+  DropFunction,
+  RenameFunction,
+} from './functionsTypes';
 
-export { CreateFunction, DropFunction, RenameFunction };
+export type { CreateFunction, DropFunction, RenameFunction };
 
 export function dropFunction(mOptions: MigrationOptions): DropFunction {
   const _drop: DropFunction = (

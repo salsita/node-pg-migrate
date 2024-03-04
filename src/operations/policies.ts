@@ -1,13 +1,13 @@
 import type { MigrationOptions } from '../types';
-import type { PolicyOptions } from './policiesTypes';
-import {
+import type {
   AlterPolicy,
   CreatePolicy,
   DropPolicy,
+  PolicyOptions,
   RenamePolicy,
 } from './policiesTypes';
 
-export { CreatePolicy, DropPolicy, AlterPolicy, RenamePolicy };
+export type { CreatePolicy, DropPolicy, AlterPolicy, RenamePolicy };
 
 const makeClauses = ({ role, using, check }: PolicyOptions) => {
   const roles = (Array.isArray(role) ? role : [role]).join(', ');

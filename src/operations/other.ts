@@ -1,8 +1,8 @@
 import type { MigrationOptions } from '../types';
 import { createTransformer } from '../utils';
-import { Sql } from './othersTypes';
+import type { Sql } from './othersTypes';
 
-export { Sql };
+export type { Sql };
 
 export function sql(mOptions: MigrationOptions): Sql {
   const t = createTransformer(mOptions.literal);

@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../types';
-import { CreateExtension, DropExtension } from './extensionsTypes';
+import type { CreateExtension, DropExtension } from './extensionsTypes';
 
-export { CreateExtension, DropExtension };
+export type { CreateExtension, DropExtension };
 
 export function dropExtension(mOptions: MigrationOptions): DropExtension {
   const _drop: DropExtension = (_extensions, options = {}) => {

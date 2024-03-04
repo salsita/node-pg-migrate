@@ -1,13 +1,13 @@
 import type { MigrationOptions } from '../types';
 import { applyType, escapeValue } from '../utils';
-import {
+import type {
   AlterDomain,
   CreateDomain,
   DropDomain,
   RenameDomain,
 } from './domainsTypes';
 
-export { CreateDomain, DropDomain, AlterDomain, RenameDomain };
+export type { CreateDomain, DropDomain, AlterDomain, RenameDomain };
 
 export function dropDomain(mOptions: MigrationOptions): DropDomain {
   const _drop: DropDomain = (domainName, options = {}) => {

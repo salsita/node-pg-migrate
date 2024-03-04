@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
 import type { Nullable } from './generalTypes';
-import {
+import type {
   AlterView,
   AlterViewColumn,
   CreateView,
@@ -10,7 +10,7 @@ import {
   ViewOptions,
 } from './viewsTypes';
 
-export {
+export type {
   CreateView,
   DropView,
   AlterView,

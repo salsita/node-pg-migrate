@@ -3,10 +3,14 @@ import { escapeValue } from '../utils';
 import { createFunction, dropFunction } from './functions';
 import type { FunctionOptions } from './functionsTypes';
 import type { DropOptions, Name, Value } from './generalTypes';
-import type { TriggerOptions } from './triggersTypes';
-import { CreateTrigger, DropTrigger, RenameTrigger } from './triggersTypes';
+import type {
+  CreateTrigger,
+  DropTrigger,
+  RenameTrigger,
+  TriggerOptions,
+} from './triggersTypes';
 
-export { CreateTrigger, DropTrigger, RenameTrigger };
+export type { CreateTrigger, DropTrigger, RenameTrigger };
 
 export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
   const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
