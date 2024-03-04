@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 
-'use strict';
-
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const yargs = require('yargs');
-const ConnectionParameters = require('pg/lib/connection-parameters');
-const { default: migrationRunner, Migration } = require('../dist');
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { format } from 'node:util';
+import ConnectionParameters from 'pg/lib/connection-parameters';
+import yargs from 'yargs';
+import { default as migrationRunner, Migration } from '../dist';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
   process.exit(1);
 });
 
-function tryRequire(moduleName) {
+function tryRequire(moduleName: string): unknown {
   try {
     return require(moduleName);
   } catch (err) {
@@ -259,10 +257,9 @@ function readTsconfig() {
     const json5 = tryRequire('json5');
 
     try {
-      const config = fs.readFileSync(
-        path.resolve(process.cwd(), tsconfigPath),
-        { encoding: 'utf-8' }
-      );
+      const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
+        encoding: 'utf-8',
+      });
       tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
     } catch (err) {
       console.error("Can't load tsconfig.json:", err);
@@ -366,9 +363,9 @@ if (config && config.has(argv[configValueArg])) {
 
 process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
-const configFileName = argv[configFileArg];
+const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = require(path.resolve(configFileName));
+  const jsonConfig = require(resolve(configFileName));
   readJson(jsonConfig);
 }
 
@@ -411,7 +408,7 @@ if (action === 'create') {
         }),
   })
     .then((migrationPath) => {
-      console.log(util.format('Created migration -- %s', migrationPath));
+      console.log(format('Created migration -- %s', migrationPath));
       process.exit(0);
     })
     .catch((err) => {
@@ -421,6 +418,7 @@ if (action === 'create') {
 } else if (action === 'up' || action === 'down' || action === 'redo') {
   if (!DB_CONNECTION) {
     const cp = new ConnectionParameters();
+
     if (!cp.host && !cp.port && !cp.database) {
       console.error(
         `The $${argv[databaseUrlVarArg]} environment variable is not set.`

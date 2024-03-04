@@ -80,6 +80,8 @@ versions.json
 /lib
 
 /migrations
+/bin/*.js
+/bin/*.mjs
 
 TAGS
 REVISION
