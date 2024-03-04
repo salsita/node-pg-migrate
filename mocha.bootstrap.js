@@ -2,7 +2,7 @@ const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const chaiAsPromised = require('chai-as-promised');
 
-const config = require('./tsconfig-test.json');
+const config = require('./tsconfig.json');
 
 config.compilerOptions.module = 'commonjs';
 config.transpileOnly = true;
