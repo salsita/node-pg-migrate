@@ -14,8 +14,8 @@
     "ts-check": "tsc",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "docs:dev": "docsify serve docs",
-    "migrate:run": "node bin/node-pg-migrate.js",
-    "migrate": "run-s build:bin migrate:run",
+    "premigrate": "run-s build:bin",
+    "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test ts-check"
   },
