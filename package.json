@@ -92,7 +92,7 @@
     "@types/pg": "^8.0.0",
     "decamelize": "^5.0.0",
     "mkdirp": "~1.0.0",
-    "yargs": "~17.3.0"
+    "yargs": "~17.7.0"
   },
   "devDependencies": {
     "@eslint-types/prettier": "5.1.3",
