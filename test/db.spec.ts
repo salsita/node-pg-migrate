@@ -1,38 +1,34 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { Client } from 'pg';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { DBConnection } from '../src/db';
+import Db from '../src/db';
+import type { Logger } from '../src/types';
 
-class Client {
-  /* eslint-disable */
-  constructor() {}
+const hoisted = vi.hoisted(() => {
+  const client = {
+    connect: vi.fn(),
+    end: vi.fn(),
+    query: vi.fn(),
+  };
 
-  async connect() {}
+  return { client };
+});
 
-  async query(...args: any[]) {}
-
-  async end() {}
-  /* eslint-enable */
-}
-
-const pgMock = {
-  Client,
-};
-
-const { default: Db } = proxyquire('../src/db', { pg: pgMock });
+vi.mock('pg', () => {
+  const Client = vi.fn().mockImplementation(() => hoisted.client);
+  return { Client };
+});
 
 describe('lib/db', () => {
-  let sandbox: SinonSandbox;
-  const log: typeof console.log = () => null;
-  const client = new Client();
+  const log: Logger = {
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  };
 
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  describe('.constructor( connection )', () => {
-    let db: typeof Db;
+  describe('.constructor(connection)', () => {
+    let db: DBConnection;
 
     afterEach(() => {
       if (db) {
@@ -41,122 +37,98 @@ describe('lib/db', () => {
     });
 
     it('pg.Client should be called with connection string', () => {
-      const mocked = sandbox.stub(pgMock, 'Client').returns(client);
-
       db = Db('connection_string');
 
-      expect(mocked).toBeCalledWith('connection_string');
+      expect(Client).toBeCalledWith('connection_string');
     });
 
-    it('should use external client', () => {
-      const mockClient = new pgMock.Client();
-      const mocked = sandbox
-        .stub(mockClient, 'query')
-        .returns(Promise.resolve());
+    it('should use external client', async () => {
+      const mockClient = new Client();
+      const mocked = vi.spyOn(mockClient, 'query');
 
       db = Db(mockClient, log);
 
       return db.query('query').then(() => {
-        expect(mocked.getCall(0).args[0]).to.equal('query');
+        expect(mocked).toHaveBeenCalledOnce();
+        expect(mocked).toHaveBeenCalledWith('query', undefined);
       });
     });
   });
 
-  describe('.query( query )', () => {
-    let db: typeof Db;
-    let connectMock: SinonStub;
-    let queryMock: SinonStub;
+  describe('.query(query)', () => {
+    let db: DBConnection;
 
     beforeEach(() => {
-      sandbox.stub(pgMock, 'Client').returns(client);
-      connectMock = sandbox.stub(client, 'connect').returns(Promise.resolve());
-      queryMock = sandbox.stub(client, 'query').returns(Promise.resolve());
+      // @ts-expect-error: JS test
       db = Db(undefined, log);
     });
 
     afterEach(() => {
       db.close();
+
+      vi.clearAllMocks();
     });
 
-    it('should call client.connect if this is the first query', () => {
-      connectMock.callsFake((fn) => fn());
-      queryMock.returns(Promise.resolve());
+    it('should call client.connect if this is the first query', async () => {
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
 
-      return db.query('query').then(() => {
-        expect(connectMock).toHaveBeenCalledOnce();
-      });
+      await db.query('query');
+
+      expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
 
-    it('should not call client.connect on subsequent queries', () => {
-      connectMock.callsFake((fn) => fn());
-      queryMock.returns(Promise.resolve());
+    it('should not call client.connect on subsequent queries', async () => {
+      await db.query('query_one');
+      await db.query('query_two');
 
-      return db
-        .query('query_one')
-        .then(() => db.query('query_two'))
-        .then(() => {
-          expect(connectMock).toHaveBeenCalledOnce();
-        });
+      expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
 
-    it('should call client.query with query', () => {
-      connectMock.callsFake((fn) => fn());
-      queryMock.returns(Promise.resolve());
+    it('should call client.query with query', async () => {
+      await db.query('query');
 
-      return db.query('query').then(() => {
-        expect(queryMock.getCall(0).args[0]).to.equal('query');
-      });
+      expect(hoisted.client.query).toHaveBeenCalledOnce();
+      expect(hoisted.client.query).toHaveBeenCalledWith('query', undefined);
     });
 
-    it('should not call client.query if client.connect fails', () => {
+    it('should not call client.query if client.connect fails', async () => {
       const error = 'error';
 
-      connectMock.callsFake((fn) => fn(error));
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) =>
+        fn(new Error(error))
+      );
 
-      return expect(db.query('query'))
-        .to.eventually.be.rejectedWith(error)
-        .then(() => expect(queryMock).to.not.been.called);
+      await expect(() => db.query('query')).rejects.toThrow(error);
+      expect(hoisted.client.query).not.toHaveBeenCalled();
     });
 
-    it('should resolve promise if query throws no error', () => {
-      connectMock.callsFake((fn) => fn());
-
+    it('should resolve promise if query throws no error', async () => {
       const result = 'result';
 
-      queryMock.returns(Promise.resolve(result));
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
+      vi.spyOn(hoisted.client, 'query').mockResolvedValue(result);
 
-      return expect(db.query('query')).to.eventually.equal(result);
+      await expect(db.query('query')).resolves.toBe(result);
     });
 
-    it('should reject promise if query throws error', () => {
-      connectMock.callsFake((fn) => fn());
-
+    it('should reject promise if query throws error', async () => {
       const error = 'error';
 
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-      queryMock.returns(Promise.reject(error));
+      vi.spyOn(hoisted.client, 'query').mockRejectedValue(new Error(error));
 
-      return expect(db.query('query')).to.eventually.be.rejectedWith(error);
+      await expect(() => db.query('query')).rejects.toThrow(error);
+      expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
   });
 
   describe('.close()', () => {
-    let db: typeof Db;
+    it('should call client.end', async () => {
+      // @ts-expect-error: JS test
+      const db = Db();
 
-    beforeEach(() => {
-      sandbox.stub(pgMock, 'Client').returns(client);
-      sandbox.stub(client, 'end').returns(Promise.resolve());
-      db = Db();
-    });
+      await db.close();
 
-    afterEach(() => {
-      db.close();
-    });
-
-    it('should call client.end', () => {
-      return db.close().then(() => {
-        expect(client.end).toHaveBeenCalledOnce();
-      });
+      expect(hoisted.client.end).toHaveBeenCalled();
     });
   });
 });

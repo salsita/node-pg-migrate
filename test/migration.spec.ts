@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import type { Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
 import { getTimestamp, Migration } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
@@ -12,6 +13,7 @@ const actionsPromise = require(`./${promiseMigration}`);
 
 describe('lib/migration', () => {
   const dbMock = {} as DBConnection;
+
   const logger: Logger = {
     info: () => null,
     warn: () => null,
@@ -20,32 +22,32 @@ describe('lib/migration', () => {
 
   const options = { migrationsTable } as RunnerOption;
 
-  let migration;
-  let queryMock: SinonSpy;
+  let queryMock: Mock;
 
   beforeEach(() => {
-    queryMock = sinon.spy();
+    queryMock = vi.fn();
     dbMock.query = queryMock;
   });
 
   describe('getTimestamp', () => {
-    it('Should get timestamp for normal timestamp', () => {
+    it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
-      expect(getTimestamp(logger, String(now))).to.eql(now);
+
+      expect(getTimestamp(logger, String(now))).toBe(now);
     });
 
-    it('Should get timestamp for shortened iso format', () => {
+    it('should get timestamp for shortened iso format', () => {
       const now = new Date();
 
       expect(
         getTimestamp(logger, now.toISOString().replace(/[^\d]/g, ''))
-      ).to.eql(now.valueOf());
+      ).toBe(now.valueOf());
     });
   });
 
   describe('self.applyUp', () => {
     it('normal operations: db.query should be called', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
@@ -55,12 +57,12 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('up').then(() => {
-        expect(queryMock).to.be.called;
+        expect(queryMock).toHaveBeenCalled();
       });
     });
 
     it('normal operations: db.query should be called when returning promise', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         promiseMigration,
         actionsPromise,
@@ -70,12 +72,12 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('up').then(() => {
-        expect(queryMock).to.be.called;
+        expect(queryMock).toHaveBeenCalled();
       });
     });
 
     it('--dry-run option: db.query should not be called', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
@@ -85,12 +87,12 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('up').then(() => {
-        expect(queryMock).to.not.be.called;
+        expect(queryMock).not.toHaveBeenCalled();
       });
     });
 
     it('should make proper SQL calls', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         promiseMigration,
         actionsCallback,
@@ -100,20 +102,24 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('up').then(() => {
-        expect(queryMock).to.have.callCount(4);
-        expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');
-        expect(queryMock.getCall(1).args[0]).to.include('CREATE TABLE');
-        expect(queryMock.getCall(2).args[0]).to.include(
-          `INSERT INTO "public"."${migrationsTable}"`
+        expect(queryMock).toHaveBeenCalledTimes(4);
+        expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+        expect(queryMock).toHaveBeenNthCalledWith(
+          2,
+          expect.stringMatching('CREATE TABLE')
         );
-        expect(queryMock.getCall(3).args[0]).to.equal('COMMIT;');
+        expect(queryMock).toHaveBeenNthCalledWith(
+          3,
+          expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
+        );
+        expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
       });
     });
 
     it('should fail with an error message if the migration is invalid', () => {
       const invalidMigrationName = 'invalid-migration';
 
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         invalidMigrationName,
         {},
@@ -141,7 +147,7 @@ describe('lib/migration', () => {
 
   describe('self.applyDown', () => {
     it('normal operations: db.query should be called', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
@@ -151,12 +157,12 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('down').then(() => {
-        expect(queryMock).to.be.called;
+        expect(queryMock).toHaveBeenCalled();
       });
     });
 
     it('--dry-run option: db.query should not be called', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         callbackMigration,
         actionsCallback,
@@ -166,12 +172,12 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('down').then(() => {
-        expect(queryMock).to.not.be.called;
+        expect(queryMock).not.toHaveBeenCalled();
       });
     });
 
     it('should make proper SQL calls', () => {
-      migration = new Migration(
+      const migration = new Migration(
         dbMock,
         promiseMigration,
         actionsCallback,
@@ -181,13 +187,17 @@ describe('lib/migration', () => {
       );
 
       return migration.apply('down').then(() => {
-        expect(queryMock).to.have.callCount(4);
-        expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');
-        expect(queryMock.getCall(1).args[0]).to.include('DROP TABLE');
-        expect(queryMock.getCall(2).args[0]).to.include(
-          `DELETE FROM "public"."${migrationsTable}"`
+        expect(queryMock).toHaveBeenCalledTimes(4);
+        expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+        expect(queryMock).toHaveBeenNthCalledWith(
+          2,
+          expect.stringMatching('DROP TABLE')
         );
-        expect(queryMock.getCall(3).args[0]).to.equal('COMMIT;');
+        expect(queryMock).toHaveBeenNthCalledWith(
+          3,
+          expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
+        );
+        expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
       });
     });
   });
