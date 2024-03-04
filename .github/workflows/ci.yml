@@ -73,6 +73,32 @@ jobs:
       - name: Check formatting
         run: pnpm prettier --check .
 
+  ts-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: 'TS-Check: node-20, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to 20
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build types
+        run: pnpm run build:types
+
+      - name: Check scripts
+        run: pnpm run ts-check
+
   create-migration-test:
     runs-on: ubuntu-latest
     strategy:
