@@ -1,7 +1,4 @@
-import { expect } from 'chai';
-import proxyquire from 'proxyquire';
-import type { SinonSandbox, SinonStub } from 'sinon';
-import sinon from 'sinon';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 class Client {
   /* eslint-disable */
@@ -36,6 +33,7 @@ describe('lib/db', () => {
 
   describe('.constructor( connection )', () => {
     let db: typeof Db;
+
     afterEach(() => {
       if (db) {
         db.close();
@@ -44,8 +42,10 @@ describe('lib/db', () => {
 
     it('pg.Client should be called with connection string', () => {
       const mocked = sandbox.stub(pgMock, 'Client').returns(client);
+
       db = Db('connection_string');
-      expect(mocked).to.be.calledWith('connection_string');
+
+      expect(mocked).toBeCalledWith('connection_string');
     });
 
     it('should use external client', () => {
@@ -55,6 +55,7 @@ describe('lib/db', () => {
         .returns(Promise.resolve());
 
       db = Db(mockClient, log);
+
       return db.query('query').then(() => {
         expect(mocked.getCall(0).args[0]).to.equal('query');
       });
@@ -65,12 +66,14 @@ describe('lib/db', () => {
     let db: typeof Db;
     let connectMock: SinonStub;
     let queryMock: SinonStub;
+
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client);
       connectMock = sandbox.stub(client, 'connect').returns(Promise.resolve());
       queryMock = sandbox.stub(client, 'query').returns(Promise.resolve());
       db = Db(undefined, log);
     });
+
     afterEach(() => {
       db.close();
     });
@@ -78,62 +81,82 @@ describe('lib/db', () => {
     it('should call client.connect if this is the first query', () => {
       connectMock.callsFake((fn) => fn());
       queryMock.returns(Promise.resolve());
+
       return db.query('query').then(() => {
-        expect(connectMock).to.be.calledOnce;
+        expect(connectMock).toHaveBeenCalledOnce();
       });
     });
+
     it('should not call client.connect on subsequent queries', () => {
       connectMock.callsFake((fn) => fn());
       queryMock.returns(Promise.resolve());
+
       return db
         .query('query_one')
         .then(() => db.query('query_two'))
         .then(() => {
-          expect(connectMock).to.be.calledOnce;
+          expect(connectMock).toHaveBeenCalledOnce();
         });
     });
+
     it('should call client.query with query', () => {
       connectMock.callsFake((fn) => fn());
       queryMock.returns(Promise.resolve());
+
       return db.query('query').then(() => {
         expect(queryMock.getCall(0).args[0]).to.equal('query');
       });
     });
+
     it('should not call client.query if client.connect fails', () => {
       const error = 'error';
+
       connectMock.callsFake((fn) => fn(error));
+
       return expect(db.query('query'))
         .to.eventually.be.rejectedWith(error)
         .then(() => expect(queryMock).to.not.been.called);
     });
+
     it('should resolve promise if query throws no error', () => {
       connectMock.callsFake((fn) => fn());
+
       const result = 'result';
+
       queryMock.returns(Promise.resolve(result));
+
       return expect(db.query('query')).to.eventually.equal(result);
     });
+
     it('should reject promise if query throws error', () => {
       connectMock.callsFake((fn) => fn());
+
       const error = 'error';
+
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       queryMock.returns(Promise.reject(error));
+
       return expect(db.query('query')).to.eventually.be.rejectedWith(error);
     });
   });
 
   describe('.close()', () => {
     let db: typeof Db;
+
     beforeEach(() => {
       sandbox.stub(pgMock, 'Client').returns(client);
       sandbox.stub(client, 'end').returns(Promise.resolve());
       db = Db();
     });
+
     afterEach(() => {
       db.close();
     });
 
     it('should call client.end', () => {
-      return db.close().then(() => expect(client.end).to.be.calledOnce);
+      return db.close().then(() => {
+        expect(client.end).toHaveBeenCalledOnce();
+      });
     });
   });
 });

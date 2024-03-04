@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as Indexes from '../src/operations/indexes';
 import { options1, options2 } from './utils';
 
@@ -13,6 +13,7 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
+
       expect(sql1).to.equal(
         'CREATE INDEX "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");'
       );
@@ -34,6 +35,7 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
+
       expect(sql1).to.equal(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someOpclass") WHERE some condition;'
       );
@@ -59,6 +61,7 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
+
       expect(sql1).to.equal(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someSchema"."someOpclass") WHERE some condition;'
       );
@@ -79,6 +82,7 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
+
       expect(sql1).to.equal(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" DESC) WHERE some condition;'
       );
@@ -95,6 +99,7 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
+
       expect(sql1).to.equal(
         'CREATE INDEX "zIndex" ON "xTable" ("yName") INCLUDE ("someOtherColumn");'
       );

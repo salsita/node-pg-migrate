@@ -1,6 +1,4 @@
-import { expect } from 'chai';
-import type { SinonSpy } from 'sinon';
-import sinon from 'sinon';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { DBConnection } from '../src/db';
 import { getTimestamp, Migration } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
@@ -19,7 +17,9 @@ describe('lib/migration', () => {
     warn: () => null,
     error: () => null,
   };
+
   const options = { migrationsTable } as RunnerOption;
+
   let migration;
   let queryMock: SinonSpy;
 
@@ -36,6 +36,7 @@ describe('lib/migration', () => {
 
     it('Should get timestamp for shortened iso format', () => {
       const now = new Date();
+
       expect(
         getTimestamp(logger, now.toISOString().replace(/[^\d]/g, ''))
       ).to.eql(now.valueOf());
@@ -52,6 +53,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('up').then(() => {
         expect(queryMock).to.be.called;
       });
@@ -66,6 +68,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('up').then(() => {
         expect(queryMock).to.be.called;
       });
@@ -80,6 +83,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('up').then(() => {
         expect(queryMock).to.not.be.called;
       });
@@ -94,6 +98,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('up').then(() => {
         expect(queryMock).to.have.callCount(4);
         expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');
@@ -107,6 +112,7 @@ describe('lib/migration', () => {
 
     it('should fail with an error message if the migration is invalid', () => {
       const invalidMigrationName = 'invalid-migration';
+
       migration = new Migration(
         dbMock,
         invalidMigrationName,
@@ -115,7 +121,9 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       const direction = 'up';
+
       let error;
       try {
         migration.apply(direction);
@@ -141,6 +149,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('down').then(() => {
         expect(queryMock).to.be.called;
       });
@@ -155,6 +164,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('down').then(() => {
         expect(queryMock).to.not.be.called;
       });
@@ -169,6 +179,7 @@ describe('lib/migration', () => {
         {},
         logger
       );
+
       return migration.apply('down').then(() => {
         expect(queryMock).to.have.callCount(4);
         expect(queryMock.getCall(0).args[0]).to.equal('BEGIN;');

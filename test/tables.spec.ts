@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as Tables from '../src/operations/tables';
 import { options1, options2 } from './utils';
 
@@ -15,6 +15,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
   "idColumn" serial
 );`);
@@ -27,6 +28,7 @@ describe('lib/operations/tables', () => {
       const args: CreateTableParams = ['myTableName', { idColumn: 'id' }];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "idColumn" serial PRIMARY KEY
 );`);
@@ -51,6 +53,7 @@ describe('lib/operations/tables', () => {
           idTest: { type: 'uuid', primaryKey: true },
         },
       })(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "idColumn" uuid PRIMARY KEY
 );`);
@@ -71,6 +74,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES "schemaA"."tableB"
 );`);
@@ -92,6 +96,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES "schemaA"."tableB" MATCH SIMPLE
 );`);
@@ -109,6 +114,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES schemaA.tableB(idColumn)
 );`);
@@ -127,6 +133,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
   "colA" integer,
   "colB" varchar,
@@ -159,6 +166,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
@@ -186,6 +194,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
@@ -213,6 +222,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
@@ -241,6 +251,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
@@ -275,6 +286,7 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer,
   CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable"
@@ -306,6 +318,7 @@ COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$exampl
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
+
       expect(sql1).to.equal(`CREATE TABLE "myTableName" (
   "colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a),
   "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo"
@@ -333,6 +346,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
           },
         },
       ];
+
       expect(() => Tables.createTable(options1)(...args)).to.throw(
         'cannot comment on unspecified constraints'
       );
@@ -347,6 +361,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       const args: DropColumnsParams = ['myTableName', ['colC1', 'colC2']];
       const sql1 = Tables.dropColumns(options1)(...args);
       const sql2 = Tables.dropColumns(options2)(...args);
+
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
   DROP "colC1",
   DROP "colC2";`);
@@ -365,6 +380,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
+
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
   ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`);
       expect(sql2).to.equal(`ALTER TABLE "my_table_name"
@@ -379,6 +395,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
+
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
   ADD CHECK name IS NOT NULL;`);
       expect(sql2).to.equal(`ALTER TABLE "my_table_name"
@@ -396,6 +413,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
+
       expect(sql1).to.equal(`ALTER TABLE "myTableName"
   ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
 COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an important primary key$pga$;`);

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import type { PgLiteralValue } from '../src/operations/generalTypes';
 import PgLiteral from '../src/operations/PgLiteral';
 import type { ColumnDefinitions } from '../src/operations/tablesTypes';
@@ -86,6 +86,7 @@ describe('lib/utils', () => {
     it('apply shorthand', () => {
       const shorthandName = 'type';
       const shorthandDefinition = { type: 'integer', defaultValue: 1 };
+
       expect(
         applyType(shorthandName, { [shorthandName]: shorthandDefinition })
       ).to.eql(shorthandDefinition);
@@ -96,6 +97,7 @@ describe('lib/utils', () => {
         ref: { type: `integer`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` },
       };
+
       expect(applyType('user', shorthands)).to.eql({
         type: `integer`,
         onDelete: `CASCADE`,
@@ -108,6 +110,7 @@ describe('lib/utils', () => {
         ref: { type: `user`, onDelete: `CASCADE` },
         user: { type: `ref`, references: `users` },
       };
+
       expect(() => applyType('user', shorthands)).to.throw();
     });
   });
@@ -176,6 +179,7 @@ describe('lib/utils', () => {
         'aac',
         'aad',
       ];
+
       results.forEach((res) => {
         expect(ids.next()).to.equal(res);
       });

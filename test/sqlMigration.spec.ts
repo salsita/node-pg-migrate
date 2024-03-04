@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import sinon from 'sinon';
+import { describe, expect, it } from 'vitest';
 import { getActions } from '../src/sqlMigration';
 
 describe('lib/sqlMigration', () => {
@@ -7,10 +6,12 @@ describe('lib/sqlMigration', () => {
     it('without comments', () => {
       const content = 'SELECT 1 FROM something';
       const { up, down } = getActions(content);
+
       expect(up).to.exist;
       expect(down).to.be.false;
 
       const sql = sinon.spy();
+
       expect(up({ sql })).to.not.exist;
       expect(sql.called).to.be.true;
       expect(sql.lastCall.args[0].trim()).to.eql(content.trim());
@@ -22,10 +23,12 @@ describe('lib/sqlMigration', () => {
 SELECT 1 FROM something
 `;
       const { up, down } = getActions(content);
+
       expect(up).to.exist;
       expect(down).to.be.false;
 
       const sql = sinon.spy();
+
       expect(up({ sql })).to.not.exist;
       expect(sql.called).to.be.true;
       expect(sql.lastCall.args[0].trim()).to.eql(content.trim());
@@ -39,16 +42,20 @@ SELECT 1 FROM something`;
 -- Down Migration
 SELECT 2 FROM something`;
       const content = `${upMigration}${downMigration}`;
+
       const { up, down } = getActions(content);
+
       expect(up).to.exist;
       expect(down).to.exist;
 
       const upSql = sinon.spy();
+
       expect(up({ sql: upSql })).to.not.exist;
       expect(upSql.called).to.be.true;
       expect(upSql.lastCall.args[0].trim()).to.eql(upMigration.trim());
 
       const downSql = sinon.spy();
+
       expect(down({ sql: downSql })).to.not.exist;
       expect(downSql.called).to.be.true;
       expect(downSql.lastCall.args[0].trim()).to.eql(downMigration.trim());
@@ -62,16 +69,20 @@ SELECT 1 FROM something`;
 -- Down Migration
 SELECT 2 FROM something`;
       const content = `${downMigration}${upMigration}`;
+
       const { up, down } = getActions(content);
+
       expect(up).to.exist;
       expect(down).to.exist;
 
       const upSql = sinon.spy();
+
       expect(up({ sql: upSql })).to.not.exist;
       expect(upSql.called).to.be.true;
       expect(upSql.lastCall.args[0].trim()).to.eql(upMigration.trim());
 
       const downSql = sinon.spy();
+
       expect(down({ sql: downSql })).to.not.exist;
       expect(downSql.called).to.be.true;
       expect(downSql.lastCall.args[0].trim()).to.eql(downMigration.trim());
@@ -85,16 +96,20 @@ SELECT 1 FROM something`;
   -- -- -- Down    migration to bring DB down
 SELECT 2 FROM something`;
       const content = `${upMigration}${downMigration}`;
+
       const { up, down } = getActions(content);
+
       expect(up).to.exist;
       expect(down).to.exist;
 
       const upSql = sinon.spy();
+
       expect(up({ sql: upSql })).to.not.exist;
       expect(upSql.called).to.be.true;
       expect(upSql.lastCall.args[0].trim()).to.eql(upMigration.trim());
 
       const downSql = sinon.spy();
+
       expect(down({ sql: downSql })).to.not.exist;
       expect(downSql.called).to.be.true;
       expect(downSql.lastCall.args[0].trim()).to.eql(downMigration.trim());
