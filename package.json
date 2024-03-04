@@ -4,6 +4,7 @@
   "description": "Postgresql database migration management tool for node.js",
   "scripts": {
     "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
+    "build:bin": "tsup-node ./bin/node-pg-migrate.ts --clean false --out-dir ./bin",
     "build:clean": "rimraf dist",
     "build:code": "tsup-node",
     "build:types": "tsc --project tsconfig.build.json",
@@ -13,7 +14,8 @@
     "ts-check": "tsc",
     "test": "cross-env NODE_ENV=test mocha --require ./mocha.bootstrap.js \"test/*.ts\"",
     "docs:dev": "docsify serve docs",
-    "migrate": "node bin/node-pg-migrate.js",
+    "migrate:run": "node bin/node-pg-migrate.js",
+    "migrate": "run-s build:bin migrate:run",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test ts-check"
   },
