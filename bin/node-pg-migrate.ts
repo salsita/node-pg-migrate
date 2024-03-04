@@ -365,7 +365,7 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = require(`file:${configFileName}`);
+  const jsonConfig = require(resolve(configFileName));
   readJson(jsonConfig);
 }
 
