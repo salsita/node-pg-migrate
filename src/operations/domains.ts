@@ -33,7 +33,7 @@ export function createDomain(mOptions: MigrationOptions): CreateDomain {
       constraintName,
     } = options;
 
-    const constraints = [];
+    const constraints: string[] = [];
 
     if (collation) {
       constraints.push(`COLLATE ${collation}`);
@@ -69,6 +69,7 @@ export function createDomain(mOptions: MigrationOptions): CreateDomain {
 
   _create.reverse = (domainName, type, options) =>
     dropDomain(mOptions)(domainName, options);
+
   return _create;
 }
 
