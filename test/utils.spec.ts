@@ -15,60 +15,58 @@ describe('lib/utils', () => {
     it("parse null to 'NULL'", () => {
       const value = null;
 
-      expect(escapeValue(value)).to.equal('NULL');
+      expect(escapeValue(value)).toBe('NULL');
     });
 
     it('parse boolean to string', () => {
       const value = true;
 
-      expect(escapeValue(value)).to.equal('true');
+      expect(escapeValue(value)).toBe('true');
     });
 
     it('escape string', () => {
       const value = '#escape_me';
 
-      expect(escapeValue(value)).to.equal('$pga$#escape_me$pga$');
+      expect(escapeValue(value)).toBe('$pga$#escape_me$pga$');
     });
 
     it('keep number as is', () => {
       const value = 77.7;
 
-      expect(escapeValue(value)).to.equal(77.7);
+      expect(escapeValue(value)).toBe(77.7);
     });
 
     it('parse array to ARRAY constructor syntax string', () => {
       const value = [[1], [2]];
       const value2 = [['a'], ['b']];
 
-      expect(escapeValue(value)).to.equal('ARRAY[[1],[2]]');
-      expect(escapeValue(value2)).to.equal(
-        'ARRAY[[$pga$a$pga$],[$pga$b$pga$]]'
-      );
+      expect(escapeValue(value)).toBe('ARRAY[[1],[2]]');
+      expect(escapeValue(value2)).toBe('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]');
     });
 
     it('parse PgLiteral to unescaped string', () => {
       const value = PgLiteral.create('@l|<e');
 
-      expect(escapeValue(value)).to.equal('@l|<e');
+      expect(escapeValue(value)).toBe('@l|<e');
     });
 
     it('parse object literal to unescaped string', () => {
       const value: PgLiteralValue = { literal: true, value: '@l|<e' };
 
-      expect(escapeValue(value)).to.equal('@l|<e');
+      expect(escapeValue(value)).toBe('@l|<e');
     });
 
     it('PgLiteral serialize to PgLiteralValue', () => {
       const value = PgLiteral.create('@l|<e');
       const literalValue = JSON.parse(JSON.stringify(value));
 
-      expect(escapeValue(literalValue)).to.equal('@l|<e');
+      expect(escapeValue(literalValue)).toBe('@l|<e');
     });
 
     it('parse unexpected type to empty string', () => {
       const value = undefined;
 
-      expect(escapeValue(value)).to.equal('');
+      expect(escapeValue(value)).toBe('');
     });
   });
 
@@ -76,11 +74,11 @@ describe('lib/utils', () => {
     it('convert string', () => {
       const type = 'type';
 
-      expect(applyType(type)).to.eql({ type });
+      expect(applyType(type)).toEqual({ type });
     });
 
     it('apply id shorthand', () => {
-      expect(applyType('id')).to.eql({ type: 'serial', primaryKey: true });
+      expect(applyType('id')).toEqual({ type: 'serial', primaryKey: true });
     });
 
     it('apply shorthand', () => {
@@ -89,7 +87,7 @@ describe('lib/utils', () => {
 
       expect(
         applyType(shorthandName, { [shorthandName]: shorthandDefinition })
-      ).to.eql(shorthandDefinition);
+      ).toEqual(shorthandDefinition);
     });
 
     it('apply recursive shorthand', () => {
@@ -98,7 +96,7 @@ describe('lib/utils', () => {
         user: { type: `ref`, references: `users` },
       };
 
-      expect(applyType('user', shorthands)).to.eql({
+      expect(applyType('user', shorthands)).toEqual({
         type: `integer`,
         onDelete: `CASCADE`,
         references: `users`,
@@ -111,7 +109,7 @@ describe('lib/utils', () => {
         user: { type: `ref`, references: `users` },
       };
 
-      expect(() => applyType('user', shorthands)).to.throw();
+      expect(() => applyType('user', shorthands)).toThrow();
     });
   });
 
@@ -124,7 +122,7 @@ describe('lib/utils', () => {
           string: 'string',
           name: { schema: 'schema', name: 'name' },
         })
-      ).to.equal('CREATE INDEX "string" ON "schema"."name" (id);');
+      ).toBe('CREATE INDEX "string" ON "schema"."name" (id);');
     });
 
     it('Do not escape PgLiteral', () => {
@@ -134,7 +132,7 @@ describe('lib/utils', () => {
         t('INSERT INTO s (id) VALUES {values};', {
           values: new PgLiteral(['s1', 's2'].map((e) => `('${e}')`).join(', ')),
         })
-      ).to.equal("INSERT INTO s (id) VALUES ('s1'), ('s2');");
+      ).toBe("INSERT INTO s (id) VALUES ('s1'), ('s2');");
     });
 
     it('Can use number', () => {
@@ -144,7 +142,7 @@ describe('lib/utils', () => {
         t('INSERT INTO s (id) VALUES ({values});', {
           values: 1,
         })
-      ).to.equal('INSERT INTO s (id) VALUES (1);');
+      ).toBe('INSERT INTO s (id) VALUES (1);');
     });
   });
 
@@ -181,7 +179,7 @@ describe('lib/utils', () => {
       ];
 
       results.forEach((res) => {
-        expect(ids.next()).to.equal(res);
+        expect(ids.next()).toBe(res);
       });
     });
   });

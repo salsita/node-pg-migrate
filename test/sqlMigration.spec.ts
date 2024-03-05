@@ -7,12 +7,12 @@ describe('lib/sqlMigration', () => {
       const content = 'SELECT 1 FROM something';
       const { up, down } = getActions(content);
 
-      expect(up).to.exist;
-      expect(down).to.be.false;
+      expect(up).toBeDefined();
+      expect(down).toBeFalsy();
 
       const sql = vi.fn();
 
-      expect(up({ sql })).to.not.exist;
+      expect(up({ sql })).not.toBeDefined();
       expect(sql).toHaveBeenCalled();
       expect(sql).toHaveBeenLastCalledWith(content.trim());
     });
@@ -24,12 +24,12 @@ SELECT 1 FROM something
 `;
       const { up, down } = getActions(content);
 
-      expect(up).to.exist;
-      expect(down).to.be.false;
+      expect(up).toBeDefined();
+      expect(down).toBeFalsy();
 
       const sql = vi.fn();
 
-      expect(up({ sql })).to.not.exist;
+      expect(up({ sql })).not.toBeDefined();
       expect(sql).toHaveBeenCalled();
       expect(sql).toHaveBeenLastCalledWith(content);
     });
@@ -47,18 +47,18 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).to.exist;
-      expect(down).to.exist;
+      expect(up).toBeDefined();
+      expect(down).toBeDefined();
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).to.not.exist;
+      expect(up({ sql: upSql })).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).to.not.exist;
+      expect(down({ sql: downSql })).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
@@ -76,18 +76,18 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).to.exist;
-      expect(down).to.exist;
+      expect(up).toBeDefined();
+      expect(down).toBeDefined();
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).to.not.exist;
+      expect(up({ sql: upSql })).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).to.not.exist;
+      expect(down({ sql: downSql })).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
@@ -105,18 +105,18 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).to.exist;
-      expect(down).to.exist;
+      expect(up).toBeDefined();
+      expect(down).toBeDefined();
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).to.not.exist;
+      expect(up({ sql: upSql })).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).to.not.exist;
+      expect(down({ sql: downSql })).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
