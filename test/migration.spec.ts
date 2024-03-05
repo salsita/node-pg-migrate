@@ -46,7 +46,7 @@ describe('lib/migration', () => {
   });
 
   describe('self.applyUp', () => {
-    it('normal operations: db.query should be called', () => {
+    it('normal operations: db.query should be called', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -56,12 +56,12 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('up').then(() => {
-        expect(queryMock).toHaveBeenCalled();
-      });
+      await migration.apply('up');
+
+      expect(queryMock).toHaveBeenCalled();
     });
 
-    it('normal operations: db.query should be called when returning promise', () => {
+    it('normal operations: db.query should be called when returning promise', async () => {
       const migration = new Migration(
         dbMock,
         promiseMigration,
@@ -71,12 +71,12 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('up').then(() => {
-        expect(queryMock).toHaveBeenCalled();
-      });
+      await migration.apply('up');
+
+      expect(queryMock).toHaveBeenCalled();
     });
 
-    it('--dry-run option: db.query should not be called', () => {
+    it('--dry-run option: db.query should not be called', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -86,12 +86,12 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('up').then(() => {
-        expect(queryMock).not.toHaveBeenCalled();
-      });
+      await migration.apply('up');
+
+      expect(queryMock).not.toHaveBeenCalled();
     });
 
-    it('should make proper SQL calls', () => {
+    it('should make proper SQL calls', async () => {
       const migration = new Migration(
         dbMock,
         promiseMigration,
@@ -101,19 +101,19 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('up').then(() => {
-        expect(queryMock).toHaveBeenCalledTimes(4);
-        expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
-        expect(queryMock).toHaveBeenNthCalledWith(
-          2,
-          expect.stringMatching('CREATE TABLE')
-        );
-        expect(queryMock).toHaveBeenNthCalledWith(
-          3,
-          expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
-        );
-        expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
-      });
+      await migration.apply('up');
+
+      expect(queryMock).toHaveBeenCalledTimes(4);
+      expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+      expect(queryMock).toHaveBeenNthCalledWith(
+        2,
+        expect.stringMatching('CREATE TABLE')
+      );
+      expect(queryMock).toHaveBeenNthCalledWith(
+        3,
+        expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
+      );
+      expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
     });
 
     it('should fail with an error message if the migration is invalid', () => {
@@ -130,23 +130,16 @@ describe('lib/migration', () => {
 
       const direction = 'up';
 
-      let error;
-      try {
-        migration.apply(direction);
-      } catch (err) {
-        error = err;
-      }
-
-      // expecting outside the catch block ensures that the test will fail if the
-      // an exception is not caught
-      expect(error.toString()).to.include(
-        `${invalidMigrationName} exporting a '${direction}' function`
+      expect(() => migration.apply(direction)).toThrow(
+        new Error(
+          `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
+        )
       );
     });
   });
 
   describe('self.applyDown', () => {
-    it('normal operations: db.query should be called', () => {
+    it('normal operations: db.query should be called', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -156,12 +149,12 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('down').then(() => {
-        expect(queryMock).toHaveBeenCalled();
-      });
+      await migration.apply('down');
+
+      expect(queryMock).toHaveBeenCalled();
     });
 
-    it('--dry-run option: db.query should not be called', () => {
+    it('--dry-run option: db.query should not be called', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -171,12 +164,12 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('down').then(() => {
-        expect(queryMock).not.toHaveBeenCalled();
-      });
+      await migration.apply('down');
+
+      expect(queryMock).not.toHaveBeenCalled();
     });
 
-    it('should make proper SQL calls', () => {
+    it('should make proper SQL calls', async () => {
       const migration = new Migration(
         dbMock,
         promiseMigration,
@@ -186,19 +179,19 @@ describe('lib/migration', () => {
         logger
       );
 
-      return migration.apply('down').then(() => {
-        expect(queryMock).toHaveBeenCalledTimes(4);
-        expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
-        expect(queryMock).toHaveBeenNthCalledWith(
-          2,
-          expect.stringMatching('DROP TABLE')
-        );
-        expect(queryMock).toHaveBeenNthCalledWith(
-          3,
-          expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
-        );
-        expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
-      });
+      await migration.apply('down');
+
+      expect(queryMock).toHaveBeenCalledTimes(4);
+      expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+      expect(queryMock).toHaveBeenNthCalledWith(
+        2,
+        expect.stringMatching('DROP TABLE')
+      );
+      expect(queryMock).toHaveBeenNthCalledWith(
+        3,
+        expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
+      );
+      expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
     });
   });
 });

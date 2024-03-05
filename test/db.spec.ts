@@ -91,32 +91,32 @@ describe('lib/db', () => {
       expect(hoisted.client.query).toHaveBeenCalledWith('query', undefined);
     });
 
-    it('should not call client.query if client.connect fails', async () => {
+    it('should not call client.query if client.connect fails', () => {
       const error = 'error';
 
       vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) =>
         fn(new Error(error))
       );
 
-      await expect(() => db.query('query')).rejects.toThrow(error);
+      expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.query).not.toHaveBeenCalled();
     });
 
-    it('should resolve promise if query throws no error', async () => {
+    it('should resolve promise if query throws no error', () => {
       const result = 'result';
 
       vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
       vi.spyOn(hoisted.client, 'query').mockResolvedValue(result);
 
-      await expect(db.query('query')).resolves.toBe(result);
+      expect(db.query('query')).resolves.toBe(result);
     });
 
-    it('should reject promise if query throws error', async () => {
+    it('should reject promise if query throws error', () => {
       const error = 'error';
 
       vi.spyOn(hoisted.client, 'query').mockRejectedValue(new Error(error));
 
-      await expect(() => db.query('query')).rejects.toThrow(error);
+      expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
   });
