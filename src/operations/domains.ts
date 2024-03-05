@@ -83,7 +83,7 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
       constraintName,
     } = options;
 
-    const actions = [];
+    const actions: string[] = [];
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');
