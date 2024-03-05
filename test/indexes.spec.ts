@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as Indexes from '../src/operations/indexes';
 import { options1, options2 } from './utils';
 
@@ -13,10 +13,11 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
+
+      expect(sql1).toBe(
         'CREATE INDEX "myTable_colA_colB_index" ON "mySchema"."myTable" ("colA", "colB");'
       );
-      expect(sql2).to.equal(
+      expect(sql2).toBe(
         'CREATE INDEX "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");'
       );
     });
@@ -34,10 +35,11 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
+
+      expect(sql1).toBe(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someOpclass") WHERE some condition;'
       );
-      expect(sql2).to.equal(
+      expect(sql2).toBe(
         'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" "some_opclass") WHERE some condition;'
       );
     });
@@ -59,10 +61,11 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
+
+      expect(sql1).toBe(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someSchema"."someOpclass") WHERE some condition;'
       );
-      expect(sql2).to.equal(
+      expect(sql2).toBe(
         'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" "some_schema"."some_opclass") WHERE some condition;'
       );
     });
@@ -79,10 +82,11 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
+
+      expect(sql1).toBe(
         'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" DESC) WHERE some condition;'
       );
-      expect(sql2).to.equal(
+      expect(sql2).toBe(
         'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" DESC) WHERE some condition;'
       );
     });
@@ -95,10 +99,11 @@ describe('lib/operations/indexes', () => {
       ];
       const sql1 = Indexes.createIndex(options1)(...args);
       const sql2 = Indexes.createIndex(options2)(...args);
-      expect(sql1).to.equal(
+
+      expect(sql1).toBe(
         'CREATE INDEX "zIndex" ON "xTable" ("yName") INCLUDE ("someOtherColumn");'
       );
-      expect(sql2).to.equal(
+      expect(sql2).toBe(
         'CREATE INDEX "z_index" ON "x_table" ("y_name") INCLUDE ("some_other_column");'
       );
     });

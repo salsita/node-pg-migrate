@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as Tables from '../src/operations/tables';
 import { options1, options2 } from './utils';
 
@@ -15,10 +15,11 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "mySchema"."myTableName" (
   "idColumn" serial
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_schema"."my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_schema"."my_table_name" (
   "id_column" serial
 );`);
     });
@@ -27,10 +28,11 @@ describe('lib/operations/tables', () => {
       const args: CreateTableParams = ['myTableName', { idColumn: 'id' }];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "idColumn" serial PRIMARY KEY
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "id_column" serial PRIMARY KEY
 );`);
     });
@@ -51,10 +53,11 @@ describe('lib/operations/tables', () => {
           idTest: { type: 'uuid', primaryKey: true },
         },
       })(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "idColumn" uuid PRIMARY KEY
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "id_column" uuid PRIMARY KEY
 );`);
     });
@@ -71,10 +74,11 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES "schemaA"."tableB"
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES "schema_a"."table_b"
 );`);
     });
@@ -92,10 +96,11 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES "schemaA"."tableB" MATCH SIMPLE
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES "schema_a"."table_b" MATCH SIMPLE
 );`);
     });
@@ -109,10 +114,11 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "parentId" integer REFERENCES schemaA.tableB(idColumn)
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "parent_id" integer REFERENCES schemaA.tableB(idColumn)
 );`);
     });
@@ -127,12 +133,13 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "mySchema"."myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "mySchema"."myTableName" (
   "colA" integer,
   "colB" varchar,
   CONSTRAINT "myTableName_pkey" PRIMARY KEY ("colA", "colB")
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_schema"."my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_schema"."my_table_name" (
   "col_a" integer,
   "col_b" varchar,
   CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("col_a", "col_b")
@@ -159,12 +166,13 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
   CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B)
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   "col_b" varchar,
   CONSTRAINT "my_table_name_fk_col_a_col_b" FOREIGN KEY ("col_a", "col_b") REFERENCES otherTable (A, B)
@@ -186,12 +194,13 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
   CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB")
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   "col_b" varchar,
   CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b")
@@ -213,12 +222,13 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
   CONSTRAINT "myTableName_uniq_colA" UNIQUE ("colA")
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   "col_b" varchar,
   CONSTRAINT "my_table_name_uniq_col_a" UNIQUE ("col_a")
@@ -241,14 +251,15 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer,
   "colB" varchar,
   "colC" varchar,
   CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"),
   CONSTRAINT "myTableName_uniq_colC" UNIQUE ("colC")
 );`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   "col_b" varchar,
   "col_c" varchar,
@@ -275,12 +286,13 @@ describe('lib/operations/tables', () => {
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer,
   CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable"
 );
 COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$example comment$pga$;`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer,
   CONSTRAINT "my_table_name_fk_col_a" FOREIGN KEY ("col_a") REFERENCES "other_table"
 );
@@ -306,13 +318,14 @@ COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$exampl
       ];
       const sql1 = Tables.createTable(options1)(...args);
       const sql2 = Tables.createTable(options2)(...args);
-      expect(sql1).to.equal(`CREATE TABLE "myTableName" (
+
+      expect(sql1).toBe(`CREATE TABLE "myTableName" (
   "colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a),
   "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo"
 );
 COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$fk a comment$pga$;
 COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pga$fk b comment$pga$;`);
-      expect(sql2).to.equal(`CREATE TABLE "my_table_name" (
+      expect(sql2).toBe(`CREATE TABLE "my_table_name" (
   "col_a" integer CONSTRAINT "my_table_name_fk_col_a" REFERENCES otherTable (a),
   "col_b" integer CONSTRAINT "fk_col_b" REFERENCES "other_table_two"
 );
@@ -333,10 +346,11 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
           },
         },
       ];
-      expect(() => Tables.createTable(options1)(...args)).to.throw(
+
+      expect(() => Tables.createTable(options1)(...args)).toThrow(
         'cannot comment on unspecified constraints'
       );
-      expect(() => Tables.createTable(options2)(...args)).to.throw(
+      expect(() => Tables.createTable(options2)(...args)).toThrow(
         'cannot comment on unspecified constraints'
       );
     });
@@ -347,10 +361,11 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       const args: DropColumnsParams = ['myTableName', ['colC1', 'colC2']];
       const sql1 = Tables.dropColumns(options1)(...args);
       const sql2 = Tables.dropColumns(options2)(...args);
-      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+
+      expect(sql1).toBe(`ALTER TABLE "myTableName"
   DROP "colC1",
   DROP "colC2";`);
-      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+      expect(sql2).toBe(`ALTER TABLE "my_table_name"
   DROP "col_c1",
   DROP "col_c2";`);
     });
@@ -365,9 +380,10 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
-      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+
+      expect(sql1).toBe(`ALTER TABLE "myTableName"
   ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`);
-      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+      expect(sql2).toBe(`ALTER TABLE "my_table_name"
   ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`);
     });
 
@@ -379,9 +395,10 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
-      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+
+      expect(sql1).toBe(`ALTER TABLE "myTableName"
   ADD CHECK name IS NOT NULL;`);
-      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+      expect(sql2).toBe(`ALTER TABLE "my_table_name"
   ADD CHECK name IS NOT NULL;`);
     });
 
@@ -396,10 +413,11 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`)
       ];
       const sql1 = Tables.addConstraint(options1)(...args);
       const sql2 = Tables.addConstraint(options2)(...args);
-      expect(sql1).to.equal(`ALTER TABLE "myTableName"
+
+      expect(sql1).toBe(`ALTER TABLE "myTableName"
   ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
 COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an important primary key$pga$;`);
-      expect(sql2).to.equal(`ALTER TABLE "my_table_name"
+      expect(sql2).toBe(`ALTER TABLE "my_table_name"
   ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
 COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an important primary key$pga$;`);
     });
