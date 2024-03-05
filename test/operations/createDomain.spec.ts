@@ -41,11 +41,10 @@ describe('operations', () => {
       );
     });
 
-    it('should return sql statement with domainOptions', () => {
+    it('should return sql statement with domainOptions collation and default', () => {
       const statement = createDomainFn('us_postal_code', 'TEXT', {
         collation: 'en_US',
         default: '12345',
-        constraintName: 'us_postal_code_check',
       });
 
       expect(statement).toBeTypeOf('string');
@@ -54,7 +53,7 @@ describe('operations', () => {
       );
     });
 
-    it('should return sql statement with domainOptions.check', () => {
+    it('should return sql statement with domainOptions check', () => {
       const statement = createDomainFn('us_postal_code', 'TEXT', {
         check: "VALUE ~ '^d{5}$'",
       });
@@ -62,6 +61,18 @@ describe('operations', () => {
       expect(statement).toBeTypeOf('string');
       expect(statement).toBe(
         'CREATE DOMAIN "us_postal_code" AS TEXT CHECK (VALUE ~ \'^d{5}$\');'
+      );
+    });
+
+    it('should return sql statement with domainOptions constraintName and notNull', () => {
+      const statement = createDomainFn('us_postal_code', 'TEXT', {
+        constraintName: 'us_postal_code_check',
+        notNull: true,
+      });
+
+      expect(statement).toBeTypeOf('string');
+      expect(statement).toBe(
+        'CREATE DOMAIN "us_postal_code" AS TEXT CONSTRAINT "us_postal_code_check" NOT NULL;'
       );
     });
 
