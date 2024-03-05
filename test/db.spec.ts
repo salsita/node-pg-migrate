@@ -4,20 +4,17 @@ import type { DBConnection } from '../src/db';
 import Db from '../src/db';
 import type { Logger } from '../src/types';
 
-const hoisted = vi.hoisted(() => {
-  const client = {
+const hoisted = vi.hoisted(() => ({
+  client: {
     connect: vi.fn(),
     end: vi.fn(),
     query: vi.fn(),
-  };
+  },
+}));
 
-  return { client };
-});
-
-vi.mock('pg', () => {
-  const Client = vi.fn().mockImplementation(() => hoisted.client);
-  return { Client };
-});
+vi.mock('pg', () => ({
+  Client: vi.fn().mockImplementation(() => hoisted.client),
+}));
 
 describe('lib/db', () => {
   const log: Logger = {
