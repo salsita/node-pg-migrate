@@ -48,10 +48,10 @@ describe('lib/db', () => {
 
       db = Db(mockClient, log);
 
-      return db.query('query').then(() => {
-        expect(mocked).toHaveBeenCalledOnce();
-        expect(mocked).toHaveBeenCalledWith('query', undefined);
-      });
+      await db.query('query');
+
+      expect(mocked).toHaveBeenCalledOnce();
+      expect(mocked).toHaveBeenCalledWith('query', undefined);
     });
   });
 
