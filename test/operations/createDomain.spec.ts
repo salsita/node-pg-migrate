@@ -5,15 +5,17 @@ import { options1 } from '../utils';
 
 describe('operations', () => {
   describe('createDomain', () => {
-    it('should return a function', () => {
-      const createDomainFn = createDomain(options1);
+    const createDomainFn = createDomain(options1);
 
+    it('should return a function', () => {
       expect(createDomainFn).toBeTypeOf('function');
     });
 
-    it('should return sql statement with string', () => {
-      const createDomainFn = createDomain(options1);
+    it('should contain a reverse function', () => {
+      expect(createDomainFn.reverse).toBeTypeOf('function');
+    });
 
+    it('should return sql statement with string', () => {
       const statement = createDomainFn('us_postal_code', 'TEXT');
 
       expect(statement).toBeTypeOf('string');
@@ -21,8 +23,6 @@ describe('operations', () => {
     });
 
     it('should return sql statement with PgType', () => {
-      const createDomainFn = createDomain(options1);
-
       const statement = createDomainFn('us_postal_code', PgType.TEXT);
 
       expect(statement).toBeTypeOf('string');
@@ -30,8 +30,6 @@ describe('operations', () => {
     });
 
     it('should return sql statement with string', () => {
-      const createDomainFn = createDomain(options1);
-
       const statement = createDomainFn(
         { schema: 'myschema', name: 'us_postal_code' },
         'TEXT'
@@ -44,8 +42,6 @@ describe('operations', () => {
     });
 
     it('should return sql statement with domainOptions', () => {
-      const createDomainFn = createDomain(options1);
-
       const statement = createDomainFn('us_postal_code', 'TEXT', {
         collation: 'en_US',
         default: '12345',
@@ -59,8 +55,6 @@ describe('operations', () => {
     });
 
     it('should return sql statement with domainOptions.check', () => {
-      const createDomainFn = createDomain(options1);
-
       const statement = createDomainFn('us_postal_code', 'TEXT', {
         check: "VALUE ~ '^d{5}$'",
       });
@@ -71,15 +65,7 @@ describe('operations', () => {
       );
     });
 
-    it('should contain a reverse function', () => {
-      const createDomainFn = createDomain(options1);
-
-      expect(createDomainFn.reverse).toBeTypeOf('function');
-    });
-
     it('should throw when notNull and check are passed', () => {
-      const createDomainFn = createDomain(options1);
-
       expect(() =>
         createDomainFn('us_postal_code', 'TEXT', {
           check: "VALUE ~ '^d{5}$'",
