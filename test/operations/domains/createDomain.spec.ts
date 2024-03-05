@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { PgType } from '../../src';
-import { createDomain } from '../../src/operations/domains';
-import { options1 } from '../utils';
+import { PgType } from '../../../src';
+import { createDomain } from '../../../src/operations/domains';
+import { options1 } from '../../utils';
 
 describe('operations', () => {
   describe('createDomain', () => {
