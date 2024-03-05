@@ -94,7 +94,7 @@ export function alterView(mOptions: MigrationOptions): AlterView {
       }
     }
 
-    const clauses = [];
+    const clauses: string[] = [];
     const withOptions = Object.keys(options)
       .filter((key) => options[key] !== null)
       .map(viewOptionStr(options))
