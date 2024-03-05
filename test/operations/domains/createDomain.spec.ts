@@ -11,10 +11,6 @@ describe('operations', () => {
       expect(createDomainFn).toBeTypeOf('function');
     });
 
-    it('should contain a reverse function', () => {
-      expect(createDomainFn.reverse).toBeTypeOf('function');
-    });
-
     it('should return sql statement with string', () => {
       const statement = createDomainFn('us_postal_code', 'TEXT');
 
@@ -85,6 +81,19 @@ describe('operations', () => {
       ).toThrow(
         new Error('"notNull" and "check" can\'t be specified together')
       );
+    });
+
+    describe('reverse', () => {
+      it('should contain a reverse function', () => {
+        expect(createDomainFn.reverse).toBeTypeOf('function');
+      });
+
+      it('should return sql statement', () => {
+        const statement = createDomainFn.reverse('us_postal_code', 'TEXT');
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe('DROP DOMAIN "us_postal_code";');
+      });
     });
   });
 });
