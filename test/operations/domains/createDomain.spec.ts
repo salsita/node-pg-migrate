@@ -29,7 +29,7 @@ describe('operations', () => {
       expect(statement).toBe('CREATE DOMAIN "us_postal_code" AS text;');
     });
 
-    it('should return sql statement with string', () => {
+    it('should return sql statement with schema', () => {
       const statement = createDomainFn(
         { schema: 'myschema', name: 'us_postal_code' },
         'TEXT'
