@@ -6,8 +6,15 @@ export default defineConfig({
     coverage: {
       all: true,
       provider: 'v8',
-      reporter: ['clover', 'cobertura', 'lcov', 'text'],
+      reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
       include: ['src'],
+      reportOnFailure: true,
+      thresholds: {
+        lines: 60,
+        branches: 60,
+        functions: 60,
+        statements: 60,
+      },
     },
     reporters: process.env.CI_PREFLIGHT
       ? ['basic', 'github-actions']

@@ -1,0 +1,39 @@
+name: Report Coverage
+
+on:
+  workflow_run:
+    workflows: ['Coverage']
+    types:
+      - completed
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: coverage-${{ github.head_ref }}
+          path: coverage
+
+      - name: Download main Artifacts
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: coverage-main
+          path: coverage-main
+
+      - name: Report Coverage
+        uses: davelosert/vitest-coverage-report-action@7cb62972347776255c2333807d26c60110c0df45 # v2.3.0
+        with:
+          json-summary-compare-path: coverage-main/coverage-summary.json
