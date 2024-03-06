@@ -25,7 +25,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: coverage-$GITHUB_HEAD_REF_SLUG
+          name: coverage-${{ env.GITHUB_HEAD_REF_SLUG }}
           path: coverage
 
       - name: Download main Artifacts

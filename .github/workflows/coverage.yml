@@ -47,7 +47,7 @@ jobs:
         if: ${{ matrix.branch != 'main' }}
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
-          name: coverage-$GITHUB_HEAD_REF_SLUG
+          name: coverage-${{ env.GITHUB_HEAD_REF_SLUG }}
           path: coverage
 
       - name: Upload main Coverage
