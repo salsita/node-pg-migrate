@@ -14,7 +14,7 @@
     "ts-check": "tsc",
     "test": "vitest",
     "test:update-snapshots": "vitest run -u",
-    "coverage": "vitest run --coverage",
+    "test:coverage": "vitest --coverage",
     "docs:dev": "docsify serve docs",
     "premigrate": "run-s build:bin",
     "migrate": "node bin/node-pg-migrate.js",
