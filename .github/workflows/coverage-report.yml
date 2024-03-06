@@ -15,7 +15,10 @@ jobs:
 
     steps:
       - name: Slugify variables
-        uses: rlespinasse/github-slug-action@102b1a064a9b145e56556e22b18b19c624538d94 # v4.4.1
+        uses: rlespinasse/slugify-value@a4879db1eb3db9bbee01dca36f98a8236c2b8239 # v1.4.0
+        with:
+          key: HEAD_REF
+          value: ${{ github.head_ref }}
 
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -25,7 +28,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: coverage-${{ env.GITHUB_HEAD_REF_SLUG }}
+          name: coverage-${{ env.HEAD_REF_SLUG }}
           path: coverage
 
       - name: Download main Artifacts
