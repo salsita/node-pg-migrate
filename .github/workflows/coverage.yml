@@ -17,6 +17,9 @@ jobs:
       contents: read
 
     steps:
+      - name: Slugify variables
+        uses: rlespinasse/github-slug-action@102b1a064a9b145e56556e22b18b19c624538d94 # v4.4.1
+
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -41,7 +44,15 @@ jobs:
         run: pnpm vitest --coverage
 
       - name: Upload Coverage
+        if: ${{ matrix.branch != 'main' }}
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
-          name: 'coverage-${{ matrix.branch }}'
+          name: coverage-$GITHUB_HEAD_REF_SLUG
+          path: coverage
+
+      - name: Upload main Coverage
+        if: ${{ matrix.branch == 'main' }}
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: coverage-main
           path: coverage

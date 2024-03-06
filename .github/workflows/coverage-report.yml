@@ -14,6 +14,9 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Slugify variables
+        uses: rlespinasse/github-slug-action@102b1a064a9b145e56556e22b18b19c624538d94 # v4.4.1
+
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
@@ -22,7 +25,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: 'coverage-${{ github.head_ref }}'
+          name: coverage-$GITHUB_HEAD_REF_SLUG
           path: coverage
 
       - name: Download main Artifacts
