@@ -30,6 +30,7 @@ module.exports = defineConfig({
     'no-else-return': 'error',
     'prefer-exponentiation-operator': 'error',
     'prefer-template': 'error',
+    quotes: 'off',
 
     '@typescript-eslint/array-type': [
       'error',
@@ -73,6 +74,7 @@ module.exports = defineConfig({
       { blankLine: 'always', prev: 'block-like', next: '*' },
     ],
     '@typescript-eslint/prefer-regexp-exec': 'error',
+    '@typescript-eslint/quotes': ['error', 'single', { avoidEscape: true }],
     // TODO @Shinigami92 2024-02-29: Enable restrict-template-expressions later
     // '@typescript-eslint/restrict-template-expressions': [
     //   'error',

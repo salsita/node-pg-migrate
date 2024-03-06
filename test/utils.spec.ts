@@ -92,21 +92,21 @@ describe('lib/utils', () => {
 
     it('apply recursive shorthand', () => {
       const shorthands: ColumnDefinitions = {
-        ref: { type: `integer`, onDelete: `CASCADE` },
-        user: { type: `ref`, references: `users` },
+        ref: { type: 'integer', onDelete: 'CASCADE' },
+        user: { type: 'ref', references: 'users' },
       };
 
       expect(applyType('user', shorthands)).toEqual({
-        type: `integer`,
-        onDelete: `CASCADE`,
-        references: `users`,
+        type: 'integer',
+        onDelete: 'CASCADE',
+        references: 'users',
       });
     });
 
     it('detect cycle in recursive shorthand', () => {
       const shorthands: ColumnDefinitions = {
-        ref: { type: `user`, onDelete: `CASCADE` },
-        user: { type: `ref`, references: `users` },
+        ref: { type: 'user', onDelete: 'CASCADE' },
+        user: { type: 'ref', references: 'users' },
       };
 
       expect(() => applyType('user', shorthands)).toThrow();

@@ -102,7 +102,7 @@ export function alterMaterializedView(
       if (cluster) {
         clauses.push(`CLUSTER ON ${mOptions.literal(cluster)}`);
       } else {
-        clauses.push(`SET WITHOUT CLUSTER`);
+        clauses.push('SET WITHOUT CLUSTER');
       }
     }
 
