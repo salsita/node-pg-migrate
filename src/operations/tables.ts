@@ -682,7 +682,7 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
   _add.reverse = (tableName, constraintName, options) => {
     if (constraintName === null) {
       throw new Error(
-        `Impossible to automatically infer down migration for addConstraint without naming constraint`
+        'Impossible to automatically infer down migration for addConstraint without naming constraint'
       );
     }
 

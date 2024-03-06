@@ -18,7 +18,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toStrictEqual(
-          `CREATE INDEX "title_idx" ON "films" ("title");`
+          'CREATE INDEX "title_idx" ON "films" ("title");'
         );
       });
 

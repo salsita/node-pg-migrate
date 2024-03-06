@@ -1,6 +1,6 @@
 const getMajorVersion = async (pgm) => {
   const [{ server_version: version }] = await pgm.db.select(
-    `SHOW "server_version"`
+    'SHOW "server_version"'
   );
   const [major] = version.split('.');
   return Number(major);
