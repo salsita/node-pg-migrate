@@ -1,0 +1,34 @@
+import { describe, expect, it } from 'vitest';
+import { dropFunction } from '../../../src/operations/functions';
+import { options1 } from '../../utils';
+
+describe('operations', () => {
+  describe('functions', () => {
+    describe('dropFunction', () => {
+      const dropFunctionFn = dropFunction(options1);
+
+      it('should return a function', () => {
+        expect(dropFunctionFn).toBeTypeOf('function');
+      });
+
+      it('should return sql statement', () => {
+        const statement = dropFunctionFn('sqrt', ['integer']);
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toStrictEqual('DROP FUNCTION "sqrt"(integer);');
+      });
+
+      it('should return sql statement with dropOptions', () => {
+        const statement = dropFunctionFn('sqrt', ['integer'], {
+          ifExists: true,
+          cascade: true,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toStrictEqual(
+          'DROP FUNCTION IF EXISTS "sqrt"(integer) CASCADE;'
+        );
+      });
+    });
+  });
+});
