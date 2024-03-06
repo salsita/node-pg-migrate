@@ -1,4 +1,4 @@
-name: Report Coverage
+name: Coverage Report
 
 on:
   workflow_run:
@@ -9,6 +9,11 @@ on:
 jobs:
   report:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch:
+          - ${{ github.head_ref }}
+          - 'main'
 
     permissions:
       pull-requests: write
@@ -17,18 +22,19 @@ jobs:
       - name: Slugify variables
         uses: rlespinasse/slugify-value@a4879db1eb3db9bbee01dca36f98a8236c2b8239 # v1.4.0
         with:
-          key: HEAD_REF
-          value: ${{ github.head_ref }}
+          key: BRANCH
+          value: ${{ matrix.branch }}
 
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Download Artifacts
+        if: ${{ env.BRANCH_SLUG != 'main' }}
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
-          name: coverage-${{ env.HEAD_REF_SLUG }}
+          name: coverage-${{ env.BRANCH_SLUG }}
           path: coverage
 
       - name: Download main Artifacts
