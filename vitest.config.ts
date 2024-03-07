@@ -11,9 +11,9 @@ export default defineConfig({
       reportOnFailure: true,
       thresholds: {
         lines: 55,
-        branches: 55,
+        statements: 50,
         functions: 53,
-        statements: 80,
+        branches: 80,
       },
     },
     reporters: process.env.CI_PREFLIGHT
