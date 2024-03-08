@@ -142,7 +142,7 @@ const operatorMap =
   ({ type, number, name, params = [] }: OperatorListDefinition) => {
     const nameStr = mOptions.literal(name);
 
-    if (String(type).toLowerCase() === 'function') {
+    if (String(type).toLowerCase() === 'operator') {
       if (params.length > 2) {
         throw new Error("Operator can't have more than 2 parameters");
       }
@@ -152,7 +152,7 @@ const operatorMap =
       return `OPERATOR ${number} ${nameStr}${paramsStr}`;
     }
 
-    if (String(type).toLowerCase() === 'operator') {
+    if (String(type).toLowerCase() === 'function') {
       const paramsStr = formatParams(params, mOptions);
 
       return `FUNCTION ${number} ${nameStr}${paramsStr}`;
@@ -267,7 +267,7 @@ export function createOperatorClass(
       .map(operatorMap(mOptions))
       .join(',\n  ');
 
-    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr} ${familyStr} AS
+    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr}${familyStr} AS
   ${operatorListStr};`;
   };
 

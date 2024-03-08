@@ -11,42 +11,42 @@ describe('operations', () => {
         expect(addToOperatorFamilyFn).toBeTypeOf('function');
       });
 
-      it.todo('should return sql statement', () => {
+      it('should return sql statement', () => {
         const statement = addToOperatorFamilyFn('integer_ops', 'btree', [
           {
+            type: 'operator',
+            number: 1,
             name: '<',
-            number: 1,
-            type: 'operator',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '<=',
+            type: 'operator',
             number: 2,
-            type: 'operator',
+            name: '<=',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '=',
+            type: 'operator',
             number: 3,
-            type: 'operator',
+            name: '=',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '>=',
+            type: 'operator',
             number: 4,
-            type: 'operator',
+            name: '>=',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '>',
+            type: 'operator',
             number: 5,
-            type: 'operator',
+            name: '>',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: 'btint42cmp',
-            number: 1,
             type: 'function',
+            number: 1,
+            name: 'btint42cmp',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
         ]);
@@ -63,45 +63,45 @@ describe('operations', () => {
         );
       });
 
-      it.todo('should return sql statement with schema', () => {
+      it('should return sql statement with schema', () => {
         const statement = addToOperatorFamilyFn(
           { name: 'integer_ops', schema: 'myschema' },
           'btree',
           [
             {
+              type: 'operator',
+              number: 1,
               name: '<',
-              number: 1,
-              type: 'operator',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '<=',
+              type: 'operator',
               number: 2,
-              type: 'operator',
+              name: '<=',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '=',
+              type: 'operator',
               number: 3,
-              type: 'operator',
+              name: '=',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '>=',
+              type: 'operator',
               number: 4,
-              type: 'operator',
+              name: '>=',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '>',
+              type: 'operator',
               number: 5,
-              type: 'operator',
+              name: '>',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: 'btint42cmp',
-              number: 1,
               type: 'function',
+              number: 1,
+              name: 'btint42cmp',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
           ]
@@ -124,45 +124,45 @@ describe('operations', () => {
           expect(addToOperatorFamilyFn.reverse).toBeTypeOf('function');
         });
 
-        it.todo('should return sql statement', () => {
+        it('should return sql statement', () => {
           const statement = addToOperatorFamilyFn.reverse(
             'integer_ops',
             'btree',
             [
               {
+                type: 'operator',
+                number: 1,
                 name: '<',
-                number: 1,
-                type: 'operator',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
               {
-                name: '<=',
+                type: 'operator',
                 number: 2,
-                type: 'operator',
+                name: '<=',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
               {
-                name: '=',
+                type: 'operator',
                 number: 3,
-                type: 'operator',
+                name: '=',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
               {
-                name: '>=',
+                type: 'operator',
                 number: 4,
-                type: 'operator',
+                name: '>=',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
               {
-                name: '>',
+                type: 'operator',
                 number: 5,
-                type: 'operator',
+                name: '>',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
               {
-                name: 'btint42cmp',
-                number: 1,
                 type: 'function',
+                number: 1,
+                name: 'btint42cmp',
                 params: [{ type: 'int4' }, { type: 'int2' }],
               },
             ]

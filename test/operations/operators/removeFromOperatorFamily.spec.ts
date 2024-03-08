@@ -11,25 +11,24 @@ describe('operations', () => {
         expect(removeFromOperatorFamilyFn).toBeTypeOf('function');
       });
 
-      it.todo('should return sql statement', () => {
-        // TODO @Shinigami92 2024-03-08: looks like type is flipped
+      it('should return sql statement', () => {
         const statement = removeFromOperatorFamilyFn('integer_ops', 'btree', [
           {
-            name: '',
             type: 'operator',
             number: 1,
+            name: '',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '',
             type: 'operator',
             number: 2,
+            name: '',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
           {
-            name: '',
             type: 'function',
             number: 1,
+            name: '',
             params: [{ type: 'int4' }, { type: 'int2' }],
           },
         ]);
@@ -43,28 +42,27 @@ describe('operations', () => {
         );
       });
 
-      it.todo('should return sql statement with schema', () => {
-        // TODO @Shinigami92 2024-03-08: looks like type is flipped
+      it('should return sql statement with schema', () => {
         const statement = removeFromOperatorFamilyFn(
           { name: 'integer_ops', schema: 'myschema' },
           'btree',
           [
             {
-              name: '',
               type: 'operator',
               number: 1,
+              name: '',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '',
               type: 'operator',
               number: 2,
+              name: '',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
             {
-              name: '',
               type: 'function',
               number: 1,
+              name: '',
               params: [{ type: 'int4' }, { type: 'int2' }],
             },
           ]
