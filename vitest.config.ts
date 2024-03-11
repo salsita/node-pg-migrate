@@ -10,10 +10,10 @@ export default defineConfig({
       include: ['src'],
       reportOnFailure: true,
       thresholds: {
-        lines: 57,
-        statements: 57,
-        functions: 57,
-        branches: 82,
+        lines: 60,
+        statements: 60,
+        functions: 60,
+        branches: 84,
       },
     },
     reporters: process.env.CI_PREFLIGHT
