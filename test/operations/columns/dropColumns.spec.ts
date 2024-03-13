@@ -35,7 +35,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(`ALTER TABLE "distributors"
-  DROP IF EXISTS"address";`);
+  DROP IF EXISTS "address";`);
       });
 
       it('should return sql statement with schema', () => {
