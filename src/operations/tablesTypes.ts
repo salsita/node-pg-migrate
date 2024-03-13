@@ -196,6 +196,7 @@ export type AlterColumn = (
 type CreateConstraintFn = (
   tableName: Name,
   constraintName: string | null,
+  // TODO @Shinigami92 2024-03-13: this needs to be `string | (ConstraintOptions & DropOptions)`
   expression: (string | ConstraintOptions) & DropOptions
 ) => string | string[];
 
