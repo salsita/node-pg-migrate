@@ -30,7 +30,7 @@ describe('runner', () => {
     }
   );
 
-  it('should execute a basic up migration', () => {
+  it('should execute a basic up migration', async () => {
     const executedMigrations: Array<{
       id: number;
       name: string;
@@ -99,7 +99,7 @@ describe('runner', () => {
       }),
     } as unknown as ClientBase;
 
-    expect(
+    await expect(
       runner({
         dbClient,
         migrationsTable: 'pgmigrations',
@@ -109,5 +109,88 @@ describe('runner', () => {
         direction: 'up',
       })
     ).resolves.not.toThrow();
+    expect(executedMigrations).toHaveLength(12);
+  });
+
+  it('should execute a basic down migration', async () => {
+    const executedMigrations: Array<{
+      id: number;
+      name: string;
+      run_on: Date;
+    }> = [
+      { id: 1, name: '004_table', run_on: new Date() },
+      { id: 2, name: '006_table_rename', run_on: new Date() },
+    ];
+
+    const dbClient = {
+      query: vi.fn((query) => {
+        switch (query) {
+          case 'select pg_try_advisory_lock(7241865325823964) as "lockObtained"': {
+            return Promise.resolve({
+              rows: [{ lockObtained: true }], // lock obtained
+            });
+          }
+
+          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+            return Promise.resolve({
+              rows: [{}], // migration table exists
+            });
+          }
+
+          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+            return Promise.resolve({}); // no primary key constraint found
+          }
+
+          case 'ALTER TABLE "public"."pgmigrations" ADD PRIMARY KEY (id)': {
+            return Promise.resolve({}); // primary key constraint added
+          }
+
+          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+            return Promise.resolve({
+              rows: executedMigrations,
+            });
+          }
+
+          case 'BEGIN;': {
+            return Promise.resolve({}); // transaction started
+          }
+
+          case 'COMMIT;': {
+            return Promise.resolve({}); // transaction committed
+          }
+
+          default: {
+            if (
+              query.startsWith(
+                'DELETE FROM "public"."pgmigrations" WHERE name='
+              )
+            ) {
+              // delete migration
+              executedMigrations.pop();
+
+              return Promise.resolve({}); // migration deleted
+            }
+
+            break;
+          }
+        }
+
+        // bypass migration queries
+        return Promise.resolve({ rows: [{}] });
+      }),
+    } as unknown as ClientBase;
+
+    await expect(
+      runner({
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        // We use cockroach migrations for now, as they are more simple
+        // We either could mock the migration files later or define specific migrations for unit-testing
+        dir: 'test/cockroach',
+        direction: 'down',
+        count: 2,
+      })
+    ).resolves.not.toThrow();
+    expect(executedMigrations).toHaveLength(0);
   });
 });
