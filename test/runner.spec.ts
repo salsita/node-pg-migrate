@@ -94,15 +94,20 @@ describe('runner', () => {
           }
         }
 
-        throw new Error('Unexpected query');
+        // bypass migration queries
+        return Promise.resolve({ rows: [{}] });
       }),
     } as unknown as ClientBase;
 
-    runner({
-      dbClient,
-      migrationsTable: 'pgmigrations',
-      dir: 'test/migrations',
-      direction: 'up',
-    });
+    expect(
+      runner({
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        // We use cockroach migrations for now, as they are more simple
+        // We either could mock the migration files later or define specific migrations for unit-testing
+        dir: 'test/cockroach',
+        direction: 'up',
+      })
+    ).resolves.not.toThrow();
   });
 });
