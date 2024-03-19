@@ -17,7 +17,7 @@ describe('operations', () => {
         const statement = createTableFn('films', {});
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('CREATE TABLE "films" (\n  \n);');
+        expect(statement).toBe('CREATE TABLE "films" (\n  \n);');
       });
 
       it('should return sql statement with tableOptions', () => {
@@ -42,7 +42,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE TABLE "films" (
   "code" char(5) PRIMARY KEY,
   "title" varchar(40) NOT NULL,
@@ -65,9 +65,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'CREATE TABLE "myschema"."films" (\n  \n);'
-        );
+        expect(statement).toBe('CREATE TABLE "myschema"."films" (\n  \n);');
       });
 
       describe('reverse', () => {

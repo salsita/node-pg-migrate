@@ -17,7 +17,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE INDEX "title_idx" ON "films" ("title");'
         );
       });
@@ -31,7 +31,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating");'
         );
       });
@@ -42,7 +42,7 @@ describe('operations', () => {
         ]);
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE INDEX "films_title_index" ON "myschema"."films" ("title" ASC);'
         );
       });

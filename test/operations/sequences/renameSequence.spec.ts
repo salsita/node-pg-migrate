@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = renameSequenceFn('serial', 'serial2');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'ALTER SEQUENCE "serial" RENAME TO "serial2";'
-        );
+        expect(statement).toBe('ALTER SEQUENCE "serial" RENAME TO "serial2";');
       });
 
       it('should return sql statement with schema', () => {
@@ -27,7 +25,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER SEQUENCE "myschema"."serial" RENAME TO "myschema"."serial2";'
         );
       });

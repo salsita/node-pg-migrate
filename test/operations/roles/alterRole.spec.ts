@@ -24,9 +24,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'ALTER ROLE "jonathan" WITH REPLICATION;'
-        );
+        expect(statement).toBe('ALTER ROLE "jonathan" WITH REPLICATION;');
       });
     });
   });

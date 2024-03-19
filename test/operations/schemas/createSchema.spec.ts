@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = createSchemaFn('myschema');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('CREATE SCHEMA "myschema";');
+        expect(statement).toBe('CREATE SCHEMA "myschema";');
       });
 
       it('should return sql statement with schemaOptions', () => {
@@ -25,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE SCHEMA IF NOT EXISTS "test" AUTHORIZATION joe;'
         );
       });

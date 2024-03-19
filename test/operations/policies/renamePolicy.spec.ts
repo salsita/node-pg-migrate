@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = renamePolicyFn('my_table', 'p1', 'p2');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER POLICY "p1" ON "my_table" RENAME TO "p2";'
         );
       });
@@ -28,7 +28,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER POLICY "p1" ON "myschema"."my_table" RENAME TO "p2";'
         );
       });

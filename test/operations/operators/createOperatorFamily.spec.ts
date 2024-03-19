@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = createOperatorFamilyFn('integer_ops', 'btree');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR FAMILY "integer_ops" USING btree;'
         );
       });
@@ -28,7 +28,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR FAMILY "integer_ops" USING btree;'
         );
       });
@@ -40,7 +40,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR FAMILY "myschema"."integer_ops" USING btree;'
         );
       });

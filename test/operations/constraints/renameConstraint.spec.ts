@@ -19,7 +19,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TABLE "distributors" RENAME CONSTRAINT "zipchk" TO "zip_check";'
         );
       });
@@ -32,7 +32,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TABLE "myschema"."distributors" RENAME CONSTRAINT "zipchk" TO "zip_check";'
         );
       });

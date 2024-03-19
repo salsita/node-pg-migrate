@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = createSequenceFn('serial');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`CREATE SEQUENCE "serial"
+        expect(statement).toBe(`CREATE SEQUENCE "serial"
   ;`);
       });
 
@@ -34,7 +34,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial"
   AS bigint
   INCREMENT BY 2
@@ -53,7 +53,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE SEQUENCE "myschema"."serial"
   ;`
         );
