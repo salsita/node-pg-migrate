@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropTypeFn('box');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP TYPE "box";');
+        expect(statement).toBe('DROP TYPE "box";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -25,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP TYPE IF EXISTS "box" CASCADE;');
+        expect(statement).toBe('DROP TYPE IF EXISTS "box" CASCADE;');
       });
     });
   });

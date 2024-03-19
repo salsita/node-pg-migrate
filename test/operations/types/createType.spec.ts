@@ -19,7 +19,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`CREATE TYPE "compfoo" AS (
+        expect(statement).toBe(`CREATE TYPE "compfoo" AS (
 "f1" integer,
 "f2" text
 );`);
@@ -38,7 +38,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE TYPE "myschema"."box" AS ENUM ($pga$cstring$pga$);'
         );
       });
