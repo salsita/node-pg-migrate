@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropRoleFn('jonathan');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP ROLE "jonathan";');
+        expect(statement).toBe('DROP ROLE "jonathan";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -24,7 +24,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP ROLE IF EXISTS "jonathan";');
+        expect(statement).toBe('DROP ROLE IF EXISTS "jonathan";');
       });
     });
   });

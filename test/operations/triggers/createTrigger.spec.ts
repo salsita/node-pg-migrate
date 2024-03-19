@@ -25,7 +25,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`CREATE TRIGGER "check_update"
+        expect(statement).toBe(`CREATE TRIGGER "check_update"
   BEFORE UPDATE ON "accounts"
   FOR EACH STATEMENT
   EXECUTE PROCEDURE "check_account_update"();`);
@@ -48,7 +48,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE OR REPLACE FUNCTION "check_account_update"()
   RETURNS trigger
   AS $pga$a$pga$
@@ -78,7 +78,7 @@ CREATE TRIGGER "check_update"
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE FUNCTION "check_update"()
   RETURNS trigger
   AS $pga$a$pga$

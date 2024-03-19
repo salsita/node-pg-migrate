@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = renameRoleFn('jonathan', 'davide');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'ALTER ROLE "jonathan" RENAME TO "davide";'
-        );
+        expect(statement).toBe('ALTER ROLE "jonathan" RENAME TO "davide";');
       });
 
       it('should return sql statement with schema', () => {
@@ -27,7 +25,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER ROLE "myschema"."jonathan" RENAME TO "myschema"."davide";'
         );
       });

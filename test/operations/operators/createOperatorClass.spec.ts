@@ -29,7 +29,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE OPERATOR CLASS "gist__int_ops" DEFAULT FOR TYPE "_int4" USING "gist"  AS
   FUNCTION 3 "&&"();`
         );

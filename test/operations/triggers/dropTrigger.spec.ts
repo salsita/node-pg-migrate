@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = dropTriggerFn('films', 'if_dist_exists');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP TRIGGER "if_dist_exists" ON "films";'
-        );
+        expect(statement).toBe('DROP TRIGGER "if_dist_exists" ON "films";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -27,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP TRIGGER IF EXISTS "if_dist_exists" ON "films" CASCADE;'
         );
       });

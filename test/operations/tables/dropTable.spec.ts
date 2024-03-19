@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropTableFn('films');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP TABLE "films";');
+        expect(statement).toBe('DROP TABLE "films";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -25,9 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP TABLE IF EXISTS "films" CASCADE;'
-        );
+        expect(statement).toBe('DROP TABLE IF EXISTS "films" CASCADE;');
       });
     });
   });

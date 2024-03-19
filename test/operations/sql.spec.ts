@@ -16,7 +16,7 @@ describe('operations', () => {
       });
 
       expect(statement).toBeTypeOf('string');
-      expect(statement).toStrictEqual('SELECT * FROM users WHERE id = 1;');
+      expect(statement).toBe('SELECT * FROM users WHERE id = 1;');
     });
   });
 });

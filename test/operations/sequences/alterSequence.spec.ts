@@ -16,7 +16,7 @@ describe('operations', () => {
         const statement = alterSequenceFn('serial', {});
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER SEQUENCE "serial"
+        expect(statement).toBe(`ALTER SEQUENCE "serial"
   ;`);
       });
 
@@ -26,7 +26,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER SEQUENCE "serial"
+        expect(statement).toBe(`ALTER SEQUENCE "serial"
   RESTART WITH 105;`);
       });
     });

@@ -30,7 +30,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `ALTER TABLE "distributors"
   ALTER "address" DROP DEFAULT,
   ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,

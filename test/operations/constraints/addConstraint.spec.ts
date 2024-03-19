@@ -16,7 +16,7 @@ describe('operations', () => {
         const statement = addConstraintFn('distributors', 'zipchk', {});
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER TABLE "distributors"
+        expect(statement).toBe(`ALTER TABLE "distributors"
   ADD ;`);
       });
 
@@ -28,7 +28,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER TABLE "distributors"
+        expect(statement).toBe(`ALTER TABLE "distributors"
   ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE,
   ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE,
   ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE;`);
@@ -45,7 +45,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `ALTER TABLE "myschema"."distributors"
   ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5);`
         );

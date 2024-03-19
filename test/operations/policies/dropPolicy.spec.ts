@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropPolicyFn('my_table', 'p1');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP POLICY "p1" ON "my_table";');
+        expect(statement).toBe('DROP POLICY "p1" ON "my_table";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -24,9 +24,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP POLICY IF EXISTS "p1" ON "my_table";'
-        );
+        expect(statement).toBe('DROP POLICY IF EXISTS "p1" ON "my_table";');
       });
     });
   });

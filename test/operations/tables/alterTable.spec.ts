@@ -20,7 +20,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER TABLE "films"
+        expect(statement).toBe(`ALTER TABLE "films"
     ;`);
       });
 
@@ -30,7 +30,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(`ALTER TABLE "distributors"
+        expect(statement).toBe(`ALTER TABLE "distributors"
     ENABLE ROW LEVEL SECURITY;`);
       });
     });

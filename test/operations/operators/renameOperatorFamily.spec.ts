@@ -19,7 +19,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER OPERATOR FAMILY "integer_ops" USING btree RENAME TO "integer_ops_new";'
         );
       });
@@ -32,7 +32,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER OPERATOR FAMILY "myschema"."integer_ops" USING btree RENAME TO "myschema"."integer_ops_new";'
         );
       });

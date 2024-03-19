@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = dropOperatorFamilyFn('float_ops', 'btree');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP OPERATOR FAMILY "float_ops" USING btree;'
-        );
+        expect(statement).toBe('DROP OPERATOR FAMILY "float_ops" USING btree;');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -27,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP OPERATOR FAMILY IF EXISTS "float_ops" USING btree CASCADE;'
         );
       });

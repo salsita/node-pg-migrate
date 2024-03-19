@@ -16,7 +16,7 @@ describe('operations', () => {
         const statement = alterPolicyFn('my_table', 'p1', {});
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('ALTER POLICY "p1" ON "my_table" ;');
+        expect(statement).toBe('ALTER POLICY "p1" ON "my_table" ;');
       });
 
       it('should return sql statement with policyOptions', () => {
@@ -27,7 +27,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER POLICY "p1" ON "my_table" TO CURRENT_USER USING (true) WITH CHECK (true);'
         );
       });

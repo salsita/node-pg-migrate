@@ -19,7 +19,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR === (PROCEDURE = "area_equal_function", LEFTARG = "box", RIGHTARG = "box");'
         );
       });
@@ -38,7 +38,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR === (PROCEDURE = "area_equal_function", LEFTARG = "box", RIGHTARG = "box", COMMUTATOR = ===, NEGATOR = !==, RESTRICT = "area_restriction_function", JOIN = "area_join_function", HASHES, MERGES);'
         );
       });
@@ -54,7 +54,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE OPERATOR myschema.=== (PROCEDURE = "area_equal_function", LEFTARG = "box", RIGHTARG = "box");'
         );
       });

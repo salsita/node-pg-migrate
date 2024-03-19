@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = renameTriggerFn('emp', 'emp_stamp', 'emp_track_chgs');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TRIGGER "emp_stamp" ON "emp" RENAME TO "emp_track_chgs";'
         );
       });
@@ -28,7 +28,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TRIGGER "emp_stamp" ON "myschema"."emp" RENAME TO "emp_track_chgs";'
         );
       });

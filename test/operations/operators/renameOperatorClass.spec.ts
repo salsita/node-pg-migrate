@@ -19,7 +19,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER OPERATOR CLASS "gist__int_ops" USING gist RENAME TO "gist__int_ops_new";'
         );
       });
@@ -32,7 +32,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER OPERATOR CLASS "myschema"."gist__int_ops" USING gist RENAME TO "myschema"."gist__int_ops_new";'
         );
       });

@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = createRoleFn('jonathan');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE ROLE "jonathan" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;'
         );
       });
@@ -38,7 +38,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE ROLE "miriam" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 10 ENCRYPTED PASSWORD $pga$jw8s0F4$pga$ VALID UNTIL $pga$2005-01-01$pga$ IN ROLE admin ROLE user ADMIN admin;'
         );
       });
@@ -47,7 +47,7 @@ describe('operations', () => {
         const statement = createRoleFn({ name: 'miriam', schema: 'myschema' });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'CREATE ROLE "myschema"."miriam" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;'
         );
       });

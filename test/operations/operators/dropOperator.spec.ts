@@ -18,9 +18,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP OPERATOR ^("integer", "integer");'
-        );
+        expect(statement).toBe('DROP OPERATOR ^("integer", "integer");');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -31,7 +29,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP OPERATOR IF EXISTS ~("none", "bit") CASCADE;'
         );
       });

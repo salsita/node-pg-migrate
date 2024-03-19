@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropIndexFn('title_idx', []);
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP INDEX "title_idx__index";');
+        expect(statement).toBe('DROP INDEX "title_idx__index";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -26,7 +26,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP INDEX CONCURRENTLY IF EXISTS "title_idx__index" CASCADE;'
         );
       });

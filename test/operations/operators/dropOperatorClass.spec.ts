@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = dropOperatorClassFn('widget_ops', 'btree');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP OPERATOR CLASS "widget_ops" USING btree;'
-        );
+        expect(statement).toBe('DROP OPERATOR CLASS "widget_ops" USING btree;');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -27,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP OPERATOR CLASS IF EXISTS "widget_ops" USING btree CASCADE;'
         );
       });

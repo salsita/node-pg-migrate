@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropSequenceFn('serial');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP SEQUENCE "serial";');
+        expect(statement).toBe('DROP SEQUENCE "serial";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -25,9 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP SEQUENCE IF EXISTS "serial" CASCADE;'
-        );
+        expect(statement).toBe('DROP SEQUENCE IF EXISTS "serial" CASCADE;');
       });
     });
   });

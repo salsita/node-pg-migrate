@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropSchemaFn('mystuff');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP SCHEMA "mystuff";');
+        expect(statement).toBe('DROP SCHEMA "mystuff";');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -25,9 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'DROP SCHEMA IF EXISTS "mystuff" CASCADE;'
-        );
+        expect(statement).toBe('DROP SCHEMA IF EXISTS "mystuff" CASCADE;');
       });
     });
   });

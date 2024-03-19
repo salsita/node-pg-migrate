@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = renameSchemaFn('test', 'myschema');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
-          'ALTER SCHEMA "test" RENAME TO "myschema";'
-        );
+        expect(statement).toBe('ALTER SCHEMA "test" RENAME TO "myschema";');
       });
 
       describe('reverse', () => {

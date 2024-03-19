@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropConstraintFn('distributors', 'zipchk');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TABLE "distributors" DROP CONSTRAINT "zipchk";'
         );
       });
@@ -27,7 +27,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TABLE "distributors" DROP CONSTRAINT IF EXISTS "zipchk" CASCADE;'
         );
       });
