@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = renameTypeFn('electronic_mail', 'email');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TYPE "electronic_mail" RENAME TO "email";'
         );
       });
@@ -27,7 +27,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'ALTER TYPE "myschema"."electronic_mail" RENAME TO "myschema"."email";'
         );
       });
