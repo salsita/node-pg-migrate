@@ -95,8 +95,8 @@
     "url": "https://github.com/salsita/node-pg-migrate.git"
   },
   "dependencies": {
-    "decamelize": "^5.0.0",
-    "mkdirp": "~1.0.0",
+    "decamelize": "^6.0.0",
+    "mkdirp": "~3.0.0",
     "yargs": "~17.7.0"
   },
   "devDependencies": {
