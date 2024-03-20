@@ -6,9 +6,10 @@
 [![npm version](https://badgen.net/npm/v/node-pg-migrate)](https://www.npmjs.com/package/node-pg-migrate)
 [![npm downloads](https://badgen.net/npm/dm/node-pg-migrate)](https://www.npmjs.com/package/node-pg-migrate)
 [![Continuous Integration](https://github.com/salsita/node-pg-migrate/actions/workflows/ci.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/ci.yml)
+[![Codecov](https://codecov.io/gh/salsita/node-pg-migrate/branch/main/graph/badge.svg?token=N61U168G08)](https://codecov.io/gh/salsita/node-pg-migrate)
 [![Postgres Test](https://github.com/salsita/node-pg-migrate/actions/workflows/postgres-test.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/postgres-test.yml)
 [![Cockroach Test](https://github.com/salsita/node-pg-migrate/actions/workflows/cockroach-test.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/cockroach-test.yml)
-![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
+![License](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
 
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)  
 Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to [Salsita Software](https://www.salsitasoft.com/) and now maintained by [@Shinigami92](https://github.com/Shinigami92).

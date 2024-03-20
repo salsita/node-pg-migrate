@@ -137,3 +137,35 @@ jobs:
       - name: Check file was created
         run: |
           [ $(ls -1 migrations | wc -l) -eq 1 ]
+
+  codecov:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: 'Codecov: node-20, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+
+      - name: Set node version to 20
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Generate coverage report
+        run: pnpm vitest run --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@54bcd8715eee62d40e33596ef5e8f0f48dbbccab # v4.1.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
