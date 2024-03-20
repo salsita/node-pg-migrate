@@ -6,7 +6,7 @@ import type {
   QueryConfig,
   QueryResult,
 } from 'pg';
-import type * as domains from './operations/domainsTypes';
+import type * as domains from './operations/domains';
 import type * as extensions from './operations/extensionsTypes';
 import type * as functions from './operations/functionsTypes';
 import type { Name } from './operations/generalTypes';

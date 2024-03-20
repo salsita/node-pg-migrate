@@ -6,7 +6,7 @@ export type {
   DomainOptionsCreate,
   DropDomain,
   RenameDomain,
-} from './operations/domainsTypes';
+} from './operations/domains';
 export type {
   CreateExtension,
   CreateExtensionOptions,
