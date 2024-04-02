@@ -7,7 +7,8 @@ export default defineConfig({
       all: true,
       provider: 'v8',
       reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
-      include: ['src'],
+      include: ['src', 'bin'],
+      exclude: ['src/operations/*Types.ts'],
       reportOnFailure: true,
       thresholds: {
         lines: 90,
