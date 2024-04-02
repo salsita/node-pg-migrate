@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRole } from '../../../src/operations/roles';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('roles', () => {
@@ -50,6 +50,28 @@ describe('operations', () => {
         expect(statement).toBe(
           'CREATE ROLE "myschema"."miriam" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;'
         );
+      });
+
+      it.each([
+        // should check defaults
+        [
+          'should check defaults 1',
+          options1,
+          ['roleTest', undefined],
+          'CREATE ROLE "roleTest" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;',
+        ],
+        [
+          'should check defaults 2',
+          options2,
+          ['roleTest', undefined],
+          'CREATE ROLE "role_test" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;',
+        ],
+      ] as const)('%s', (_, optionPreset, [roleName, options], expected) => {
+        const createRoleFn = createRole(optionPreset);
+        const statement = createRoleFn(roleName, options);
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(expected);
       });
 
       describe('reverse', () => {
