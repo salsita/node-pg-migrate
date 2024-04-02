@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dropColumns } from '../../../src/operations/tables';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('columns', () => {
@@ -52,6 +52,36 @@ describe('operations', () => {
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(`ALTER TABLE "myschema"."distributors"
   DROP "address";`);
+      });
+
+      it.each([
+        // should drop multiple columns
+        [
+          'should drop multiple columns 1',
+          options1,
+          ['myTableName', ['colC1', 'colC2']],
+          `ALTER TABLE "myTableName"
+  DROP "colC1",
+  DROP "colC2";`,
+        ],
+        [
+          'should drop multiple columns 2',
+          options2,
+          ['myTableName', ['colC1', 'colC2']],
+          `ALTER TABLE "my_table_name"
+  DROP "col_c1",
+  DROP "col_c2";`,
+        ],
+      ] as const)('%s', (_, optionPreset, [tableName, columns], expected) => {
+        const dropColumnsFn = dropColumns(optionPreset);
+        const statement = dropColumnsFn(
+          tableName,
+          // @ts-expect-error: ignore readonly
+          columns
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(expected);
       });
     });
   });
