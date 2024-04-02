@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addConstraint } from '../../../src/operations/tables';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('constraints', () => {
@@ -50,6 +50,88 @@ describe('operations', () => {
   ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5);`
         );
       });
+
+      it.each([
+        // should works with strings
+        [
+          'should works with strings 1',
+          options1,
+          ['myTableName', 'myConstraintName', 'CHECK name IS NOT NULL'],
+          `ALTER TABLE "myTableName"
+  ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`,
+        ],
+        [
+          'should works with strings 2',
+          options2,
+          ['myTableName', 'myConstraintName', 'CHECK name IS NOT NULL'],
+          `ALTER TABLE "my_table_name"
+  ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`,
+        ],
+        // should not add constraint name if not defined
+        [
+          'should not add constraint name if not defined 1',
+          options1,
+          ['myTableName', null, 'CHECK name IS NOT NULL'],
+          `ALTER TABLE "myTableName"
+  ADD CHECK name IS NOT NULL;`,
+        ],
+        [
+          'should not add constraint name if not defined 2',
+          options2,
+          ['myTableName', null, 'CHECK name IS NOT NULL'],
+          `ALTER TABLE "my_table_name"
+  ADD CHECK name IS NOT NULL;`,
+        ],
+        // should create comments
+        [
+          'should create comments 1',
+          options1,
+          [
+            'myTableName',
+            'myConstraintName',
+            {
+              primaryKey: 'colA',
+              comment: 'this is an important primary key',
+            },
+          ],
+          `ALTER TABLE "myTableName"
+  ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
+COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an important primary key$pga$;`,
+        ],
+        [
+          'should create comments 2',
+          options2,
+          [
+            'myTableName',
+            'myConstraintName',
+            {
+              primaryKey: 'colA',
+              comment: 'this is an important primary key',
+            },
+          ],
+          `ALTER TABLE "my_table_name"
+  ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
+COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an important primary key$pga$;`,
+        ],
+      ] as const)(
+        '%s',
+        (
+          _,
+          optionPreset,
+          [tableName, constraintName, expression],
+          expected
+        ) => {
+          const addConstraintFn = addConstraint(optionPreset);
+          const statement = addConstraintFn(
+            tableName,
+            constraintName,
+            expression
+          );
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe(expected);
+        }
+      );
 
       describe('reverse', () => {
         it('should contain a reverse function', () => {
