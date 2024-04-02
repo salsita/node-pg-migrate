@@ -77,7 +77,7 @@ export function createMaterializedView(
     const columnsStr = columnNames ? `(${columnNames})` : '';
     const withOptionsStr = withOptions ? ` WITH (${withOptions})` : '';
     const tablespaceStr = tablespace
-      ? `TABLESPACE ${mOptions.literal(tablespace)}`
+      ? ` TABLESPACE ${mOptions.literal(tablespace)}`
       : '';
     const dataStr = dataClause(data);
     const viewNameStr = mOptions.literal(viewName);
