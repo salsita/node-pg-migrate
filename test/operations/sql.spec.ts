@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sql } from '../../src/operations/other';
-import { options1 } from '../utils';
+import { options1 } from '../presetMigrationOptions';
 
 describe('operations', () => {
   describe('sql', () => {

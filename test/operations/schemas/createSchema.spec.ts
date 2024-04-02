@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSchema } from '../../../src/operations/schemas';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('schemas', () => {

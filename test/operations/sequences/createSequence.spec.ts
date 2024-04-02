@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSequence } from '../../../src/operations/sequences';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('sequences', () => {

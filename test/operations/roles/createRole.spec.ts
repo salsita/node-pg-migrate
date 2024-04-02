@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRole } from '../../../src/operations/roles';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('roles', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alterPolicy } from '../../../src/operations/policies';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('policies', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alterColumn } from '../../../src/operations/tables';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('columns', () => {
