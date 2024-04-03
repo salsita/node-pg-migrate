@@ -14,9 +14,9 @@ const TYPE_ADAPTERS = Object.freeze({
   bool: 'boolean',
 });
 
-const defaultTypeShorthands: ColumnDefinitions = {
+const DEFAULT_TYPE_SHORTHANDS: Readonly<ColumnDefinitions> = Object.freeze({
   id: { type: 'serial', primaryKey: true }, // convenience type for serial primary keys
-};
+});
 
 // some convenience adapters -- see above
 export function applyTypeAdapters(type: string): string {
@@ -25,11 +25,11 @@ export function applyTypeAdapters(type: string): string {
     : type;
 }
 
-function toType(type: string | ColumnDefinition): ColumnDefinition {
+function toType(type: string | Readonly<ColumnDefinition>): ColumnDefinition {
   return typeof type === 'string' ? { type } : type;
 }
 
-function removeType<TColumnDefinition extends ColumnDefinition>({
+function removeType<TColumnDefinition extends Readonly<ColumnDefinition>>({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type,
   ...rest
@@ -38,11 +38,11 @@ function removeType<TColumnDefinition extends ColumnDefinition>({
 }
 
 export function applyType(
-  type: Type,
-  extendingTypeShorthands: ColumnDefinitions = {}
+  type: Readonly<Type>,
+  extendingTypeShorthands: Readonly<ColumnDefinitions> = {}
 ): ColumnDefinition & FunctionParamType {
   const typeShorthands: ColumnDefinitions = {
-    ...defaultTypeShorthands,
+    ...DEFAULT_TYPE_SHORTHANDS,
     ...extendingTypeShorthands,
   };
 
