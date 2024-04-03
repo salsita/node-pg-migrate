@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PgType } from '../../../src';
 import { setTypeAttribute } from '../../../src/operations/types';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('types', () => {

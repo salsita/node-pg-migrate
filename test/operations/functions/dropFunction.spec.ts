@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dropFunction } from '../../../src/operations/functions';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('functions', () => {

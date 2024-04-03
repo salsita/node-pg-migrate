@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renameTrigger } from '../../../src/operations/triggers';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('triggers', () => {

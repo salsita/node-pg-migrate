@@ -11,7 +11,7 @@ const migrationsTable = 'pgmigrations';
 const actionsCallback = require(`./${callbackMigration}`);
 const actionsPromise = require(`./${promiseMigration}`);
 
-describe('lib/migration', () => {
+describe('migration', () => {
   const dbMock = {} as DBConnection;
 
   const logger: Logger = {
@@ -46,7 +46,7 @@ describe('lib/migration', () => {
   });
 
   describe('self.applyUp', () => {
-    it('normal operations: db.query should be called', async () => {
+    it('should call db.query on normal operations', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -61,7 +61,7 @@ describe('lib/migration', () => {
       expect(queryMock).toHaveBeenCalled();
     });
 
-    it('normal operations: db.query should be called when returning promise', async () => {
+    it('should call db.query when returning promise on normal operations', async () => {
       const migration = new Migration(
         dbMock,
         promiseMigration,
@@ -76,7 +76,7 @@ describe('lib/migration', () => {
       expect(queryMock).toHaveBeenCalled();
     });
 
-    it('--dry-run option: db.query should not be called', async () => {
+    it('should not call db.query on --dry-run', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -139,7 +139,7 @@ describe('lib/migration', () => {
   });
 
   describe('self.applyDown', () => {
-    it('normal operations: db.query should be called', async () => {
+    it('should call db.query on normal operations', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,
@@ -154,7 +154,7 @@ describe('lib/migration', () => {
       expect(queryMock).toHaveBeenCalled();
     });
 
-    it('--dry-run option: db.query should not be called', async () => {
+    it('should not call db.query on --dry-run', async () => {
       const migration = new Migration(
         dbMock,
         callbackMigration,

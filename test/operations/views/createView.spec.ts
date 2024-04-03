@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createView } from '../../../src/operations/views';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('views', () => {
