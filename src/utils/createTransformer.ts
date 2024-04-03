@@ -2,12 +2,11 @@ import { escapeValue } from '.';
 import type { Name, Value } from '../operations/generalTypes';
 import type { Literal } from '../types';
 
-export function createTransformer(literal: Literal) {
-  return (
-    statement: string,
-    mapping?: { [key: string]: Name | Value }
-  ): string =>
-    Object.keys(mapping || {}).reduce((str: string, param) => {
+export function createTransformer(
+  literal: Literal
+): (statement: string, mapping?: { [key: string]: Name | Value }) => string {
+  return (statement, mapping = {}) =>
+    Object.keys(mapping).reduce((str, param) => {
       const val = mapping?.[param];
       return str.replace(
         new RegExp(`{${param}}`, 'g'),
