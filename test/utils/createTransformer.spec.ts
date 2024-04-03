@@ -5,7 +5,12 @@ import { createSchemalize, createTransformer } from '../../src/utils';
 describe('utils', () => {
   describe('createTransformer', () => {
     it('should handle string and Name', () => {
-      const t = createTransformer(createSchemalize(true, true));
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
 
       const actual = t('CREATE INDEX {string} ON {name} (id);', {
         string: 'string',
@@ -16,7 +21,12 @@ describe('utils', () => {
     });
 
     it('should not escape PgLiteral', () => {
-      const t = createTransformer(createSchemalize(true, true));
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
 
       const actual = t('INSERT INTO s (id) VALUES {values};', {
         values: new PgLiteral(['s1', 's2'].map((e) => `('${e}')`).join(', ')),
@@ -26,7 +36,12 @@ describe('utils', () => {
     });
 
     it('should use number', () => {
-      const t = createTransformer(createSchemalize(true, true));
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
 
       const actual = t('INSERT INTO s (id) VALUES ({values});', {
         values: 1,
@@ -36,7 +51,12 @@ describe('utils', () => {
     });
 
     it('should fallback to empty mapping', () => {
-      const t = createTransformer(createSchemalize(true, true));
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
 
       const actual = t('INSERT INTO s (id) VALUES ({values});');
 
@@ -44,7 +64,12 @@ describe('utils', () => {
     });
 
     it('should fallback to empty string for undefined value', () => {
-      const t = createTransformer(createSchemalize(true, true));
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
 
       const actual = t('INSERT INTO s (id) VALUES ({values});', {
         // @ts-expect-error: JS-only test
