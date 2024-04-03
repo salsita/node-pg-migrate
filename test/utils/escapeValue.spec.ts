@@ -8,63 +8,100 @@ describe('utils', () => {
     it("should parse null to 'NULL'", () => {
       const value = null;
 
-      expect(escapeValue(value)).toBe('NULL');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('NULL');
     });
 
     it('should parse boolean to string', () => {
       const value = true;
 
-      expect(escapeValue(value)).toBe('true');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('true');
     });
 
     it('should escape string', () => {
       const value = '#escape_me';
 
-      expect(escapeValue(value)).toBe('$pga$#escape_me$pga$');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toMatch(/^\$pga\$.*\$pga\$$/);
+      expect(actual).toBe('$pga$#escape_me$pga$');
     });
 
     it('should keep number as is', () => {
       const value = 77.7;
 
-      expect(escapeValue(value)).toBe(77.7);
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('number');
+      expect(actual).toBe(77.7);
     });
 
     it('should parse array to ARRAY constructor syntax string', () => {
       const value = [[1], [2]];
-      const value2 = [['a'], ['b']];
 
-      expect(escapeValue(value)).toBe('ARRAY[[1],[2]]');
-      expect(escapeValue(value2)).toBe('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('ARRAY[[1],[2]]');
+    });
+
+    it('should parse array to ARRAY constructor syntax escape string', () => {
+      const value = [['a'], ['b']];
+
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]');
     });
 
     it('should parse PgLiteral to unescaped string', () => {
-      const value = PgLiteral.create('@l|<e');
+      const input = '@l|<e';
+      const value = PgLiteral.create(input);
 
-      expect(escapeValue(value)).toBe('@l|<e');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe(input);
     });
 
     it('should parse object literal to unescaped string', () => {
-      const value: PgLiteralValue = { literal: true, value: '@l|<e' };
+      const input = '@l|<e';
+      const value: PgLiteralValue = { literal: true, value: input };
 
-      expect(escapeValue(value)).toBe('@l|<e');
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe(input);
     });
 
     it('should serialize PgLiteral to PgLiteralValue', () => {
-      const value = PgLiteral.create('@l|<e');
+      const input = '@l|<e';
+      const value = PgLiteral.create(input);
       const literalValue = JSON.parse(JSON.stringify(value));
 
-      expect(escapeValue(literalValue)).toBe('@l|<e');
+      const actual = escapeValue(literalValue);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe(input);
     });
 
+    // TODO @Shinigami92 2024-04-03: Should this throw an error?
     it('should parse unexpected type to empty string', () => {
       const value = undefined;
 
-      expect(
-        escapeValue(
-          // @ts-expect-error: JS-only test
-          value
-        )
-      ).toBe('');
+      const actual = escapeValue(
+        // @ts-expect-error: JS-only test
+        value
+      );
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('');
     });
   });
 });
