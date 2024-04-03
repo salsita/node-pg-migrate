@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getActions } from '../src/sqlMigration';
 
-describe('lib/sqlMigration', () => {
+describe('sqlMigration', () => {
   describe('getActions', () => {
-    it('without comments', () => {
+    it('should migrate without comments', () => {
       const content = 'SELECT 1 FROM something';
       const { up, down } = getActions(content);
 
@@ -17,7 +17,7 @@ describe('lib/sqlMigration', () => {
       expect(sql).toHaveBeenLastCalledWith(content.trim());
     });
 
-    it('with up comment', () => {
+    it('should migrate with up comment', () => {
       const content = `
 -- Up Migration
 SELECT 1 FROM something
@@ -34,7 +34,7 @@ SELECT 1 FROM something
       expect(sql).toHaveBeenLastCalledWith(content);
     });
 
-    it('with both comments', () => {
+    it('should migrate with up and down comments', () => {
       const upMigration = `
 -- Up Migration
 SELECT 1 FROM something
@@ -63,7 +63,7 @@ SELECT 2 FROM something
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
 
-    it('with both comments in reverse order', () => {
+    it('should migrate with up and down comments in reverse order', () => {
       const upMigration = `
 -- Up Migration
 SELECT 1 FROM something
@@ -92,7 +92,7 @@ SELECT 2 FROM something
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
 
-    it('with both comments with some chars added', () => {
+    it('should migrate with up and down comments with some chars added', () => {
       const upMigration = `
  -- - up Migration to do Up migration
 SELECT 1 FROM something

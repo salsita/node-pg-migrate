@@ -7,13 +7,18 @@ export default defineConfig({
       all: true,
       provider: 'v8',
       reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
-      include: ['src'],
+      include: [
+        'src',
+        // TODO @Shinigami92 2024-04-02: Add 'bin' folder in another PR
+        //'bin'
+      ],
+      exclude: ['src/operations/*Types.ts'],
       reportOnFailure: true,
       thresholds: {
-        lines: 55,
-        statements: 50,
-        functions: 53,
-        branches: 80,
+        lines: 90,
+        statements: 90,
+        functions: 90,
+        branches: 85,
       },
     },
     reporters: process.env.CI_PREFLIGHT

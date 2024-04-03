@@ -10,33 +10,33 @@ import {
   StringIdGenerator,
 } from '../src/utils';
 
-describe('lib/utils', () => {
-  describe('.escapeValue', () => {
-    it("parse null to 'NULL'", () => {
+describe('utils', () => {
+  describe('escapeValue', () => {
+    it("should parse null to 'NULL'", () => {
       const value = null;
 
       expect(escapeValue(value)).toBe('NULL');
     });
 
-    it('parse boolean to string', () => {
+    it('should parse boolean to string', () => {
       const value = true;
 
       expect(escapeValue(value)).toBe('true');
     });
 
-    it('escape string', () => {
+    it('should escape string', () => {
       const value = '#escape_me';
 
       expect(escapeValue(value)).toBe('$pga$#escape_me$pga$');
     });
 
-    it('keep number as is', () => {
+    it('should keep number as is', () => {
       const value = 77.7;
 
       expect(escapeValue(value)).toBe(77.7);
     });
 
-    it('parse array to ARRAY constructor syntax string', () => {
+    it('should parse array to ARRAY constructor syntax string', () => {
       const value = [[1], [2]];
       const value2 = [['a'], ['b']];
 
@@ -44,44 +44,44 @@ describe('lib/utils', () => {
       expect(escapeValue(value2)).toBe('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]');
     });
 
-    it('parse PgLiteral to unescaped string', () => {
+    it('should parse PgLiteral to unescaped string', () => {
       const value = PgLiteral.create('@l|<e');
 
       expect(escapeValue(value)).toBe('@l|<e');
     });
 
-    it('parse object literal to unescaped string', () => {
+    it('should parse object literal to unescaped string', () => {
       const value: PgLiteralValue = { literal: true, value: '@l|<e' };
 
       expect(escapeValue(value)).toBe('@l|<e');
     });
 
-    it('PgLiteral serialize to PgLiteralValue', () => {
+    it('should serialize PgLiteral to PgLiteralValue', () => {
       const value = PgLiteral.create('@l|<e');
       const literalValue = JSON.parse(JSON.stringify(value));
 
       expect(escapeValue(literalValue)).toBe('@l|<e');
     });
 
-    it('parse unexpected type to empty string', () => {
+    it('should parse unexpected type to empty string', () => {
       const value = undefined;
 
       expect(escapeValue(value)).toBe('');
     });
   });
 
-  describe('.applyType', () => {
-    it('convert string', () => {
+  describe('applyType', () => {
+    it('should convert string', () => {
       const type = 'type';
 
       expect(applyType(type)).toEqual({ type });
     });
 
-    it('apply id shorthand', () => {
+    it('should apply id shorthand', () => {
       expect(applyType('id')).toEqual({ type: 'serial', primaryKey: true });
     });
 
-    it('apply shorthand', () => {
+    it('should apply shorthand', () => {
       const shorthandName = 'type';
       const shorthandDefinition = { type: 'integer', defaultValue: 1 };
 
@@ -90,7 +90,7 @@ describe('lib/utils', () => {
       ).toEqual(shorthandDefinition);
     });
 
-    it('apply recursive shorthand', () => {
+    it('should apply recursive shorthand', () => {
       const shorthands: ColumnDefinitions = {
         ref: { type: 'integer', onDelete: 'CASCADE' },
         user: { type: 'ref', references: 'users' },
@@ -103,7 +103,7 @@ describe('lib/utils', () => {
       });
     });
 
-    it('detect cycle in recursive shorthand', () => {
+    it('should detect cycle in recursive shorthand', () => {
       const shorthands: ColumnDefinitions = {
         ref: { type: 'user', onDelete: 'CASCADE' },
         user: { type: 'ref', references: 'users' },
@@ -113,8 +113,8 @@ describe('lib/utils', () => {
     });
   });
 
-  describe('.createTransformer', () => {
-    it('handle string and Name', () => {
+  describe('createTransformer', () => {
+    it('should handle string and Name', () => {
       const t = createTransformer(createSchemalize(true, true));
 
       expect(
@@ -125,7 +125,7 @@ describe('lib/utils', () => {
       ).toBe('CREATE INDEX "string" ON "schema"."name" (id);');
     });
 
-    it('Do not escape PgLiteral', () => {
+    it('should not escape PgLiteral', () => {
       const t = createTransformer(createSchemalize(true, true));
 
       expect(
@@ -135,7 +135,7 @@ describe('lib/utils', () => {
       ).toBe("INSERT INTO s (id) VALUES ('s1'), ('s2');");
     });
 
-    it('Can use number', () => {
+    it('should use number', () => {
       const t = createTransformer(createSchemalize(true, true));
 
       expect(
@@ -146,8 +146,8 @@ describe('lib/utils', () => {
     });
   });
 
-  describe('.StringIdGenerator', () => {
-    it('generates correct sequence', () => {
+  describe('StringIdGenerator', () => {
+    it('should generate correct sequence', () => {
       const chars = 'abcd';
 
       const ids = new StringIdGenerator(chars);
