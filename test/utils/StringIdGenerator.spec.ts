@@ -3,7 +3,16 @@ import { StringIdGenerator } from '../../src/utils';
 
 describe('utils', () => {
   describe('StringIdGenerator', () => {
-    it('should generate correct sequence', () => {
+    it('should generate correct sequence with default chars', () => {
+      const ids = new StringIdGenerator();
+      const results = [...'abcdefghijklmnopqrstuvwxyz', 'aa', 'ab'];
+
+      results.forEach((res) => {
+        expect(ids.next()).toBe(res);
+      });
+    });
+
+    it('should generate correct sequence with custom chars', () => {
       const chars = 'abcd';
 
       const ids = new StringIdGenerator(chars);
