@@ -1,3 +1,5 @@
+// TODO @Shinigami92 2024-04-03: Can this be fully rewritten to a generator function?
+
 // credits to https://stackoverflow.com/a/12504061/4790644
 export class StringIdGenerator {
   private ids: number[] = [0];
