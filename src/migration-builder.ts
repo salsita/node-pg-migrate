@@ -341,8 +341,8 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
     const options: MigrationOptions = {
       typeShorthands,
-      schemalize: createSchemalize(shouldDecamelize, false),
-      literal: createSchemalize(shouldDecamelize, true),
+      schemalize: createSchemalize({ shouldDecamelize, shouldQuote: false }),
+      literal: createSchemalize({ shouldDecamelize, shouldQuote: true }),
       logger,
     };
 
