@@ -2,8 +2,10 @@ import { applyType, escapeValue } from '.';
 import type { FunctionParam } from '../operations/functionsTypes';
 import type { MigrationOptions } from '../types';
 
-function formatParam(mOptions: MigrationOptions) {
-  return (param: FunctionParam) => {
+function formatParam(
+  mOptions: MigrationOptions
+): (param: FunctionParam) => string {
+  return (param) => {
     const {
       mode,
       name,
@@ -34,7 +36,7 @@ function formatParam(mOptions: MigrationOptions) {
 }
 
 export function formatParams(
-  params: FunctionParam[],
+  params: ReadonlyArray<FunctionParam>,
   mOptions: MigrationOptions
 ): string {
   return `(${params.map(formatParam(mOptions)).join(', ')})`;
