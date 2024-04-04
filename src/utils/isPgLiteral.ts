@@ -1,10 +1,11 @@
-import type PgLiteral from '../operations/PgLiteral';
+import PgLiteral from '../operations/PgLiteral';
 
 export function isPgLiteral(val: unknown): val is PgLiteral {
   return (
-    typeof val === 'object' &&
-    val !== null &&
-    'literal' in val &&
-    (val as { literal: unknown }).literal === true
+    val instanceof PgLiteral ||
+    (typeof val === 'object' &&
+      val !== null &&
+      'literal' in val &&
+      (val as { literal: unknown }).literal === true)
   );
 }
