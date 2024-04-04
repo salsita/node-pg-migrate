@@ -251,36 +251,6 @@ let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
 let tsconfigPath = argv[tsconfigArg];
 
-function readTsconfig() {
-  if (tsconfigPath) {
-    let tsconfig;
-    const json5 = tryRequire('json5');
-
-    try {
-      const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
-        encoding: 'utf-8',
-      });
-      tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
-    } catch (err) {
-      console.error("Can't load tsconfig.json:", err);
-    }
-
-    const tsnode = tryRequire('ts-node');
-    if (!tsnode) {
-      console.error("For TypeScript support, please install 'ts-node' module");
-    }
-
-    if (tsconfig && tsnode) {
-      tsnode.register(tsconfig);
-      if (!MIGRATIONS_FILE_LANGUAGE) {
-        MIGRATIONS_FILE_LANGUAGE = 'ts';
-      }
-    } else {
-      process.exit(1);
-    }
-  }
-}
-
 function readJson(json) {
   if (typeof json === 'object') {
     SCHEMA = typeof SCHEMA !== 'undefined' ? SCHEMA : json[schemaArg];
@@ -369,7 +339,10 @@ if (configFileName) {
   readJson(jsonConfig);
 }
 
-readTsconfig();
+if (tsconfigPath) {
+  process.env.TSX_TSCONFIG_PATH = tsconfigPath;
+}
+require('tsx/cjs');
 
 const action = argv._.shift();
 
