@@ -42,6 +42,21 @@ describe('utils', () => {
   ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE`);
     });
 
+    it('should be immutable', () => {
+      const lines: ReadonlyArray<string> = Object.freeze([
+        'CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE',
+        'CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE',
+        'CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE',
+      ]);
+      const actual = formatLines(lines, '  ADD ');
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual)
+        .toBe(`  ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE,
+  ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE,
+  ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE`);
+    });
+
     it('should replace newlines with a whitespace', () => {
       const actual = formatLines(['a\r\nb', 'c\rd', 'e\nf']);
 

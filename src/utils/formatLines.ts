@@ -1,5 +1,5 @@
 export function formatLines(
-  lines: string[],
+  lines: ReadonlyArray<string>,
   replace = '  ',
   separator = ','
 ): string {
