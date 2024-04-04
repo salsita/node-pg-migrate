@@ -1,4 +1,4 @@
-export function getSchemas(schema?: string | string[]): string[] {
+export function getSchemas(schema?: string | ReadonlyArray<string>): string[] {
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(
     (s): s is string => typeof s === 'string' && s.length > 0
   );
