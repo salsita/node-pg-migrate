@@ -72,6 +72,7 @@ module.exports = defineConfig({
       'error',
       { ignoreParameters: true },
     ],
+    '@typescript-eslint/no-non-null-assertion': 'warn',
     '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'off', // requires `strictNullChecks` to be enabled
     '@typescript-eslint/no-unsafe-assignment': 'off',

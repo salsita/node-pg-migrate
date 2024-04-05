@@ -14,5 +14,5 @@
     "noImplicitOverride": true,
     "skipLibCheck": true
   },
-  "exclude": ["node_modules", "templates", "dist", "bin", "migrations"]
+  "exclude": ["node_modules", "templates", "dist", "migrations"]
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import type { DotenvConfigOptions } from 'dotenv';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { format } from 'node:util';
@@ -7,6 +8,8 @@ import type { ClientConfig } from 'pg';
 import ConnectionParameters from 'pg/lib/connection-parameters';
 import yargs from 'yargs/yargs';
 import { default as migrationRunner, Migration } from '../dist';
+import type { RunnerOption } from '../src';
+import type { FilenameFormat } from '../src/migration';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
@@ -17,7 +20,10 @@ function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
     return require(moduleName);
   } catch (err) {
-    if (err.code !== 'MODULE_NOT_FOUND') {
+    if (
+      // @ts-expect-error: TS doesn't know about code property
+      err?.code !== 'MODULE_NOT_FOUND'
+    ) {
       throw err;
     }
 
@@ -200,7 +206,10 @@ if (argv.help || argv._.length === 0) {
 const envPath = argv[envPathArg];
 
 // Create default dotenv config
-const dotenvConfig = { silent: true };
+const dotenvConfig: DotenvConfigOptions & { silent: boolean } = {
+  // TODO @Shinigami92 2024-04-05: Does the silent option even still exists and do anything?
+  silent: true,
+};
 
 // If the path has been configured, add it to the config, otherwise don't change the default dotenv path
 if (envPath) {
@@ -227,8 +236,12 @@ let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
-let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
-let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg];
+let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
+  migrationFileLanguageArg
+] as 'js' | 'ts' | 'sql' | undefined;
+let MIGRATIONS_FILENAME_FORMAT: `${FilenameFormat}` | undefined = argv[
+  migrationFilenameFormatArg
+] as `${FilenameFormat}` | undefined;
 let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
@@ -265,80 +278,127 @@ function readTsconfig() {
   }
 }
 
-function readJson(json) {
-  if (typeof json === 'object') {
-    SCHEMA = typeof SCHEMA !== 'undefined' ? SCHEMA : json[schemaArg];
-    CREATE_SCHEMA =
-      typeof CREATE_SCHEMA !== 'undefined'
-        ? CREATE_SCHEMA
-        : json[createSchemaArg];
-    MIGRATIONS_DIR =
-      typeof MIGRATIONS_DIR !== 'undefined'
-        ? MIGRATIONS_DIR
-        : json[migrationsDirArg];
-    MIGRATIONS_SCHEMA =
-      typeof MIGRATIONS_SCHEMA !== 'undefined'
-        ? MIGRATIONS_SCHEMA
-        : json[migrationsSchemaArg];
-    CREATE_MIGRATIONS_SCHEMA =
-      typeof CREATE_MIGRATIONS_SCHEMA !== 'undefined'
-        ? CREATE_MIGRATIONS_SCHEMA
-        : json[createMigrationsSchemaArg];
-    MIGRATIONS_TABLE =
-      typeof MIGRATIONS_TABLE !== 'undefined'
-        ? MIGRATIONS_TABLE
-        : json[migrationsTableArg];
-    MIGRATIONS_FILE_LANGUAGE =
-      typeof MIGRATIONS_FILE_LANGUAGE !== 'undefined'
-        ? MIGRATIONS_FILE_LANGUAGE
-        : json[migrationFileLanguageArg];
-    MIGRATIONS_FILENAME_FORMAT =
-      typeof MIGRATIONS_FILENAME_FORMAT !== 'undefined'
-        ? MIGRATIONS_FILENAME_FORMAT
-        : json[migrationFilenameFormatArg];
-    TEMPLATE_FILE_NAME =
-      typeof TEMPLATE_FILE_NAME !== 'undefined'
-        ? TEMPLATE_FILE_NAME
-        : json[templateFileNameArg];
-    IGNORE_PATTERN =
-      typeof IGNORE_PATTERN !== 'undefined'
-        ? IGNORE_PATTERN
-        : json[ignorePatternArg];
-    CHECK_ORDER =
-      typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg];
-    VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg];
-    DECAMELIZE =
-      typeof DECAMELIZE !== 'undefined' ? DECAMELIZE : json[decamelizeArg];
-    DB_CONNECTION =
-      typeof DB_CONNECTION !== 'undefined'
-        ? DB_CONNECTION
-        : process.env[json[databaseUrlVarArg]];
-    tsconfigPath =
-      typeof tsconfigPath !== 'undefined' ? tsconfigPath : json[tsconfigArg];
-    if (json.url) {
-      DB_CONNECTION =
-        typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json.url;
-    } else if (json.host || json.port || json.name || json.database) {
-      DB_CONNECTION =
-        typeof DB_CONNECTION !== 'undefined'
-          ? DB_CONNECTION
-          : {
-              user: json.user,
-              host: json.host || 'localhost',
-              database: json.name || json.database,
-              password: json.password,
-              port: json.port || 5432,
-              ssl: json.ssl,
-            };
+function applyIf<TArg, TKey extends string = string>(
+  arg: TArg,
+  key: TKey,
+  obj: { [k in TKey]?: unknown },
+  condition: (val: (typeof obj)[TKey]) => val is TArg
+): TArg {
+  if (arg !== undefined && !(key in obj)) {
+    return arg;
+  }
+
+  const val = obj[key];
+
+  return condition(val) ? val : arg;
+}
+
+function isString(val: unknown): val is string {
+  return typeof val === 'string';
+}
+
+function isBoolean(val: unknown): val is boolean {
+  return typeof val === 'boolean';
+}
+
+function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    (('host' in val &&
+      // @ts-expect-error: this is a TS 4.8 bug
+      !!val.host) ||
+      ('port' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.port) ||
+      ('name' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.name) ||
+      ('database' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.database))
+  );
+}
+
+function readJson(json: unknown): void {
+  if (typeof json === 'object' && json !== null) {
+    SCHEMA = applyIf(SCHEMA, schemaArg, json, (val): val is string[] =>
+      Array.isArray(val)
+    );
+    CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
+    MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
+    MIGRATIONS_SCHEMA = applyIf(
+      MIGRATIONS_SCHEMA,
+      migrationsSchemaArg,
+      json,
+      isString
+    );
+    CREATE_MIGRATIONS_SCHEMA = applyIf(
+      CREATE_MIGRATIONS_SCHEMA,
+      createMigrationsSchemaArg,
+      json,
+      isBoolean
+    );
+    MIGRATIONS_TABLE = applyIf(
+      MIGRATIONS_TABLE,
+      migrationsTableArg,
+      json,
+      isString
+    );
+    MIGRATIONS_FILE_LANGUAGE = applyIf(
+      MIGRATIONS_FILE_LANGUAGE,
+      migrationFileLanguageArg,
+      json,
+      (val): val is 'js' | 'ts' | 'sql' =>
+        val === 'js' || val === 'ts' || val === 'sql'
+    );
+    MIGRATIONS_FILENAME_FORMAT = applyIf(
+      MIGRATIONS_FILENAME_FORMAT,
+      migrationFilenameFormatArg,
+      json,
+      (val): val is `${FilenameFormat}` => val === 'timestamp' || val === 'utc'
+    );
+    TEMPLATE_FILE_NAME = applyIf(
+      TEMPLATE_FILE_NAME,
+      templateFileNameArg,
+      json,
+      isString
+    );
+    IGNORE_PATTERN = applyIf(IGNORE_PATTERN, ignorePatternArg, json, isString);
+    CHECK_ORDER = applyIf(CHECK_ORDER, checkOrderArg, json, isBoolean);
+    VERBOSE = applyIf(VERBOSE, verboseArg, json, isBoolean);
+    DECAMELIZE = applyIf(DECAMELIZE, decamelizeArg, json, isBoolean);
+    DB_CONNECTION = applyIf(
+      DB_CONNECTION,
+      databaseUrlVarArg,
+      json,
+      (val): val is string | ConnectionParameters | ClientConfig =>
+        typeof val === 'string' || typeof val === 'object'
+    );
+    tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
+
+    // @ts-expect-error: this is a TS 4.8 bug
+    if ('url' in json && json.url && isString(json.url)) {
+      // @ts-expect-error: this is a TS 4.8 bug
+      DB_CONNECTION ??= json.url;
+    } else if (isClientConfig(json)) {
+      DB_CONNECTION ??= {
+        user: json.user,
+        host: json.host || 'localhost',
+        database: json.name || json.database,
+        password: json.password,
+        port: json.port || 5432,
+        ssl: json.ssl,
+      };
     }
   } else {
-    DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json;
+    DB_CONNECTION ??= json as string | ConnectionParameters | ClientConfig;
   }
 }
 
 // Load config (and suppress the no-config-warning)
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
-process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
+process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
 const config = tryRequire<typeof import('config')>('config');
 if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
@@ -358,17 +418,14 @@ readTsconfig();
 const action = argv._.shift();
 
 // defaults
-MIGRATIONS_DIR =
-  typeof MIGRATIONS_DIR === 'undefined'
-    ? `${process.cwd()}/migrations`
-    : MIGRATIONS_DIR;
-MIGRATIONS_TABLE =
-  typeof MIGRATIONS_TABLE === 'undefined' ? 'pgmigrations' : MIGRATIONS_TABLE;
-SCHEMA = typeof SCHEMA === 'undefined' ? 'public' : SCHEMA;
-IGNORE_PATTERN =
-  typeof IGNORE_PATTERN === 'undefined' ? '\\..*' : IGNORE_PATTERN;
-CHECK_ORDER = typeof CHECK_ORDER === 'undefined' ? true : CHECK_ORDER;
-VERBOSE = typeof VERBOSE === 'undefined' ? true : VERBOSE;
+MIGRATIONS_DIR ??= `${process.cwd()}/migrations`;
+MIGRATIONS_FILE_LANGUAGE ??= 'js';
+MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
+MIGRATIONS_TABLE ??= 'pgmigrations';
+SCHEMA ??= ['public'];
+IGNORE_PATTERN ??= '\\..*';
+CHECK_ORDER ??= true;
+VERBOSE ??= true;
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
@@ -427,14 +484,15 @@ if (action === 'create') {
     console.log('no lock');
   }
 
-  const updownArg = argv._.length ? argv._[0] : null;
-  let numMigrations;
-  let migrationName;
+  const upDownArg = argv._.length ? argv._[0] : null;
+  let numMigrations: number;
+  let migrationName: string;
 
-  if (updownArg !== null) {
+  if (upDownArg !== null) {
+    const parsedUpDownArg = parseInt(`${upDownArg}`, 10);
     // eslint-disable-next-line eqeqeq
-    if (parseInt(updownArg, 10) == updownArg) {
-      numMigrations = parseInt(updownArg, 10);
+    if (parsedUpDownArg == upDownArg) {
+      numMigrations = parsedUpDownArg;
     } else {
       migrationName = argv._.join('-').replace(/_ /g, '-');
     }
@@ -445,24 +503,36 @@ if (action === 'create') {
       ? { connectionString: DB_CONNECTION }
       : DB_CONNECTION;
 
-  const options = (direction, _count, _timestamp) => {
+  const options: (
+    direction: 'up' | 'down',
+    count?: number,
+    timestamp?: boolean
+  ) => RunnerOption = (direction, _count, _timestamp) => {
     const count = _count === undefined ? numMigrations : _count;
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
+
     return {
       dryRun,
       databaseUrl: {
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
-          ? { ssl: { ...databaseUrl.ssl, rejectUnauthorized } }
+          ? {
+              ssl: {
+                // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
+                // @ts-expect-error: ignore possible boolean for now
+                ...databaseUrl.ssl,
+                rejectUnauthorized,
+              },
+            }
           : undefined),
       },
-      dir: MIGRATIONS_DIR,
+      dir: MIGRATIONS_DIR!,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,
       migrationsSchema: MIGRATIONS_SCHEMA,
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
-      migrationsTable: MIGRATIONS_TABLE,
+      migrationsTable: MIGRATIONS_TABLE!,
       count,
       timestamp,
       file: migrationName,
