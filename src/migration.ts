@@ -45,7 +45,7 @@ export interface CreateOptionsDefault {
 }
 
 export type CreateOptions = {
-  filenameFormat?: FilenameFormat;
+  filenameFormat?: FilenameFormat | `${FilenameFormat}`;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
