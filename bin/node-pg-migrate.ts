@@ -3,8 +3,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { format } from 'node:util';
+import type { ClientConfig } from 'pg';
 import ConnectionParameters from 'pg/lib/connection-parameters';
-import yargs from 'yargs';
+import yargs from 'yargs/yargs';
 import { default as migrationRunner, Migration } from '../dist';
 
 process.on('uncaughtException', (err) => {
@@ -49,168 +50,149 @@ const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
 
-const { argv } = yargs
+const parser = yargs(process.argv.slice(2))
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
 
-  .option('d', {
-    alias: databaseUrlVarArg,
-    default: 'DATABASE_URL',
-    describe: 'Name of env variable where is set the databaseUrl',
-    type: 'string',
-  })
-
-  .option('m', {
-    alias: migrationsDirArg,
-    defaultDescription: '"migrations"',
-    describe: 'The directory containing your migration files',
-    type: 'string',
-  })
-
-  .option('t', {
-    alias: migrationsTableArg,
-    defaultDescription: '"pgmigrations"',
-    describe: 'The table storing which migrations have been run',
-    type: 'string',
-  })
-
-  .option('s', {
-    alias: schemaArg,
-    defaultDescription: '"public"',
-    describe:
-      'The schema on which migration will be run (defaults to `public`)',
-    type: 'string',
-    array: true,
-  })
-
-  .option(createSchemaArg, {
-    defaultDescription: 'false',
-    describe: "Creates the configured schema if it doesn't exist",
-    type: 'boolean',
-  })
-
-  .option(migrationsSchemaArg, {
-    defaultDescription: 'Same as "schema"',
-    describe: 'The schema storing table which migrations have been run',
-    type: 'string',
-  })
-
-  .option(createMigrationsSchemaArg, {
-    defaultDescription: 'false',
-    describe: "Creates the configured migration schema if it doesn't exist",
-    type: 'boolean',
-  })
-
-  .option(checkOrderArg, {
-    defaultDescription: 'true',
-    describe: 'Check order of migrations before running them',
-    type: 'boolean',
-  })
-
-  .option(verboseArg, {
-    defaultDescription: 'true',
-    describe: 'Print debug messages - all DB statements run',
-    type: 'boolean',
-  })
-
-  .option(ignorePatternArg, {
-    defaultDescription: '"\\..*"',
-    describe: 'Regex pattern for file names to ignore',
-    type: 'string',
-  })
-
-  .option(decamelizeArg, {
-    defaultDescription: 'false',
-    describe: 'Runs decamelize on table/columns/etc names',
-    type: 'boolean',
-  })
-
-  .option(configValueArg, {
-    default: 'db',
-    describe: 'Name of config section with db options',
-    type: 'string',
-  })
-
-  .option('f', {
-    alias: configFileArg,
-    describe: 'Name of config file with db options',
-    type: 'string',
-  })
-
-  .option('j', {
-    alias: migrationFileLanguageArg,
-    defaultDescription: 'last one used or "js" if there is no migration yet',
-    choices: ['js', 'ts', 'sql'],
-    describe:
-      'Language of the migration file (Only valid with the create action)',
-    type: 'string',
-  })
-
-  .option(migrationFilenameFormatArg, {
-    defaultDescription: '"timestamp"',
-    choices: ['timestamp', 'utc'],
-    describe:
-      'Prefix type of migration filename (Only valid with the create action)',
-    type: 'string',
-  })
-
-  .option(templateFileNameArg, {
-    describe: 'Path to template for creating migrations',
-    type: 'string',
-  })
-
-  .option(tsconfigArg, {
-    describe: 'Path to tsconfig.json file',
-    type: 'string',
-  })
-
-  .option(envPathArg, {
-    describe: 'Path to the .env file that should be used for configuration',
-    type: 'string',
-  })
-
-  .option(dryRunArg, {
-    default: false,
-    describe: "Prints the SQL but doesn't run it",
-    type: 'boolean',
-  })
-
-  .option(fakeArg, {
-    default: false,
-    describe: 'Marks migrations as run',
-    type: 'boolean',
-  })
-
-  .option(singleTransactionArg, {
-    default: true,
-    describe:
-      'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
-    type: 'boolean',
-  })
-
-  .option(lockArg, {
-    default: true,
-    describe: 'When false, disables locking mechanism and checks',
-    type: 'boolean',
-  })
-
-  .option(rejectUnauthorizedArg, {
-    defaultDescription: 'false',
-    describe: 'Sets rejectUnauthorized SSL option',
-    type: 'boolean',
-  })
-
-  .option(timestampArg, {
-    default: false,
-    describe: 'Treats number argument to up/down migration as timestamp',
-    type: 'boolean',
+  .options({
+    [databaseUrlVarArg]: {
+      alias: 'd',
+      default: 'DATABASE_URL',
+      description: 'Name of env variable where is set the databaseUrl',
+      type: 'string',
+    },
+    [migrationsDirArg]: {
+      alias: 'm',
+      defaultDescription: '"migrations"',
+      describe: 'The directory containing your migration files',
+      type: 'string',
+    },
+    [migrationsTableArg]: {
+      alias: 't',
+      defaultDescription: '"pgmigrations"',
+      describe: 'The table storing which migrations have been run',
+      type: 'string',
+    },
+    [schemaArg]: {
+      alias: 's',
+      defaultDescription: '"public"',
+      describe:
+        'The schema on which migration will be run (defaults to `public`)',
+      type: 'string',
+      array: true,
+    },
+    [createSchemaArg]: {
+      defaultDescription: 'false',
+      describe: "Creates the configured schema if it doesn't exist",
+      type: 'boolean',
+    },
+    [migrationsSchemaArg]: {
+      defaultDescription: 'Same as "schema"',
+      describe: 'The schema storing table which migrations have been run',
+      type: 'string',
+    },
+    [createMigrationsSchemaArg]: {
+      defaultDescription: 'false',
+      describe: "Creates the configured migration schema if it doesn't exist",
+      type: 'boolean',
+    },
+    [checkOrderArg]: {
+      defaultDescription: 'true',
+      describe: 'Check order of migrations before running them',
+      type: 'boolean',
+    },
+    [verboseArg]: {
+      defaultDescription: 'true',
+      describe: 'Print debug messages - all DB statements run',
+      type: 'boolean',
+    },
+    [ignorePatternArg]: {
+      defaultDescription: '"\\..*"',
+      describe: 'Regex pattern for file names to ignore',
+      type: 'string',
+    },
+    [decamelizeArg]: {
+      defaultDescription: 'false',
+      describe: 'Runs decamelize on table/columns/etc names',
+      type: 'boolean',
+    },
+    [configValueArg]: {
+      default: 'db',
+      describe: 'Name of config section with db options',
+      type: 'string',
+    },
+    [configFileArg]: {
+      alias: 'f',
+      describe: 'Name of config file with db options',
+      type: 'string',
+    },
+    [migrationFileLanguageArg]: {
+      alias: 'j',
+      defaultDescription: 'last one used or "js" if there is no migration yet',
+      choices: ['js', 'ts', 'sql'],
+      describe:
+        'Language of the migration file (Only valid with the create action)',
+      type: 'string',
+    },
+    [migrationFilenameFormatArg]: {
+      defaultDescription: '"timestamp"',
+      choices: ['timestamp', 'utc'],
+      describe:
+        'Prefix type of migration filename (Only valid with the create action)',
+      type: 'string',
+    },
+    [templateFileNameArg]: {
+      describe: 'Path to template for creating migrations',
+      type: 'string',
+    },
+    [tsconfigArg]: {
+      describe: 'Path to tsconfig.json file',
+      type: 'string',
+    },
+    [envPathArg]: {
+      describe: 'Path to the .env file that should be used for configuration',
+      type: 'string',
+    },
+    [dryRunArg]: {
+      default: false,
+      describe: "Prints the SQL but doesn't run it",
+      type: 'boolean',
+    },
+    [fakeArg]: {
+      default: false,
+      describe: 'Marks migrations as run',
+      type: 'boolean',
+    },
+    [singleTransactionArg]: {
+      default: true,
+      describe:
+        'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
+      type: 'boolean',
+    },
+    [lockArg]: {
+      default: true,
+      describe: 'When false, disables locking mechanism and checks',
+      type: 'boolean',
+    },
+    [rejectUnauthorizedArg]: {
+      defaultDescription: 'false',
+      describe: 'Sets rejectUnauthorized SSL option',
+      type: 'boolean',
+    },
+    [timestampArg]: {
+      default: false,
+      describe: 'Treats number argument to up/down migration as timestamp',
+      type: 'boolean',
+    },
   })
 
   .version()
   .alias('version', 'i')
   .help();
 
+const argv = parser.parseSync();
+
 if (argv.help || argv._.length === 0) {
-  yargs.showHelp();
+  parser.showHelp();
   process.exit(1);
 }
 
@@ -236,7 +218,8 @@ if (dotenv) {
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
-let DB_CONNECTION = process.env[argv[databaseUrlVarArg]];
+let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
+  process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
 let SCHEMA = argv[schemaArg];
 let CREATE_SCHEMA = argv[createSchemaArg];
@@ -394,7 +377,7 @@ if (action === 'create') {
 
   if (!newMigrationName) {
     console.error("'migrationName' is required.");
-    yargs.showHelp();
+    parser.showHelp();
     process.exit(1);
   }
 
@@ -509,7 +492,7 @@ if (action === 'create') {
     });
 } else {
   console.error('Invalid Action: Must be [up|down|create|redo].');
-  yargs.showHelp();
+  parser.showHelp();
   process.exit(1);
 }
 
