@@ -27,6 +27,9 @@ devDependencies:
   '@eslint-types/typescript-eslint':
     specifier: 7.2.0
     version: 7.2.0
+  '@types/config':
+    specifier: 3.3.4
+    version: 3.3.4
   '@types/mkdirp':
     specifier: 1.0.2
     version: 1.0.2
@@ -892,6 +895,10 @@ packages:
 
   /@tsconfig/node16@1.0.4:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+    dev: true
+
+  /@types/config@3.3.4:
+    resolution: {integrity: sha512-qFiTLnWy+TdPSMIXFHP+87lFXFRM4SXjRS+CSB66+56TrpLNw003y1sh7DGaaC1NGesxgKoT5FDy6dyA1Xju/g==}
     dev: true
 
   /@types/estree@1.0.5:

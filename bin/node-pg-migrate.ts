@@ -13,7 +13,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-function tryRequire(moduleName: string): unknown {
+function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
     return require(moduleName);
   } catch (err) {
@@ -207,11 +207,12 @@ if (envPath) {
   dotenvConfig.path = envPath;
 }
 
-const dotenv = tryRequire('dotenv');
+const dotenv = tryRequire<typeof import('dotenv')>('dotenv');
 if (dotenv) {
   // Load config from ".env" file
   const myEnv = dotenv.config(dotenvConfig);
-  const dotenvExpand = tryRequire('dotenv-expand');
+  const dotenvExpand =
+    tryRequire<typeof import('dotenv-expand')>('dotenv-expand');
   if (dotenvExpand && dotenvExpand.expand) {
     dotenvExpand.expand(myEnv);
   }
@@ -237,7 +238,7 @@ let tsconfigPath = argv[tsconfigArg];
 function readTsconfig() {
   if (tsconfigPath) {
     let tsconfig;
-    const json5 = tryRequire('json5');
+    const json5 = tryRequire<typeof import('json5')>('json5');
 
     try {
       const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
@@ -248,7 +249,7 @@ function readTsconfig() {
       console.error("Can't load tsconfig.json:", err);
     }
 
-    const tsnode = tryRequire('ts-node');
+    const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
     if (!tsnode) {
       console.error("For TypeScript support, please install 'ts-node' module");
     }
@@ -338,7 +339,7 @@ function readJson(json) {
 // Load config (and suppress the no-config-warning)
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
 process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
-const config = tryRequire('config');
+const config = tryRequire<typeof import('config')>('config');
 if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
