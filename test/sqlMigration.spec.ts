@@ -1,40 +1,46 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getActions } from '../src/sqlMigration';
 
-describe('lib/sqlMigration', () => {
+describe('sqlMigration', () => {
   describe('getActions', () => {
-    it('without comments', () => {
+    it('should migrate without comments', () => {
       const content = 'SELECT 1 FROM something';
       const { up, down } = getActions(content);
 
-      expect(up).toBeDefined();
-      expect(down).toBeFalsy();
+      expect(up).toBeTypeOf('function');
+      expect(down).toBe(false);
 
       const sql = vi.fn();
 
-      expect(up({ sql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        up({ sql })
+      ).not.toBeDefined();
       expect(sql).toHaveBeenCalled();
       expect(sql).toHaveBeenLastCalledWith(content.trim());
     });
 
-    it('with up comment', () => {
+    it('should migrate with up comment', () => {
       const content = `
 -- Up Migration
 SELECT 1 FROM something
 `;
       const { up, down } = getActions(content);
 
-      expect(up).toBeDefined();
-      expect(down).toBeFalsy();
+      expect(up).toBeTypeOf('function');
+      expect(down).toBe(false);
 
       const sql = vi.fn();
 
-      expect(up({ sql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        up({ sql })
+      ).not.toBeDefined();
       expect(sql).toHaveBeenCalled();
       expect(sql).toHaveBeenLastCalledWith(content);
     });
 
-    it('with both comments', () => {
+    it('should migrate with up and down comments', () => {
       const upMigration = `
 -- Up Migration
 SELECT 1 FROM something
@@ -47,23 +53,29 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).toBeDefined();
-      expect(down).toBeDefined();
+      expect(up).toBeTypeOf('function');
+      expect(down).toBeTypeOf('function');
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        up({ sql: upSql })
+      ).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        down({ sql: downSql })
+      ).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
 
-    it('with both comments in reverse order', () => {
+    it('should migrate with up and down comments in reverse order', () => {
       const upMigration = `
 -- Up Migration
 SELECT 1 FROM something
@@ -76,23 +88,29 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).toBeDefined();
-      expect(down).toBeDefined();
+      expect(up).toBeTypeOf('function');
+      expect(down).toBeTypeOf('function');
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        up({ sql: upSql })
+      ).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        down({ sql: downSql })
+      ).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });
 
-    it('with both comments with some chars added', () => {
+    it('should migrate with up and down comments with some chars added', () => {
       const upMigration = `
  -- - up Migration to do Up migration
 SELECT 1 FROM something
@@ -105,18 +123,24 @@ SELECT 2 FROM something
 
       const { up, down } = getActions(content);
 
-      expect(up).toBeDefined();
-      expect(down).toBeDefined();
+      expect(up).toBeTypeOf('function');
+      expect(down).toBeTypeOf('function');
 
       const upSql = vi.fn();
 
-      expect(up({ sql: upSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        up({ sql: upSql })
+      ).not.toBeDefined();
       expect(upSql).toHaveBeenCalled();
       expect(upSql).toHaveBeenLastCalledWith(upMigration);
 
       const downSql = vi.fn();
 
-      expect(down({ sql: downSql })).not.toBeDefined();
+      expect(
+        // @ts-expect-error: simplified for testing
+        down({ sql: downSql })
+      ).not.toBeDefined();
       expect(downSql).toHaveBeenCalled();
       expect(downSql).toHaveBeenLastCalledWith(downMigration);
     });

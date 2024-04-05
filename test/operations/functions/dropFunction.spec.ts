@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dropFunction } from '../../../src/operations/functions';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('functions', () => {
@@ -15,7 +15,7 @@ describe('operations', () => {
         const statement = dropFunctionFn('sqrt', ['integer']);
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual('DROP FUNCTION "sqrt"(integer);');
+        expect(statement).toBe('DROP FUNCTION "sqrt"(integer);');
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -25,7 +25,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           'DROP FUNCTION IF EXISTS "sqrt"(integer) CASCADE;'
         );
       });

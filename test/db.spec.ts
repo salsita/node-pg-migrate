@@ -16,7 +16,7 @@ vi.mock('pg', () => ({
   Client: vi.fn().mockImplementation(() => hoisted.client),
 }));
 
-describe('lib/db', () => {
+describe('db', () => {
   const log: Logger = {
     debug: vi.fn(),
     error: vi.fn(),
@@ -24,7 +24,7 @@ describe('lib/db', () => {
     warn: vi.fn(),
   };
 
-  describe('.constructor(connection)', () => {
+  describe('constructor', () => {
     let db: DBConnection;
 
     afterEach(() => {
@@ -33,7 +33,7 @@ describe('lib/db', () => {
       }
     });
 
-    it('pg.Client should be called with connection string', () => {
+    it('should call pg.Client with connection string', () => {
       db = Db('connection_string');
 
       expect(Client).toBeCalledWith('connection_string');
@@ -52,7 +52,7 @@ describe('lib/db', () => {
     });
   });
 
-  describe('.query(query)', () => {
+  describe('query', () => {
     let db: DBConnection;
 
     beforeEach(() => {
@@ -118,7 +118,7 @@ describe('lib/db', () => {
     });
   });
 
-  describe('.close()', () => {
+  describe('close', () => {
     it('should call client.end', async () => {
       // @ts-expect-error: JS test
       const db = Db();

@@ -97,10 +97,10 @@ const ensureMigrationsTable = async (
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
-    const fullTableName = createSchemalize(
-      Boolean(options.decamelize),
-      true
-    )({
+    const fullTableName = createSchemalize({
+      shouldDecamelize: Boolean(options.decamelize),
+      shouldQuote: true,
+    })({
       schema,
       name: migrationsTable,
     });
@@ -133,10 +133,10 @@ const ensureMigrationsTable = async (
 const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
   const schema = getMigrationTableSchema(options);
   const { migrationsTable } = options;
-  const fullTableName = createSchemalize(
-    Boolean(options.decamelize),
-    true
-  )({
+  const fullTableName = createSchemalize({
+    shouldDecamelize: Boolean(options.decamelize),
+    shouldQuote: true,
+  })({
     schema,
     name: migrationsTable,
   });

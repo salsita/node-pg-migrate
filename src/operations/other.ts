@@ -9,13 +9,13 @@ export function sql(mOptions: MigrationOptions): Sql {
 
   return (sqlStr, args) => {
     // applies some very basic templating using the utils.p
-    let s: string = t(sqlStr, args);
+    let statement: string = t(sqlStr, args);
 
     // add trailing ; if not present
-    if (s.lastIndexOf(';') !== s.length - 1) {
-      s += ';';
+    if (statement.lastIndexOf(';') !== statement.length - 1) {
+      statement += ';';
     }
 
-    return s;
+    return statement;
   };
 }

@@ -481,7 +481,7 @@ export function dropColumns(mOptions: MigrationOptions): DropColumns {
 
     const columnsStr = formatLines(
       columns.map(mOptions.literal),
-      `  DROP ${ifExists ? ' IF EXISTS' : ''}`,
+      `  DROP ${ifExists ? 'IF EXISTS ' : ''}`,
       `${cascade ? ' CASCADE' : ''},`
     );
 

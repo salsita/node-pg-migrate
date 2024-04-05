@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createFunction } from '../../../src/operations/functions';
-import { options1 } from '../../utils';
+import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('functions', () => {
@@ -23,7 +23,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE FUNCTION "add"(integer, integer)
   RETURNS integer
   AS $pga$select $1 + $2;$pga$
@@ -48,7 +48,7 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toStrictEqual(
+        expect(statement).toBe(
           `CREATE OR REPLACE FUNCTION "add"(integer, integer)
   RETURNS integer
   AS $pga$select $1 + $2;$pga$

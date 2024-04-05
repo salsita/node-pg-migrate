@@ -6,8 +6,20 @@ export default defineConfig({
     coverage: {
       all: true,
       provider: 'v8',
-      reporter: ['clover', 'cobertura', 'lcov', 'text'],
-      include: ['src'],
+      reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
+      include: [
+        'src',
+        // TODO @Shinigami92 2024-04-02: Add 'bin' folder in another PR
+        //'bin'
+      ],
+      exclude: ['src/operations/*Types.ts'],
+      reportOnFailure: true,
+      thresholds: {
+        lines: 90,
+        statements: 90,
+        functions: 90,
+        branches: 85,
+      },
     },
     reporters: process.env.CI_PREFLIGHT
       ? ['basic', 'github-actions']
