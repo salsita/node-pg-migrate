@@ -37,7 +37,14 @@ module.exports = defineConfig({
       { default: 'array-simple', readonly: 'generic' },
     ],
     '@typescript-eslint/consistent-type-exports': 'error',
-    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'type-imports',
+        disallowTypeAnnotations: false,
+        fixStyle: 'separate-type-imports',
+      },
+    ],
     '@typescript-eslint/explicit-module-boundary-types': 'error',
     '@typescript-eslint/naming-convention': [
       'error',
@@ -65,6 +72,8 @@ module.exports = defineConfig({
       'error',
       { ignoreParameters: true },
     ],
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'off', // requires `strictNullChecks` to be enabled
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-call': 'off',

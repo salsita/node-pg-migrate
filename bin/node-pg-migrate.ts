@@ -1,22 +1,29 @@
 #!/usr/bin/env node
 
+import type { DotenvConfigOptions } from 'dotenv';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { format } from 'node:util';
+import type { ClientConfig } from 'pg';
 import ConnectionParameters from 'pg/lib/connection-parameters';
-import yargs from 'yargs';
+import yargs from 'yargs/yargs';
 import { default as migrationRunner, Migration } from '../dist';
+import type { RunnerOption } from '../src';
+import type { FilenameFormat } from '../src/migration';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
   process.exit(1);
 });
 
-function tryRequire(moduleName: string): unknown {
+function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
     return require(moduleName);
   } catch (err) {
-    if (err.code !== 'MODULE_NOT_FOUND') {
+    if (
+      // @ts-expect-error: TS doesn't know about code property
+      err?.code !== 'MODULE_NOT_FOUND'
+    ) {
       throw err;
     }
 
@@ -49,168 +56,149 @@ const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
 
-const { argv } = yargs
+const parser = yargs(process.argv.slice(2))
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
 
-  .option('d', {
-    alias: databaseUrlVarArg,
-    default: 'DATABASE_URL',
-    describe: 'Name of env variable where is set the databaseUrl',
-    type: 'string',
-  })
-
-  .option('m', {
-    alias: migrationsDirArg,
-    defaultDescription: '"migrations"',
-    describe: 'The directory containing your migration files',
-    type: 'string',
-  })
-
-  .option('t', {
-    alias: migrationsTableArg,
-    defaultDescription: '"pgmigrations"',
-    describe: 'The table storing which migrations have been run',
-    type: 'string',
-  })
-
-  .option('s', {
-    alias: schemaArg,
-    defaultDescription: '"public"',
-    describe:
-      'The schema on which migration will be run (defaults to `public`)',
-    type: 'string',
-    array: true,
-  })
-
-  .option(createSchemaArg, {
-    defaultDescription: 'false',
-    describe: "Creates the configured schema if it doesn't exist",
-    type: 'boolean',
-  })
-
-  .option(migrationsSchemaArg, {
-    defaultDescription: 'Same as "schema"',
-    describe: 'The schema storing table which migrations have been run',
-    type: 'string',
-  })
-
-  .option(createMigrationsSchemaArg, {
-    defaultDescription: 'false',
-    describe: "Creates the configured migration schema if it doesn't exist",
-    type: 'boolean',
-  })
-
-  .option(checkOrderArg, {
-    defaultDescription: 'true',
-    describe: 'Check order of migrations before running them',
-    type: 'boolean',
-  })
-
-  .option(verboseArg, {
-    defaultDescription: 'true',
-    describe: 'Print debug messages - all DB statements run',
-    type: 'boolean',
-  })
-
-  .option(ignorePatternArg, {
-    defaultDescription: '"\\..*"',
-    describe: 'Regex pattern for file names to ignore',
-    type: 'string',
-  })
-
-  .option(decamelizeArg, {
-    defaultDescription: 'false',
-    describe: 'Runs decamelize on table/columns/etc names',
-    type: 'boolean',
-  })
-
-  .option(configValueArg, {
-    default: 'db',
-    describe: 'Name of config section with db options',
-    type: 'string',
-  })
-
-  .option('f', {
-    alias: configFileArg,
-    describe: 'Name of config file with db options',
-    type: 'string',
-  })
-
-  .option('j', {
-    alias: migrationFileLanguageArg,
-    defaultDescription: 'last one used or "js" if there is no migration yet',
-    choices: ['js', 'ts', 'sql'],
-    describe:
-      'Language of the migration file (Only valid with the create action)',
-    type: 'string',
-  })
-
-  .option(migrationFilenameFormatArg, {
-    defaultDescription: '"timestamp"',
-    choices: ['timestamp', 'utc'],
-    describe:
-      'Prefix type of migration filename (Only valid with the create action)',
-    type: 'string',
-  })
-
-  .option(templateFileNameArg, {
-    describe: 'Path to template for creating migrations',
-    type: 'string',
-  })
-
-  .option(tsconfigArg, {
-    describe: 'Path to tsconfig.json file',
-    type: 'string',
-  })
-
-  .option(envPathArg, {
-    describe: 'Path to the .env file that should be used for configuration',
-    type: 'string',
-  })
-
-  .option(dryRunArg, {
-    default: false,
-    describe: "Prints the SQL but doesn't run it",
-    type: 'boolean',
-  })
-
-  .option(fakeArg, {
-    default: false,
-    describe: 'Marks migrations as run',
-    type: 'boolean',
-  })
-
-  .option(singleTransactionArg, {
-    default: true,
-    describe:
-      'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
-    type: 'boolean',
-  })
-
-  .option(lockArg, {
-    default: true,
-    describe: 'When false, disables locking mechanism and checks',
-    type: 'boolean',
-  })
-
-  .option(rejectUnauthorizedArg, {
-    defaultDescription: 'false',
-    describe: 'Sets rejectUnauthorized SSL option',
-    type: 'boolean',
-  })
-
-  .option(timestampArg, {
-    default: false,
-    describe: 'Treats number argument to up/down migration as timestamp',
-    type: 'boolean',
+  .options({
+    [databaseUrlVarArg]: {
+      alias: 'd',
+      default: 'DATABASE_URL',
+      description: 'Name of env variable where is set the databaseUrl',
+      type: 'string',
+    },
+    [migrationsDirArg]: {
+      alias: 'm',
+      defaultDescription: '"migrations"',
+      describe: 'The directory containing your migration files',
+      type: 'string',
+    },
+    [migrationsTableArg]: {
+      alias: 't',
+      defaultDescription: '"pgmigrations"',
+      describe: 'The table storing which migrations have been run',
+      type: 'string',
+    },
+    [schemaArg]: {
+      alias: 's',
+      defaultDescription: '"public"',
+      describe:
+        'The schema on which migration will be run (defaults to `public`)',
+      type: 'string',
+      array: true,
+    },
+    [createSchemaArg]: {
+      defaultDescription: 'false',
+      describe: "Creates the configured schema if it doesn't exist",
+      type: 'boolean',
+    },
+    [migrationsSchemaArg]: {
+      defaultDescription: 'Same as "schema"',
+      describe: 'The schema storing table which migrations have been run',
+      type: 'string',
+    },
+    [createMigrationsSchemaArg]: {
+      defaultDescription: 'false',
+      describe: "Creates the configured migration schema if it doesn't exist",
+      type: 'boolean',
+    },
+    [checkOrderArg]: {
+      defaultDescription: 'true',
+      describe: 'Check order of migrations before running them',
+      type: 'boolean',
+    },
+    [verboseArg]: {
+      defaultDescription: 'true',
+      describe: 'Print debug messages - all DB statements run',
+      type: 'boolean',
+    },
+    [ignorePatternArg]: {
+      defaultDescription: '"\\..*"',
+      describe: 'Regex pattern for file names to ignore',
+      type: 'string',
+    },
+    [decamelizeArg]: {
+      defaultDescription: 'false',
+      describe: 'Runs decamelize on table/columns/etc names',
+      type: 'boolean',
+    },
+    [configValueArg]: {
+      default: 'db',
+      describe: 'Name of config section with db options',
+      type: 'string',
+    },
+    [configFileArg]: {
+      alias: 'f',
+      describe: 'Name of config file with db options',
+      type: 'string',
+    },
+    [migrationFileLanguageArg]: {
+      alias: 'j',
+      defaultDescription: 'last one used or "js" if there is no migration yet',
+      choices: ['js', 'ts', 'sql'],
+      describe:
+        'Language of the migration file (Only valid with the create action)',
+      type: 'string',
+    },
+    [migrationFilenameFormatArg]: {
+      defaultDescription: '"timestamp"',
+      choices: ['timestamp', 'utc'],
+      describe:
+        'Prefix type of migration filename (Only valid with the create action)',
+      type: 'string',
+    },
+    [templateFileNameArg]: {
+      describe: 'Path to template for creating migrations',
+      type: 'string',
+    },
+    [tsconfigArg]: {
+      describe: 'Path to tsconfig.json file',
+      type: 'string',
+    },
+    [envPathArg]: {
+      describe: 'Path to the .env file that should be used for configuration',
+      type: 'string',
+    },
+    [dryRunArg]: {
+      default: false,
+      describe: "Prints the SQL but doesn't run it",
+      type: 'boolean',
+    },
+    [fakeArg]: {
+      default: false,
+      describe: 'Marks migrations as run',
+      type: 'boolean',
+    },
+    [singleTransactionArg]: {
+      default: true,
+      describe:
+        'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back',
+      type: 'boolean',
+    },
+    [lockArg]: {
+      default: true,
+      describe: 'When false, disables locking mechanism and checks',
+      type: 'boolean',
+    },
+    [rejectUnauthorizedArg]: {
+      defaultDescription: 'false',
+      describe: 'Sets rejectUnauthorized SSL option',
+      type: 'boolean',
+    },
+    [timestampArg]: {
+      default: false,
+      describe: 'Treats number argument to up/down migration as timestamp',
+      type: 'boolean',
+    },
   })
 
   .version()
   .alias('version', 'i')
   .help();
 
+const argv = parser.parseSync();
+
 if (argv.help || argv._.length === 0) {
-  yargs.showHelp();
+  parser.showHelp();
   process.exit(1);
 }
 
@@ -218,33 +206,42 @@ if (argv.help || argv._.length === 0) {
 const envPath = argv[envPathArg];
 
 // Create default dotenv config
-const dotenvConfig = { silent: true };
+const dotenvConfig: DotenvConfigOptions & { silent: boolean } = {
+  // TODO @Shinigami92 2024-04-05: Does the silent option even still exists and do anything?
+  silent: true,
+};
 
 // If the path has been configured, add it to the config, otherwise don't change the default dotenv path
 if (envPath) {
   dotenvConfig.path = envPath;
 }
 
-const dotenv = tryRequire('dotenv');
+const dotenv = tryRequire<typeof import('dotenv')>('dotenv');
 if (dotenv) {
   // Load config from ".env" file
   const myEnv = dotenv.config(dotenvConfig);
-  const dotenvExpand = tryRequire('dotenv-expand');
+  const dotenvExpand =
+    tryRequire<typeof import('dotenv-expand')>('dotenv-expand');
   if (dotenvExpand && dotenvExpand.expand) {
     dotenvExpand.expand(myEnv);
   }
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
-let DB_CONNECTION = process.env[argv[databaseUrlVarArg]];
+let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
+  process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
 let SCHEMA = argv[schemaArg];
 let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
-let MIGRATIONS_FILE_LANGUAGE = argv[migrationFileLanguageArg];
-let MIGRATIONS_FILENAME_FORMAT = argv[migrationFilenameFormatArg];
+let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
+  migrationFileLanguageArg
+] as 'js' | 'ts' | 'sql' | undefined;
+let MIGRATIONS_FILENAME_FORMAT: `${FilenameFormat}` | undefined = argv[
+  migrationFilenameFormatArg
+] as `${FilenameFormat}` | undefined;
 let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
@@ -254,7 +251,7 @@ let tsconfigPath = argv[tsconfigArg];
 function readTsconfig() {
   if (tsconfigPath) {
     let tsconfig;
-    const json5 = tryRequire('json5');
+    const json5 = tryRequire<typeof import('json5')>('json5');
 
     try {
       const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
@@ -265,7 +262,7 @@ function readTsconfig() {
       console.error("Can't load tsconfig.json:", err);
     }
 
-    const tsnode = tryRequire('ts-node');
+    const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
     if (!tsnode) {
       console.error("For TypeScript support, please install 'ts-node' module");
     }
@@ -281,81 +278,128 @@ function readTsconfig() {
   }
 }
 
-function readJson(json) {
-  if (typeof json === 'object') {
-    SCHEMA = typeof SCHEMA !== 'undefined' ? SCHEMA : json[schemaArg];
-    CREATE_SCHEMA =
-      typeof CREATE_SCHEMA !== 'undefined'
-        ? CREATE_SCHEMA
-        : json[createSchemaArg];
-    MIGRATIONS_DIR =
-      typeof MIGRATIONS_DIR !== 'undefined'
-        ? MIGRATIONS_DIR
-        : json[migrationsDirArg];
-    MIGRATIONS_SCHEMA =
-      typeof MIGRATIONS_SCHEMA !== 'undefined'
-        ? MIGRATIONS_SCHEMA
-        : json[migrationsSchemaArg];
-    CREATE_MIGRATIONS_SCHEMA =
-      typeof CREATE_MIGRATIONS_SCHEMA !== 'undefined'
-        ? CREATE_MIGRATIONS_SCHEMA
-        : json[createMigrationsSchemaArg];
-    MIGRATIONS_TABLE =
-      typeof MIGRATIONS_TABLE !== 'undefined'
-        ? MIGRATIONS_TABLE
-        : json[migrationsTableArg];
-    MIGRATIONS_FILE_LANGUAGE =
-      typeof MIGRATIONS_FILE_LANGUAGE !== 'undefined'
-        ? MIGRATIONS_FILE_LANGUAGE
-        : json[migrationFileLanguageArg];
-    MIGRATIONS_FILENAME_FORMAT =
-      typeof MIGRATIONS_FILENAME_FORMAT !== 'undefined'
-        ? MIGRATIONS_FILENAME_FORMAT
-        : json[migrationFilenameFormatArg];
-    TEMPLATE_FILE_NAME =
-      typeof TEMPLATE_FILE_NAME !== 'undefined'
-        ? TEMPLATE_FILE_NAME
-        : json[templateFileNameArg];
-    IGNORE_PATTERN =
-      typeof IGNORE_PATTERN !== 'undefined'
-        ? IGNORE_PATTERN
-        : json[ignorePatternArg];
-    CHECK_ORDER =
-      typeof CHECK_ORDER !== 'undefined' ? CHECK_ORDER : json[checkOrderArg];
-    VERBOSE = typeof VERBOSE !== 'undefined' ? VERBOSE : json[verboseArg];
-    DECAMELIZE =
-      typeof DECAMELIZE !== 'undefined' ? DECAMELIZE : json[decamelizeArg];
-    DB_CONNECTION =
-      typeof DB_CONNECTION !== 'undefined'
-        ? DB_CONNECTION
-        : process.env[json[databaseUrlVarArg]];
-    tsconfigPath =
-      typeof tsconfigPath !== 'undefined' ? tsconfigPath : json[tsconfigArg];
-    if (json.url) {
-      DB_CONNECTION =
-        typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json.url;
-    } else if (json.host || json.port || json.name || json.database) {
-      DB_CONNECTION =
-        typeof DB_CONNECTION !== 'undefined'
-          ? DB_CONNECTION
-          : {
-              user: json.user,
-              host: json.host || 'localhost',
-              database: json.name || json.database,
-              password: json.password,
-              port: json.port || 5432,
-              ssl: json.ssl,
-            };
+function applyIf<TArg, TKey extends string = string>(
+  arg: TArg,
+  key: TKey,
+  obj: { [k in TKey]?: unknown },
+  condition: (val: (typeof obj)[TKey]) => val is TArg
+): TArg {
+  if (arg !== undefined && !(key in obj)) {
+    return arg;
+  }
+
+  const val = obj[key];
+
+  return condition(val) ? val : arg;
+}
+
+function isString(val: unknown): val is string {
+  return typeof val === 'string';
+}
+
+function isBoolean(val: unknown): val is boolean {
+  return typeof val === 'boolean';
+}
+
+function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    (('host' in val &&
+      // @ts-expect-error: this is a TS 4.8 bug
+      !!val.host) ||
+      ('port' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.port) ||
+      ('name' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.name) ||
+      ('database' in val &&
+        // @ts-expect-error: this is a TS 4.8 bug
+        !!val.database))
+  );
+}
+
+function readJson(json: unknown): void {
+  if (typeof json === 'object' && json !== null) {
+    SCHEMA = applyIf(SCHEMA, schemaArg, json, (val): val is string[] =>
+      Array.isArray(val)
+    );
+    CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
+    MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
+    MIGRATIONS_SCHEMA = applyIf(
+      MIGRATIONS_SCHEMA,
+      migrationsSchemaArg,
+      json,
+      isString
+    );
+    CREATE_MIGRATIONS_SCHEMA = applyIf(
+      CREATE_MIGRATIONS_SCHEMA,
+      createMigrationsSchemaArg,
+      json,
+      isBoolean
+    );
+    MIGRATIONS_TABLE = applyIf(
+      MIGRATIONS_TABLE,
+      migrationsTableArg,
+      json,
+      isString
+    );
+    MIGRATIONS_FILE_LANGUAGE = applyIf(
+      MIGRATIONS_FILE_LANGUAGE,
+      migrationFileLanguageArg,
+      json,
+      (val): val is 'js' | 'ts' | 'sql' =>
+        val === 'js' || val === 'ts' || val === 'sql'
+    );
+    MIGRATIONS_FILENAME_FORMAT = applyIf(
+      MIGRATIONS_FILENAME_FORMAT,
+      migrationFilenameFormatArg,
+      json,
+      (val): val is `${FilenameFormat}` => val === 'timestamp' || val === 'utc'
+    );
+    TEMPLATE_FILE_NAME = applyIf(
+      TEMPLATE_FILE_NAME,
+      templateFileNameArg,
+      json,
+      isString
+    );
+    IGNORE_PATTERN = applyIf(IGNORE_PATTERN, ignorePatternArg, json, isString);
+    CHECK_ORDER = applyIf(CHECK_ORDER, checkOrderArg, json, isBoolean);
+    VERBOSE = applyIf(VERBOSE, verboseArg, json, isBoolean);
+    DECAMELIZE = applyIf(DECAMELIZE, decamelizeArg, json, isBoolean);
+    DB_CONNECTION = applyIf(
+      DB_CONNECTION,
+      databaseUrlVarArg,
+      json,
+      (val): val is string | ConnectionParameters | ClientConfig =>
+        typeof val === 'string' || typeof val === 'object'
+    );
+    tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
+
+    // @ts-expect-error: this is a TS 4.8 bug
+    if ('url' in json && json.url && isString(json.url)) {
+      // @ts-expect-error: this is a TS 4.8 bug
+      DB_CONNECTION ??= json.url;
+    } else if (isClientConfig(json)) {
+      DB_CONNECTION ??= {
+        user: json.user,
+        host: json.host || 'localhost',
+        database: json.name || json.database,
+        password: json.password,
+        port: json.port || 5432,
+        ssl: json.ssl,
+      };
     }
   } else {
-    DB_CONNECTION = typeof DB_CONNECTION !== 'undefined' ? DB_CONNECTION : json;
+    DB_CONNECTION ??= json as string | ConnectionParameters | ClientConfig;
   }
 }
 
 // Load config (and suppress the no-config-warning)
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
-process.env.SUPPRESS_NO_CONFIG_WARNING = 1;
-const config = tryRequire('config');
+process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
+const config = tryRequire<typeof import('config')>('config');
 if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
@@ -374,17 +418,14 @@ readTsconfig();
 const action = argv._.shift();
 
 // defaults
-MIGRATIONS_DIR =
-  typeof MIGRATIONS_DIR === 'undefined'
-    ? `${process.cwd()}/migrations`
-    : MIGRATIONS_DIR;
-MIGRATIONS_TABLE =
-  typeof MIGRATIONS_TABLE === 'undefined' ? 'pgmigrations' : MIGRATIONS_TABLE;
-SCHEMA = typeof SCHEMA === 'undefined' ? 'public' : SCHEMA;
-IGNORE_PATTERN =
-  typeof IGNORE_PATTERN === 'undefined' ? '\\..*' : IGNORE_PATTERN;
-CHECK_ORDER = typeof CHECK_ORDER === 'undefined' ? true : CHECK_ORDER;
-VERBOSE = typeof VERBOSE === 'undefined' ? true : VERBOSE;
+MIGRATIONS_DIR ??= `${process.cwd()}/migrations`;
+MIGRATIONS_FILE_LANGUAGE ??= 'js';
+MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
+MIGRATIONS_TABLE ??= 'pgmigrations';
+SCHEMA ??= ['public'];
+IGNORE_PATTERN ??= '\\..*';
+CHECK_ORDER ??= true;
+VERBOSE ??= true;
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
@@ -394,7 +435,7 @@ if (action === 'create') {
 
   if (!newMigrationName) {
     console.error("'migrationName' is required.");
-    yargs.showHelp();
+    parser.showHelp();
     process.exit(1);
   }
 
@@ -443,14 +484,15 @@ if (action === 'create') {
     console.log('no lock');
   }
 
-  const updownArg = argv._.length ? argv._[0] : null;
-  let numMigrations;
-  let migrationName;
+  const upDownArg = argv._.length ? argv._[0] : null;
+  let numMigrations: number;
+  let migrationName: string;
 
-  if (updownArg !== null) {
+  if (upDownArg !== null) {
+    const parsedUpDownArg = parseInt(`${upDownArg}`, 10);
     // eslint-disable-next-line eqeqeq
-    if (parseInt(updownArg, 10) == updownArg) {
-      numMigrations = parseInt(updownArg, 10);
+    if (parsedUpDownArg == upDownArg) {
+      numMigrations = parsedUpDownArg;
     } else {
       migrationName = argv._.join('-').replace(/_ /g, '-');
     }
@@ -461,24 +503,36 @@ if (action === 'create') {
       ? { connectionString: DB_CONNECTION }
       : DB_CONNECTION;
 
-  const options = (direction, _count, _timestamp) => {
+  const options: (
+    direction: 'up' | 'down',
+    count?: number,
+    timestamp?: boolean
+  ) => RunnerOption = (direction, _count, _timestamp) => {
     const count = _count === undefined ? numMigrations : _count;
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
+
     return {
       dryRun,
       databaseUrl: {
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
-          ? { ssl: { ...databaseUrl.ssl, rejectUnauthorized } }
+          ? {
+              ssl: {
+                // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
+                // @ts-expect-error: ignore possible boolean for now
+                ...databaseUrl.ssl,
+                rejectUnauthorized,
+              },
+            }
           : undefined),
       },
-      dir: MIGRATIONS_DIR,
+      dir: MIGRATIONS_DIR!,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,
       migrationsSchema: MIGRATIONS_SCHEMA,
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
-      migrationsTable: MIGRATIONS_TABLE,
+      migrationsTable: MIGRATIONS_TABLE!,
       count,
       timestamp,
       file: migrationName,
@@ -509,7 +563,7 @@ if (action === 'create') {
     });
 } else {
   console.error('Invalid Action: Must be [up|down|create|redo].');
-  yargs.showHelp();
+  parser.showHelp();
   process.exit(1);
 }
 
