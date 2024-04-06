@@ -1,240 +1,148 @@
-import runner from './runner'
-import { Migration } from './migration'
-import { RunnerOption, MigrationBuilder, PgType } from './types'
-import PgLiteral from './operations/PgLiteral'
-import {
-  PgLiteralValue,
-  Value,
-  Name,
-  Type,
-  IfExistsOption,
-  IfNotExistsOption,
-  CascadeOption,
-  DropOptions,
-} from './operations/generalTypes'
-import {
-  CreateDomain,
-  DropDomain,
+export { Migration } from './migration';
+export type {
   AlterDomain,
-  RenameDomain,
-  DomainOptionsCreate,
-  DomainOptionsAlter,
-} from './operations/domainsTypes'
-import { CreateExtension, DropExtension, Extension, CreateExtensionOptions } from './operations/extensionsTypes'
-import {
-  CreateFunction,
-  DropFunction,
-  RenameFunction,
-  FunctionParam,
-  FunctionOptions,
-} from './operations/functionsTypes'
-import { DropIndex, CreateIndex, CreateIndexOptions, DropIndexOptions } from './operations/indexesTypes'
-import {
-  CreateOperator,
-  DropOperator,
-  CreateOperatorClass,
-  DropOperatorClass,
-  CreateOperatorFamily,
-  DropOperatorFamily,
-  AddToOperatorFamily,
-  RenameOperatorFamily,
-  RenameOperatorClass,
-  RemoveFromOperatorFamily,
-  CreateOperatorOptions,
-  DropOperatorOptions,
-  OperatorListDefinition,
-  CreateOperatorClassOptions,
-} from './operations/operatorsTypes'
-import { Sql } from './operations/othersTypes'
-import {
-  CreatePolicy,
-  DropPolicy,
-  AlterPolicy,
-  RenamePolicy,
-  CreatePolicyOptions,
-  PolicyOptions,
-} from './operations/policiesTypes'
-import { CreateRole, DropRole, AlterRole, RenameRole, RoleOptions } from './operations/rolesTypes'
-import {
-  CreateSequence,
-  DropSequence,
-  AlterSequence,
-  RenameSequence,
-  SequenceOptionsCreate,
-  SequenceOptionsAlter,
-} from './operations/sequencesTypes'
-import { CreateSchema, DropSchema, RenameSchema, CreateSchemaOptions } from './operations/schemasTypes'
-import {
-  CreateTable,
-  DropTable,
-  AlterTable,
-  RenameTable,
-  AddColumns,
-  DropColumns,
-  AlterColumn,
-  RenameColumn,
-  CreateConstraint,
-  DropConstraint,
-  RenameConstraint,
-  ColumnDefinition,
-  ColumnDefinitions,
-  TableOptions,
-  AlterTableOptions,
-  AlterColumnOptions,
-  ConstraintOptions,
-} from './operations/tablesTypes'
-import { CreateTrigger, DropTrigger, RenameTrigger, TriggerOptions } from './operations/triggersTypes'
-import {
-  CreateType,
-  DropType,
-  RenameType,
-  AddTypeAttribute,
-  DropTypeAttribute,
-  SetTypeAttribute,
-  AddTypeValue,
-  RenameTypeAttribute,
-  RenameTypeValue,
-  AddTypeValueOptions,
-} from './operations/typesTypes'
-import {
-  CreateView,
-  DropView,
-  AlterView,
-  AlterViewColumn,
-  RenameView,
-  CreateViewOptions,
-  AlterViewOptions,
-  AlterViewColumnOptions,
-} from './operations/viewsTypes'
-import {
-  CreateMaterializedView,
-  DropMaterializedView,
-  AlterMaterializedView,
-  RenameMaterializedView,
-  RenameMaterializedViewColumn,
-  RefreshMaterializedView,
-  CreateMaterializedViewOptions,
-  AlterMaterializedViewOptions,
-  RefreshMaterializedViewOptions,
-} from './operations/viewsMaterializedTypes'
-
-export {
-  PgLiteral,
-  Migration,
-  PgType,
-  MigrationBuilder,
-  RunnerOption,
-  PgLiteralValue,
-  Value,
-  Name,
-  Type,
-  IfExistsOption,
-  IfNotExistsOption,
-  CascadeOption,
-  DropOptions,
-  CreateTable,
-  DropTable,
-  AlterTable,
-  RenameTable,
-  AddColumns,
-  DropColumns,
-  AlterColumn,
-  RenameColumn,
-  CreateConstraint,
-  DropConstraint,
-  RenameConstraint,
-  ColumnDefinition,
-  ColumnDefinitions,
-  TableOptions,
-  AlterTableOptions,
-  AlterColumnOptions,
-  ConstraintOptions,
   CreateDomain,
-  DropDomain,
-  AlterDomain,
-  RenameDomain,
-  DomainOptionsCreate,
   DomainOptionsAlter,
+  DomainOptionsCreate,
+  DropDomain,
+  RenameDomain,
+} from './operations/domainsTypes';
+export type {
   CreateExtension,
+  CreateExtensionOptions,
   DropExtension,
   Extension,
-  CreateExtensionOptions,
+} from './operations/extensionsTypes';
+export type {
   CreateFunction,
   DropFunction,
-  RenameFunction,
-  FunctionParam,
   FunctionOptions,
-  DropIndex,
+  FunctionParam,
+  RenameFunction,
+} from './operations/functionsTypes';
+export type {
+  CascadeOption,
+  DropOptions,
+  IfExistsOption,
+  IfNotExistsOption,
+  Name,
+  PgLiteralValue,
+  Type,
+  Value,
+} from './operations/generalTypes';
+export type {
   CreateIndex,
   CreateIndexOptions,
+  DropIndex,
   DropIndexOptions,
-  CreateOperator,
-  DropOperator,
-  CreateOperatorClass,
-  DropOperatorClass,
-  RenameOperatorClass,
-  CreateOperatorFamily,
-  DropOperatorFamily,
+} from './operations/indexesTypes';
+export type {
   AddToOperatorFamily,
-  RenameOperatorFamily,
-  RemoveFromOperatorFamily,
+  CreateOperator,
+  CreateOperatorClass,
+  CreateOperatorClassOptions,
+  CreateOperatorFamily,
   CreateOperatorOptions,
+  DropOperator,
+  DropOperatorClass,
+  DropOperatorFamily,
   DropOperatorOptions,
   OperatorListDefinition,
-  CreateOperatorClassOptions,
-  Sql,
-  CreatePolicy,
-  DropPolicy,
+  RemoveFromOperatorFamily,
+  RenameOperatorClass,
+  RenameOperatorFamily,
+} from './operations/operatorsTypes';
+export type { Sql } from './operations/othersTypes';
+export { default as PgLiteral } from './operations/PgLiteral';
+export type {
   AlterPolicy,
-  RenamePolicy,
+  CreatePolicy,
   CreatePolicyOptions,
+  DropPolicy,
   PolicyOptions,
+  RenamePolicy,
+} from './operations/policiesTypes';
+export type {
+  AlterRole,
   CreateRole,
   DropRole,
-  AlterRole,
   RenameRole,
   RoleOptions,
-  CreateSequence,
-  DropSequence,
-  AlterSequence,
-  RenameSequence,
-  SequenceOptionsCreate,
-  SequenceOptionsAlter,
+} from './operations/rolesTypes';
+export type {
   CreateSchema,
+  CreateSchemaOptions,
   DropSchema,
   RenameSchema,
-  CreateSchemaOptions,
+} from './operations/schemasTypes';
+export type {
+  AlterSequence,
+  CreateSequence,
+  DropSequence,
+  RenameSequence,
+  SequenceOptionsAlter,
+  SequenceOptionsCreate,
+} from './operations/sequencesTypes';
+export type {
+  AddColumns,
+  AlterColumn,
+  AlterColumnOptions,
+  AlterTable,
+  AlterTableOptions,
+  ColumnDefinition,
+  ColumnDefinitions,
+  ConstraintOptions,
+  CreateConstraint,
+  CreateTable,
+  DropColumns,
+  DropConstraint,
+  DropTable,
+  RenameColumn,
+  RenameConstraint,
+  RenameTable,
+  TableOptions,
+} from './operations/tablesTypes';
+export type {
   CreateTrigger,
   DropTrigger,
   RenameTrigger,
   TriggerOptions,
+} from './operations/triggersTypes';
+export type {
+  AddTypeAttribute,
+  AddTypeValue,
+  AddTypeValueOptions,
   CreateType,
   DropType,
-  RenameType,
-  AddTypeAttribute,
   DropTypeAttribute,
-  SetTypeAttribute,
-  AddTypeValue,
+  RenameType,
   RenameTypeAttribute,
   RenameTypeValue,
-  AddTypeValueOptions,
-  CreateView,
-  DropView,
-  AlterView,
-  AlterViewColumn,
-  RenameView,
-  CreateViewOptions,
-  AlterViewOptions,
-  AlterViewColumnOptions,
-  CreateMaterializedView,
-  DropMaterializedView,
+  SetTypeAttribute,
+} from './operations/typesTypes';
+export type {
   AlterMaterializedView,
+  AlterMaterializedViewOptions,
+  CreateMaterializedView,
+  CreateMaterializedViewOptions,
+  DropMaterializedView,
+  RefreshMaterializedView,
+  RefreshMaterializedViewOptions,
   RenameMaterializedView,
   RenameMaterializedViewColumn,
-  RefreshMaterializedView,
-  CreateMaterializedViewOptions,
-  AlterMaterializedViewOptions,
-  RefreshMaterializedViewOptions,
-}
+} from './operations/viewsMaterializedTypes';
+export type {
+  AlterView,
+  AlterViewColumn,
+  AlterViewColumnOptions,
+  AlterViewOptions,
+  CreateView,
+  CreateViewOptions,
+  DropView,
+  RenameView,
+} from './operations/viewsTypes';
+export { PgType } from './types';
+export type { MigrationBuilder, RunnerOption } from './types';
 
-export default runner
+import runner from './runner';
+export default runner;

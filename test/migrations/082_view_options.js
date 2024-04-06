@@ -7,7 +7,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createView(
     'vo',
     {
@@ -16,21 +16,21 @@ exports.up = (pgm) => {
         check_option: 'LOCAL',
       },
     },
-    'SELECT id, string FROM tvo',
-  )
+    'SELECT id, string FROM tvo'
+  );
   pgm.alterView('vo', {
     options: {
       check_option: 'CASCADED',
     },
-  })
+  });
   pgm.alterView('vo', {
     options: {
       check_option: null,
     },
-  })
-}
+  });
+};
 
 exports.down = (pgm) => {
-  pgm.dropView('vo')
-  pgm.dropTable('tvo')
-}
+  pgm.dropView('vo');
+  pgm.dropTable('tvo');
+};

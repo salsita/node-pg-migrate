@@ -43,7 +43,7 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
   pgm.createTable('posts', {
     id: 'id',
     userId: {
@@ -58,9 +58,9 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
-  pgm.createIndex('posts', 'userId')
-}
+  });
+  pgm.createIndex('posts', 'userId');
+};
 ```
 
 Save migration file.
@@ -78,8 +78,8 @@ Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
 exports.up = (pgm) => {
   pgm.addColumns('posts', {
     lead: { type: 'text', notNull: true },
-  })
-}
+  });
+};
 ```
 
 Run `npm run migrate up` and there will be new column in `posts` table :tada: :tada:
@@ -122,6 +122,8 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 ## License
 
 The MIT License (MIT)
+
+Copyright (c) 2024 Christopher Quadflieg
 
 Copyright (c) 2016-2021 Salsita Software &lt;jando@salsitasoft.com&gt;
 

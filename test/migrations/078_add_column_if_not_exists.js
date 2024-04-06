@@ -4,18 +4,18 @@ exports.up = (pgm) => {
     {
       string: { type: 'text' },
     },
-    { ifNotExists: true },
-  )
+    { ifNotExists: true }
+  );
 
   pgm.addColumns(
     't1',
     {
       string: { type: 'text' },
     },
-    { ifNotExists: true },
-  )
-}
+    { ifNotExists: true }
+  );
+};
 
 exports.down = (pgm) => {
-  pgm.dropColumns('t1', 'string')
-}
+  pgm.dropColumns('t1', 'string');
+};

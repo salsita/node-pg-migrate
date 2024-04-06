@@ -1,4 +1,8 @@
-import { LiteralUnion, DropOptions, IfNotExistsOption } from './generalTypes'
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  LiteralUnion,
+} from './generalTypes';
 
 export type Extension =
   | 'adminpack'
@@ -45,19 +49,24 @@ export type Extension =
   | 'tsm_system_time'
   | 'unaccent'
   | 'uuid-ossp'
-  | 'xml2'
+  | 'xml2';
 
 export interface CreateExtensionOptions extends IfNotExistsOption {
-  schema?: string
+  schema?: string;
 }
 
-type StringExtension = LiteralUnion<Extension>
+type StringExtension = LiteralUnion<Extension>;
+
 type CreateExtensionFn = (
-  extension: StringExtension | Array<StringExtension>,
-  options?: CreateExtensionOptions & DropOptions,
-) => string | string[]
-export type CreateExtension = CreateExtensionFn & { reverse: CreateExtensionFn }
+  extension: StringExtension | StringExtension[],
+  options?: CreateExtensionOptions & DropOptions
+) => string | string[];
+
+export type CreateExtension = CreateExtensionFn & {
+  reverse: CreateExtensionFn;
+};
+
 export type DropExtension = (
-  extension: StringExtension | Array<StringExtension>,
-  dropOptions?: DropOptions,
-) => string | string[]
+  extension: StringExtension | StringExtension[],
+  dropOptions?: DropOptions
+) => string | string[];
