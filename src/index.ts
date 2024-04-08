@@ -12,7 +12,8 @@ export type {
   CreateExtensionOptions,
   DropExtension,
   Extension,
-} from './operations/extensionsTypes';
+  StringExtension,
+} from './operations/extensions';
 export type {
   CreateFunction,
   DropFunction,

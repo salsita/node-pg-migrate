@@ -1,8 +1,4 @@
-import type {
-  DropOptions,
-  IfNotExistsOption,
-  LiteralUnion,
-} from './generalTypes';
+import type { LiteralUnion } from '../generalTypes';
 
 export type Extension =
   | 'adminpack'
@@ -51,22 +47,4 @@ export type Extension =
   | 'uuid-ossp'
   | 'xml2';
 
-export interface CreateExtensionOptions extends IfNotExistsOption {
-  schema?: string;
-}
-
-type StringExtension = LiteralUnion<Extension>;
-
-type CreateExtensionFn = (
-  extension: StringExtension | StringExtension[],
-  options?: CreateExtensionOptions & DropOptions
-) => string | string[];
-
-export type CreateExtension = CreateExtensionFn & {
-  reverse: CreateExtensionFn;
-};
-
-export type DropExtension = (
-  extension: StringExtension | StringExtension[],
-  dropOptions?: DropOptions
-) => string | string[];
+export type StringExtension = LiteralUnion<Extension>;
