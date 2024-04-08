@@ -1,4 +1,4 @@
-import type { FunctionParam } from './functionsTypes';
+import type { FunctionParam } from './functions';
 import type { DropOptions, Name, Type } from './generalTypes';
 
 export interface CreateOperatorOptions {

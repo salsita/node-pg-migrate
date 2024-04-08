@@ -7,7 +7,7 @@ import {
   intersection,
   makeComment,
 } from '../utils';
-import type { FunctionParamType } from './functionsTypes';
+import type { FunctionParamType } from './functions';
 import type { Name } from './generalTypes';
 import { parseSequenceOptions } from './sequences';
 import type {

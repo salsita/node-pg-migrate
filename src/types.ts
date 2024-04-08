@@ -8,7 +8,7 @@ import type {
 } from 'pg';
 import type * as domains from './operations/domains';
 import type * as extensions from './operations/extensions';
-import type * as functions from './operations/functionsTypes';
+import type * as functions from './operations/functions';
 import type { Name } from './operations/generalTypes';
 import type * as indexes from './operations/indexesTypes';
 import type * as operators from './operations/operatorsTypes';

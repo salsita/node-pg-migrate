@@ -2,11 +2,13 @@ export { Migration } from './migration';
 export type {
   AlterDomain,
   CreateDomain,
+  CreateDomainFn,
   DomainOptions,
   DomainOptionsAlter,
   DomainOptionsCreate,
   DropDomain,
   RenameDomain,
+  RenameDomainFn,
 } from './operations/domains';
 export type {
   CreateExtension,
@@ -18,11 +20,14 @@ export type {
 } from './operations/extensions';
 export type {
   CreateFunction,
+  CreateFunctionFn,
   DropFunction,
   FunctionOptions,
   FunctionParam,
+  FunctionParamType,
   RenameFunction,
-} from './operations/functionsTypes';
+  RenameFunctionFn,
+} from './operations/functions';
 export type {
   CascadeOption,
   DropOptions,
