@@ -56,7 +56,7 @@ describe('db', () => {
     let db: DBConnection;
 
     beforeEach(() => {
-      // @ts-expect-error: JS test
+      // @ts-expect-error: JS only test
       db = Db(undefined, log);
     });
 
@@ -120,7 +120,7 @@ describe('db', () => {
 
   describe('close', () => {
     it('should call client.end', async () => {
-      // @ts-expect-error: JS test
+      // @ts-expect-error: JS only test
       const db = Db();
 
       await db.close();
