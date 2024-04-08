@@ -2,11 +2,12 @@ export { Migration } from './migration';
 export type {
   AlterDomain,
   CreateDomain,
+  DomainOptions,
   DomainOptionsAlter,
   DomainOptionsCreate,
   DropDomain,
   RenameDomain,
-} from './operations/domainsTypes';
+} from './operations/domains';
 export type {
   CreateExtension,
   CreateExtensionOptions,
