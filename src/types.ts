@@ -7,7 +7,7 @@ import type {
   QueryResult,
 } from 'pg';
 import type * as domains from './operations/domains';
-import type * as extensions from './operations/extensionsTypes';
+import type * as extensions from './operations/extensions';
 import type * as functions from './operations/functionsTypes';
 import type { Name } from './operations/generalTypes';
 import type * as indexes from './operations/indexesTypes';

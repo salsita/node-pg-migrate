@@ -10,10 +10,12 @@ export type {
 } from './operations/domains';
 export type {
   CreateExtension,
+  CreateExtensionFn,
   CreateExtensionOptions,
   DropExtension,
   Extension,
-} from './operations/extensionsTypes';
+  StringExtension,
+} from './operations/extensions';
 export type {
   CreateFunction,
   DropFunction,
