@@ -1,7 +1,7 @@
-import type { DomainOptions } from '.';
 import type { MigrationOptions } from '../../types';
 import { escapeValue } from '../../utils';
 import type { Name } from '../generalTypes';
+import type { DomainOptions } from './shared';
 
 export interface DomainOptionsAlter extends DomainOptions {
   allowNull?: boolean;

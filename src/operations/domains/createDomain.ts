@@ -1,8 +1,8 @@
-import type { DomainOptions } from '.';
-import { dropDomain } from '.';
 import type { MigrationOptions } from '../../types';
 import { applyType, escapeValue } from '../../utils';
 import type { DropOptions, Name, Type } from './../generalTypes';
+import { dropDomain } from './dropDomain';
+import type { DomainOptions } from './shared';
 
 export interface DomainOptionsCreate extends DomainOptions {
   collation?: string;
