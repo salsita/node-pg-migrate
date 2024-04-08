@@ -1,5 +1,5 @@
 import { applyType, escapeValue } from '.';
-import type { FunctionParam } from '../operations/functionsTypes';
+import type { FunctionParam } from '../operations/functions';
 import type { MigrationOptions } from '../types';
 
 function formatParam(

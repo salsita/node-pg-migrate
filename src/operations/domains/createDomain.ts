@@ -8,7 +8,7 @@ export interface DomainOptionsCreate extends DomainOptions {
   collation?: string;
 }
 
-type CreateDomainFn = (
+export type CreateDomainFn = (
   domainName: Name,
   type: Type,
   domainOptions?: DomainOptionsCreate & DropOptions

@@ -1,4 +1,4 @@
-import type { FunctionParamType } from '../operations/functionsTypes';
+import type { FunctionParamType } from '../operations/functions';
 import type { Type } from '../operations/generalTypes';
 import type {
   ColumnDefinition,

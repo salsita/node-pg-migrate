@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../types';
 import { escapeValue } from '../utils';
+import type { FunctionOptions } from './functions';
 import { createFunction, dropFunction } from './functions';
-import type { FunctionOptions } from './functionsTypes';
 import type { DropOptions, Name, Value } from './generalTypes';
 import type {
   CreateTrigger,

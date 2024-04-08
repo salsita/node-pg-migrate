@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import type { Name } from '../generalTypes';
 
-type RenameDomainFn = (
+export type RenameDomainFn = (
   oldDomainName: Name,
   newDomainName: Name
 ) => string | string[];

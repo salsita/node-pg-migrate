@@ -1,4 +1,4 @@
-import type { FunctionOptions } from './functionsTypes';
+import type { FunctionOptions } from './functions';
 import type { DropOptions, Name, Value } from './generalTypes';
 
 export interface TriggerOptions {
