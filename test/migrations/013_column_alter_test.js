@@ -2,6 +2,7 @@ exports.up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_smallint;');
   try {
     await pgm.db.query('INSERT INTO t1(nmbr) VALUES (2147483647);');
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw 1;
   } catch (err) {
     if (err === 1) {

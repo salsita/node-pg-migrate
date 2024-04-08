@@ -452,7 +452,7 @@ if (action === 'create') {
       console.log(format('Created migration -- %s', migrationPath));
       process.exit(0);
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
       console.error(err);
       process.exit(1);
     });
@@ -557,7 +557,7 @@ if (action === 'create') {
       console.log('Migrations complete!');
       process.exit(0);
     })
-    .catch((err) => {
+    .catch((err: unknown) => {
       console.error(err);
       process.exit(1);
     });
