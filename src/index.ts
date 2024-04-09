@@ -40,10 +40,12 @@ export type {
 } from './operations/generalTypes';
 export type {
   CreateIndex,
+  CreateIndexFn,
   CreateIndexOptions,
   DropIndex,
   DropIndexOptions,
-} from './operations/indexesTypes';
+  IndexColumn,
+} from './operations/indexes';
 export type {
   AddToOperatorFamily,
   CreateOperator,

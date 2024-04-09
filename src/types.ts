@@ -10,7 +10,7 @@ import type * as domains from './operations/domains';
 import type * as extensions from './operations/extensions';
 import type * as functions from './operations/functions';
 import type { Name } from './operations/generalTypes';
-import type * as indexes from './operations/indexesTypes';
+import type * as indexes from './operations/indexes';
 import type * as operators from './operations/operatorsTypes';
 import type * as other from './operations/othersTypes';
 import type PgLiteral from './operations/PgLiteral';
