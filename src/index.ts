@@ -68,10 +68,12 @@ export type {
   AlterPolicy,
   CreatePolicy,
   CreatePolicyOptions,
+  CreatePolicyOptionsEn,
   DropPolicy,
   PolicyOptions,
   RenamePolicy,
-} from './operations/policiesTypes';
+  RenamePolicyFn,
+} from './operations/policies';
 export type {
   AlterRole,
   CreateRole,
