@@ -14,7 +14,7 @@ import type * as indexes from './operations/indexes';
 import type * as operators from './operations/operators';
 import type PgLiteral from './operations/PgLiteral';
 import type * as policies from './operations/policies';
-import type * as roles from './operations/rolesTypes';
+import type * as roles from './operations/roles';
 import type * as schemas from './operations/schemasTypes';
 import type * as sequences from './operations/sequencesTypes';
 import type * as sql from './operations/sql';
