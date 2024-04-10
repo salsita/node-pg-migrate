@@ -16,7 +16,7 @@ import type PgLiteral from './operations/PgLiteral';
 import type * as policies from './operations/policies';
 import type * as roles from './operations/roles';
 import type * as schemas from './operations/schemas';
-import type * as sequences from './operations/sequencesTypes';
+import type * as sequences from './operations/sequences';
 import type * as sql from './operations/sql';
 import type * as tables from './operations/tablesTypes';
 import type * as triggers from './operations/triggersTypes';

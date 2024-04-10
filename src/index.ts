@@ -97,11 +97,14 @@ export type {
 export type {
   AlterSequence,
   CreateSequence,
+  CreateSequenceFn,
   DropSequence,
   RenameSequence,
+  RenameSequenceFn,
+  SequenceOptions,
   SequenceOptionsAlter,
   SequenceOptionsCreate,
-} from './operations/sequencesTypes';
+} from './operations/sequences';
 export type { Sql } from './operations/sql';
 export type {
   AddColumns,
