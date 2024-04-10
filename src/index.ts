@@ -82,10 +82,12 @@ export type {
 export type {
   AlterRole,
   CreateRole,
+  CreateRoleFn,
   DropRole,
   RenameRole,
+  RenameRoleFn,
   RoleOptions,
-} from './operations/rolesTypes';
+} from './operations/roles';
 export type {
   CreateSchema,
   CreateSchemaOptions,
