@@ -48,10 +48,14 @@ export type {
 } from './operations/indexes';
 export type {
   AddToOperatorFamily,
+  AddToOperatorFamilyFn,
   CreateOperator,
   CreateOperatorClass,
+  CreateOperatorClassFn,
   CreateOperatorClassOptions,
   CreateOperatorFamily,
+  CreateOperatorFamilyFn,
+  CreateOperatorFn,
   CreateOperatorOptions,
   DropOperator,
   DropOperatorClass,
@@ -60,8 +64,10 @@ export type {
   OperatorListDefinition,
   RemoveFromOperatorFamily,
   RenameOperatorClass,
+  RenameOperatorClassFn,
   RenameOperatorFamily,
-} from './operations/operatorsTypes';
+  RenameOperatorFamilyFn,
+} from './operations/operators';
 export type { Sql } from './operations/othersTypes';
 export { default as PgLiteral } from './operations/PgLiteral';
 export type {
