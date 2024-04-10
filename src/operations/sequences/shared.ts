@@ -1,6 +1,6 @@
 import { applyType } from '../../utils';
 import type { Type } from '../generalTypes';
-import type { ColumnDefinitions } from '../tablesTypes';
+import type { ColumnDefinitions } from '../tables';
 
 export interface SequenceOptions {
   type?: Type;

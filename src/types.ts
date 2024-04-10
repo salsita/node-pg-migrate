@@ -18,7 +18,7 @@ import type * as roles from './operations/roles';
 import type * as schemas from './operations/schemas';
 import type * as sequences from './operations/sequences';
 import type * as sql from './operations/sql';
-import type * as tables from './operations/tablesTypes';
+import type * as tables from './operations/tables';
 import type * as triggers from './operations/triggersTypes';
 import type * as types from './operations/typesTypes';
 import type * as mViews from './operations/viewsMaterializedTypes';

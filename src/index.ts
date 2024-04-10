@@ -107,7 +107,9 @@ export type {
 } from './operations/sequences';
 export type { Sql } from './operations/sql';
 export type {
+  Action,
   AddColumns,
+  AddColumnsFn,
   AlterColumn,
   AlterColumnOptions,
   AlterTable,
@@ -116,15 +118,25 @@ export type {
   ColumnDefinitions,
   ConstraintOptions,
   CreateConstraint,
+  CreateConstraintFn,
   CreateTable,
+  CreateTableFn,
   DropColumns,
   DropConstraint,
   DropTable,
+  ForeignKeyOptions,
+  Like,
+  LikeOptions,
+  ReferencesOptions,
   RenameColumn,
+  RenameColumnFn,
   RenameConstraint,
+  RenameConstraintFn,
   RenameTable,
+  RenameTableFn,
+  SequenceGeneratedOptions,
   TableOptions,
-} from './operations/tablesTypes';
+} from './operations/tables';
 export type {
   CreateTrigger,
   DropTrigger,
