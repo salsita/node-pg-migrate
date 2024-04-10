@@ -3,7 +3,7 @@ import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
 import { loadMigrationFiles, Migration } from './migration';
-import type { ColumnDefinitions } from './operations/tablesTypes';
+import type { ColumnDefinitions } from './operations/tables';
 import migrateSqlFile from './sqlMigration';
 import type {
   Logger,

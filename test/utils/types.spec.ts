@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ColumnDefinitions } from '../../src/operations/tablesTypes';
+import type { ColumnDefinitions } from '../../src/operations/tables';
 import { applyType, applyTypeAdapters } from '../../src/utils';
 
 describe('utils', () => {

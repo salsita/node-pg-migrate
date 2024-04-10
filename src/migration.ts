@@ -12,7 +12,7 @@ import path from 'path';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migration-builder';
-import type { ColumnDefinitions } from './operations/tablesTypes';
+import type { ColumnDefinitions } from './operations/tables';
 import type {
   Logger,
   MigrationAction,
