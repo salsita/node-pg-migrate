@@ -93,7 +93,7 @@ export type {
   CreateSchemaOptions,
   DropSchema,
   RenameSchema,
-} from './operations/schemasTypes';
+} from './operations/schemas';
 export type {
   AlterSequence,
   CreateSequence,
