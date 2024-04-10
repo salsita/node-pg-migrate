@@ -4,7 +4,7 @@ import type {
   Name,
   Value,
 } from './generalTypes';
-import type { SequenceOptions } from './sequencesTypes';
+import type { SequenceOptions } from './sequences';
 
 export type Action =
   | 'NO ACTION'
