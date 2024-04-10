@@ -12,12 +12,12 @@ import type * as functions from './operations/functions';
 import type { Name } from './operations/generalTypes';
 import type * as indexes from './operations/indexes';
 import type * as operators from './operations/operators';
-import type * as other from './operations/othersTypes';
 import type PgLiteral from './operations/PgLiteral';
 import type * as policies from './operations/policies';
 import type * as roles from './operations/rolesTypes';
 import type * as schemas from './operations/schemasTypes';
 import type * as sequences from './operations/sequencesTypes';
+import type * as sql from './operations/sql';
 import type * as tables from './operations/tablesTypes';
 import type * as triggers from './operations/triggersTypes';
 import type * as types from './operations/typesTypes';
@@ -167,7 +167,7 @@ export interface MigrationBuilder {
     ...args: Parameters<mViews.RefreshMaterializedView>
   ) => void;
 
-  sql: (...args: Parameters<other.Sql>) => void;
+  sql: (...args: Parameters<sql.Sql>) => void;
 
   func: (sql: string) => PgLiteral;
 

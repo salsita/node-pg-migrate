@@ -14,12 +14,12 @@ import * as extensions from './operations/extensions';
 import * as functions from './operations/functions';
 import * as indexes from './operations/indexes';
 import * as operators from './operations/operators';
-import * as other from './operations/other';
 import PgLiteral from './operations/PgLiteral';
 import * as policies from './operations/policies';
 import * as roles from './operations/roles';
 import * as schemas from './operations/schemas';
 import * as sequences from './operations/sequences';
+import * as sql from './operations/sql';
 import * as tables from './operations/tables';
 import type { ColumnDefinitions } from './operations/tablesTypes';
 import * as triggers from './operations/triggers';
@@ -292,7 +292,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     ...args: Parameters<mViews.RefreshMaterializedView>
   ) => void;
 
-  public readonly sql: (...args: Parameters<other.Sql>) => void;
+  public readonly sql: (...args: Parameters<sql.Sql>) => void;
 
   public readonly func: (sql: string) => PgLiteral;
 
@@ -446,7 +446,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
       mViews.refreshMaterializedView(options)
     );
 
-    this.sql = wrap(other.sql(options));
+    this.sql = wrap(sql.sql(options));
 
     // Other utilities which may be useful
     // .func creates a string which will not be escaped

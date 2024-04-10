@@ -68,7 +68,6 @@ export type {
   RenameOperatorFamily,
   RenameOperatorFamilyFn,
 } from './operations/operators';
-export type { Sql } from './operations/othersTypes';
 export { default as PgLiteral } from './operations/PgLiteral';
 export type {
   AlterPolicy,
@@ -101,6 +100,7 @@ export type {
   SequenceOptionsAlter,
   SequenceOptionsCreate,
 } from './operations/sequencesTypes';
+export type { Sql } from './operations/sql';
 export type {
   AddColumns,
   AlterColumn,
