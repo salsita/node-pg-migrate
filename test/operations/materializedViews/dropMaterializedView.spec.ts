@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dropMaterializedView } from '../../../src/operations/viewsMaterialized';
+import { dropMaterializedView } from '../../../src/operations/materializedViews';
 import { options1 } from '../../presetMigrationOptions';
 
 describe('operations', () => {

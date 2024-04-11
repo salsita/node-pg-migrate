@@ -47,6 +47,22 @@ export type {
   IndexColumn,
 } from './operations/indexes';
 export type {
+  AlterMaterializedView,
+  AlterMaterializedViewOptions,
+  CreateMaterializedView,
+  CreateMaterializedViewFn,
+  CreateMaterializedViewOptions,
+  DropMaterializedView,
+  RefreshMaterializedView,
+  RefreshMaterializedViewFn,
+  RefreshMaterializedViewOptions,
+  RenameMaterializedView,
+  RenameMaterializedViewColumn,
+  RenameMaterializedViewColumnFn,
+  RenameMaterializedViewFn,
+  StorageParameters,
+} from './operations/materializedViews';
+export type {
   AddToOperatorFamily,
   AddToOperatorFamilyFn,
   CreateOperator,
@@ -177,17 +193,6 @@ export type {
   RenameViewFn,
   ViewOptions,
 } from './operations/views';
-export type {
-  AlterMaterializedView,
-  AlterMaterializedViewOptions,
-  CreateMaterializedView,
-  CreateMaterializedViewOptions,
-  DropMaterializedView,
-  RefreshMaterializedView,
-  RefreshMaterializedViewOptions,
-  RenameMaterializedView,
-  RenameMaterializedViewColumn,
-} from './operations/viewsMaterializedTypes';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
 
