@@ -149,16 +149,21 @@ export type {
 } from './operations/triggers';
 export type {
   AddTypeAttribute,
+  AddTypeAttributeFn,
   AddTypeValue,
   AddTypeValueOptions,
   CreateType,
+  CreateTypeFn,
   DropType,
   DropTypeAttribute,
   RenameType,
   RenameTypeAttribute,
+  RenameTypeAttributeFn,
+  RenameTypeFn,
   RenameTypeValue,
+  RenameTypeValueFn,
   SetTypeAttribute,
-} from './operations/typesTypes';
+} from './operations/types';
 export type {
   AlterMaterializedView,
   AlterMaterializedViewOptions,
