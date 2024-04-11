@@ -13,6 +13,7 @@ import * as domains from './operations/domains';
 import * as extensions from './operations/extensions';
 import * as functions from './operations/functions';
 import * as indexes from './operations/indexes';
+import * as mViews from './operations/materializedViews';
 import * as operators from './operations/operators';
 import PgLiteral from './operations/PgLiteral';
 import * as policies from './operations/policies';
@@ -25,7 +26,6 @@ import * as tables from './operations/tables';
 import * as triggers from './operations/triggers';
 import * as types from './operations/types';
 import * as views from './operations/views';
-import * as mViews from './operations/viewsMaterialized';
 import type { DB, Logger, MigrationBuilder, MigrationOptions } from './types';
 import { createSchemalize } from './utils';
 
