@@ -104,8 +104,8 @@
     "@eslint-types/typescript-eslint": "7.5.0",
     "@types/config": "3.3.4",
     "@types/mkdirp": "1.0.2",
-    "@types/node": "18.19.30",
-    "@types/pg": "8.11.4",
+    "@types/node": "18.19.31",
+    "@types/pg": "8.11.5",
     "@types/yargs": "17.0.32",
     "@typescript-eslint/eslint-plugin": "7.6.0",
     "@typescript-eslint/parser": "7.6.0",
@@ -147,7 +147,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@types/pg@8.11.4": "patches/@types__pg@8.11.4.patch"
+      "@types/pg@8.11.5": "patches/@types__pg@8.11.5.patch"
     }
   }
 }
