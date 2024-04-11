@@ -165,6 +165,19 @@ export type {
   SetTypeAttribute,
 } from './operations/types';
 export type {
+  AlterView,
+  AlterViewColumn,
+  AlterViewColumnOptions,
+  AlterViewOptions,
+  CreateView,
+  CreateViewFn,
+  CreateViewOptions,
+  DropView,
+  RenameView,
+  RenameViewFn,
+  ViewOptions,
+} from './operations/views';
+export type {
   AlterMaterializedView,
   AlterMaterializedViewOptions,
   CreateMaterializedView,
@@ -175,16 +188,6 @@ export type {
   RenameMaterializedView,
   RenameMaterializedViewColumn,
 } from './operations/viewsMaterializedTypes';
-export type {
-  AlterView,
-  AlterViewColumn,
-  AlterViewColumnOptions,
-  AlterViewOptions,
-  CreateView,
-  CreateViewOptions,
-  DropView,
-  RenameView,
-} from './operations/viewsTypes';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
 
