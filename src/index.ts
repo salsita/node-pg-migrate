@@ -139,10 +139,14 @@ export type {
 } from './operations/tables';
 export type {
   CreateTrigger,
+  CreateTriggerFn,
+  CreateTriggerFn1,
+  CreateTriggerFn2,
   DropTrigger,
   RenameTrigger,
+  RenameTriggerFn,
   TriggerOptions,
-} from './operations/triggersTypes';
+} from './operations/triggers';
 export type {
   AddTypeAttribute,
   AddTypeValue,
