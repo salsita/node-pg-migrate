@@ -147,7 +147,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@types/pg@8.11.4": "patches/@types__pg@8.11.4.patch"
+      "@types/pg@8.11.5": "patches/@types__pg@8.11.5.patch"
     }
   }
 }

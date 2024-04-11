@@ -1,6 +1,6 @@
 diff --git a/lib/connection-parameters.d.ts b/lib/connection-parameters.d.ts
 new file mode 100644
-index 0000000000000000000000000000000000000000..951d48139a6eeab891e83753792000a34092edd3
+index 0000000000000000000000000000000000000000..c2895f9763e30b72bd5cca9146719e1d0260c117
 --- /dev/null
 +++ b/lib/connection-parameters.d.ts
 @@ -0,0 +1,58 @@
