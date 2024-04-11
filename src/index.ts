@@ -34,7 +34,6 @@ export type {
   IfExistsOption,
   IfNotExistsOption,
   Name,
-  PgLiteralValue,
   Type,
   Value,
 } from './operations/generalTypes';
@@ -84,7 +83,6 @@ export type {
   RenameOperatorFamily,
   RenameOperatorFamilyFn,
 } from './operations/operators';
-export { default as PgLiteral } from './operations/PgLiteral';
 export type {
   AlterPolicy,
   CreatePolicy,
@@ -195,6 +193,8 @@ export type {
 } from './operations/views';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
+export { isPgLiteral, PgLiteral } from './utils';
+export type { PgLiteralValue } from './utils';
 
 import runner from './runner';
 export default runner;

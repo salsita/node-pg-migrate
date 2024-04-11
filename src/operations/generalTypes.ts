@@ -1,4 +1,4 @@
-import type PgLiteral from './PgLiteral';
+import type { PgLiteral, PgLiteralValue } from '../utils';
 
 /**
  * Type that provides auto-suggestions but also any string.
@@ -12,8 +12,6 @@ export type LiteralUnion<TSuggested extends TBase, TBase = string> =
 export type PublicPart<T> = { [K in keyof T]: T[K] };
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null };
-
-export type PgLiteralValue = PublicPart<PgLiteral>;
 
 export type Value =
   | null

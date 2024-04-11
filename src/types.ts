@@ -13,7 +13,6 @@ import type { Name } from './operations/generalTypes';
 import type * as indexes from './operations/indexes';
 import type * as mViews from './operations/materializedViews';
 import type * as operators from './operations/operators';
-import type PgLiteral from './operations/PgLiteral';
 import type * as policies from './operations/policies';
 import type * as roles from './operations/roles';
 import type * as schemas from './operations/schemas';
@@ -23,6 +22,7 @@ import type * as tables from './operations/tables';
 import type * as triggers from './operations/triggers';
 import type * as types from './operations/types';
 import type * as views from './operations/views';
+import type { PgLiteral } from './utils/PgLiteral';
 
 export type { ClientConfig, ConnectionConfig } from 'pg';
 

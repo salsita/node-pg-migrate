@@ -15,7 +15,6 @@ import * as functions from './operations/functions';
 import * as indexes from './operations/indexes';
 import * as mViews from './operations/materializedViews';
 import * as operators from './operations/operators';
-import PgLiteral from './operations/PgLiteral';
 import * as policies from './operations/policies';
 import * as roles from './operations/roles';
 import * as schemas from './operations/schemas';
@@ -27,7 +26,7 @@ import * as triggers from './operations/triggers';
 import * as types from './operations/types';
 import * as views from './operations/views';
 import type { DB, Logger, MigrationBuilder, MigrationOptions } from './types';
-import { createSchemalize } from './utils';
+import { createSchemalize, PgLiteral } from './utils';
 
 export default class MigrationBuilderImpl implements MigrationBuilder {
   public readonly createExtension: (
