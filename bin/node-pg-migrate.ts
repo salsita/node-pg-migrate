@@ -258,6 +258,17 @@ function readTsconfig() {
         encoding: 'utf-8',
       });
       tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
+
+      if (tsconfig['ts-node']) {
+        tsconfig = {
+          ...tsconfig,
+          ...tsconfig['ts-node'],
+          compilerOptions: {
+            ...(tsconfig.compilerOptions ?? {}),
+            ...(tsconfig['ts-node'].compilerOptions ?? {}),
+          },
+        };
+      }
     } catch (err) {
       console.error("Can't load tsconfig.json:", err);
     }
