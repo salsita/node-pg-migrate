@@ -21,8 +21,8 @@ import type * as sql from './operations/sql';
 import type * as tables from './operations/tables';
 import type * as triggers from './operations/triggers';
 import type * as types from './operations/types';
+import type * as views from './operations/views';
 import type * as mViews from './operations/viewsMaterializedTypes';
-import type * as views from './operations/viewsTypes';
 
 export type { ClientConfig, ConnectionConfig } from 'pg';
 
