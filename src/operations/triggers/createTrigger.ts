@@ -1,31 +1,27 @@
-import type { MigrationOptions } from '../types';
-import { escapeValue } from '../utils';
-import type { FunctionOptions } from './functions';
-import { createFunction, dropFunction } from './functions';
-import type { DropOptions, Name, Value } from './generalTypes';
-import type {
-  CreateTrigger,
-  DropTrigger,
-  RenameTrigger,
-  TriggerOptions,
-} from './triggersTypes';
+import type { MigrationOptions } from '../../types';
+import { escapeValue } from '../../utils';
+import type { FunctionOptions } from '../functions';
+import { createFunction, dropFunction } from '../functions';
+import type { DropOptions, Name, Value } from '../generalTypes';
+import { dropTrigger } from './dropTrigger';
+import type { TriggerOptions } from './shared';
 
-export type { CreateTrigger, DropTrigger, RenameTrigger };
+export type CreateTriggerFn1 = (
+  tableName: Name,
+  triggerName: string,
+  triggerOptions: TriggerOptions & DropOptions
+) => string | string[];
 
-export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
-  const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
-    const { ifExists, cascade } = options;
+export type CreateTriggerFn2 = (
+  tableName: Name,
+  triggerName: string,
+  triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+  definition: Value
+) => string | string[];
 
-    const ifExistsStr = ifExists ? ' IF EXISTS' : '';
-    const cascadeStr = cascade ? ' CASCADE' : '';
-    const triggerNameStr = mOptions.literal(triggerName);
-    const tableNameStr = mOptions.literal(tableName);
+export type CreateTriggerFn = CreateTriggerFn1 | CreateTriggerFn2;
 
-    return `DROP TRIGGER${ifExistsStr} ${triggerNameStr} ON ${tableNameStr}${cascadeStr};`;
-  };
-
-  return _drop;
-}
+export type CreateTrigger = CreateTriggerFn & { reverse: CreateTriggerFn };
 
 export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
   const _create: CreateTrigger = (
@@ -128,23 +124,4 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
   };
 
   return _create;
-}
-
-export function renameTrigger(mOptions: MigrationOptions): RenameTrigger {
-  const _rename: RenameTrigger = (
-    tableName,
-    oldTriggerName,
-    newTriggerName
-  ) => {
-    const oldTriggerNameStr = mOptions.literal(oldTriggerName);
-    const tableNameStr = mOptions.literal(tableName);
-    const newTriggerNameStr = mOptions.literal(newTriggerName);
-
-    return `ALTER TRIGGER ${oldTriggerNameStr} ON ${tableNameStr} RENAME TO ${newTriggerNameStr};`;
-  };
-
-  _rename.reverse = (tableName, oldTriggerName, newTriggerName) =>
-    _rename(tableName, newTriggerName, oldTriggerName);
-
-  return _rename;
 }

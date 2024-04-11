@@ -34,7 +34,6 @@ export type {
   IfExistsOption,
   IfNotExistsOption,
   Name,
-  PgLiteralValue,
   Type,
   Value,
 } from './operations/generalTypes';
@@ -46,6 +45,22 @@ export type {
   DropIndexOptions,
   IndexColumn,
 } from './operations/indexes';
+export type {
+  AlterMaterializedView,
+  AlterMaterializedViewOptions,
+  CreateMaterializedView,
+  CreateMaterializedViewFn,
+  CreateMaterializedViewOptions,
+  DropMaterializedView,
+  RefreshMaterializedView,
+  RefreshMaterializedViewFn,
+  RefreshMaterializedViewOptions,
+  RenameMaterializedView,
+  RenameMaterializedViewColumn,
+  RenameMaterializedViewColumnFn,
+  RenameMaterializedViewFn,
+  StorageParameters,
+} from './operations/materializedViews';
 export type {
   AddToOperatorFamily,
   AddToOperatorFamilyFn,
@@ -68,7 +83,6 @@ export type {
   RenameOperatorFamily,
   RenameOperatorFamilyFn,
 } from './operations/operators';
-export { default as PgLiteral } from './operations/PgLiteral';
 export type {
   AlterPolicy,
   CreatePolicy,
@@ -139,45 +153,48 @@ export type {
 } from './operations/tables';
 export type {
   CreateTrigger,
+  CreateTriggerFn,
+  CreateTriggerFn1,
+  CreateTriggerFn2,
   DropTrigger,
   RenameTrigger,
+  RenameTriggerFn,
   TriggerOptions,
-} from './operations/triggersTypes';
+} from './operations/triggers';
 export type {
   AddTypeAttribute,
+  AddTypeAttributeFn,
   AddTypeValue,
   AddTypeValueOptions,
   CreateType,
+  CreateTypeFn,
   DropType,
   DropTypeAttribute,
   RenameType,
   RenameTypeAttribute,
+  RenameTypeAttributeFn,
+  RenameTypeFn,
   RenameTypeValue,
+  RenameTypeValueFn,
   SetTypeAttribute,
-} from './operations/typesTypes';
-export type {
-  AlterMaterializedView,
-  AlterMaterializedViewOptions,
-  CreateMaterializedView,
-  CreateMaterializedViewOptions,
-  DropMaterializedView,
-  RefreshMaterializedView,
-  RefreshMaterializedViewOptions,
-  RenameMaterializedView,
-  RenameMaterializedViewColumn,
-} from './operations/viewsMaterializedTypes';
+} from './operations/types';
 export type {
   AlterView,
   AlterViewColumn,
   AlterViewColumnOptions,
   AlterViewOptions,
   CreateView,
+  CreateViewFn,
   CreateViewOptions,
   DropView,
   RenameView,
-} from './operations/viewsTypes';
+  RenameViewFn,
+  ViewOptions,
+} from './operations/views';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
+export { isPgLiteral, PgLiteral } from './utils';
+export type { PgLiteralValue } from './utils';
 
 import runner from './runner';
 export default runner;
