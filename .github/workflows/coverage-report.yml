@@ -35,7 +35,7 @@ jobs:
           path: coverage-main
 
       - name: Report Coverage
-        uses: davelosert/vitest-coverage-report-action@7cb62972347776255c2333807d26c60110c0df45 # v2.3.0
+        uses: davelosert/vitest-coverage-report-action@1c46e624fc42799d6b1090de7decc8b967784fce # v2.3.1
         with:
           file-coverage-mode: all
           json-summary-compare-path: coverage-main/coverage-summary.json
