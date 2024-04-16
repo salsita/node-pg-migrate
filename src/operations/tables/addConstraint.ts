@@ -2,13 +2,13 @@ import type { MigrationOptions } from '../../types';
 import { formatLines } from '../../utils';
 import type { DropOptions, Name } from '../generalTypes';
 import { dropConstraint } from './dropConstraint';
-import { parseConstraints, type ConstraintOptions } from './shared';
+import type { ConstraintOptions } from './shared';
+import { parseConstraints } from './shared';
 
 export type CreateConstraintFn = (
   tableName: Name,
   constraintName: string | null,
-  // TODO @Shinigami92 2024-03-13: this needs to be `string | (ConstraintOptions & DropOptions)`
-  expression: (string | ConstraintOptions) & DropOptions
+  expression: string | (ConstraintOptions & DropOptions)
 ) => string | string[];
 
 export type CreateConstraint = CreateConstraintFn & {
@@ -44,6 +44,12 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
     if (constraintName === null) {
       throw new Error(
         'Impossible to automatically infer down migration for addConstraint without naming constraint'
+      );
+    }
+
+    if (typeof options === 'string') {
+      throw new Error(
+        'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
       );
     }
 
