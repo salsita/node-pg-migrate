@@ -151,12 +151,26 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
           );
         });
 
-        it('should throw error', () => {
+        it('should throw error when constraintName is null', () => {
           expect(() =>
             addConstraintFn.reverse('distributors', null, {})
           ).toThrow(
             new Error(
               'Impossible to automatically infer down migration for addConstraint without naming constraint'
+            )
+          );
+        });
+
+        it('should throw error when expression is raw SQL', () => {
+          expect(() =>
+            addConstraintFn.reverse(
+              'distributors',
+              'zipchk',
+              'CHECK (char_length(zipcode) = 5)'
+            )
+          ).toThrow(
+            new Error(
+              'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
             )
           );
         });
