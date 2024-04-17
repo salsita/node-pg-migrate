@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { escapeValue } from '../../utils';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameTypeValueFn = (
   typeName: Name,
@@ -8,9 +8,7 @@ export type RenameTypeValueFn = (
   newValue: string
 ) => string | string[];
 
-export type RenameTypeValue = RenameTypeValueFn & {
-  reverse: RenameTypeValueFn;
-};
+export type RenameTypeValue = Reversible<RenameTypeValueFn>;
 
 export function renameTypeValue(mOptions: MigrationOptions): RenameTypeValue {
   const _rename: RenameTypeValue = (typeName, value, newValue) => {

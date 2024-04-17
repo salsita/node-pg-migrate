@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, Name } from '../generalTypes';
+import type { DropOptions, Name, Reversible } from '../generalTypes';
 import { dropView } from './dropView';
 import type { ViewOptions } from './shared';
 import { viewOptionStr } from './shared';
@@ -24,7 +24,7 @@ export type CreateViewFn = (
   definition: string
 ) => string | string[];
 
-export type CreateView = CreateViewFn & { reverse: CreateViewFn };
+export type CreateView = Reversible<CreateViewFn>;
 
 export function createView(mOptions: MigrationOptions): CreateView {
   const _create: CreateView = (viewName, viewOptions, definition) => {

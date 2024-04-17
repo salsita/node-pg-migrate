@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';
@@ -32,7 +32,7 @@ export type CreateIndexFn = (
   options?: CreateIndexOptions & DropIndexOptions
 ) => string | string[];
 
-export type CreateIndex = CreateIndexFn & { reverse: CreateIndexFn };
+export type CreateIndex = Reversible<CreateIndexFn>;
 
 export function createIndex(mOptions: MigrationOptions): CreateIndex {
   const _create: CreateIndex = (tableName, rawColumns, options = {}) => {

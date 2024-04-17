@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameRoleFn = (
   oldRoleName: Name,
   newRoleName: Name
 ) => string | string[];
 
-export type RenameRole = RenameRoleFn & { reverse: RenameRoleFn };
+export type RenameRole = Reversible<RenameRoleFn>;
 
 export function renameRole(mOptions: MigrationOptions): RenameRole {
   const _rename: RenameRole = (oldRoleName, newRoleName) => {

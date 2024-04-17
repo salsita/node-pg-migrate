@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameDomainFn = (
   oldDomainName: Name,
   newDomainName: Name
 ) => string | string[];
 
-export type RenameDomain = RenameDomainFn & { reverse: RenameDomainFn };
+export type RenameDomain = Reversible<RenameDomainFn>;
 
 export function renameDomain(mOptions: MigrationOptions): RenameDomain {
   const _rename: RenameDomain = (domainName, newDomainName) => {

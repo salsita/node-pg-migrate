@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 import type { DropOperatorOptions } from './dropOperator';
 import { dropOperator } from './dropOperator';
 
@@ -28,7 +28,7 @@ export type CreateOperatorFn = (
   options: CreateOperatorOptions & DropOperatorOptions
 ) => string | string[];
 
-export type CreateOperator = CreateOperatorFn & { reverse: CreateOperatorFn };
+export type CreateOperator = Reversible<CreateOperatorFn>;
 
 export function createOperator(mOptions: MigrationOptions): CreateOperator {
   const _create: CreateOperator = (operatorName, options) => {

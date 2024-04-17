@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { formatLines, intersection, makeComment } from '../../utils';
-import type { DropOptions, Name } from '../generalTypes';
+import type { DropOptions, Name, Reversible } from '../generalTypes';
 import { dropTable } from './dropTable';
 import type {
   ColumnDefinitions,
@@ -15,7 +15,7 @@ export type CreateTableFn = (
   options?: TableOptions & DropOptions
 ) => string | string[];
 
-export type CreateTable = CreateTableFn & { reverse: CreateTableFn };
+export type CreateTable = Reversible<CreateTableFn>;
 
 export function createTable(mOptions: MigrationOptions): CreateTable {
   const _create: CreateTable = (tableName, columns, options = {}) => {

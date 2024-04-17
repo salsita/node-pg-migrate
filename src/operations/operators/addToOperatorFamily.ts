@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 import { removeFromOperatorFamily } from './removeFromOperatorFamily';
 import type { OperatorListDefinition } from './shared';
 import { operatorMap } from './shared';
@@ -10,9 +10,7 @@ export type AddToOperatorFamilyFn = (
   operatorList: OperatorListDefinition[]
 ) => string | string[];
 
-export type AddToOperatorFamily = AddToOperatorFamilyFn & {
-  reverse: AddToOperatorFamilyFn;
-};
+export type AddToOperatorFamily = Reversible<AddToOperatorFamilyFn>;
 
 export const addToOperatorFamily = (
   mOptions: MigrationOptions

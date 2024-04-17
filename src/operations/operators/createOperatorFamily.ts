@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, Name } from '../generalTypes';
+import type { DropOptions, Name, Reversible } from '../generalTypes';
 import { dropOperatorFamily } from './dropOperatorFamily';
 
 export type CreateOperatorFamilyFn = (
@@ -8,9 +8,7 @@ export type CreateOperatorFamilyFn = (
   options?: DropOptions
 ) => string | string[];
 
-export type CreateOperatorFamily = CreateOperatorFamilyFn & {
-  reverse: CreateOperatorFamilyFn;
-};
+export type CreateOperatorFamily = Reversible<CreateOperatorFamilyFn>;
 
 export function createOperatorFamily(
   mOptions: MigrationOptions

@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameSequenceFn = (
   oldSequenceName: Name,
   newSequenceName: Name
 ) => string | string[];
 
-export type RenameSequence = RenameSequenceFn & { reverse: RenameSequenceFn };
+export type RenameSequence = Reversible<RenameSequenceFn>;
 
 export function renameSequence(mOptions: MigrationOptions): RenameSequence {
   const _rename: RenameSequence = (sequenceName, newSequenceName) => {

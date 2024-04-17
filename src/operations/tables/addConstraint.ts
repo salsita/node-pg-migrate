@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { formatLines } from '../../utils';
-import type { DropOptions, Name } from '../generalTypes';
+import type { DropOptions, Name, Reversible } from '../generalTypes';
 import { dropConstraint } from './dropConstraint';
 import type { ConstraintOptions } from './shared';
 import { parseConstraints } from './shared';
@@ -11,9 +11,7 @@ export type CreateConstraintFn = (
   expression: string | (ConstraintOptions & DropOptions)
 ) => string | string[];
 
-export type CreateConstraint = CreateConstraintFn & {
-  reverse: CreateConstraintFn;
-};
+export type CreateConstraint = Reversible<CreateConstraintFn>;
 
 export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
   const _add: CreateConstraint = (tableName, constraintName, expression) => {

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameMaterializedViewColumnFn = (
   viewName: Name,
@@ -7,9 +7,8 @@ export type RenameMaterializedViewColumnFn = (
   newColumnName: string
 ) => string | string[];
 
-export type RenameMaterializedViewColumn = RenameMaterializedViewColumnFn & {
-  reverse: RenameMaterializedViewColumnFn;
-};
+export type RenameMaterializedViewColumn =
+  Reversible<RenameMaterializedViewColumnFn>;
 
 export function renameMaterializedViewColumn(
   mOptions: MigrationOptions

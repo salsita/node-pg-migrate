@@ -1,14 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameMaterializedViewFn = (
   viewName: Name,
   newViewName: Name
 ) => string | string[];
 
-export type RenameMaterializedView = RenameMaterializedViewFn & {
-  reverse: RenameMaterializedViewFn;
-};
+export type RenameMaterializedView = Reversible<RenameMaterializedViewFn>;
 
 export function renameMaterializedView(
   mOptions: MigrationOptions

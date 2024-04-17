@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameConstraintFn = (
   tableName: Name,
@@ -7,9 +7,7 @@ export type RenameConstraintFn = (
   newConstraintName: string
 ) => string | string[];
 
-export type RenameConstraint = RenameConstraintFn & {
-  reverse: RenameConstraintFn;
-};
+export type RenameConstraint = Reversible<RenameConstraintFn>;
 
 export function renameConstraint(mOptions: MigrationOptions): RenameConstraint {
   const _rename: RenameConstraint = (tableName, constraintName, newName) => {

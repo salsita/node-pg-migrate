@@ -1,11 +1,12 @@
 import type { MigrationOptions } from '../../types';
+import type { Reversible } from '../generalTypes';
 
 export type RenameSchemaFn = (
   oldSchemaName: string,
   newSchemaName: string
 ) => string | string[];
 
-export type RenameSchema = RenameSchemaFn & { reverse: RenameSchemaFn };
+export type RenameSchema = Reversible<RenameSchemaFn>;
 
 export function renameSchema(mOptions: MigrationOptions): RenameSchema {
   const _rename: RenameSchema = (schemaName, newSchemaName) => {

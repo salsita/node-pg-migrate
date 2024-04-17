@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameTypeAttributeFn = (
   typeName: Name,
@@ -7,9 +7,7 @@ export type RenameTypeAttributeFn = (
   newAttributeName: string
 ) => string | string[];
 
-export type RenameTypeAttribute = RenameTypeAttributeFn & {
-  reverse: RenameTypeAttributeFn;
-};
+export type RenameTypeAttribute = Reversible<RenameTypeAttributeFn>;
 
 export function renameTypeAttribute(
   mOptions: MigrationOptions
