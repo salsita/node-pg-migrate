@@ -44,13 +44,37 @@ export type DropOptions = IfExistsOption & CascadeOption;
  * A function that returns a normal SQL statement or an array of SQL statements.
  *
  * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
+ */
+export type OperationFn = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...args: any[]
+) => string | string[];
+
+/**
+ * A function that returns a normal SQL statement or an array of SQL statements.
+ *
+ * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
+ *
+ * The `reverse` property is a function that takes the same arguments and try to infer the reverse SQL statement with that.
+ */
+export type Operation = OperationFn & {
+  /**
+   * Reverse the operation if provided.
+   */
+  reverse?: OperationFn;
+};
+
+/**
+ * A function that returns a normal SQL statement or an array of SQL statements.
+ *
+ * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
  *
  * The `reverse` property is a function that takes the same arguments and try to infer the reverse SQL statement with that.
  */
 export type Reversible<
   TFunction extends (
-    ...args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...args: any[]
   ) => string | string[],
 > = TFunction & {
   /**

@@ -105,12 +105,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
     return `${fnSQL}${triggerSQL}`;
   };
 
-  _create.reverse = (
-    tableName: Name,
-    triggerName: string,
-    triggerOptions: TriggerOptions & DropOptions,
-    definition?: Value
-  ) => {
+  _create.reverse = (tableName, triggerName, triggerOptions, definition) => {
     const triggerSQL = dropTrigger(mOptions)(
       tableName,
       triggerName,
