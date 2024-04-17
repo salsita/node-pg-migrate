@@ -33,7 +33,13 @@ export type {
   DropOptions,
   IfExistsOption,
   IfNotExistsOption,
+  LiteralUnion,
   Name,
+  Nullable,
+  Operation,
+  OperationFn,
+  PublicPart,
+  Reversible,
   Type,
   Value,
 } from './operations/generalTypes';

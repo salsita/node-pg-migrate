@@ -1,5 +1,10 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, IfNotExistsOption, Name } from '../generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Reversible,
+} from '../generalTypes';
 import { dropMaterializedView } from './dropMaterializedView';
 import type { StorageParameters } from './shared';
 import { dataClause, storageParameterStr } from './shared';
@@ -20,9 +25,7 @@ export type CreateMaterializedViewFn = (
   definition: string
 ) => string | string[];
 
-export type CreateMaterializedView = CreateMaterializedViewFn & {
-  reverse: CreateMaterializedViewFn;
-};
+export type CreateMaterializedView = Reversible<CreateMaterializedViewFn>;
 
 export function createMaterializedView(
   mOptions: MigrationOptions

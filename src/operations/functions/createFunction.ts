@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { escapeValue, formatParams } from '../../utils';
-import type { DropOptions, Name, Value } from '../generalTypes';
+import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
 import { dropFunction } from './dropFunction';
 import type { FunctionOptions, FunctionParam } from './shared';
 
@@ -11,7 +11,7 @@ export type CreateFunctionFn = (
   definition: Value
 ) => string | string[];
 
-export type CreateFunction = CreateFunctionFn & { reverse: CreateFunctionFn };
+export type CreateFunction = Reversible<CreateFunctionFn>;
 
 export function createFunction(mOptions: MigrationOptions): CreateFunction {
   const _create: CreateFunction = (

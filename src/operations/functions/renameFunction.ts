@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { formatParams } from '../../utils';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 import type { FunctionParam } from './shared';
 
 export type RenameFunctionFn = (
@@ -9,7 +9,7 @@ export type RenameFunctionFn = (
   newFunctionName: Name
 ) => string | string[];
 
-export type RenameFunction = RenameFunctionFn & { reverse: RenameFunctionFn };
+export type RenameFunction = Reversible<RenameFunctionFn>;
 
 export function renameFunction(mOptions: MigrationOptions): RenameFunction {
   const _rename: RenameFunction = (

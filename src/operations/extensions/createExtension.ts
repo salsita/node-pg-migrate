@@ -1,5 +1,9 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, IfNotExistsOption } from '../generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Reversible,
+} from '../generalTypes';
 import { dropExtension } from './dropExtension';
 import type { StringExtension } from './shared';
 
@@ -12,9 +16,7 @@ export type CreateExtensionFn = (
   options?: CreateExtensionOptions & DropOptions
 ) => string | string[];
 
-export type CreateExtension = CreateExtensionFn & {
-  reverse: CreateExtensionFn;
-};
+export type CreateExtension = Reversible<CreateExtensionFn>;
 
 export function createExtension(mOptions: MigrationOptions): CreateExtension {
   const _create: CreateExtension = (_extensions, options = {}) => {

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { IfExistsOption, Name } from '../generalTypes';
+import type { IfExistsOption, Name, Reversible } from '../generalTypes';
 import { dropRole } from './dropRole';
 import type { RoleOptions } from './shared';
 import { formatRoleOptions } from './shared';
@@ -9,7 +9,7 @@ export type CreateRoleFn = (
   roleOptions?: RoleOptions & IfExistsOption
 ) => string | string[];
 
-export type CreateRole = CreateRoleFn & { reverse: CreateRoleFn };
+export type CreateRole = Reversible<CreateRoleFn>;
 
 export function createRole(mOptions: MigrationOptions): CreateRole {
   const _create: CreateRole = (roleName, roleOptions = {}) => {

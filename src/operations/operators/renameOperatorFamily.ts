@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameOperatorFamilyFn = (
   oldOperatorFamilyName: Name,
@@ -7,9 +7,7 @@ export type RenameOperatorFamilyFn = (
   newOperatorFamilyName: Name
 ) => string | string[];
 
-export type RenameOperatorFamily = RenameOperatorFamilyFn & {
-  reverse: RenameOperatorFamilyFn;
-};
+export type RenameOperatorFamily = Reversible<RenameOperatorFamilyFn>;
 
 export function renameOperatorFamily(
   mOptions: MigrationOptions

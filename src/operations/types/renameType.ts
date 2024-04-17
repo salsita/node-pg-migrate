@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameTypeFn = (
   typeName: Name,
   newTypeName: Name
 ) => string | string[];
 
-export type RenameType = RenameTypeFn & { reverse: RenameTypeFn };
+export type RenameType = Reversible<RenameTypeFn>;
 
 export function renameType(mOptions: MigrationOptions): RenameType {
   const _rename: RenameType = (typeName, newTypeName) => {

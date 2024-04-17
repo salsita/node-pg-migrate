@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenamePolicyFn = (
   tableName: Name,
@@ -7,7 +7,7 @@ export type RenamePolicyFn = (
   newPolicyName: string
 ) => string | string[];
 
-export type RenamePolicy = RenamePolicyFn & { reverse: RenamePolicyFn };
+export type RenamePolicy = Reversible<RenamePolicyFn>;
 
 export function renamePolicy(mOptions: MigrationOptions): RenamePolicy {
   const _rename: RenamePolicy = (tableName, policyName, newPolicyName) => {

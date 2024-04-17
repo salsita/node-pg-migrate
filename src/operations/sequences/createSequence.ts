@@ -1,5 +1,10 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, IfNotExistsOption, Name } from '../generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Reversible,
+} from '../generalTypes';
 import { dropSequence } from './dropSequence';
 import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';
@@ -15,7 +20,7 @@ export type CreateSequenceFn = (
   sequenceOptions?: SequenceOptionsCreate & DropOptions
 ) => string | string[];
 
-export type CreateSequence = CreateSequenceFn & { reverse: CreateSequenceFn };
+export type CreateSequence = Reversible<CreateSequenceFn>;
 
 export function createSequence(mOptions: MigrationOptions): CreateSequence {
   const _create: CreateSequence = (sequenceName, options = {}) => {

@@ -2,7 +2,7 @@ import type { MigrationOptions } from '../../types';
 import { escapeValue } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
-import type { DropOptions, Name, Value } from '../generalTypes';
+import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
 import { dropTrigger } from './dropTrigger';
 import type { TriggerOptions } from './shared';
 
@@ -21,7 +21,7 @@ export type CreateTriggerFn2 = (
 
 export type CreateTriggerFn = CreateTriggerFn1 | CreateTriggerFn2;
 
-export type CreateTrigger = CreateTriggerFn & { reverse: CreateTriggerFn };
+export type CreateTrigger = Reversible<CreateTriggerFn>;
 
 export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
   const _create: CreateTrigger = (
@@ -105,12 +105,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
     return `${fnSQL}${triggerSQL}`;
   };
 
-  _create.reverse = (
-    tableName: Name,
-    triggerName: string,
-    triggerOptions: TriggerOptions & DropOptions,
-    definition?: Value
-  ) => {
+  _create.reverse = (tableName, triggerName, triggerOptions, definition) => {
     const triggerSQL = dropTrigger(mOptions)(
       tableName,
       triggerName,

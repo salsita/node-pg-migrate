@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { applyType, escapeValue } from '../../utils';
-import type { DropOptions, Name, Type } from '../generalTypes';
+import type { DropOptions, Name, Reversible, Type } from '../generalTypes';
 import { dropDomain } from './dropDomain';
 import type { DomainOptions } from './shared';
 
@@ -14,7 +14,7 @@ export type CreateDomainFn = (
   domainOptions?: DomainOptionsCreate & DropOptions
 ) => string | string[];
 
-export type CreateDomain = CreateDomainFn & { reverse: CreateDomainFn };
+export type CreateDomain = Reversible<CreateDomainFn>;
 
 export function createDomain(mOptions: MigrationOptions): CreateDomain {
   const _create: CreateDomain = (domainName, type, options = {}) => {

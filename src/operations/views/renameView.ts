@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameViewFn = (
   viewName: Name,
   newViewName: Name
 ) => string | string[];
 
-export type RenameView = RenameViewFn & { reverse: RenameViewFn };
+export type RenameView = Reversible<RenameViewFn>;
 
 export function renameView(mOptions: MigrationOptions): RenameView {
   const _rename: RenameView = (viewName, newViewName) => {

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameColumnFn = (
   tableName: Name,
@@ -7,7 +7,7 @@ export type RenameColumnFn = (
   newColumnName: string
 ) => string | string[];
 
-export type RenameColumn = RenameColumnFn & { reverse: RenameColumnFn };
+export type RenameColumn = Reversible<RenameColumnFn>;
 
 export function renameColumn(mOptions: MigrationOptions): RenameColumn {
   const _rename: RenameColumn = (tableName, columnName, newName) => {

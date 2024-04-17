@@ -12,6 +12,7 @@
 import * as domains from './operations/domains';
 import * as extensions from './operations/extensions';
 import * as functions from './operations/functions';
+import type { Operation } from './operations/generalTypes';
 import * as indexes from './operations/indexes';
 import * as mViews from './operations/materializedViews';
 import * as operators from './operations/operators';
@@ -311,19 +312,15 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
   ) {
     this._steps = [];
     this._REVERSE_MODE = false;
-    // by default, all migrations are wrapped in a transaction
+    // By default, all migrations are wrapped in a transaction
     this._useTransaction = true;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type OperationFn = (...args: any[]) => string | string[];
-    type Operation = OperationFn & { reverse?: OperationFn };
-
-    // this function wraps each operation within a function that either
-    // calls the operation or its reverse, and appends the result (array of sql statements)
-    // to the steps array
+    // This function wraps each operation within a function that either calls
+    // the operation or its reverse, and appends the result
+    // (array of sql statements) to the steps array
     const wrap =
-      <T extends Operation>(operation: T) =>
-      (...args: Parameters<T>) => {
+      <TOperation extends Operation>(operation: TOperation) =>
+      (...args: Parameters<TOperation>) => {
         if (this._REVERSE_MODE) {
           if (typeof operation.reverse !== 'function') {
             const name = `pgm.${operation.name}()`;
@@ -345,8 +342,8 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
       logger,
     };
 
-    // defines the methods that are accessible via pgm in each migrations
-    // there are some convenience aliases to make usage easier
+    // Defines the methods that are accessible via pgm in each migrations there
+    // are some convenience aliases to make usage easier
     this.createExtension = wrap(extensions.createExtension(options));
     this.dropExtension = wrap(extensions.dropExtension(options));
     this.addExtension = this.createExtension;
@@ -452,7 +449,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     // common uses are for PG functions, ex: { ... default: pgm.func('NOW()') }
     this.func = PgLiteral.create;
 
-    // expose DB so we can access database within transaction
+    // Expose DB so we can access database within transaction
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const wrapDB =
       <T extends any[], TResult>(operation: (...args: T) => TResult) =>
@@ -490,7 +487,7 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
   }
 
   getSqlSteps(): string[] {
-    // in reverse mode, we flip the order of the statements
+    // In reverse mode, we flip the order of the statements
     return this._REVERSE_MODE ? this._steps.slice().reverse() : this._steps;
   }
 }

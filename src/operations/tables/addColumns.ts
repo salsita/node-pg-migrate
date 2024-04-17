@@ -1,6 +1,11 @@
 import type { MigrationOptions } from '../../types';
 import { formatLines } from '../../utils';
-import type { DropOptions, IfNotExistsOption, Name } from '../generalTypes';
+import type {
+  DropOptions,
+  IfNotExistsOption,
+  Name,
+  Reversible,
+} from '../generalTypes';
 import { dropColumns } from './dropColumns';
 import type { ColumnDefinitions } from './shared';
 import { parseColumns } from './shared';
@@ -11,7 +16,7 @@ export type AddColumnsFn = (
   addOptions?: IfNotExistsOption & DropOptions
 ) => string | string[];
 
-export type AddColumns = AddColumnsFn & { reverse: AddColumnsFn };
+export type AddColumns = Reversible<AddColumnsFn>;
 
 export function addColumns(mOptions: MigrationOptions): AddColumns {
   const _add: AddColumns = (tableName, columns, options = {}) => {

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { IfExistsOption, Name } from '../generalTypes';
+import type { IfExistsOption, Name, Reversible } from '../generalTypes';
 import { dropPolicy } from './dropPolicy';
 import type { PolicyOptions } from './shared';
 import { makeClauses } from './shared';
@@ -16,7 +16,7 @@ type CreatePolicyFn = (
   options?: CreatePolicyOptions & IfExistsOption
 ) => string | string[];
 
-export type CreatePolicy = CreatePolicyFn & { reverse: CreatePolicyFn };
+export type CreatePolicy = Reversible<CreatePolicyFn>;
 
 export function createPolicy(mOptions: MigrationOptions): CreatePolicy {
   const _create: CreatePolicy = (tableName, policyName, options = {}) => {

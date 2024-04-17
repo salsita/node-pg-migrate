@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 import { dataClause } from './shared';
 
 export interface RefreshMaterializedViewOptions {
@@ -13,9 +13,7 @@ export type RefreshMaterializedViewFn = (
   options?: RefreshMaterializedViewOptions
 ) => string | string[];
 
-export type RefreshMaterializedView = RefreshMaterializedViewFn & {
-  reverse: RefreshMaterializedViewFn;
-};
+export type RefreshMaterializedView = Reversible<RefreshMaterializedViewFn>;
 
 export function refreshMaterializedView(
   mOptions: MigrationOptions

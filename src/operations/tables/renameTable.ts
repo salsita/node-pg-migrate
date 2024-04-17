@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameTableFn = (
   tableName: Name,
   newtableName: Name
 ) => string | string[];
 
-export type RenameTable = RenameTableFn & { reverse: RenameTableFn };
+export type RenameTable = Reversible<RenameTableFn>;
 
 export function renameTable(mOptions: MigrationOptions): RenameTable {
   const _rename: RenameTable = (tableName, newName) => {

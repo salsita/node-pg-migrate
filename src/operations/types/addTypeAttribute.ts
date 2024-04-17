@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../types';
 import { applyType } from '../../utils';
-import type { IfExistsOption, Name, Type } from '../generalTypes';
+import type { IfExistsOption, Name, Reversible, Type } from '../generalTypes';
 import { dropTypeAttribute } from './dropTypeAttribute';
 
 export type AddTypeAttributeFn = (
@@ -9,9 +9,7 @@ export type AddTypeAttributeFn = (
   attributeType: Type & IfExistsOption
 ) => string | string[];
 
-export type AddTypeAttribute = AddTypeAttributeFn & {
-  reverse: AddTypeAttributeFn;
-};
+export type AddTypeAttribute = Reversible<AddTypeAttributeFn>;
 
 export function addTypeAttribute(mOptions: MigrationOptions): AddTypeAttribute {
   const _alterAttributeAdd: AddTypeAttribute = (

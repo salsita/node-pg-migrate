@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import type { Name } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
 export type RenameTriggerFn = (
   tableName: Name,
@@ -7,7 +7,7 @@ export type RenameTriggerFn = (
   newTriggerName: string
 ) => string | string[];
 
-export type RenameTrigger = RenameTriggerFn & { reverse: RenameTriggerFn };
+export type RenameTrigger = Reversible<RenameTriggerFn>;
 
 export function renameTrigger(mOptions: MigrationOptions): RenameTrigger {
   const _rename: RenameTrigger = (
