@@ -18,7 +18,7 @@ Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to 
 - Node.js 18 or higher
 - PostgreSQL 12.8 or higher (lower versions may work but are not supported officially)
 
-If you don't already have the pg library installed, you will need to add pg as either a direct or dev dependency
+If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a direct or dev dependency
 
 ```bash
 npm add pg
@@ -31,8 +31,6 @@ npm add --save-dev node-pg-migrate
 ```
 
 Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate.js`
-
-It will also install [`pg`](https://node-postgres.com/) library as peer dependency used for migrations.
 
 ## Quick Example
 
@@ -108,28 +106,4 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 ## License
 
-The MIT License (MIT)
-
-Copyright (c) 2024 Christopher Quadflieg
-
-Copyright (c) 2016-2021 Salsita Software &lt;jando@salsitasoft.com&gt;
-
-Copyright (c) 2014-2016 Theo Ephraim
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[MIT](./LICENSE)
