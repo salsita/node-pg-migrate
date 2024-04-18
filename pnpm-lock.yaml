@@ -13,9 +13,6 @@ importers:
 
   .:
     dependencies:
-      decamelize:
-        specifier: ^5.0.0
-        version: 5.0.1
       mkdirp:
         specifier: ~1.0.0
         version: 1.0.4
@@ -1014,10 +1011,6 @@ packages:
   decamelize@1.2.0:
     resolution: {integrity: sha512-z2S+W9X73hAUUki+N+9Za2lBlun89zigOyGrsax+KUQ6wKW4ZoWpEYBkGhQjwAjjDCkWxhY0VKEhk8wzY7F5cA==}
     engines: {node: '>=0.10.0'}
-
-  decamelize@5.0.1:
-    resolution: {integrity: sha512-VfxadyCECXgQlkoEAjeghAr5gY3Hf+IKjKb+X8tGVDtveCjN+USwprd2q3QXBR9T1+x2DG0XZF5/w+7HAtSaXA==}
-    engines: {node: '>=10'}
 
   decompress-response@3.3.0:
     resolution: {integrity: sha512-BzRPQuY1ip+qDonAOz42gRm/pg9F768C+npV/4JOsxRC2sq+Rlk+Q4ZCAsOhnIaMrgarILY+RMUIvMmmX1qAEA==}
@@ -3637,8 +3630,6 @@ snapshots:
       ms: 2.1.2
 
   decamelize@1.2.0: {}
-
-  decamelize@5.0.1: {}
 
   decompress-response@3.3.0:
     dependencies:

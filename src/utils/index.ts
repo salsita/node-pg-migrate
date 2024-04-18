@@ -1,5 +1,6 @@
 export { createSchemalize } from './createSchemalize';
 export { createTransformer } from './createTransformer';
+export { decamelize } from './decamelize';
 export { escapeValue } from './escapeValue';
 export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
