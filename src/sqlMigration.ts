@@ -1,10 +1,9 @@
-import fs from 'fs';
+import { readFile } from 'node:fs/promises';
 import type { MigrationBuilderActions } from './types';
 
-const { readFile } = fs.promises;
-
-const createMigrationCommentRegex = (direction: 'up' | 'down') =>
-  new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
+function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
+  return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
+}
 
 export const getActions = (content: string): MigrationBuilderActions => {
   const upMigrationCommentRegex = createMigrationCommentRegex('up');
@@ -15,7 +14,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
 
   const upSql =
     upMigrationStart >= 0
-      ? content.substr(
+      ? content.slice(
           upMigrationStart,
           downMigrationStart < upMigrationStart ? undefined : downMigrationStart
         )
@@ -23,7 +22,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
 
   const downSql =
     downMigrationStart >= 0
-      ? content.substr(
+      ? content.slice(
           downMigrationStart,
           upMigrationStart < downMigrationStart ? undefined : upMigrationStart
         )

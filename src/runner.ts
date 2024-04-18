@@ -1,4 +1,4 @@
-import path from 'path';
+import { extname, relative } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
@@ -38,9 +38,9 @@ const loadMigrations = async (
         files.map(async (file) => {
           const filePath = `${options.dir}/${file}`;
           const actions: MigrationBuilderActions =
-            path.extname(filePath) === '.sql'
+            extname(filePath) === '.sql'
               ? await migrateSqlFile(filePath)
-              : require(path.relative(__dirname, filePath));
+              : require(relative(__dirname, filePath));
           shorthands = { ...shorthands, ...actions.shorthands };
 
           return new Migration(
