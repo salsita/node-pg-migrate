@@ -13,25 +13,30 @@
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)  
 Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to [Salsita Software](https://www.salsitasoft.com/) and now maintained by [@Shinigami92](https://github.com/Shinigami92).
 
-:warning: The project is currently in cleanup maintenance mode. So below sections are not up to date. :warning:
+## Preconditions
 
-### Looking for v3 docs?
+- Node.js 18 or higher
+- PostgreSQL 12.8 or higher (lower versions may work but are not supported officially)
 
-see [v3 branch](https://github.com/salsita/node-pg-migrate/tree/v3).
+If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a direct or dev dependency
+
+```bash
+npm add pg
+```
 
 ## Installation
 
-    $ npm install node-pg-migrate pg
+```bash
+npm add --save-dev node-pg-migrate
+```
 
-Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
-
-It will also install [`pg`](https://node-postgres.com/) library as it is peer dependency used for migrations.
+Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate.js`
 
 ## Quick Example
 
-Add `"migrate": "node-pg-migrate"` to `scripts` section of `package.json` so you are able to quickly run commands.
+Add `"migrate": "node-pg-migrate"` to `scripts` section of your `package.json` so you are able to quickly run commands.
 
-Run `npm run migrate create my first migration`. It will create file `xxx_my-first-migration.js` in `migrations` folder.
+Run `npm run migrate create my-first-migration`. It will create file `xxx_my-first-migration.js` in `migrations` folder.  
 Open it and change contents to:
 
 ```js
@@ -71,9 +76,9 @@ Now you should put your DB connection string to `DATABASE_URL` environment varia
 
 You should now have two tables in your DB :tada:
 
-If you will want to change your schema later, you can e.g. add lead paragraph to posts:
+If you want to change your schema later, you can e.g. add lead paragraph to posts:
 
-Run `npm run migrate create posts lead`, edit `xxx_posts_lead.js`:
+Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
 
 ```js
 exports.up = (pgm) => {
@@ -83,7 +88,7 @@ exports.up = (pgm) => {
 };
 ```
 
-Run `npm run migrate up` and there will be new column in `posts` table :tada: :tada:
+Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 
 Want to know more? Read docs:
 
@@ -101,28 +106,4 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 ## License
 
-The MIT License (MIT)
-
-Copyright (c) 2024 Christopher Quadflieg
-
-Copyright (c) 2016-2021 Salsita Software &lt;jando@salsitasoft.com&gt;
-
-Copyright (c) 2014-2016 Theo Ephraim
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[MIT](./LICENSE)
