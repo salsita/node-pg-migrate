@@ -13,9 +13,6 @@ importers:
 
   .:
     dependencies:
-      mkdirp:
-        specifier: ~1.0.0
-        version: 1.0.4
       yargs:
         specifier: ~17.7.0
         version: 17.7.2
@@ -29,9 +26,6 @@ importers:
       '@types/config':
         specifier: 3.3.4
         version: 3.3.4
-      '@types/mkdirp':
-        specifier: 1.0.2
-        version: 1.0.2
       '@types/node':
         specifier: 18.19.31
         version: 18.19.31
@@ -629,9 +623,6 @@ packages:
 
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
-
-  '@types/mkdirp@1.0.2':
-    resolution: {integrity: sha512-o0K1tSO0Dx5X6xlU5F1D6625FawhC3dU3iqr25lluNv/+/QIVH8RLNEiVokgIZo+mz+87w/3Mkg/VvQS+J51fQ==}
 
   '@types/node@18.19.31':
     resolution: {integrity: sha512-ArgCD39YpyyrtFKIqMDvjz79jto5fcI/SVUs2HwB+f0dAzq68yqOdyaSivLiLugSziTpNXLQrVb7RZFmdZzbhA==}
@@ -1824,11 +1815,6 @@ packages:
   minipass@7.0.4:
     resolution: {integrity: sha512-jYofLM5Dam9279rdkWzqHozUo4ybjdZmCsDHePy5V/PbBcVMiSZR97gmAy45aqi8CK1lG2ECd356FU86avfwUQ==}
     engines: {node: '>=16 || 14 >=14.17'}
-
-  mkdirp@1.0.4:
-    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
-    hasBin: true
 
   mlly@1.6.1:
     resolution: {integrity: sha512-vLgaHvaeunuOXHSmEbZ9izxPx3USsk8KCQ8iC+aTlp5sKRSoZvwhHh5L9VbKSaVC6sJDqbyohIS76E2VmHIPAA==}
@@ -3154,10 +3140,6 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/keyv@3.1.4':
-    dependencies:
-      '@types/node': 18.19.31
-
-  '@types/mkdirp@1.0.2':
     dependencies:
       '@types/node': 18.19.31
 
@@ -4552,8 +4534,6 @@ snapshots:
   minimist@1.2.8: {}
 
   minipass@7.0.4: {}
-
-  mkdirp@1.0.4: {}
 
   mlly@1.6.1:
     dependencies:

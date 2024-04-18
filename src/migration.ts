@@ -6,9 +6,8 @@
 
  */
 
-import mkdirp from 'mkdirp';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { readdir } from 'node:fs/promises';
+import { mkdir, readdir } from 'node:fs/promises';
 import { basename, extname, resolve } from 'node:path';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
@@ -126,7 +125,7 @@ export class Migration implements RunMigration {
     const { filenameFormat = FilenameFormat.timestamp } = options;
 
     // ensure the migrations directory exists
-    mkdirp.sync(directory);
+    await mkdir(directory, { recursive: true });
 
     const now = new Date();
     const time =
