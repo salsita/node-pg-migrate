@@ -84,7 +84,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on the command line).
 - `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
 - `fake` - Mark migrations as run without actually performing them (use with caution!)
-- `decamelize` - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names
+- `decamelize` - Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names
 - `verbose` - Print all debug messages like DB queries run (defaults to `true`, to switch it off supply `--no-verbose` on the command line)
 - `reject-unauthorized` - Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009)
 
