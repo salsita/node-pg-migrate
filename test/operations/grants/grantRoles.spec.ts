@@ -15,9 +15,7 @@ describe('operations', () => {
         const statement = grantRolesFn('role1', 'role2', {});
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(
-          'CREATE INDEX "title_idx" ON "films" ("title");'
-        );
+        expect(statement).toBe('GRANT "role1" TO "role2";');
       });
 
       it('should return sql statement with grantsOptions', () => {
@@ -26,9 +24,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(
-          'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating");'
-        );
+        expect(statement).toBe('GRANT "role1" TO "role2" WITH ADMIN OPTION;');
       });
 
       it('should return sql statement with schema', () => {
@@ -39,7 +35,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE INDEX "films_title_index" ON "myschema"."films" ("title" ASC);'
+          'GRANT "myschema"."role1" TO "myschema"."role2";'
         );
       });
 
@@ -52,7 +48,7 @@ describe('operations', () => {
           const statement = grantRolesFn.reverse('role1', 'role2');
 
           expect(statement).toBeTypeOf('string');
-          expect(statement).toBe('DROP INDEX "films_title_index";');
+          expect(statement).toBe('REVOKE "role1" FROM "role2";');
         });
       });
     });
