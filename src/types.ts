@@ -10,6 +10,7 @@ import type * as domains from './operations/domains';
 import type * as extensions from './operations/extensions';
 import type * as functions from './operations/functions';
 import type { Name } from './operations/generalTypes';
+import type * as grants from './operations/grants';
 import type * as indexes from './operations/indexes';
 import type * as mViews from './operations/materializedViews';
 import type * as operators from './operations/operators';
@@ -570,6 +571,43 @@ export interface MigrationBuilder {
   refreshMaterializedView: (
     ...args: Parameters<mViews.RefreshMaterializedView>
   ) => void;
+
+  /**
+   * Define access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-grant.html
+   */
+  grantRoles: (...args: Parameters<grants.GrantRoles>) => void;
+  /**
+   * Remove access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-revoke.html
+   */
+  revokeRoles: (...args: Parameters<grants.RevokeRoles>) => void;
+  /**
+   * Define access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-grant.html
+   */
+  grantOnSchemas: (...args: Parameters<grants.GrantOnSchemas>) => void;
+  /**
+   * Remove access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-revoke.html
+   */
+  revokeOnSchemas: (...args: Parameters<grants.RevokeOnSchemas>) => void;
+  /**
+   * Define access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-grant.html
+   */
+  grantOnTables: (...args: Parameters<grants.GrantOnTables>) => void;
+  /**
+   * Remove access privileges.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-revoke.html
+   */
+  revokeOnTables: (...args: Parameters<grants.RevokeOnTables>) => void;
 
   /**
    * Run raw SQL, with some optional _[very basic](http://mir.aculo.us/2011/03/09/little-helpers-a-tweet-sized-javascript-templating-engine/)_ mustache templating.

@@ -13,6 +13,7 @@ import * as domains from './operations/domains';
 import * as extensions from './operations/extensions';
 import * as functions from './operations/functions';
 import type { Operation } from './operations/generalTypes';
+import * as grants from './operations/grants';
 import * as indexes from './operations/indexes';
 import * as mViews from './operations/materializedViews';
 import * as operators from './operations/operators';
@@ -292,6 +293,28 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     ...args: Parameters<mViews.RefreshMaterializedView>
   ) => void;
 
+  public readonly grantRoles: (...args: Parameters<grants.GrantRoles>) => void;
+
+  public readonly revokeRoles: (
+    ...args: Parameters<grants.RevokeRoles>
+  ) => void;
+
+  public readonly grantOnSchemas: (
+    ...args: Parameters<grants.GrantOnSchemas>
+  ) => void;
+
+  public readonly revokeOnSchemas: (
+    ...args: Parameters<grants.RevokeOnSchemas>
+  ) => void;
+
+  public readonly grantOnTables: (
+    ...args: Parameters<grants.GrantOnTables>
+  ) => void;
+
+  public readonly revokeOnTables: (
+    ...args: Parameters<grants.RevokeOnTables>
+  ) => void;
+
   public readonly sql: (...args: Parameters<sql.Sql>) => void;
 
   public readonly func: (sql: string) => PgLiteral;
@@ -441,6 +464,13 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.refreshMaterializedView = wrap(
       mViews.refreshMaterializedView(options)
     );
+
+    this.grantRoles = wrap(grants.grantRoles(options));
+    this.revokeRoles = wrap(grants.revokeRoles(options));
+    this.grantOnSchemas = wrap(grants.grantOnSchemas(options));
+    this.revokeOnSchemas = wrap(grants.revokeOnSchemas(options));
+    this.grantOnTables = wrap(grants.grantOnTables(options));
+    this.revokeOnTables = wrap(grants.revokeOnTables(options));
 
     this.sql = wrap(sql.sql(options));
 
