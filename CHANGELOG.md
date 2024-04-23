@@ -1,5 +1,9 @@
 # Change Log
 
+## [6.2.1](2022-01-04)
+
+- gh-863: Fix yargs warning [#864](https://github.com/salsita/node-pg-migrate/pull/864)
+
 ## [6.2.0](2021-12-17)
 
 - gh-754: Allow undefined count [#791](https://github.com/salsita/node-pg-migrate/pull/791)

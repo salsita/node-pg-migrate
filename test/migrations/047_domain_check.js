@@ -1,14 +1,16 @@
 exports.up = async (pgm) => {
-  await pgm.db.query('SAVEPOINT sp_check;')
+  await pgm.db.query('SAVEPOINT sp_check;');
   try {
-    await pgm.db.query('INSERT INTO td (d) VALUES (11);')
-    throw 1 // eslint-disable-line no-throw-literal
+    await pgm.db.query('INSERT INTO td (d) VALUES (11);');
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw 1;
   } catch (err) {
     if (err === 1) {
-      throw new Error('Check on domain was not set')
+      throw new Error('Check on domain was not set');
     }
-    await pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;')
-  }
-}
 
-exports.down = () => null
+    await pgm.db.query('ROLLBACK TO SAVEPOINT sp_check;');
+  }
+};
+
+exports.down = () => null;

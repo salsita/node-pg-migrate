@@ -1,8 +1,8 @@
-import { MigrationBuilder, ColumnDefinitions } from '../../../dist'
+import type { ColumnDefinitions, MigrationBuilder } from '../../../dist';
 
-export const shorthands: ColumnDefinitions | undefined = undefined
+export const shorthands: ColumnDefinitions | undefined = undefined;
 
-export async function up(pgm: MigrationBuilder): Promise<void> {
+export function up(pgm: MigrationBuilder): void {
   pgm.createTable('t3', {
     id: 'id',
     string: { type: 'text', notNull: true },
@@ -11,5 +11,5 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       notNull: true,
       default: pgm.func('current_timestamp'),
     },
-  })
+  });
 }

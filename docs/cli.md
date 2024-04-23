@@ -73,8 +73,8 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `create-migrations-schema` - Create the configured migrations schema if it doesn't exist (defaults to `false`)
 - `migrations-table` (`t`) - The table storing which migrations have been run (defaults to `pgmigrations`)
 - `ignore-pattern` - Regex pattern for file names to ignore (e.g. `ignore_file|\..*|.*\.spec\.js`)
-- `migration-filename-format` - Choose prefix of file - either UTC (`20200605075829074`) or timestamp (`1591343909074`)
-- `migration-file-language` (`j`) - Language of the migration file to create (`js` or `ts`)
+- `migration-filename-format` - Choose prefix of file - either `utc` (`20200605075829074`) or `timestamp` (`1591343909074`)
+- `migration-file-language` (`j`) - Language of the migration file to create (`js`, `ts` or `sql`)
 - `template-file-name` - Use your own template file for migrations (language will be determined from the extension of the template). The file must export the `up` method accepting `MigrationBuilder` instance.
 - `tsconfig` - Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overridden)
 - `envPath` - Path to a .env file. The default finds the file on the same level where the command has been called. It might be useful if you have nested projects, but a global .env file that you need to point to.
@@ -84,7 +84,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on the command line).
 - `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
 - `fake` - Mark migrations as run without actually performing them (use with caution!)
-- `decamelize` - Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names
+- `decamelize` - Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names
 - `verbose` - Print all debug messages like DB queries run (defaults to `true`, to switch it off supply `--no-verbose` on the command line)
 - `reject-unauthorized` - Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25) and [see](https://github.com/brianc/node-postgres/issues/2009)
 
@@ -93,7 +93,7 @@ See all by running `node-pg-migrate --help`.
 Most of the configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other then `disable`.
-e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/master/CHANGELOG.md#v260) will take it into account)
+e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/main/CHANGELOG.md#v260) will take it into account)
 
 ### JSON Configuration
 

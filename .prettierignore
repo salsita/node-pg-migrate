@@ -1,2 +1,7 @@
-dist
-templates
+.pnpm-store/
+bin/*.js
+bin/*.mjs
+coverage/
+dist/
+CHANGELOG.md
+pnpm-lock.yaml

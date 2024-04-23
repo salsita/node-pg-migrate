@@ -1,0 +1,51 @@
+name: "\U0001F41E Bug report"
+description: Report an issue with node-pg-migrate
+labels: ['s: pending triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is. If you intend to submit a PR for this issue, tell us in the description. Thanks!
+      placeholder: I am doing ... What I expect is ... What actually happening is ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Please provide any reproduction steps that may need to be described.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        <details>
+        <summary>Click to expand!</summary>
+
+        ```shell
+        // paste the log text here
+        ```
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Info
+      description: Output of `npx envinfo --system --npmPackages '{node-pg-migrate}' --binaries`
+      render: shell
+      placeholder: System, Binaries, Browsers
+    validations:
+      required: true
+  - type: dropdown
+    id: module-system
+    attributes:
+      label: Used Module System
+      description: Select the used module system
+      options:
+        - esm
+        - cjs
+    validations:
+      required: true
