@@ -13,8 +13,8 @@ export type RevokeRoles = (
 
 export function revokeRoles(mOptions: MigrationOptions): RevokeRoles {
   const _revokeRoles: RevokeRoles = (roles, rolesFrom, options) => {
-    const rolesStr = asArray(roles).map(mOptions.literal).join(',');
-    const rolesToStr = asArray(rolesFrom).map(mOptions.literal).join(',');
+    const rolesStr = asArray(roles).map(mOptions.literal).join(', ');
+    const rolesToStr = asArray(rolesFrom).map(mOptions.literal).join(', ');
     const onlyAdminOptionStr =
       options && options.onlyAdminOption ? ' ADMIN OPTION FOR' : '';
     const cascadeStr = options && options.cascade ? ' CASCADE' : '';

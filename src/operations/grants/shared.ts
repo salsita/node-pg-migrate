@@ -63,7 +63,7 @@ export function asRolesStr(
 ): string {
   return asArray(roles)
     .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
-    .join(',');
+    .join(', ');
 }
 
 export function asTablesStr(
@@ -72,5 +72,5 @@ export function asTablesStr(
 ): string {
   return isAllTablesOptions(options)
     ? `ALL TABLES IN SCHEMA ${mOptions.literal(options.schema)}`
-    : asArray(options.tables).map(mOptions.literal).join(',');
+    : asArray(options.tables).map(mOptions.literal).join(', ');
 }

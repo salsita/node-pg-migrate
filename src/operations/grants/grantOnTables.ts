@@ -29,7 +29,7 @@ export function grantOnTables(mOptions: MigrationOptions): GrantOnTables {
   const _grantOnTables: GrantOnTables = (options) => {
     const { privileges, roles, withGrantOption } = options;
     const rolesStr = asRolesStr(roles, mOptions);
-    const privilegesStr = asArray(privileges).map(String).join(',');
+    const privilegesStr = asArray(privileges).map(String).join(', ');
     const tablesStr = asTablesStr(options, mOptions);
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : '';
 

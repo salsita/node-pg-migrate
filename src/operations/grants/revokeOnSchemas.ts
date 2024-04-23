@@ -19,8 +19,8 @@ export function revokeOnSchemas(mOptions: MigrationOptions): RevokeOnSchemas {
     cascade,
   }) => {
     const rolesStr = asRolesStr(roles, mOptions);
-    const schemasStr = asArray(schemas).map(mOptions.literal).join(',');
-    const privilegesStr = asArray(privileges).map(String).join(',');
+    const schemasStr = asArray(schemas).map(mOptions.literal).join(', ');
+    const privilegesStr = asArray(privileges).map(String).join(', ');
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
 

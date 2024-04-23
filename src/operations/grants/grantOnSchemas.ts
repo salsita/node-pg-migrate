@@ -32,8 +32,8 @@ export function grantOnSchemas(mOptions: MigrationOptions): GrantOnSchemas {
     withGrantOption,
   }) => {
     const rolesStr = asRolesStr(roles, mOptions);
-    const schemasStr = asArray(schemas).map(mOptions.literal).join(',');
-    const privilegesStr = asArray(privileges).map(String).join(',');
+    const schemasStr = asArray(schemas).map(mOptions.literal).join(', ');
+    const privilegesStr = asArray(privileges).map(String).join(', ');
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : '';
 
     return `GRANT ${privilegesStr} ON SCHEMA ${schemasStr} TO ${rolesStr}${withGrantOptionStr};`;

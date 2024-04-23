@@ -17,8 +17,8 @@ export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn };
 
 export function grantRoles(mOptions: MigrationOptions): GrantRoles {
   const _grantRoles: GrantRoles = (rolesFrom, rolesTo, options) => {
-    const rolesFromStr = asArray(rolesFrom).map(mOptions.literal).join(',');
-    const rolesToStr = asArray(rolesTo).map(mOptions.literal).join(',');
+    const rolesFromStr = asArray(rolesFrom).map(mOptions.literal).join(', ');
+    const rolesToStr = asArray(rolesTo).map(mOptions.literal).join(', ');
     const withAdminOptionStr =
       options && options.withAdminOption ? ' WITH ADMIN OPTION' : '';
 

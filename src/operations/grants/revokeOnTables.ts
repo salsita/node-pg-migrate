@@ -19,7 +19,7 @@ export function revokeOnTables(mOptions: MigrationOptions): RevokeOnTables {
   const _revokeOnTables: RevokeOnTables = (options) => {
     const { privileges, roles, onlyGrantOption, cascade } = options;
     const rolesStr = asRolesStr(roles, mOptions);
-    const privilegesStr = asArray(privileges).map(String).join(',');
+    const privilegesStr = asArray(privileges).map(String).join(', ');
     const tablesStr = asTablesStr(options, mOptions);
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
