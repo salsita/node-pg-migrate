@@ -19,17 +19,19 @@ export type CreateCast = Reversible<CreateCastFn>;
 
 export function createCast(mOptions: MigrationOptions): CreateCast {
   const _create: CreateCast = (fromType, toType, options = {}) => {
+    const { functionName, argumentTypes, inout, as } = options;
+
     let conversion = '';
-    if (options.functionName) {
-      const args = options.argumentTypes || [fromType];
-      conversion = ` WITH FUNCTION ${options.functionName}(${args.join(', ')})`;
-    } else if (options.inout) {
+    if (functionName) {
+      const args = argumentTypes || [fromType];
+      conversion = ` WITH FUNCTION ${functionName}(${args.join(', ')})`;
+    } else if (inout) {
       conversion = ' WITH INOUT';
     } else {
       conversion = ' WITHOUT FUNCTION';
     }
 
-    const implicit = options.as ? ` AS ${options.as}` : '';
+    const implicit = as ? ` AS ${as}` : '';
 
     return `CREATE CAST (${fromType} AS ${toType})${conversion}${implicit};`;
   };
