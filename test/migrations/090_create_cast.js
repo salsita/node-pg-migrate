@@ -1,13 +1,13 @@
 exports.up = (pgm) => {
-  pgm.createCast('text', 'integer', {
+  pgm.createCast('integer', 'bigint', {
     as: 'IMPLICIT',
   });
 
-  pgm.createCast('text', 'integer', {
+  pgm.createCast('integer', 'bigint', {
     as: 'ASSIGNMENT',
   });
 
-  pgm.createCast('text', 'integer', {
+  pgm.createCast('integer', 'bigint', {
     inout: true,
     as: 'IMPLICIT',
   });
