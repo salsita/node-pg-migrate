@@ -7,6 +7,10 @@ exports.up = (pgm) => {
     as: 'ASSIGNMENT',
   });
 
+  pgm.createCast('bigint', 'int4', {
+    as: 'ASSIGNMENT',
+  });
+
   pgm.createCast('text', 'integer', {
     inout: true,
     as: 'IMPLICIT',

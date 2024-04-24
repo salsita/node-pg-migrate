@@ -41,17 +41,39 @@ describe('operations', () => {
         );
       });
 
-      it('should return sql statement with castOptions', () => {
+      it('should return sql statement with castOptions with function', () => {
         const statement = createCastFn('bigint', 'int4', {
           functionName: 'add',
           argumentTypes: ['integer', 'integer'],
-          inout: true,
           as: 'ASSIGNMENT',
         });
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'CREATE CAST (bigint AS int4) WITH FUNCTION "add"(integer, integer) AS ASSIGNMENT;'
+        );
+      });
+
+      it('should return sql statement with castOptions without function', () => {
+        const statement = createCastFn('bigint', 'int4', {
+          as: 'IMPLICIT',
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'CREATE CAST (bigint AS int4) WITHOUT FUNCTION AS IMPLICIT;'
+        );
+      });
+
+      it('should return sql statement with castOptions with inout', () => {
+        const statement = createCastFn('bigint', 'int4', {
+          inout: true,
+          as: 'ASSIGNMENT',
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'CREATE CAST (bigint AS int4) WITH INOUT AS ASSIGNMENT;'
         );
       });
 
