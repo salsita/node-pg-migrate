@@ -6,7 +6,7 @@ exports.up = (pgm) => {
 
   pgm.createFunction(
     'text_to_integer',
-    ['integer'],
+    ['text'],
     {
       returns: 'integer',
       language: 'plpgsql',
