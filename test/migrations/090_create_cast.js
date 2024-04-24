@@ -1,13 +1,5 @@
 exports.up = (pgm) => {
   pgm.createCast('varchar', 'integer', {
-    as: 'IMPLICIT',
-  });
-
-  pgm.createCast('varchar', 'integer', {
-    as: 'ASSIGNMENT',
-  });
-
-  pgm.createCast('varchar', 'integer', {
     inout: true,
     as: 'IMPLICIT',
   });
