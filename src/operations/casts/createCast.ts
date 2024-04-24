@@ -7,7 +7,7 @@ export type CreateCastOptions = {
   functionName?: Name;
   argumentTypes?: string[];
   inout?: boolean;
-  as?: 'assignment' | 'implicit';
+  as?: 'ASSIGNMENT' | 'IMPLICIT';
 };
 
 export type CreateCastFn = (

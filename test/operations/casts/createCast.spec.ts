@@ -46,12 +46,12 @@ describe('operations', () => {
           functionName: 'add',
           argumentTypes: ['integer', 'integer'],
           inout: true,
-          as: 'assignment',
+          as: 'ASSIGNMENT',
         });
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE CAST (bigint AS int4) WITH FUNCTION "add"(integer, integer) AS assignment;'
+          'CREATE CAST (bigint AS int4) WITH FUNCTION "add"(integer, integer) AS ASSIGNMENT;'
         );
       });
 
