@@ -1,26 +1,26 @@
 # Cast Operations
 
-### `pgm.createCast( from_type, to_type, opttions )`
+### `pgm.createCast( source_type, target_type, opttions )`
 
-> Create a new cast - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createcast.html)
+> Create a new cast - [postgres docs](https://www.postgresql.org/docs/current/sql-createcast.html)
 
 **Arguments**
 
-- `from_type` _[string]_ - Original type to cast from
-- `to_type` _[string]_ - Type to cast into
+- `source_type` _[string]_ - The name of the source data type of the cast
+- `target_type` _[string]_ - The name of the target data type of the cast
 - `options` _[object]_ - options:
 
   - `functionName` _[string]_ - Name of function to use to do the cast
   - `argumentTypes` _[array]_ - Array of types of arguments for the function
 
     Array of strings listing the types of arguments for the conversion
-    function. If this is not present, it defaults to just the `from_type`.
+    function. If this is not present, it defaults to just the `source_type`.
 
   - `inout` _[boolean]_ - Use standard I/O routines for conversion
 
     Setting this to `true` indicates that conversion should be used by using
-    the standard text output conversion for `from_type` and passing the
-    result to the input conversion process for `to_type`.
+    the standard text output conversion for `source_type` and passing the
+    result to the input conversion process for `target_type`.
 
   - `as` _[string]_ - Indicate when this may cast may be done implicitly.
 
@@ -33,13 +33,13 @@
 
 ---
 
-### `pgm.dropCast( from_type, to_type )`
+### `pgm.dropCast( source_type, target_type )`
 
-> Drop a cast - [postgres docs](https://www.postgresql.org/docs/current/static/sql-dropcast.html)
+> Drop a cast - [postgres docs](https://www.postgresql.org/docs/current/sql-dropcast.html)
 
 **Arguments**
 
-- `from_type` _[string]_ - Original type to cast from
-- `to_type` _[string]_ - Type to cast into
+- `source_type` _[string]_ - The name of the source data type of the cast
+- `target_type` _[string]_ - The name of the target data type of the cast
 - `options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops cast only if it exists
+  - `ifExists` _[boolean]_ - Do not throw an error if the cast does not exist

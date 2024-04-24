@@ -11,11 +11,11 @@ export type DropCast = (
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function dropCast(mOptions: MigrationOptions): DropCast {
-  const _drop: DropCast = (fromType, toType, options = {}) => {
+  const _drop: DropCast = (sourceType, targetType, options = {}) => {
     const { ifExists } = options;
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
 
-    return `DROP CAST${ifExistsStr} (${fromType} AS ${toType});`;
+    return `DROP CAST${ifExistsStr} (${sourceType} AS ${targetType});`;
   };
 
   return _drop;
