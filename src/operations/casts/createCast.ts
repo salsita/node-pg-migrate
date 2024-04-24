@@ -1,9 +1,10 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, Reversible } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
+import type { DropCastOptions } from './dropCast';
 import { dropCast } from './dropCast';
 
 export type CreateCastOptions = {
-  functionName?: string;
+  functionName?: Name;
   argumentTypes?: string[];
   inout?: boolean;
   as?: 'assignment' | 'implicit';
@@ -12,7 +13,7 @@ export type CreateCastOptions = {
 export type CreateCastFn = (
   fromType: string,
   toType: string,
-  options: CreateCastOptions & DropOptions
+  options: CreateCastOptions & DropCastOptions
 ) => string;
 
 export type CreateCast = Reversible<CreateCastFn>;
@@ -24,7 +25,7 @@ export function createCast(mOptions: MigrationOptions): CreateCast {
     let conversion = '';
     if (functionName) {
       const args = argumentTypes || [fromType];
-      conversion = ` WITH FUNCTION ${functionName}(${args.join(', ')})`;
+      conversion = ` WITH FUNCTION ${mOptions.literal(functionName)}(${args.join(', ')})`;
     } else if (inout) {
       conversion = ' WITH INOUT';
     } else {
