@@ -1,0 +1,41 @@
+name: Coverage Report
+
+on:
+  workflow_run:
+    workflows: ['Coverage']
+    types:
+      - completed
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Required to put a comment into the pull-request
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4.1.3
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: coverage-${{ github.event.workflow_run.id }}
+          path: coverage
+
+      - name: Download main Artifacts
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4.1.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: coverage-main
+          path: coverage-main
+
+      - name: Report Coverage
+        uses: davelosert/vitest-coverage-report-action@1c46e624fc42799d6b1090de7decc8b967784fce # v2.3.1
+        with:
+          file-coverage-mode: all
+          json-summary-compare-path: coverage-main/coverage-summary.json

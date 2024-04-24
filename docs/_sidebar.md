@@ -19,6 +19,7 @@
   - [Policies](policies.md)
   - [Casts](casts.md)
   - [Extensions](extensions.md)
+  - [Grants](grants.md)
   - [Miscellaneous](misc.md)
 - [Transpiling migrations](transpiling.md)
 - [Troubleshooting](troubleshooting.md)
