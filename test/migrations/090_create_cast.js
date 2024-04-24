@@ -13,7 +13,7 @@ exports.up = (pgm) => {
     },
     `
 BEGIN
-  CAST($1 AS integer);
+  RETURN CAST($1 AS integer);
 END;
   `
   );
