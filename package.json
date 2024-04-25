@@ -106,8 +106,8 @@
     "@types/yargs": "17.0.32",
     "@typescript-eslint/eslint-plugin": "7.7.1",
     "@typescript-eslint/parser": "7.7.1",
-    "@vitest/coverage-v8": "1.5.0",
-    "@vitest/ui": "1.5.0",
+    "@vitest/coverage-v8": "1.5.1",
+    "@vitest/ui": "1.5.1",
     "config": "3.3.11",
     "cross-env": "7.0.3",
     "docsify-cli": "4.4.4",
@@ -127,7 +127,7 @@
     "ts-node": "10.9.2",
     "tsup": "8.0.2",
     "typescript": "4.8.4",
-    "vitest": "1.5.0"
+    "vitest": "1.5.1"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",
