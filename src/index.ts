@@ -1,5 +1,11 @@
 export { Migration } from './migration';
 export type {
+  CreateCast,
+  CreateCastFn,
+  CreateCastOptions,
+  DropCast,
+} from './operations/casts';
+export type {
   AlterDomain,
   CreateDomain,
   CreateDomainFn,
