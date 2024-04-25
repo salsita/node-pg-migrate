@@ -1,4 +1,4 @@
-import type PgLiteral from './PgLiteral';
+import type { PgLiteral, PgLiteralValue } from '../utils';
 
 /**
  * Type that provides auto-suggestions but also any string.
@@ -12,8 +12,6 @@ export type LiteralUnion<TSuggested extends TBase, TBase = string> =
 export type PublicPart<T> = { [K in keyof T]: T[K] };
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null };
-
-export type PgLiteralValue = PublicPart<PgLiteral>;
 
 export type Value =
   | null
@@ -41,3 +39,49 @@ export interface CascadeOption {
 }
 
 export type DropOptions = IfExistsOption & CascadeOption;
+
+/**
+ * A function that returns a normal SQL statement or an array of SQL statements.
+ *
+ * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
+ */
+export type OperationFn = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...args: any[]
+) => string | string[];
+
+/**
+ * A function that returns a normal SQL statement or an array of SQL statements.
+ *
+ * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
+ *
+ * The `reverse` property is a function that takes the same arguments and try to infer the reverse SQL statement with that.
+ */
+export type Operation = OperationFn & {
+  /**
+   * Reverse the operation if provided.
+   */
+  reverse?: OperationFn;
+};
+
+/**
+ * A function that returns a normal SQL statement or an array of SQL statements.
+ *
+ * The array is useful for operations that need to return multiple SQL statements like an additional `COMMENT`.
+ *
+ * The `reverse` property is a function that takes the same arguments and try to infer the reverse SQL statement with that.
+ */
+export type Reversible<
+  TFunction extends (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...args: any[]
+  ) => string | string[],
+> = TFunction & {
+  /**
+   * Reverse the operation.
+   *
+   * Needs to be the same function definition, because it takes the same
+   * arguments and try to infer the reverse SQL statement with that.
+   */
+  reverse: TFunction;
+};

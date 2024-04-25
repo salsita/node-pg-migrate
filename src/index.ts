@@ -1,47 +1,119 @@
 export { Migration } from './migration';
 export type {
+  CreateCast,
+  CreateCastFn,
+  CreateCastOptions,
+  DropCast,
+} from './operations/casts';
+export type {
   AlterDomain,
   CreateDomain,
+  CreateDomainFn,
+  DomainOptions,
   DomainOptionsAlter,
   DomainOptionsCreate,
   DropDomain,
   RenameDomain,
-} from './operations/domainsTypes';
+  RenameDomainFn,
+} from './operations/domains';
 export type {
   CreateExtension,
+  CreateExtensionFn,
   CreateExtensionOptions,
   DropExtension,
   Extension,
-} from './operations/extensionsTypes';
+  StringExtension,
+} from './operations/extensions';
 export type {
   CreateFunction,
+  CreateFunctionFn,
   DropFunction,
   FunctionOptions,
   FunctionParam,
+  FunctionParamType,
   RenameFunction,
-} from './operations/functionsTypes';
+  RenameFunctionFn,
+} from './operations/functions';
 export type {
   CascadeOption,
   DropOptions,
   IfExistsOption,
   IfNotExistsOption,
+  LiteralUnion,
   Name,
-  PgLiteralValue,
+  Nullable,
+  Operation,
+  OperationFn,
+  PublicPart,
+  Reversible,
   Type,
   Value,
 } from './operations/generalTypes';
 export type {
+  AllTablesOptions,
+  CommonGrantOnTablesOptions,
+  CommonOnTablesOptions,
+  GrantOnAllTablesOptions,
+  GrantOnSchemas,
+  GrantOnSchemasFn,
+  GrantOnSchemasOptions,
+  GrantOnSomeTablesOptions,
+  GrantOnTables,
+  GrantOnTablesFn,
+  GrantOnTablesOptions,
+  GrantRoles,
+  GrantRolesFn,
+  GrantRolesOptions,
+  OnlyAdminOption,
+  OnlyGrantOnSchemasOptions,
+  OnlyGrantOption,
+  RevokeOnObjectsOptions,
+  RevokeOnSchemas,
+  RevokeOnSchemasOptions,
+  RevokeOnTables,
+  RevokeOnTablesOptions,
+  RevokeRoles,
+  RevokeRolesOptions,
+  SchemaPrivilege,
+  SomeTablesOptions,
+  TablePrivilege,
+  WithAdminOption,
+  WithGrantOption,
+} from './operations/grants';
+export type {
   CreateIndex,
+  CreateIndexFn,
   CreateIndexOptions,
   DropIndex,
   DropIndexOptions,
-} from './operations/indexesTypes';
+  IndexColumn,
+} from './operations/indexes';
+export type {
+  AlterMaterializedView,
+  AlterMaterializedViewOptions,
+  CreateMaterializedView,
+  CreateMaterializedViewFn,
+  CreateMaterializedViewOptions,
+  DropMaterializedView,
+  RefreshMaterializedView,
+  RefreshMaterializedViewFn,
+  RefreshMaterializedViewOptions,
+  RenameMaterializedView,
+  RenameMaterializedViewColumn,
+  RenameMaterializedViewColumnFn,
+  RenameMaterializedViewFn,
+  StorageParameters,
+} from './operations/materializedViews';
 export type {
   AddToOperatorFamily,
+  AddToOperatorFamilyFn,
   CreateOperator,
   CreateOperatorClass,
+  CreateOperatorClassFn,
   CreateOperatorClassOptions,
   CreateOperatorFamily,
+  CreateOperatorFamilyFn,
+  CreateOperatorFn,
   CreateOperatorOptions,
   DropOperator,
   DropOperatorClass,
@@ -50,41 +122,51 @@ export type {
   OperatorListDefinition,
   RemoveFromOperatorFamily,
   RenameOperatorClass,
+  RenameOperatorClassFn,
   RenameOperatorFamily,
-} from './operations/operatorsTypes';
-export type { Sql } from './operations/othersTypes';
-export { default as PgLiteral } from './operations/PgLiteral';
+  RenameOperatorFamilyFn,
+} from './operations/operators';
 export type {
   AlterPolicy,
   CreatePolicy,
   CreatePolicyOptions,
+  CreatePolicyOptionsEn,
   DropPolicy,
   PolicyOptions,
   RenamePolicy,
-} from './operations/policiesTypes';
+  RenamePolicyFn,
+} from './operations/policies';
 export type {
   AlterRole,
   CreateRole,
+  CreateRoleFn,
   DropRole,
   RenameRole,
+  RenameRoleFn,
   RoleOptions,
-} from './operations/rolesTypes';
+} from './operations/roles';
 export type {
   CreateSchema,
   CreateSchemaOptions,
   DropSchema,
   RenameSchema,
-} from './operations/schemasTypes';
+} from './operations/schemas';
 export type {
   AlterSequence,
   CreateSequence,
+  CreateSequenceFn,
   DropSequence,
   RenameSequence,
+  RenameSequenceFn,
+  SequenceOptions,
   SequenceOptionsAlter,
   SequenceOptionsCreate,
-} from './operations/sequencesTypes';
+} from './operations/sequences';
+export type { Sql } from './operations/sql';
 export type {
+  Action,
   AddColumns,
+  AddColumnsFn,
   AlterColumn,
   AlterColumnOptions,
   AlterTable,
@@ -93,56 +175,69 @@ export type {
   ColumnDefinitions,
   ConstraintOptions,
   CreateConstraint,
+  CreateConstraintFn,
   CreateTable,
+  CreateTableFn,
   DropColumns,
   DropConstraint,
   DropTable,
+  ForeignKeyOptions,
+  Like,
+  LikeOptions,
+  ReferencesOptions,
   RenameColumn,
+  RenameColumnFn,
   RenameConstraint,
+  RenameConstraintFn,
   RenameTable,
+  RenameTableFn,
+  SequenceGeneratedOptions,
   TableOptions,
-} from './operations/tablesTypes';
+} from './operations/tables';
 export type {
   CreateTrigger,
+  CreateTriggerFn,
+  CreateTriggerFn1,
+  CreateTriggerFn2,
   DropTrigger,
   RenameTrigger,
+  RenameTriggerFn,
   TriggerOptions,
-} from './operations/triggersTypes';
+} from './operations/triggers';
 export type {
   AddTypeAttribute,
+  AddTypeAttributeFn,
   AddTypeValue,
   AddTypeValueOptions,
   CreateType,
+  CreateTypeFn,
   DropType,
   DropTypeAttribute,
   RenameType,
   RenameTypeAttribute,
+  RenameTypeAttributeFn,
+  RenameTypeFn,
   RenameTypeValue,
+  RenameTypeValueFn,
   SetTypeAttribute,
-} from './operations/typesTypes';
-export type {
-  AlterMaterializedView,
-  AlterMaterializedViewOptions,
-  CreateMaterializedView,
-  CreateMaterializedViewOptions,
-  DropMaterializedView,
-  RefreshMaterializedView,
-  RefreshMaterializedViewOptions,
-  RenameMaterializedView,
-  RenameMaterializedViewColumn,
-} from './operations/viewsMaterializedTypes';
+} from './operations/types';
 export type {
   AlterView,
   AlterViewColumn,
   AlterViewColumnOptions,
   AlterViewOptions,
   CreateView,
+  CreateViewFn,
   CreateViewOptions,
   DropView,
   RenameView,
-} from './operations/viewsTypes';
+  RenameViewFn,
+  ViewOptions,
+} from './operations/views';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
+export { isPgLiteral, PgLiteral } from './utils';
+export type { PgLiteralValue } from './utils';
 
 import runner from './runner';
 export default runner;

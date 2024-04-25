@@ -6,13 +6,13 @@
 
  */
 
-import fs from 'fs';
-import mkdirp from 'mkdirp';
-import path from 'path';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { mkdir, readdir } from 'node:fs/promises';
+import { basename, extname, resolve } from 'node:path';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
-import MigrationBuilder from './migration-builder';
-import type { ColumnDefinitions } from './operations/tablesTypes';
+import MigrationBuilder from './migrationBuilder';
+import type { ColumnDefinitions } from './operations/tables';
 import type {
   Logger,
   MigrationAction,
@@ -21,8 +21,6 @@ import type {
   RunnerOption,
 } from './types';
 import { getMigrationTableSchema } from './utils';
-
-const { readdir } = fs.promises;
 
 export interface RunMigration {
   readonly path: string;
@@ -50,10 +48,10 @@ export type CreateOptions = {
 
 const SEPARATOR = '_';
 
-export const loadMigrationFiles = async (
+export async function loadMigrationFiles(
   dir: string,
   ignorePattern?: string
-): Promise<string[]> => {
+): Promise<string[]> {
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true });
   const files = dirContent
     .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
@@ -63,12 +61,16 @@ export const loadMigrationFiles = async (
   return ignorePattern === undefined
     ? files
     : files.filter((i) => !filter.test(i));
-};
+}
 
-const getSuffixFromFileName = (fileName: string) =>
-  path.extname(fileName).substr(1);
+function getSuffixFromFileName(fileName: string): string {
+  return extname(fileName).slice(1);
+}
 
-const getLastSuffix = async (dir: string, ignorePattern?: string) => {
+async function getLastSuffix(
+  dir: string,
+  ignorePattern?: string
+): Promise<string | undefined> {
   try {
     const files = await loadMigrationFiles(dir, ignorePattern);
     return files.length > 0
@@ -77,9 +79,9 @@ const getLastSuffix = async (dir: string, ignorePattern?: string) => {
   } catch (err) {
     return undefined;
   }
-};
+}
 
-export const getTimestamp = (logger: Logger, filename: string): number => {
+export function getTimestamp(logger: Logger, filename: string): number {
   const prefix = filename.split(SEPARATOR)[0];
   if (prefix && /^\d+$/.test(prefix)) {
     if (prefix.length === 13) {
@@ -89,13 +91,13 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
 
     if (prefix && prefix.length === 17) {
       // utc: 20200513070724505
-      const year = prefix.substr(0, 4);
-      const month = prefix.substr(4, 2);
-      const date = prefix.substr(6, 2);
-      const hours = prefix.substr(8, 2);
-      const minutes = prefix.substr(10, 2);
-      const seconds = prefix.substr(12, 2);
-      const ms = prefix.substr(14);
+      const year = prefix.slice(0, 4);
+      const month = prefix.slice(4, 6);
+      const date = prefix.slice(6, 8);
+      const hours = prefix.slice(8, 10);
+      const minutes = prefix.slice(10, 12);
+      const seconds = prefix.slice(12, 14);
+      const ms = prefix.slice(14, 17);
       return new Date(
         `${year}-${month}-${date}T${hours}:${minutes}:${seconds}.${ms}Z`
       ).valueOf();
@@ -104,12 +106,14 @@ export const getTimestamp = (logger: Logger, filename: string): number => {
 
   logger.error(`Can't determine timestamp for ${prefix}`);
   return Number(prefix) || 0;
-};
+}
 
-const resolveSuffix = async (
+async function resolveSuffix(
   directory: string,
   { language, ignorePattern }: CreateOptionsDefault
-) => language || (await getLastSuffix(directory, ignorePattern)) || 'js';
+): Promise<string> {
+  return language || (await getLastSuffix(directory, ignorePattern)) || 'js';
+}
 
 export class Migration implements RunMigration {
   // class method that creates a new migration file by cloning the migration template
@@ -121,7 +125,7 @@ export class Migration implements RunMigration {
     const { filenameFormat = FilenameFormat.timestamp } = options;
 
     // ensure the migrations directory exists
-    mkdirp.sync(directory);
+    await mkdir(directory, { recursive: true });
 
     const now = new Date();
     const time =
@@ -131,8 +135,8 @@ export class Migration implements RunMigration {
 
     const templateFileName =
       'templateFileName' in options
-        ? path.resolve(process.cwd(), options.templateFileName)
-        : path.resolve(
+        ? resolve(process.cwd(), options.templateFileName)
+        : resolve(
             __dirname,
             `../templates/migration-template.${await resolveSuffix(directory, options)}`
           );
@@ -143,8 +147,8 @@ export class Migration implements RunMigration {
 
     // copy the default migration template to the new file location
     await new Promise((resolve, reject) => {
-      fs.createReadStream(templateFileName)
-        .pipe(fs.createWriteStream(newFile))
+      createReadStream(templateFileName)
+        .pipe(createWriteStream(newFile))
         .on('close', resolve)
         .on('error', reject);
     });
@@ -180,7 +184,7 @@ export class Migration implements RunMigration {
   ) {
     this.db = db;
     this.path = migrationPath;
-    this.name = path.basename(migrationPath, path.extname(migrationPath));
+    this.name = basename(migrationPath, extname(migrationPath));
     this.timestamp = getTimestamp(logger, this.name);
     this.up = up;
     this.down = down;

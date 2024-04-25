@@ -1,6 +1,7 @@
 /*
  This file just manages the database connection and provides a query method
  */
+import { inspect } from 'node:util';
 import type {
   ClientBase,
   ClientConfig,
@@ -10,7 +11,6 @@ import type {
   QueryResult,
 } from 'pg';
 import { Client } from 'pg';
-import { inspect } from 'util';
 import type { DB, Logger } from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -100,8 +100,8 @@ const db = (
         const endLineWrapIndexOf = string.indexOf('\n', position);
         const endLineWrapPos =
           endLineWrapIndexOf >= 0 ? endLineWrapIndexOf : string.length;
-        const stringStart = string.substring(0, endLineWrapPos);
-        const stringEnd = string.substr(endLineWrapPos);
+        const stringStart = string.slice(0, endLineWrapPos);
+        const stringEnd = string.slice(endLineWrapPos);
         const startLineWrapPos = stringStart.lastIndexOf('\n') + 1;
         const padding = ' '.repeat(position - startLineWrapPos - 1);
         logger.error(`Error executing:

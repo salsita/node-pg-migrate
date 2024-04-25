@@ -1,9 +1,9 @@
-import path from 'path';
+import { extname, relative } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
 import { loadMigrationFiles, Migration } from './migration';
-import type { ColumnDefinitions } from './operations/tablesTypes';
+import type { ColumnDefinitions } from './operations/tables';
 import migrateSqlFile from './sqlMigration';
 import type {
   Logger,
@@ -38,9 +38,9 @@ const loadMigrations = async (
         files.map(async (file) => {
           const filePath = `${options.dir}/${file}`;
           const actions: MigrationBuilderActions =
-            path.extname(filePath) === '.sql'
+            extname(filePath) === '.sql'
               ? await migrateSqlFile(filePath)
-              : require(path.relative(__dirname, filePath));
+              : require(relative(__dirname, filePath));
           shorthands = { ...shorthands, ...actions.shorthands };
 
           return new Migration(
@@ -341,8 +341,8 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
   } finally {
     if (db.connected()) {
       if (!options.noLock) {
-        await unlock(db).catch((error) => {
-          logger.warn(error.message);
+        await unlock(db).catch((error: unknown) => {
+          logger.warn((error as Error).message);
         });
       }
 

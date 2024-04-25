@@ -1,6 +1,7 @@
-import decamelize from 'decamelize';
-import { identity, quote } from '.';
 import type { Name } from '../operations/generalTypes';
+import { decamelize } from './decamelize';
+import { identity } from './identity';
+import { quote } from './quote';
 
 /** @deprecated Use createSchemalize(options) instead. */
 export function createSchemalize(

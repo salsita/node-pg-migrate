@@ -1,9 +1,6 @@
-import type { FunctionParamType } from '../operations/functionsTypes';
+import type { FunctionParamType } from '../operations/functions';
 import type { Type } from '../operations/generalTypes';
-import type {
-  ColumnDefinition,
-  ColumnDefinitions,
-} from '../operations/tablesTypes';
+import type { ColumnDefinition, ColumnDefinitions } from '../operations/tables';
 
 const TYPE_ADAPTERS = Object.freeze({
   int: 'integer',

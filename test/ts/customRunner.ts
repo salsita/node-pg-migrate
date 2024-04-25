@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import type { Client } from 'pg';
 import type { RunnerOption } from '../../dist';
 import runner from '../../dist';
