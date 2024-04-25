@@ -9,6 +9,7 @@
  and it makes inference of down migrations possible.
  */
 
+import * as casts from './operations/casts';
 import * as domains from './operations/domains';
 import * as extensions from './operations/extensions';
 import * as functions from './operations/functions';
@@ -315,6 +316,10 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     ...args: Parameters<grants.RevokeOnTables>
   ) => void;
 
+  public readonly createCast: (...args: Parameters<casts.CreateCast>) => void;
+
+  public readonly dropCast: (...args: Parameters<casts.DropCast>) => void;
+
   public readonly sql: (...args: Parameters<sql.Sql>) => void;
 
   public readonly func: (sql: string) => PgLiteral;
@@ -471,6 +476,9 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     this.revokeOnSchemas = wrap(grants.revokeOnSchemas(options));
     this.grantOnTables = wrap(grants.grantOnTables(options));
     this.revokeOnTables = wrap(grants.revokeOnTables(options));
+
+    this.createCast = wrap(casts.createCast(options));
+    this.dropCast = wrap(casts.dropCast(options));
 
     this.sql = wrap(sql.sql(options));
 

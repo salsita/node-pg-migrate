@@ -6,6 +6,7 @@ import type {
   QueryConfig,
   QueryResult,
 } from 'pg';
+import type * as casts from './operations/casts';
 import type * as domains from './operations/domains';
 import type * as extensions from './operations/extensions';
 import type * as functions from './operations/functions';
@@ -608,6 +609,19 @@ export interface MigrationBuilder {
    * @see https://www.postgresql.org/docs/current/sql-revoke.html
    */
   revokeOnTables: (...args: Parameters<grants.RevokeOnTables>) => void;
+
+  /**
+   * Define a new cast.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-createcast.html
+   */
+  createCast: (...args: Parameters<casts.CreateCast>) => void;
+  /**
+   * Remove a cast.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-dropcast.html
+   */
+  dropCast: (...args: Parameters<casts.DropCast>) => void;
 
   /**
    * Run raw SQL, with some optional _[very basic](http://mir.aculo.us/2011/03/09/little-helpers-a-tweet-sized-javascript-templating-engine/)_ mustache templating.
