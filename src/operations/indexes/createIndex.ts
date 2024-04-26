@@ -1,12 +1,12 @@
 import type { MigrationOptions } from '../../types';
 import { toArray } from '../../utils';
-import type { Name, Reversible } from '../generalTypes';
+import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';
 import { generateColumnsString, generateIndexName } from './shared';
 
-export interface CreateIndexOptions {
+export interface CreateIndexOptions extends IfNotExistsOption {
   name?: string;
 
   unique?: boolean;
@@ -14,8 +14,6 @@ export interface CreateIndexOptions {
   where?: string;
 
   concurrently?: boolean;
-
-  ifNotExists?: boolean;
 
   /**
    * @deprecated should be parameter of IndexColumn
@@ -30,13 +28,23 @@ export interface CreateIndexOptions {
 export type CreateIndexFn = (
   tableName: Name,
   columns: string | Array<string | IndexColumn>,
-  options?: CreateIndexOptions & DropIndexOptions
+  indexOptions?: CreateIndexOptions & DropIndexOptions
 ) => string;
 
 export type CreateIndex = Reversible<CreateIndexFn>;
 
 export function createIndex(mOptions: MigrationOptions): CreateIndex {
   const _create: CreateIndex = (tableName, rawColumns, options = {}) => {
+    const {
+      opclass,
+      unique = false,
+      concurrently = false,
+      ifNotExists = false,
+      method,
+      where,
+      include,
+    } = options;
+
     /*
     columns - the column, columns, or expression to create the index on
 
@@ -49,7 +57,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
     const columns = toArray(rawColumns);
-    if (options.opclass) {
+    if (opclass) {
       mOptions.logger.warn(
         "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])"
       );
@@ -57,13 +65,13 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       const lastColumn = columns[lastIndex];
 
       if (typeof lastColumn === 'string') {
-        columns[lastIndex] = { name: lastColumn, opclass: options.opclass };
+        columns[lastIndex] = { name: lastColumn, opclass };
       } else if (lastColumn.opclass) {
         throw new Error(
           "There is already defined opclass on column, can't override it with global one"
         );
       } else {
-        columns[lastIndex] = { ...lastColumn, opclass: options.opclass };
+        columns[lastIndex] = { ...lastColumn, opclass };
       }
     }
 
@@ -74,20 +82,18 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       mOptions.schemalize
     );
     const columnsString = generateColumnsString(columns, mOptions);
-    const unique = options.unique ? ' UNIQUE' : '';
-    const concurrently = options.concurrently ? ' CONCURRENTLY' : '';
-    const ifNotExistsStr = options.ifNotExists ? ' IF NOT EXISTS' : '';
-    const method = options.method ? ` USING ${options.method}` : '';
-    const where = options.where ? ` WHERE ${options.where}` : '';
-    const include = options.include
-      ? ` INCLUDE (${toArray(options.include)
-          .map(mOptions.literal)
-          .join(', ')})`
+    const uniqueStr = unique ? ' UNIQUE' : '';
+    const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
+    const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
+    const methodStr = method ? ` USING ${method}` : '';
+    const whereStr = where ? ` WHERE ${where}` : '';
+    const includeStr = include
+      ? ` INCLUDE (${toArray(include).map(mOptions.literal).join(', ')})`
       : '';
     const indexNameStr = mOptions.literal(indexName);
     const tableNameStr = mOptions.literal(tableName);
 
-    return `CREATE${unique} INDEX${concurrently}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${method} (${columnsString})${include}${where};`;
+    return `CREATE${uniqueStr} INDEX${concurrentlyStr}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${methodStr} (${columnsString})${includeStr}${whereStr};`;
   };
 
   _create.reverse = dropIndex(mOptions);

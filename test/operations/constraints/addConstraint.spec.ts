@@ -122,11 +122,10 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
           expected
         ) => {
           const addConstraintFn = addConstraint(optionPreset);
-          const statement = addConstraintFn(
-            tableName,
-            constraintName,
-            expression
-          );
+          const statement =
+            typeof expression === 'string'
+              ? addConstraintFn(tableName, constraintName, expression)
+              : addConstraintFn(tableName, constraintName, expression);
 
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe(expected);

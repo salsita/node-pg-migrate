@@ -1,15 +1,17 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
+export type DropTriggerOptions = DropOptions;
+
 export type DropTrigger = (
   tableName: Name,
   triggerName: string,
-  dropOptions?: DropOptions
+  dropOptions?: DropTriggerOptions
 ) => string;
 
 export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
   const _drop: DropTrigger = (tableName, triggerName, options = {}) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

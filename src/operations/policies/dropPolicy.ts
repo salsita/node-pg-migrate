@@ -1,15 +1,17 @@
 import type { MigrationOptions } from '../../types';
 import type { IfExistsOption, Name } from '../generalTypes';
 
+export type DropPolicyOptions = IfExistsOption;
+
 export type DropPolicy = (
   tableName: Name,
   policyName: string,
-  options?: IfExistsOption
+  dropOptions?: DropPolicyOptions
 ) => string;
 
 export function dropPolicy(mOptions: MigrationOptions): DropPolicy {
   const _drop: DropPolicy = (tableName, policyName, options = {}) => {
-    const { ifExists } = options;
+    const { ifExists = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const policyNameStr = mOptions.literal(policyName);

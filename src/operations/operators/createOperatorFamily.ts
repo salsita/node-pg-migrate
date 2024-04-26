@@ -1,11 +1,15 @@
 import type { MigrationOptions } from '../../types';
-import type { DropOptions, Name, Reversible } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
+import type { DropOperatorFamilyOptions } from './dropOperatorFamily';
 import { dropOperatorFamily } from './dropOperatorFamily';
+
+export interface CreateOperatorFamilyOptions {}
 
 export type CreateOperatorFamilyFn = (
   operatorFamilyName: Name,
   indexMethod: Name,
-  options?: DropOptions
+  operatorFamilyOptions?: CreateOperatorFamilyOptions &
+    DropOperatorFamilyOptions
 ) => string;
 
 export type CreateOperatorFamily = Reversible<CreateOperatorFamilyFn>;

@@ -25,7 +25,7 @@ export interface CreateOperatorOptions {
 
 export type CreateOperatorFn = (
   operatorName: Name,
-  options: CreateOperatorOptions & DropOperatorOptions
+  operatorOptions: CreateOperatorOptions & DropOperatorOptions
 ) => string;
 
 export type CreateOperator = Reversible<CreateOperatorFn>;
@@ -40,9 +40,9 @@ export function createOperator(mOptions: MigrationOptions): CreateOperator {
       negator,
       restrict,
       join,
-      hashes,
-      merges,
-    } = options || {};
+      hashes = false,
+      merges = false,
+    } = options;
 
     const defs: string[] = [];
     defs.push(`PROCEDURE = ${mOptions.literal(procedure)}`);

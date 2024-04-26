@@ -8,15 +8,17 @@ export interface AlterTableOptions {
 
 export type AlterTable = (
   tableName: Name,
-  alterOptions: AlterTableOptions
+  tableOptions: AlterTableOptions
 ) => string;
 
 export function alterTable(mOptions: MigrationOptions): AlterTable {
   const _alter: AlterTable = (tableName, options) => {
+    const { levelSecurity } = options;
+
     const alterDefinition: string[] = [];
 
-    if (options.levelSecurity) {
-      alterDefinition.push(`${options.levelSecurity} ROW LEVEL SECURITY`);
+    if (levelSecurity) {
+      alterDefinition.push(`${levelSecurity} ROW LEVEL SECURITY`);
     }
 
     return `ALTER TABLE ${mOptions.literal(tableName)}

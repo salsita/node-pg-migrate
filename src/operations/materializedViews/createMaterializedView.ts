@@ -1,11 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import { toArray } from '../../utils';
-import type {
-  DropOptions,
-  IfNotExistsOption,
-  Name,
-  Reversible,
-} from '../generalTypes';
+import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
+import type { DropMaterializedViewOptions } from './dropMaterializedView';
 import { dropMaterializedView } from './dropMaterializedView';
 import type { StorageParameters } from './shared';
 import { dataClause, storageParameterStr } from './shared';
@@ -22,7 +18,8 @@ export interface CreateMaterializedViewOptions extends IfNotExistsOption {
 
 export type CreateMaterializedViewFn = (
   viewName: Name,
-  options: CreateMaterializedViewOptions & DropOptions,
+  materializedViewOptions: CreateMaterializedViewOptions &
+    DropMaterializedViewOptions,
   definition: string
 ) => string;
 
@@ -33,7 +30,7 @@ export function createMaterializedView(
 ): CreateMaterializedView {
   const _create: CreateMaterializedView = (viewName, options, definition) => {
     const {
-      ifNotExists,
+      ifNotExists = false,
       columns = [],
       tablespace,
       storageParameters = {},

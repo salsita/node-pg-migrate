@@ -1,15 +1,17 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
+export type DropConstraintOptions = DropOptions;
+
 export type DropConstraint = (
   tableName: Name,
   constraintName: string,
-  options?: DropOptions
+  options?: DropConstraintOptions
 ) => string;
 
 export function dropConstraint(mOptions: MigrationOptions): DropConstraint {
   const _drop: DropConstraint = (tableName, constraintName, options = {}) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

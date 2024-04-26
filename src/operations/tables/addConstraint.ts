@@ -1,15 +1,24 @@
 import type { MigrationOptions } from '../../types';
 import { formatLines } from '../../utils';
-import type { DropOptions, Name, Reversible } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
+import type { DropConstraintOptions } from './dropConstraint';
 import { dropConstraint } from './dropConstraint';
 import type { ConstraintOptions } from './shared';
 import { parseConstraints } from './shared';
 
-export type CreateConstraintFn = (
+export type CreateConstraintFn1 = (
   tableName: Name,
   constraintName: string | null,
-  expression: string | (ConstraintOptions & DropOptions)
+  constraintOptions: ConstraintOptions & DropConstraintOptions
 ) => string;
+
+export type CreateConstraintFn2 = (
+  tableName: Name,
+  constraintName: string | null,
+  expression: string
+) => string;
+
+export type CreateConstraintFn = CreateConstraintFn1 & CreateConstraintFn2;
 
 export type CreateConstraint = Reversible<CreateConstraintFn>;
 

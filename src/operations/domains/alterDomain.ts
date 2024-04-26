@@ -3,13 +3,13 @@ import { escapeValue } from '../../utils';
 import type { Name } from '../generalTypes';
 import type { DomainOptions } from './shared';
 
-export interface DomainOptionsAlter extends DomainOptions {
+export interface AlterDomainOptions extends DomainOptions {
   allowNull?: boolean;
 }
 
 export type AlterDomain = (
   domainName: Name,
-  domainOptions: DomainOptionsAlter
+  domainOptions: AlterDomainOptions
 ) => string;
 
 export function alterDomain(mOptions: MigrationOptions): AlterDomain {
@@ -17,7 +17,7 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
     const {
       default: defaultValue,
       notNull,
-      allowNull,
+      allowNull = false,
       check,
       constraintName,
     } = options;

@@ -15,12 +15,12 @@ export interface DropIndexOptions extends DropOptions {
 export type DropIndex = (
   tableName: Name,
   columns: string | Array<string | IndexColumn>,
-  options?: DropIndexOptions
+  dropOptions?: DropIndexOptions
 ) => string;
 
 export function dropIndex(mOptions: MigrationOptions): DropIndex {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
-    const { concurrently, ifExists, cascade } = options;
+    const { concurrently = false, ifExists = false, cascade = false } = options;
 
     const columns = toArray(rawColumns);
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';

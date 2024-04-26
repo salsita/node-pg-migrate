@@ -11,12 +11,12 @@ export interface AddTypeValueOptions extends IfNotExistsOption {
 export type AddTypeValue = (
   typeName: Name,
   value: Value,
-  options?: AddTypeValueOptions
+  typeValueOptions?: AddTypeValueOptions
 ) => string;
 
 export function addTypeValue(mOptions: MigrationOptions): AddTypeValue {
   const _add: AddTypeValue = (typeName, value, options = {}) => {
-    const { ifNotExists, before, after } = options;
+    const { before, after, ifNotExists = false } = options;
 
     if (before && after) {
       throw new Error('"before" and "after" can\'t be specified together');

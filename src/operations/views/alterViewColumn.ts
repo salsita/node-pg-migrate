@@ -9,7 +9,7 @@ export interface AlterViewColumnOptions {
 export type AlterViewColumn = (
   viewName: Name,
   columnName: string,
-  options: AlterViewColumnOptions
+  viewColumnOptions: AlterViewColumnOptions
 ) => string;
 
 export function alterViewColumn(mOptions: MigrationOptions): AlterViewColumn {

@@ -1,6 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import { toArray } from '../../utils';
 import type { Reversible } from '../generalTypes';
+import type { RevokeOnTablesOptions } from './revokeOnTables';
 import { revokeOnTables } from './revokeOnTables';
 import type {
   AllTablesOptions,
@@ -16,19 +17,22 @@ export type GrantOnSomeTablesOptions = CommonGrantOnTablesOptions &
 export type GrantOnAllTablesOptions = CommonGrantOnTablesOptions &
   AllTablesOptions;
 
-export type GrantOnTablesOptions =
+export type GrantOnTablesOptions = (
   | GrantOnSomeTablesOptions
-  | GrantOnAllTablesOptions;
+  | GrantOnAllTablesOptions
+) &
+  RevokeOnObjectsOptions;
 
 export type GrantOnTablesFn = (
-  options: GrantOnTablesOptions & RevokeOnObjectsOptions
+  grantOptions: GrantOnTablesOptions & RevokeOnTablesOptions
 ) => string;
 
 export type GrantOnTables = Reversible<GrantOnTablesFn>;
 
 export function grantOnTables(mOptions: MigrationOptions): GrantOnTables {
   const _grantOnTables: GrantOnTables = (options) => {
-    const { privileges, roles, withGrantOption } = options;
+    const { privileges, roles, withGrantOption = false } = options;
+
     const rolesStr = asRolesStr(roles, mOptions);
     const privilegesStr = toArray(privileges).map(String).join(', ');
     const tablesStr = asTablesStr(options, mOptions);

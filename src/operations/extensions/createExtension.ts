@@ -1,10 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import { toArray } from '../../utils';
-import type {
-  DropOptions,
-  IfNotExistsOption,
-  Reversible,
-} from '../generalTypes';
+import type { IfNotExistsOption, Reversible } from '../generalTypes';
+import type { DropExtensionOptions } from './dropExtension';
 import { dropExtension } from './dropExtension';
 import type { StringExtension } from './shared';
 
@@ -14,14 +11,14 @@ export interface CreateExtensionOptions extends IfNotExistsOption {
 
 export type CreateExtensionFn = (
   extension: StringExtension | StringExtension[],
-  options?: CreateExtensionOptions & DropOptions
+  extensionOptions?: CreateExtensionOptions & DropExtensionOptions
 ) => string | string[];
 
 export type CreateExtension = Reversible<CreateExtensionFn>;
 
 export function createExtension(mOptions: MigrationOptions): CreateExtension {
   const _create: CreateExtension = (_extensions, options = {}) => {
-    const { ifNotExists, schema } = options;
+    const { ifNotExists = false, schema } = options;
 
     const extensions = toArray(_extensions);
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';

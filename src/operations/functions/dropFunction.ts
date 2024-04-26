@@ -3,10 +3,12 @@ import { formatParams } from '../../utils';
 import type { DropOptions, Name } from '../generalTypes';
 import type { FunctionParam } from './shared';
 
+export type DropFunctionOptions = DropOptions;
+
 export type DropFunction = (
   functionName: Name,
   functionParams: FunctionParam[],
-  dropOptions?: DropOptions
+  dropOptions?: DropFunctionOptions
 ) => string;
 
 export function dropFunction(mOptions: MigrationOptions): DropFunction {
@@ -15,7 +17,7 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
     functionParams = [],
     options = {}
   ) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

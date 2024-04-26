@@ -1,17 +1,12 @@
 import type { MigrationOptions } from '../../types';
 import { applyType, escapeValue } from '../../utils';
-import type {
-  DropOptions,
-  Name,
-  Reversible,
-  Type,
-  Value,
-} from '../generalTypes';
+import type { Name, Reversible, Type, Value } from '../generalTypes';
+import type { DropTypeOptions } from './dropType';
 import { dropType } from './dropType';
 
 export type CreateTypeFn = (
   typeName: Name,
-  values: (Value[] | { [name: string]: Type }) & DropOptions
+  values: (Value[] | { [name: string]: Type }) & DropTypeOptions
 ) => string;
 
 export type CreateType = Reversible<CreateTypeFn>;

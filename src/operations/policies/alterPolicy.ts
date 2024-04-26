@@ -6,7 +6,7 @@ import { makeClauses } from './shared';
 export type AlterPolicy = (
   tableName: Name,
   policyName: string,
-  options: PolicyOptions
+  policyOptions: PolicyOptions
 ) => string;
 
 export function alterPolicy(mOptions: MigrationOptions): AlterPolicy {
