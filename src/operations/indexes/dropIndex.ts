@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { DropOptions, Name } from '../generalTypes';
 import type { IndexColumn } from './shared';
 import { generateIndexName } from './shared';
@@ -21,9 +22,7 @@ export function dropIndex(mOptions: MigrationOptions): DropIndex {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {
     const { concurrently, ifExists, cascade } = options;
 
-    const columns = Array.isArray(rawColumns)
-      ? rawColumns.slice()
-      : [rawColumns];
+    const columns = toArray(rawColumns);
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const indexName = generateIndexName(

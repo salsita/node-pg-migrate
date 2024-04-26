@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { DropOptions } from '../generalTypes';
 import type { StringExtension } from './shared';
 
@@ -11,7 +12,7 @@ export function dropExtension(mOptions: MigrationOptions): DropExtension {
   const _drop: DropExtension = (_extensions, options = {}) => {
     const { ifExists, cascade } = options;
 
-    const extensions = Array.isArray(_extensions) ? _extensions : [_extensions];
+    const extensions = toArray(_extensions);
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
 

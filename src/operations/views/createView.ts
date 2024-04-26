@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { DropOptions, Name, Reversible } from '../generalTypes';
 import { dropView } from './dropView';
 import type { ViewOptions } from './shared';
@@ -37,9 +38,7 @@ export function createView(mOptions: MigrationOptions): CreateView {
       checkOption,
     } = viewOptions;
 
-    const columnNames = (Array.isArray(columns) ? columns : [columns])
-      .map(mOptions.literal)
-      .join(', ');
+    const columnNames = toArray(columns).map(mOptions.literal).join(', ');
     const withOptions = Object.keys(options)
       .map(viewOptionStr(options))
       .join(', ');

@@ -1,7 +1,8 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { OnlyGrantOnSchemasOptions } from './grantOnSchemas';
 import type { RevokeOnObjectsOptions } from './shared';
-import { asArray, asRolesStr } from './shared';
+import { asRolesStr } from './shared';
 
 export type RevokeOnSchemasOptions = OnlyGrantOnSchemasOptions &
   RevokeOnObjectsOptions;
@@ -19,8 +20,8 @@ export function revokeOnSchemas(mOptions: MigrationOptions): RevokeOnSchemas {
     cascade,
   }) => {
     const rolesStr = asRolesStr(roles, mOptions);
-    const schemasStr = asArray(schemas).map(mOptions.literal).join(', ');
-    const privilegesStr = asArray(privileges).map(String).join(', ');
+    const schemasStr = toArray(schemas).map(mOptions.literal).join(', ');
+    const privilegesStr = toArray(privileges).map(String).join(', ');
     const onlyGrantOptionStr = onlyGrantOption ? ' GRANT OPTION FOR' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
 

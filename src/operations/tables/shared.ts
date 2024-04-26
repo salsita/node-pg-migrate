@@ -1,5 +1,5 @@
 import type { Literal, MigrationOptions } from '../../types';
-import { applyType, escapeValue, makeComment } from '../../utils';
+import { applyType, escapeValue, makeComment, toArray } from '../../utils';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
 import { parseSequenceOptions, type SequenceOptions } from '../sequences';
@@ -337,9 +337,7 @@ export function parseConstraints(
   }
 
   if (unique) {
-    const uniqueArray: Array<Name | Name[]> = Array.isArray(unique)
-      ? unique
-      : [unique];
+    const uniqueArray: Array<Name | Name[]> = toArray(unique);
     const isArrayOfArrays = uniqueArray.some((uniqueSet) =>
       Array.isArray(uniqueSet)
     );
@@ -347,7 +345,7 @@ export function parseConstraints(
     (
       (isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>
     ).forEach((uniqueSet) => {
-      const cols = Array.isArray(uniqueSet) ? uniqueSet : [uniqueSet];
+      const cols = toArray(uniqueSet);
       const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`);
 
       constraints.push(
@@ -358,19 +356,17 @@ export function parseConstraints(
 
   if (primaryKey) {
     const name = literal(optionName || `${tableName}_pkey`);
-    const key = (Array.isArray(primaryKey) ? primaryKey : [primaryKey])
-      .map(literal)
-      .join(', ');
+    const key = toArray(primaryKey).map(literal).join(', ');
 
     constraints.push(`CONSTRAINT ${name} PRIMARY KEY (${key})`);
   }
 
   if (foreignKeys) {
-    (Array.isArray(foreignKeys) ? foreignKeys : [foreignKeys]).forEach((fk) => {
+    toArray(foreignKeys).forEach((fk) => {
       const { columns, referencesConstraintName, referencesConstraintComment } =
         fk;
 
-      const cols = Array.isArray(columns) ? columns : [columns];
+      const cols = toArray(columns);
       const name = literal(
         referencesConstraintName ||
           optionName ||
@@ -434,7 +430,7 @@ export function parseLike(
     name: 'INCLUDING' | 'EXCLUDING',
     options?: Like | Like[]
   ) =>
-    (Array.isArray(options) ? options : [options])
+    toArray(options)
       .filter((option): option is Like => option !== undefined)
       .map((option) => ` ${name} ${option}`)
       .join('');
