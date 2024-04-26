@@ -24,7 +24,7 @@ export type CreateMaterializedViewFn = (
   viewName: Name,
   options: CreateMaterializedViewOptions & DropOptions,
   definition: string
-) => string | string[];
+) => string;
 
 export type CreateMaterializedView = Reversible<CreateMaterializedViewFn>;
 

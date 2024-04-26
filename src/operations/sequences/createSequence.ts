@@ -18,7 +18,7 @@ export interface SequenceOptionsCreate
 export type CreateSequenceFn = (
   sequenceName: Name,
   sequenceOptions?: SequenceOptionsCreate & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateSequence = Reversible<CreateSequenceFn>;
 

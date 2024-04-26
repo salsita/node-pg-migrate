@@ -13,7 +13,7 @@ export type CreateTableFn = (
   tableName: Name,
   columns: ColumnDefinitions,
   options?: TableOptions & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateTable = Reversible<CreateTableFn>;
 

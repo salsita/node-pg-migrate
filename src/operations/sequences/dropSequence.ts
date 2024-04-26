@@ -4,7 +4,7 @@ import type { DropOptions, Name } from '../generalTypes';
 export type DropSequence = (
   sequenceName: Name,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropSequence(mOptions: MigrationOptions): DropSequence {
   const _drop: DropSequence = (sequenceName, options = {}) => {

@@ -1,10 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import type { IfExistsOption, Name } from '../generalTypes';
 
-export type DropRole = (
-  roleName: Name,
-  options?: IfExistsOption
-) => string | string[];
+export type DropRole = (roleName: Name, options?: IfExistsOption) => string;
 
 export function dropRole(mOptions: MigrationOptions): DropRole {
   const _drop: DropRole = (roleName, options = {}) => {

@@ -1,10 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import type { Name, Reversible } from '../generalTypes';
 
-export type RenameRoleFn = (
-  oldRoleName: Name,
-  newRoleName: Name
-) => string | string[];
+export type RenameRoleFn = (oldRoleName: Name, newRoleName: Name) => string;
 
 export type RenameRole = Reversible<RenameRoleFn>;
 

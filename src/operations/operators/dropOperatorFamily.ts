@@ -5,7 +5,7 @@ export type DropOperatorFamily = (
   operatorFamilyName: Name,
   newSchemaName: Name,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropOperatorFamily(
   mOptions: MigrationOptions

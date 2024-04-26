@@ -11,7 +11,7 @@ export type GrantRolesFn = (
   rolesFrom: Name | Name[],
   rolesTo: Name | Name[],
   grantRolesOptions?: GrantRolesOptions
-) => string | string[];
+) => string;
 
 export type GrantRoles = GrantRolesFn & { reverse: GrantRolesFn };
 

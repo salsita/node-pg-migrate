@@ -7,7 +7,7 @@ export type RenameFunctionFn = (
   oldFunctionName: Name,
   functionParams: FunctionParam[],
   newFunctionName: Name
-) => string | string[];
+) => string;
 
 export type RenameFunction = Reversible<RenameFunctionFn>;
 

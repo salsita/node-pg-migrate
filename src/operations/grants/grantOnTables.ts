@@ -22,7 +22,7 @@ export type GrantOnTablesOptions =
 
 export type GrantOnTablesFn = (
   options: GrantOnTablesOptions & RevokeOnObjectsOptions
-) => string | string[];
+) => string;
 
 export type GrantOnTables = Reversible<GrantOnTablesFn>;
 

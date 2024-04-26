@@ -10,7 +10,7 @@ export type AlterViewColumn = (
   viewName: Name,
   columnName: string,
   options: AlterViewColumnOptions
-) => string | string[];
+) => string;
 
 export function alterViewColumn(mOptions: MigrationOptions): AlterViewColumn {
   const _alter: AlterViewColumn = (viewName, columnName, options) => {

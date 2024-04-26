@@ -9,7 +9,7 @@ export type RevokeRoles = (
   roles: Name | Name[],
   rolesFrom: Name | Name[],
   revokeRolesOptions?: RevokeRolesOptions
-) => string | string[];
+) => string;
 
 export function revokeRoles(mOptions: MigrationOptions): RevokeRoles {
   const _revokeRoles: RevokeRoles = (roles, rolesFrom, options) => {

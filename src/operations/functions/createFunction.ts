@@ -9,7 +9,7 @@ export type CreateFunctionFn = (
   functionParams: FunctionParam[],
   functionOptions: FunctionOptions & DropOptions,
   definition: Value
-) => string | string[];
+) => string;
 
 export type CreateFunction = Reversible<CreateFunctionFn>;
 

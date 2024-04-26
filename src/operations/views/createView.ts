@@ -23,7 +23,7 @@ export type CreateViewFn = (
   viewName: Name,
   options: CreateViewOptions & DropOptions,
   definition: string
-) => string | string[];
+) => string;
 
 export type CreateView = Reversible<CreateViewFn>;
 

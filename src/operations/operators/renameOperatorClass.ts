@@ -5,7 +5,7 @@ export type RenameOperatorClassFn = (
   oldOperatorClassName: Name,
   indexMethod: Name,
   newOperatorClassName: Name
-) => string | string[];
+) => string;
 
 export type RenameOperatorClass = Reversible<RenameOperatorClassFn>;
 

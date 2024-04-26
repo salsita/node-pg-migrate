@@ -12,7 +12,7 @@ import { dropType } from './dropType';
 export type CreateTypeFn = (
   typeName: Name,
   values: (Value[] | { [name: string]: Type }) & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateType = Reversible<CreateTypeFn>;
 

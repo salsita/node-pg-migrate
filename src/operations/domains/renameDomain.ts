@@ -4,7 +4,7 @@ import type { Name, Reversible } from '../generalTypes';
 export type RenameDomainFn = (
   oldDomainName: Name,
   newDomainName: Name
-) => string | string[];
+) => string;
 
 export type RenameDomain = Reversible<RenameDomainFn>;
 

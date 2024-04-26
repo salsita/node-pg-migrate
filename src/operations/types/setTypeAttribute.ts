@@ -6,7 +6,7 @@ export type SetTypeAttribute = (
   typeName: Name,
   attributeName: string,
   attributeType: Type
-) => string | string[];
+) => string;
 
 export function setTypeAttribute(mOptions: MigrationOptions): SetTypeAttribute {
   return (typeName, attributeName, attributeType) => {

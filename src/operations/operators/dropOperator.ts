@@ -10,7 +10,7 @@ export interface DropOperatorOptions extends DropOptions {
 export type DropOperator = (
   operatorName: Name,
   dropOptions?: DropOperatorOptions
-) => string | string[];
+) => string;
 
 export function dropOperator(mOptions: MigrationOptions): DropOperator {
   const _drop: DropOperator = (operatorName, options = {}) => {

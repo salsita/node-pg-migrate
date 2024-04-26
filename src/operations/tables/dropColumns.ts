@@ -6,7 +6,7 @@ export type DropColumns = (
   tableName: Name,
   columns: string | string[] | { [name: string]: unknown },
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropColumns(mOptions: MigrationOptions): DropColumns {
   const _drop: DropColumns = (tableName, columns, options = {}) => {

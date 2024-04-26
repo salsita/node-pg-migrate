@@ -7,7 +7,7 @@ import { formatRoleOptions } from './shared';
 export type CreateRoleFn = (
   roleName: Name,
   roleOptions?: RoleOptions & IfExistsOption
-) => string | string[];
+) => string;
 
 export type CreateRole = Reversible<CreateRoleFn>;
 

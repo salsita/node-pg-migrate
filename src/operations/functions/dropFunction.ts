@@ -7,7 +7,7 @@ export type DropFunction = (
   functionName: Name,
   functionParams: FunctionParam[],
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropFunction(mOptions: MigrationOptions): DropFunction {
   const _drop: DropFunction = (

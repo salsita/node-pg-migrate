@@ -5,7 +5,7 @@ export type RenameTriggerFn = (
   tableName: Name,
   oldTriggerName: string,
   newTriggerName: string
-) => string | string[];
+) => string;
 
 export type RenameTrigger = Reversible<RenameTriggerFn>;
 

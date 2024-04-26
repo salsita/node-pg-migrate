@@ -19,9 +19,7 @@ export type GrantOnSchemasOptions = OnlyGrantOnSchemasOptions &
   WithGrantOption &
   RevokeOnObjectsOptions;
 
-export type GrantOnSchemasFn = (
-  options: GrantOnSchemasOptions
-) => string | string[];
+export type GrantOnSchemasFn = (options: GrantOnSchemasOptions) => string;
 
 export type GrantOnSchemas = Reversible<GrantOnSchemasFn>;
 

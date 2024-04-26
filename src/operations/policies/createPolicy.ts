@@ -14,7 +14,7 @@ type CreatePolicyFn = (
   tableName: Name,
   policyName: string,
   options?: CreatePolicyOptions & IfExistsOption
-) => string | string[];
+) => string;
 
 export type CreatePolicy = Reversible<CreatePolicyFn>;
 

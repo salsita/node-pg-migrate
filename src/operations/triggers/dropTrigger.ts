@@ -5,7 +5,7 @@ export type DropTrigger = (
   tableName: Name,
   triggerName: string,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropTrigger(mOptions: MigrationOptions): DropTrigger {
   const _drop: DropTrigger = (tableName, triggerName, options = {}) => {

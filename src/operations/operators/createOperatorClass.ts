@@ -17,7 +17,7 @@ export type CreateOperatorClassFn = (
   indexMethod: Name,
   operatorList: OperatorListDefinition[],
   options: CreateOperatorClassOptions & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateOperatorClass = Reversible<CreateOperatorClassFn>;
 

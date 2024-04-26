@@ -7,7 +7,7 @@ export type AlterPolicy = (
   tableName: Name,
   policyName: string,
   options: PolicyOptions
-) => string | string[];
+) => string;
 
 export function alterPolicy(mOptions: MigrationOptions): AlterPolicy {
   const _alter: AlterPolicy = (tableName, policyName, options = {}) => {

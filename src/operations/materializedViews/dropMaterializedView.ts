@@ -4,7 +4,7 @@ import type { DropOptions, Name } from '../generalTypes';
 export type DropMaterializedView = (
   viewName: Name,
   options?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropMaterializedView(
   mOptions: MigrationOptions

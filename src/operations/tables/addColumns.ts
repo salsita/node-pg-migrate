@@ -14,7 +14,7 @@ export type AddColumnsFn = (
   tableName: Name,
   newColumns: ColumnDefinitions,
   addOptions?: IfNotExistsOption & DropOptions
-) => string | string[];
+) => string;
 
 export type AddColumns = Reversible<AddColumnsFn>;
 

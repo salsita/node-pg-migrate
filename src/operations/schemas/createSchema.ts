@@ -13,7 +13,7 @@ export interface CreateSchemaOptions extends IfNotExistsOption {
 export type CreateSchemaFn = (
   schemaName: string,
   schemaOptions?: CreateSchemaOptions & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateSchema = Reversible<CreateSchemaFn>;
 

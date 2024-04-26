@@ -9,7 +9,7 @@ export type CreateConstraintFn = (
   tableName: Name,
   constraintName: string | null,
   expression: string | (ConstraintOptions & DropOptions)
-) => string | string[];
+) => string;
 
 export type CreateConstraint = Reversible<CreateConstraintFn>;
 

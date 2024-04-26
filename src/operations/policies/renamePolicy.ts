@@ -5,7 +5,7 @@ export type RenamePolicyFn = (
   tableName: Name,
   policyName: string,
   newPolicyName: string
-) => string | string[];
+) => string;
 
 export type RenamePolicy = Reversible<RenamePolicyFn>;
 
