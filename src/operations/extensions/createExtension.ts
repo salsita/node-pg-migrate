@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type {
   DropOptions,
   IfNotExistsOption,
@@ -22,7 +23,7 @@ export function createExtension(mOptions: MigrationOptions): CreateExtension {
   const _create: CreateExtension = (_extensions, options = {}) => {
     const { ifNotExists, schema } = options;
 
-    const extensions = Array.isArray(_extensions) ? _extensions : [_extensions];
+    const extensions = toArray(_extensions);
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaStr = schema ? ` SCHEMA ${mOptions.literal(schema)}` : '';
 

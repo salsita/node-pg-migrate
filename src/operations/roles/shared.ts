@@ -1,4 +1,4 @@
-import { escapeValue } from '../../utils';
+import { escapeValue, toArray } from '../../utils';
 import type { Value } from '../generalTypes';
 
 export interface RoleOptions {
@@ -80,23 +80,17 @@ export function formatRoleOptions(roleOptions: RoleOptions = {}): string {
   }
 
   if (roleOptions.inRole) {
-    const inRole = Array.isArray(roleOptions.inRole)
-      ? roleOptions.inRole.join(',')
-      : roleOptions.inRole;
+    const inRole = toArray(roleOptions.inRole).join(', ');
     options.push(`IN ROLE ${inRole}`);
   }
 
   if (roleOptions.role) {
-    const role = Array.isArray(roleOptions.role)
-      ? roleOptions.role.join(',')
-      : roleOptions.role;
+    const role = toArray(roleOptions.role).join(', ');
     options.push(`ROLE ${role}`);
   }
 
   if (roleOptions.admin) {
-    const admin = Array.isArray(roleOptions.admin)
-      ? roleOptions.admin.join(',')
-      : roleOptions.admin;
+    const admin = toArray(roleOptions.admin).join(', ');
     options.push(`ADMIN ${admin}`);
   }
 

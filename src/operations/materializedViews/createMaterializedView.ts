@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type {
   DropOptions,
   IfNotExistsOption,
@@ -39,9 +40,7 @@ export function createMaterializedView(
       data,
     } = options;
 
-    const columnNames = (Array.isArray(columns) ? columns : [columns])
-      .map(mOptions.literal)
-      .join(', ');
+    const columnNames = toArray(columns).map(mOptions.literal).join(', ');
     const withOptions = Object.keys(storageParameters)
       .map(storageParameterStr(storageParameters))
       .join(', ');

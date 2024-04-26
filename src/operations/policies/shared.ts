@@ -1,3 +1,5 @@
+import { toArray } from '../../utils';
+
 export interface PolicyOptions {
   role?: string | string[];
 
@@ -7,7 +9,7 @@ export interface PolicyOptions {
 }
 
 export function makeClauses({ role, using, check }: PolicyOptions): string[] {
-  const roles = (Array.isArray(role) ? role : [role]).join(', ');
+  const roles = toArray(role).join(', ');
   const clauses: string[] = [];
 
   if (roles) {

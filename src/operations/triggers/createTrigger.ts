@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../types';
-import { escapeValue } from '../../utils';
+import { escapeValue, toArray } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
@@ -43,10 +43,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
 
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
 
-    const operations = Array.isArray(operation)
-      ? operation.join(' OR ')
-      : operation;
-
+    const operations = toArray(operation).join(' OR ');
     if (constraint) {
       when = 'AFTER';
     }

@@ -13,4 +13,5 @@ export { isPgLiteral, PgLiteral } from './PgLiteral';
 export type { PgLiteralValue } from './PgLiteral';
 export { quote } from './quote';
 export { StringIdGenerator } from './StringIdGenerator';
+export { toArray } from './toArray';
 export { applyType, applyTypeAdapters } from './types';

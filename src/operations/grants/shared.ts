@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { CascadeOption, Name } from '../generalTypes';
 
 export interface WithAdminOption {
@@ -47,10 +48,6 @@ export interface AllTablesOptions {
 
 export type RevokeOnObjectsOptions = OnlyGrantOption & CascadeOption;
 
-export function asArray<T>(item: T | T[]): T[] {
-  return Array.isArray(item) ? item : [item];
-}
-
 export function isAllTablesOptions(
   options: AllTablesOptions | SomeTablesOptions
 ): options is AllTablesOptions {
@@ -61,7 +58,7 @@ export function asRolesStr(
   roles: Name | Name[],
   mOptions: MigrationOptions
 ): string {
-  return asArray(roles)
+  return toArray(roles)
     .map((role) => (role === 'PUBLIC' ? role : mOptions.literal(role)))
     .join(', ');
 }
@@ -72,5 +69,5 @@ export function asTablesStr(
 ): string {
   return isAllTablesOptions(options)
     ? `ALL TABLES IN SCHEMA ${mOptions.literal(options.schema)}`
-    : asArray(options.tables).map(mOptions.literal).join(', ');
+    : toArray(options.tables).map(mOptions.literal).join(', ');
 }

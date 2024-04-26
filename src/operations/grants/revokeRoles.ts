@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { CascadeOption, Name } from '../generalTypes';
 import type { OnlyAdminOption } from './shared';
-import { asArray } from './shared';
 
 export type RevokeRolesOptions = OnlyAdminOption & CascadeOption;
 
@@ -13,8 +13,8 @@ export type RevokeRoles = (
 
 export function revokeRoles(mOptions: MigrationOptions): RevokeRoles {
   const _revokeRoles: RevokeRoles = (roles, rolesFrom, options) => {
-    const rolesStr = asArray(roles).map(mOptions.literal).join(', ');
-    const rolesToStr = asArray(rolesFrom).map(mOptions.literal).join(', ');
+    const rolesStr = toArray(roles).map(mOptions.literal).join(', ');
+    const rolesToStr = toArray(rolesFrom).map(mOptions.literal).join(', ');
     const onlyAdminOptionStr =
       options && options.onlyAdminOption ? ' ADMIN OPTION FOR' : '';
     const cascadeStr = options && options.cascade ? ' CASCADE' : '';

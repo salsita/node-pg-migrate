@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import { revokeOnSchemas } from './revokeOnSchemas';
 import type {
@@ -6,7 +7,7 @@ import type {
   SchemaPrivilege,
   WithGrantOption,
 } from './shared';
-import { asArray, asRolesStr } from './shared';
+import { asRolesStr } from './shared';
 
 export interface OnlyGrantOnSchemasOptions {
   privileges: SchemaPrivilege | SchemaPrivilege[] | 'ALL';
@@ -32,8 +33,8 @@ export function grantOnSchemas(mOptions: MigrationOptions): GrantOnSchemas {
     withGrantOption,
   }) => {
     const rolesStr = asRolesStr(roles, mOptions);
-    const schemasStr = asArray(schemas).map(mOptions.literal).join(', ');
-    const privilegesStr = asArray(privileges).map(String).join(', ');
+    const schemasStr = toArray(schemas).map(mOptions.literal).join(', ');
+    const privilegesStr = toArray(privileges).map(String).join(', ');
     const withGrantOptionStr = withGrantOption ? ' WITH GRANT OPTION' : '';
 
     return `GRANT ${privilegesStr} ON SCHEMA ${schemasStr} TO ${rolesStr}${withGrantOptionStr};`;

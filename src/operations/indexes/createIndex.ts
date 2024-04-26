@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../types';
+import { toArray } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
@@ -47,10 +48,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     ifNotExists - optionally create index
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
-    const columns = Array.isArray(rawColumns)
-      ? rawColumns.slice()
-      : [rawColumns];
-
+    const columns = toArray(rawColumns);
     if (options.opclass) {
       mOptions.logger.warn(
         "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])"
@@ -82,10 +80,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     const method = options.method ? ` USING ${options.method}` : '';
     const where = options.where ? ` WHERE ${options.where}` : '';
     const include = options.include
-      ? ` INCLUDE (${(Array.isArray(options.include)
-          ? options.include
-          : [options.include]
-        )
+      ? ` INCLUDE (${toArray(options.include)
           .map(mOptions.literal)
           .join(', ')})`
       : '';
