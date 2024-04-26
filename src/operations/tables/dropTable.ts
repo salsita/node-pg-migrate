@@ -1,10 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
-export type DropTable = (
-  tableName: Name,
-  dropOptions?: DropOptions
-) => string | string[];
+export type DropTable = (tableName: Name, dropOptions?: DropOptions) => string;
 
 export function dropTable(mOptions: MigrationOptions): DropTable {
   const _drop: DropTable = (tableName, options = {}) => {

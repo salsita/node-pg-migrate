@@ -6,7 +6,7 @@ export type RenameTypeValueFn = (
   typeName: Name,
   value: string,
   newValue: string
-) => string | string[];
+) => string;
 
 export type RenameTypeValue = Reversible<RenameTypeValueFn>;
 

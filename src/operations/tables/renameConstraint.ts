@@ -5,7 +5,7 @@ export type RenameConstraintFn = (
   tableName: Name,
   oldConstraintName: string,
   newConstraintName: string
-) => string | string[];
+) => string;
 
 export type RenameConstraint = Reversible<RenameConstraintFn>;
 

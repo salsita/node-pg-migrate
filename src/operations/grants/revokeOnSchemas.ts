@@ -7,9 +7,7 @@ import { asRolesStr } from './shared';
 export type RevokeOnSchemasOptions = OnlyGrantOnSchemasOptions &
   RevokeOnObjectsOptions;
 
-export type RevokeOnSchemas = (
-  options: RevokeOnSchemasOptions
-) => string | string[];
+export type RevokeOnSchemas = (options: RevokeOnSchemasOptions) => string;
 
 export function revokeOnSchemas(mOptions: MigrationOptions): RevokeOnSchemas {
   const _revokeOnSchemas: RevokeOnSchemas = ({

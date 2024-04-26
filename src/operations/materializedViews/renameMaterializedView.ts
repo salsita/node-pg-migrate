@@ -4,7 +4,7 @@ import type { Name, Reversible } from '../generalTypes';
 export type RenameMaterializedViewFn = (
   viewName: Name,
   newViewName: Name
-) => string | string[];
+) => string;
 
 export type RenameMaterializedView = Reversible<RenameMaterializedViewFn>;
 

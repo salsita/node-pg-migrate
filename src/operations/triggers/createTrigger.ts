@@ -10,14 +10,14 @@ export type CreateTriggerFn1 = (
   tableName: Name,
   triggerName: string,
   triggerOptions: TriggerOptions & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateTriggerFn2 = (
   tableName: Name,
   triggerName: string,
   triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
   definition: Value
-) => string | string[];
+) => string;
 
 export type CreateTriggerFn = CreateTriggerFn1 | CreateTriggerFn2;
 

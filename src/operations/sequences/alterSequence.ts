@@ -10,7 +10,7 @@ export interface SequenceOptionsAlter extends SequenceOptions {
 export type AlterSequence = (
   sequenceName: Name,
   sequenceOptions: SequenceOptionsAlter
-) => string | string[];
+) => string;
 
 export function alterSequence(mOptions: MigrationOptions): AlterSequence {
   return (sequenceName, options) => {

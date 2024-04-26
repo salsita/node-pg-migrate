@@ -4,7 +4,7 @@ import type { Reversible } from '../generalTypes';
 export type RenameSchemaFn = (
   oldSchemaName: string,
   newSchemaName: string
-) => string | string[];
+) => string;
 
 export type RenameSchema = Reversible<RenameSchemaFn>;
 

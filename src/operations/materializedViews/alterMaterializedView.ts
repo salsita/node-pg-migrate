@@ -15,7 +15,7 @@ export interface AlterMaterializedViewOptions {
 export type AlterMaterializedView = (
   viewName: Name,
   options: AlterMaterializedViewOptions
-) => string | string[];
+) => string;
 
 export function alterMaterializedView(
   mOptions: MigrationOptions

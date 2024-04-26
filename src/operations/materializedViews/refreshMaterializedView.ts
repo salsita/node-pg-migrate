@@ -11,7 +11,7 @@ export interface RefreshMaterializedViewOptions {
 export type RefreshMaterializedViewFn = (
   viewName: Name,
   options?: RefreshMaterializedViewOptions
-) => string | string[];
+) => string;
 
 export type RefreshMaterializedView = Reversible<RefreshMaterializedViewFn>;
 

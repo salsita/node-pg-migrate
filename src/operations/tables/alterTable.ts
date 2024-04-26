@@ -9,7 +9,7 @@ export interface AlterTableOptions {
 export type AlterTable = (
   tableName: Name,
   alterOptions: AlterTableOptions
-) => string | string[];
+) => string;
 
 export function alterTable(mOptions: MigrationOptions): AlterTable {
   const _alter: AlterTable = (tableName, options) => {

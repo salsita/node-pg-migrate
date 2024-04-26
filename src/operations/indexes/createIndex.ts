@@ -31,7 +31,7 @@ export type CreateIndexFn = (
   tableName: Name,
   columns: string | Array<string | IndexColumn>,
   options?: CreateIndexOptions & DropIndexOptions
-) => string | string[];
+) => string;
 
 export type CreateIndex = Reversible<CreateIndexFn>;
 

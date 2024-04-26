@@ -4,7 +4,7 @@ import type { DropOptions } from '../generalTypes';
 export type DropSchema = (
   schemaName: string,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropSchema(mOptions: MigrationOptions): DropSchema {
   const _drop: DropSchema = (schemaName, options = {}) => {

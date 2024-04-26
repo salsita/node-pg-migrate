@@ -10,7 +10,7 @@ export interface DomainOptionsAlter extends DomainOptions {
 export type AlterDomain = (
   domainName: Name,
   domainOptions: DomainOptionsAlter
-) => string | string[];
+) => string;
 
 export function alterDomain(mOptions: MigrationOptions): AlterDomain {
   const _alter: AlterDomain = (domainName, options) => {

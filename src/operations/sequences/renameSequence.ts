@@ -4,7 +4,7 @@ import type { Name, Reversible } from '../generalTypes';
 export type RenameSequenceFn = (
   oldSequenceName: Name,
   newSequenceName: Name
-) => string | string[];
+) => string;
 
 export type RenameSequence = Reversible<RenameSequenceFn>;
 

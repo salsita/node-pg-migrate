@@ -5,7 +5,7 @@ export type DropTypeAttribute = (
   typeName: Name,
   attributeName: string,
   options: IfExistsOption
-) => string | string[];
+) => string;
 
 export function dropTypeAttribute(
   mOptions: MigrationOptions

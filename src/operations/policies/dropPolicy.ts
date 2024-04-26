@@ -5,7 +5,7 @@ export type DropPolicy = (
   tableName: Name,
   policyName: string,
   options?: IfExistsOption
-) => string | string[];
+) => string;
 
 export function dropPolicy(mOptions: MigrationOptions): DropPolicy {
   const _drop: DropPolicy = (tableName, policyName, options = {}) => {

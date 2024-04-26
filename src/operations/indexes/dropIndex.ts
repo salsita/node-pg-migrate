@@ -16,7 +16,7 @@ export type DropIndex = (
   tableName: Name,
   columns: string | Array<string | IndexColumn>,
   options?: DropIndexOptions
-) => string | string[];
+) => string;
 
 export function dropIndex(mOptions: MigrationOptions): DropIndex {
   const _drop: DropIndex = (tableName, rawColumns, options = {}) => {

@@ -7,7 +7,7 @@ export type RemoveFromOperatorFamily = (
   operatorFamilyName: Name,
   indexMethod: Name,
   operatorList: OperatorListDefinition[]
-) => string | string[];
+) => string;
 
 export const removeFromOperatorFamily = (
   mOptions: MigrationOptions

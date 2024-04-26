@@ -5,7 +5,7 @@ export type RenameOperatorFamilyFn = (
   oldOperatorFamilyName: Name,
   indexMethod: Name,
   newOperatorFamilyName: Name
-) => string | string[];
+) => string;
 
 export type RenameOperatorFamily = Reversible<RenameOperatorFamilyFn>;
 

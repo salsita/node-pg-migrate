@@ -36,7 +36,7 @@ export type AlterColumn = (
   tableName: Name,
   columnName: string,
   options: AlterColumnOptions
-) => string | string[];
+) => string;
 
 export function alterColumn(mOptions: MigrationOptions): AlterColumn {
   return (tableName, columnName, options) => {

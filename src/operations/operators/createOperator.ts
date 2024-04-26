@@ -26,7 +26,7 @@ export interface CreateOperatorOptions {
 export type CreateOperatorFn = (
   operatorName: Name,
   options: CreateOperatorOptions & DropOperatorOptions
-) => string | string[];
+) => string;
 
 export type CreateOperator = Reversible<CreateOperatorFn>;
 

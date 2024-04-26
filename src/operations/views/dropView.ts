@@ -1,10 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
-export type DropView = (
-  viewName: Name,
-  options?: DropOptions
-) => string | string[];
+export type DropView = (viewName: Name, options?: DropOptions) => string;
 
 export function dropView(mOptions: MigrationOptions): DropView {
   const _drop: DropView = (viewName, options = {}) => {

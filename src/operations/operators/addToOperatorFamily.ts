@@ -8,7 +8,7 @@ export type AddToOperatorFamilyFn = (
   operatorFamilyName: Name,
   indexMethod: Name,
   operatorList: OperatorListDefinition[]
-) => string | string[];
+) => string;
 
 export type AddToOperatorFamily = Reversible<AddToOperatorFamilyFn>;
 

@@ -6,7 +6,7 @@ export type CreateOperatorFamilyFn = (
   operatorFamilyName: Name,
   indexMethod: Name,
   options?: DropOptions
-) => string | string[];
+) => string;
 
 export type CreateOperatorFamily = Reversible<CreateOperatorFamilyFn>;
 

@@ -12,7 +12,7 @@ export type CreateDomainFn = (
   domainName: Name,
   type: Type,
   domainOptions?: DomainOptionsCreate & DropOptions
-) => string | string[];
+) => string;
 
 export type CreateDomain = Reversible<CreateDomainFn>;
 

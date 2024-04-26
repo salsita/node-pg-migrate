@@ -12,7 +12,7 @@ export type AddTypeValue = (
   typeName: Name,
   value: Value,
   options?: AddTypeValueOptions
-) => string | string[];
+) => string;
 
 export function addTypeValue(mOptions: MigrationOptions): AddTypeValue {
   const _add: AddTypeValue = (typeName, value, options = {}) => {

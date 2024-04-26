@@ -5,7 +5,7 @@ export type DropConstraint = (
   tableName: Name,
   constraintName: string,
   options?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropConstraint(mOptions: MigrationOptions): DropConstraint {
   const _drop: DropConstraint = (tableName, constraintName, options = {}) => {

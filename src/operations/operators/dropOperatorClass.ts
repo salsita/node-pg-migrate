@@ -5,7 +5,7 @@ export type DropOperatorClass = (
   operatorClassName: Name,
   indexMethod: Name,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropOperatorClass(
   mOptions: MigrationOptions

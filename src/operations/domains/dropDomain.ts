@@ -4,7 +4,7 @@ import type { DropOptions, Name } from '../generalTypes';
 export type DropDomain = (
   domainName: Name,
   dropOptions?: DropOptions
-) => string | string[];
+) => string;
 
 export function dropDomain(mOptions: MigrationOptions): DropDomain {
   const _drop: DropDomain = (domainName, options = {}) => {

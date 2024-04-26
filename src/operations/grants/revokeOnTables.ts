@@ -12,9 +12,7 @@ export type RevokeOnTablesOptions = CommonOnTablesOptions &
   (AllTablesOptions | SomeTablesOptions) &
   RevokeOnObjectsOptions;
 
-export type RevokeOnTables = (
-  options: RevokeOnTablesOptions
-) => string | string[];
+export type RevokeOnTables = (options: RevokeOnTablesOptions) => string;
 
 export function revokeOnTables(mOptions: MigrationOptions): RevokeOnTables {
   const _revokeOnTables: RevokeOnTables = (options) => {

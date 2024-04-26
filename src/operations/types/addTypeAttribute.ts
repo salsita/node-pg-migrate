@@ -7,7 +7,7 @@ export type AddTypeAttributeFn = (
   typeName: Name,
   attributeName: string,
   attributeType: Type & IfExistsOption
-) => string | string[];
+) => string;
 
 export type AddTypeAttribute = Reversible<AddTypeAttributeFn>;
 

@@ -5,7 +5,7 @@ export type RenameColumnFn = (
   tableName: Name,
   oldColumnName: string,
   newColumnName: string
-) => string | string[];
+) => string;
 
 export type RenameColumn = Reversible<RenameColumnFn>;
 

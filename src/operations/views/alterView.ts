@@ -3,10 +3,7 @@ import type { Name, Nullable } from '../generalTypes';
 import type { ViewOptions } from './shared';
 import { viewOptionStr } from './shared';
 
-export type AlterView = (
-  viewName: Name,
-  options: AlterViewOptions
-) => string | string[];
+export type AlterView = (viewName: Name, options: AlterViewOptions) => string;
 
 export interface AlterViewOptions {
   checkOption?: null | 'CASCADED' | 'LOCAL';

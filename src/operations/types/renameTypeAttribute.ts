@@ -5,7 +5,7 @@ export type RenameTypeAttributeFn = (
   typeName: Name,
   attributeName: string,
   newAttributeName: string
-) => string | string[];
+) => string;
 
 export type RenameTypeAttribute = Reversible<RenameTypeAttributeFn>;
 

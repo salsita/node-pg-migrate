@@ -5,7 +5,7 @@ export type RenameMaterializedViewColumnFn = (
   viewName: Name,
   columnName: string,
   newColumnName: string
-) => string | string[];
+) => string;
 
 export type RenameMaterializedViewColumn =
   Reversible<RenameMaterializedViewColumnFn>;
