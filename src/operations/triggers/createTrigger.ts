@@ -3,19 +3,20 @@ import { escapeValue, toArray } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
+import type { DropTriggerOptions } from './dropTrigger';
 import { dropTrigger } from './dropTrigger';
 import type { TriggerOptions } from './shared';
 
 export type CreateTriggerFn1 = (
   tableName: Name,
   triggerName: string,
-  triggerOptions: TriggerOptions & DropOptions
+  triggerOptions: TriggerOptions & DropTriggerOptions
 ) => string;
 
 export type CreateTriggerFn2 = (
   tableName: Name,
   triggerName: string,
-  triggerOptions: TriggerOptions & FunctionOptions & DropOptions,
+  triggerOptions: TriggerOptions & FunctionOptions & DropTriggerOptions,
   definition: Value
 ) => string;
 
@@ -33,11 +34,11 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
     definition?: Value
   ) => {
     const {
-      constraint,
+      constraint = false,
       condition,
       operation,
-      deferrable,
-      deferred,
+      deferrable = false,
+      deferred = false,
       functionParams = [],
     } = triggerOptions;
 

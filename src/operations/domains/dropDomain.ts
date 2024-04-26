@@ -1,14 +1,16 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
+export type DropDomainOptions = DropOptions;
+
 export type DropDomain = (
   domainName: Name,
-  dropOptions?: DropOptions
+  dropOptions?: DropDomainOptions
 ) => string;
 
 export function dropDomain(mOptions: MigrationOptions): DropDomain {
   const _drop: DropDomain = (domainName, options = {}) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

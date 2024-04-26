@@ -1,11 +1,16 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
-export type DropView = (viewName: Name, options?: DropOptions) => string;
+export type DropViewOptions = DropOptions;
+
+export type DropView = (
+  viewName: Name,
+  dropOptions?: DropViewOptions
+) => string;
 
 export function dropView(mOptions: MigrationOptions): DropView {
   const _drop: DropView = (viewName, options = {}) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

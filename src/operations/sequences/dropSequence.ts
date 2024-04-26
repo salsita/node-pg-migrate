@@ -1,14 +1,16 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
+export type DropSequenceOptions = DropOptions;
+
 export type DropSequence = (
   sequenceName: Name,
-  dropOptions?: DropOptions
+  dropOptions?: DropSequenceOptions
 ) => string;
 
 export function dropSequence(mOptions: MigrationOptions): DropSequence {
   const _drop: DropSequence = (sequenceName, options = {}) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';

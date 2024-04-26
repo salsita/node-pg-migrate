@@ -3,13 +3,13 @@ import type { Name } from '../generalTypes';
 import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';
 
-export interface SequenceOptionsAlter extends SequenceOptions {
+export interface AlterSequenceOptions extends SequenceOptions {
   restart?: number | true;
 }
 
 export type AlterSequence = (
   sequenceName: Name,
-  sequenceOptions: SequenceOptionsAlter
+  sequenceOptions: AlterSequenceOptions
 ) => string;
 
 export function alterSequence(mOptions: MigrationOptions): AlterSequence {

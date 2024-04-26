@@ -1,10 +1,12 @@
 import type { MigrationOptions } from '../../types';
 import type { DropOptions, Name } from '../generalTypes';
 
+export type DropOperatorFamilyOptions = DropOptions;
+
 export type DropOperatorFamily = (
   operatorFamilyName: Name,
   newSchemaName: Name,
-  dropOptions?: DropOptions
+  dropOptions?: DropOperatorFamilyOptions
 ) => string;
 
 export function dropOperatorFamily(
@@ -15,7 +17,7 @@ export function dropOperatorFamily(
     indexMethod,
     options = {}
   ) => {
-    const { ifExists, cascade } = options;
+    const { ifExists = false, cascade = false } = options;
 
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';

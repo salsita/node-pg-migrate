@@ -12,11 +12,17 @@ export type RevokeOnTablesOptions = CommonOnTablesOptions &
   (AllTablesOptions | SomeTablesOptions) &
   RevokeOnObjectsOptions;
 
-export type RevokeOnTables = (options: RevokeOnTablesOptions) => string;
+export type RevokeOnTables = (revokeOptions: RevokeOnTablesOptions) => string;
 
 export function revokeOnTables(mOptions: MigrationOptions): RevokeOnTables {
   const _revokeOnTables: RevokeOnTables = (options) => {
-    const { privileges, roles, onlyGrantOption, cascade } = options;
+    const {
+      privileges,
+      roles,
+      onlyGrantOption = false,
+      cascade = false,
+    } = options;
+
     const rolesStr = asRolesStr(roles, mOptions);
     const privilegesStr = toArray(privileges).map(String).join(', ');
     const tablesStr = asTablesStr(options, mOptions);

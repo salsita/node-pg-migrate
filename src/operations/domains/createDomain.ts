@@ -1,17 +1,18 @@
 import type { MigrationOptions } from '../../types';
 import { applyType, escapeValue } from '../../utils';
-import type { DropOptions, Name, Reversible, Type } from '../generalTypes';
+import type { Name, Reversible, Type } from '../generalTypes';
+import type { DropDomainOptions } from './dropDomain';
 import { dropDomain } from './dropDomain';
 import type { DomainOptions } from './shared';
 
-export interface DomainOptionsCreate extends DomainOptions {
+export interface CreateDomainOptions extends DomainOptions {
   collation?: string;
 }
 
 export type CreateDomainFn = (
   domainName: Name,
   type: Type,
-  domainOptions?: DomainOptionsCreate & DropOptions
+  domainOptions?: CreateDomainOptions & DropDomainOptions
 ) => string;
 
 export type CreateDomain = Reversible<CreateDomainFn>;
@@ -21,7 +22,7 @@ export function createDomain(mOptions: MigrationOptions): CreateDomain {
     const {
       default: defaultValue,
       collation,
-      notNull,
+      notNull = false,
       check,
       constraintName,
     } = options;

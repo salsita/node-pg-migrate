@@ -39,7 +39,7 @@ export type CreateCast = Reversible<CreateCastFn>;
 
 export function createCast(mOptions: MigrationOptions): CreateCast {
   const _create: CreateCast = (sourceType, targetType, options = {}) => {
-    const { functionName, argumentTypes, inout, as } = options;
+    const { functionName, argumentTypes, inout = false, as } = options;
 
     let conversion = '';
     if (functionName) {

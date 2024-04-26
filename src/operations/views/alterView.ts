@@ -3,13 +3,16 @@ import type { Name, Nullable } from '../generalTypes';
 import type { ViewOptions } from './shared';
 import { viewOptionStr } from './shared';
 
-export type AlterView = (viewName: Name, options: AlterViewOptions) => string;
-
 export interface AlterViewOptions {
   checkOption?: null | 'CASCADED' | 'LOCAL';
 
   options?: Nullable<ViewOptions>;
 }
+
+export type AlterView = (
+  viewName: Name,
+  viewOptions: AlterViewOptions
+) => string;
 
 export function alterView(mOptions: MigrationOptions): AlterView {
   const _alter: AlterView = (viewName, viewOptions) => {

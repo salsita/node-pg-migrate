@@ -10,7 +10,7 @@ export interface RefreshMaterializedViewOptions {
 
 export type RefreshMaterializedViewFn = (
   viewName: Name,
-  options?: RefreshMaterializedViewOptions
+  materializedViewOptions?: RefreshMaterializedViewOptions
 ) => string;
 
 export type RefreshMaterializedView = Reversible<RefreshMaterializedViewFn>;
@@ -19,7 +19,7 @@ export function refreshMaterializedView(
   mOptions: MigrationOptions
 ): RefreshMaterializedView {
   const _refresh: RefreshMaterializedView = (viewName, options = {}) => {
-    const { concurrently, data } = options;
+    const { concurrently = false, data } = options;
 
     const concurrentlyStr = concurrently ? ' CONCURRENTLY' : '';
     const dataStr = dataClause(data);

@@ -1,6 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import { toArray } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
+import type { RevokeOnSchemasOptions } from './revokeOnSchemas';
 import { revokeOnSchemas } from './revokeOnSchemas';
 import type {
   RevokeOnObjectsOptions,
@@ -19,17 +20,16 @@ export type GrantOnSchemasOptions = OnlyGrantOnSchemasOptions &
   WithGrantOption &
   RevokeOnObjectsOptions;
 
-export type GrantOnSchemasFn = (options: GrantOnSchemasOptions) => string;
+export type GrantOnSchemasFn = (
+  grantOptions: GrantOnSchemasOptions & RevokeOnSchemasOptions
+) => string;
 
 export type GrantOnSchemas = Reversible<GrantOnSchemasFn>;
 
 export function grantOnSchemas(mOptions: MigrationOptions): GrantOnSchemas {
-  const _grantOnSchemas: GrantOnSchemas = ({
-    privileges,
-    schemas,
-    roles,
-    withGrantOption,
-  }) => {
+  const _grantOnSchemas: GrantOnSchemas = (options) => {
+    const { privileges, schemas, roles, withGrantOption = false } = options;
+
     const rolesStr = asRolesStr(roles, mOptions);
     const schemasStr = toArray(schemas).map(mOptions.literal).join(', ');
     const privilegesStr = toArray(privileges).map(String).join(', ');

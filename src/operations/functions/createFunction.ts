@@ -1,13 +1,16 @@
 import type { MigrationOptions } from '../../types';
 import { escapeValue, formatParams } from '../../utils';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
+import type { DropFunctionOptions } from './dropFunction';
 import { dropFunction } from './dropFunction';
 import type { FunctionOptions, FunctionParam } from './shared';
+
+export type CreateFunctionOptions = FunctionOptions & DropOptions;
 
 export type CreateFunctionFn = (
   functionName: Name,
   functionParams: FunctionParam[],
-  functionOptions: FunctionOptions & DropOptions,
+  functionOptions: CreateFunctionOptions & DropFunctionOptions,
   definition: Value
 ) => string;
 
@@ -21,12 +24,12 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
     definition
   ) => {
     const {
-      replace,
+      replace = false,
       returns = 'void',
       language,
-      window,
+      window = false,
       behavior = 'VOLATILE',
-      onNull,
+      onNull = false,
       parallel,
     } = functionOptions;
 

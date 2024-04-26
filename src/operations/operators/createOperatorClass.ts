@@ -1,6 +1,7 @@
 import type { MigrationOptions } from '../../types';
 import { applyType } from '../../utils';
-import type { DropOptions, Name, Reversible, Type } from '../generalTypes';
+import type { Name, Reversible, Type } from '../generalTypes';
+import type { DropOperatorClassOptions } from './dropOperatorClass';
 import { dropOperatorClass } from './dropOperatorClass';
 import type { OperatorListDefinition } from './shared';
 import { operatorMap } from './shared';
@@ -16,7 +17,7 @@ export type CreateOperatorClassFn = (
   type: Type,
   indexMethod: Name,
   operatorList: OperatorListDefinition[],
-  options: CreateOperatorClassOptions & DropOptions
+  operatorClassOptions: CreateOperatorClassOptions & DropOperatorClassOptions
 ) => string;
 
 export type CreateOperatorClass = Reversible<CreateOperatorClassFn>;

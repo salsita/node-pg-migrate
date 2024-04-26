@@ -1,9 +1,6 @@
 import type { MigrationOptions } from '../../types';
-import type {
-  DropOptions,
-  IfNotExistsOption,
-  Reversible,
-} from '../generalTypes';
+import type { IfNotExistsOption, Reversible } from '../generalTypes';
+import type { DropSchemaOptions } from './dropSchema';
 import { dropSchema } from './dropSchema';
 
 export interface CreateSchemaOptions extends IfNotExistsOption {
@@ -12,14 +9,14 @@ export interface CreateSchemaOptions extends IfNotExistsOption {
 
 export type CreateSchemaFn = (
   schemaName: string,
-  schemaOptions?: CreateSchemaOptions & DropOptions
+  schemaOptions?: CreateSchemaOptions & DropSchemaOptions
 ) => string;
 
 export type CreateSchema = Reversible<CreateSchemaFn>;
 
 export function createSchema(mOptions: MigrationOptions): CreateSchema {
   const _create: CreateSchema = (schemaName: string, options = {}) => {
-    const { ifNotExists, authorization } = options;
+    const { ifNotExists = false, authorization } = options;
 
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const schemaNameStr = mOptions.literal(schemaName);

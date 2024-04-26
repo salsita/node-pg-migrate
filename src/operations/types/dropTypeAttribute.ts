@@ -1,20 +1,20 @@
 import type { MigrationOptions } from '../../types';
 import type { IfExistsOption, Name } from '../generalTypes';
 
+export type DropTypeAttributeOptions = IfExistsOption;
+
 export type DropTypeAttribute = (
   typeName: Name,
   attributeName: string,
-  options: IfExistsOption
+  dropOptions?: DropTypeAttributeOptions
 ) => string;
 
 export function dropTypeAttribute(
   mOptions: MigrationOptions
 ): DropTypeAttribute {
-  const _drop: DropTypeAttribute = (
-    typeName,
-    attributeName,
-    { ifExists } = {}
-  ) => {
+  const _drop: DropTypeAttribute = (typeName, attributeName, options = {}) => {
+    const { ifExists = false } = options;
+
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const typeNameStr = mOptions.literal(typeName);
     const attributeNameStr = mOptions.literal(attributeName);

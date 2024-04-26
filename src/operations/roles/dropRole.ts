@@ -1,11 +1,16 @@
 import type { MigrationOptions } from '../../types';
 import type { IfExistsOption, Name } from '../generalTypes';
 
-export type DropRole = (roleName: Name, options?: IfExistsOption) => string;
+export type DropRoleOptions = IfExistsOption;
+
+export type DropRole = (
+  roleName: Name,
+  dropOptions?: DropRoleOptions
+) => string;
 
 export function dropRole(mOptions: MigrationOptions): DropRole {
   const _drop: DropRole = (roleName, options = {}) => {
-    const { ifExists } = options;
+    const { ifExists = false } = options;
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const roleNameStr = mOptions.literal(roleName);

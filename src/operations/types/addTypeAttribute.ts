@@ -1,12 +1,13 @@
 import type { MigrationOptions } from '../../types';
 import { applyType } from '../../utils';
-import type { IfExistsOption, Name, Reversible, Type } from '../generalTypes';
+import type { Name, Reversible, Type } from '../generalTypes';
+import type { DropTypeAttributeOptions } from './dropTypeAttribute';
 import { dropTypeAttribute } from './dropTypeAttribute';
 
 export type AddTypeAttributeFn = (
   typeName: Name,
   attributeName: string,
-  attributeType: Type & IfExistsOption
+  attributeType: Type & DropTypeAttributeOptions
 ) => string;
 
 export type AddTypeAttribute = Reversible<AddTypeAttributeFn>;

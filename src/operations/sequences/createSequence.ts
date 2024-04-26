@@ -1,15 +1,11 @@
 import type { MigrationOptions } from '../../types';
-import type {
-  DropOptions,
-  IfNotExistsOption,
-  Name,
-  Reversible,
-} from '../generalTypes';
+import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
+import type { DropSequenceOptions } from './dropSequence';
 import { dropSequence } from './dropSequence';
 import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';
 
-export interface SequenceOptionsCreate
+export interface CreateSequenceOptions
   extends SequenceOptions,
     IfNotExistsOption {
   temporary?: boolean;
@@ -17,14 +13,14 @@ export interface SequenceOptionsCreate
 
 export type CreateSequenceFn = (
   sequenceName: Name,
-  sequenceOptions?: SequenceOptionsCreate & DropOptions
+  sequenceOptions?: CreateSequenceOptions & DropSequenceOptions
 ) => string;
 
 export type CreateSequence = Reversible<CreateSequenceFn>;
 
 export function createSequence(mOptions: MigrationOptions): CreateSequence {
   const _create: CreateSequence = (sequenceName, options = {}) => {
-    const { temporary, ifNotExists } = options;
+    const { temporary = false, ifNotExists = false } = options;
 
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
