@@ -112,7 +112,7 @@
     "cross-env": "7.0.3",
     "docsify-cli": "4.4.4",
     "dotenv": "16.4.5",
-    "dotenv-expand": "8.0.3",
+    "dotenv-expand": "11.0.6",
     "eslint": "9.1.1",
     "eslint-config-prettier": "9.1.0",
     "eslint-define-config": "2.1.0",

@@ -60,8 +60,8 @@ importers:
         specifier: 16.4.5
         version: 16.4.5
       dotenv-expand:
-        specifier: 8.0.3
-        version: 8.0.3
+        specifier: 11.0.6
+        version: 11.0.6
       eslint:
         specifier: 9.1.1
         version: 9.1.1
@@ -1069,8 +1069,8 @@ packages:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
     engines: {node: '>=8'}
 
-  dotenv-expand@8.0.3:
-    resolution: {integrity: sha512-SErOMvge0ZUyWd5B0NXMQlDkN+8r+HhVUsxgOO7IoPDOdDRD2JjExpN6y3KnFR66jsJMwSn1pqIivhU5rcJiNg==}
+  dotenv-expand@11.0.6:
+    resolution: {integrity: sha512-8NHi73otpWsZGBSZwwknTXS5pqMOrk9+Ssrna8xCaxkzEpU9OTf9R5ArQGVw03//Zmk9MOwLPng9WwndvpAJ5g==}
     engines: {node: '>=12'}
 
   dotenv@16.4.5:
@@ -3695,7 +3695,9 @@ snapshots:
     dependencies:
       is-obj: 2.0.0
 
-  dotenv-expand@8.0.3: {}
+  dotenv-expand@11.0.6:
+    dependencies:
+      dotenv: 16.4.5
 
   dotenv@16.4.5: {}
 
