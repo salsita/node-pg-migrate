@@ -21,7 +21,7 @@
     "premigrate": "run-s build:bin",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
-    "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check",
+    "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
   },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"

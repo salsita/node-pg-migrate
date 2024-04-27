@@ -55,7 +55,7 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 ## Available Commands
 
 | Command                                   |                                                       Description                                                       |
-|-------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------:|
+| ----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------: |
 | `node-pg-migrate create {migration-name}` | creates a new migration file with a timestamp prepended to the name you provide. Dashes replace spaces and underscores. |
 | `node-pg-migrate up`                      |                                     runs all up migrations from the current state.                                      |
 | `node-pg-migrate up {N}`                  |                                      runs N up migrations from the current state.                                       |

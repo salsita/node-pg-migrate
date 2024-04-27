@@ -1,10 +1,10 @@
-import {DefaultTheme, defineConfig} from 'vitepress'
+import { DefaultTheme, defineConfig } from 'vitepress';
 
-const repository = "https://github.com/salsita/node-pg-migrate"
-const pkg = require('../../package.json')
+const repository = 'https://github.com/salsita/node-pg-migrate';
+const pkg = require('../../package.json');
 export default defineConfig({
-  title: "node-pg-migrate",
-  description: "Postgresql database migration management tool",
+  title: 'node-pg-migrate',
+  description: 'Postgresql database migration management tool',
   base: '/node-pg-migrate/', // for GitHub Pages
   srcDir: 'src',
   themeConfig: {
@@ -16,171 +16,167 @@ export default defineConfig({
         base: '/',
         text: 'Reference',
         collapsed: false,
-        items: sidebarReference()
+        items: sidebarReference(),
       },
       {
         base: '/migrations/',
         text: 'Defining Migrations',
         link: '/',
         collapsed: false,
-        items: sidebarMigrations()
+        items: sidebarMigrations(),
       },
       {
         base: '/faq/',
         text: 'FAQ',
         collapsed: false,
-        items: sidebarFAQ()
-      }
+        items: sidebarFAQ(),
+      },
     ],
 
     search: {
       provider: 'local',
     },
 
-    socialLinks: [
-      {icon: 'github', link: repository}
-    ],
+    socialLinks: [{ icon: 'github', link: repository }],
 
     editLink: {
       pattern: repository + '/edit/main/docs/src/:path',
-      text: 'Edit this page on GitHub'
+      text: 'Edit this page on GitHub',
     },
-
-  }
-})
+  },
+});
 
 function navBarItems(): DefaultTheme.NavItem[] {
   return [
-    {text: 'Home', link: '/'},
-    {text: 'Getting Started', link: '/getting-started'},
+    { text: 'Home', link: '/' },
+    { text: 'Getting Started', link: '/getting-started' },
     {
       text: 'Migrations',
       link: '/migrations/',
-      activeMatch: `^/migrations/`
+      activeMatch: `^/migrations/`,
     },
     {
       text: pkg.version,
       items: [
-        {text: 'Changelog', link: repository + '/blob/main/CHANGELOG.md'},
-        {text: 'Releases', link: repository + '/releases'},
-        {text: 'License', link: repository + '/blob/main/LICENSE'},
-      ]
+        { text: 'Changelog', link: repository + '/blob/main/CHANGELOG.md' },
+        { text: 'Releases', link: repository + '/releases' },
+        { text: 'License', link: repository + '/blob/main/LICENSE' },
+      ],
     },
-  ]
+  ];
 }
-
 
 function sidebarReference(): DefaultTheme.SidebarItem[] {
   return [
     {
       text: 'Introduction',
-      link: 'introduction'
+      link: 'introduction',
     },
     {
       text: 'Getting Started',
-      link: 'getting-started'
+      link: 'getting-started',
     },
     {
       text: 'CLI',
-      link: 'cli'
+      link: 'cli',
     },
     {
       text: 'Programmatic API',
-      link: 'api'
+      link: 'api',
     },
-  ]
+  ];
 }
 
 function sidebarFAQ(): DefaultTheme.SidebarItem[] {
   return [
     {
       text: 'Transpiling Migrations',
-      link: 'transpiling'
+      link: 'transpiling',
     },
     {
       text: 'Troubleshooting',
-      link: 'troubleshooting'
-    }
-  ]
+      link: 'troubleshooting',
+    },
+  ];
 }
 
 function sidebarMigrations(): DefaultTheme.SidebarItem[] {
   return [
     {
-      "text": "Tables",
-      "link": "tables"
+      text: 'Tables',
+      link: 'tables',
     },
     {
-      "text": "Columns",
-      "link": "columns"
+      text: 'Columns',
+      link: 'columns',
     },
     {
-      "text": "Constraints",
-      "link": "constraints"
+      text: 'Constraints',
+      link: 'constraints',
     },
     {
-      "text": "Indexes",
-      "link": "indexes"
+      text: 'Indexes',
+      link: 'indexes',
     },
     {
-      "text": "Functions",
-      "link": "functions"
+      text: 'Functions',
+      link: 'functions',
     },
     {
-      "text": "Triggers",
-      "link": "triggers"
+      text: 'Triggers',
+      link: 'triggers',
     },
     {
-      "text": "Schemas",
-      "link": "schemas"
+      text: 'Schemas',
+      link: 'schemas',
     },
     {
-      "text": "Sequences",
-      "link": "sequences"
+      text: 'Sequences',
+      link: 'sequences',
     },
     {
-      "text": "Views",
-      "link": "views"
+      text: 'Views',
+      link: 'views',
     },
     {
-      "text": "Materialized Views",
-      "link": "mViews"
+      text: 'Materialized Views',
+      link: 'mViews',
     },
     {
-      "text": "Types",
-      "link": "types"
+      text: 'Types',
+      link: 'types',
     },
     {
-      "text": "Domains",
-      "link": "domains"
+      text: 'Domains',
+      link: 'domains',
     },
     {
-      "text": "Operators",
-      "link": "operators"
+      text: 'Operators',
+      link: 'operators',
     },
     {
-      "text": "Roles",
-      "link": "roles"
+      text: 'Roles',
+      link: 'roles',
     },
     {
-      "text": "Policies",
-      "link": "policies"
+      text: 'Policies',
+      link: 'policies',
     },
     {
-      "text": "Extensions",
-      "link": "extensions"
+      text: 'Extensions',
+      link: 'extensions',
     },
     {
-      "text": "Grants",
-      "link": "grants"
+      text: 'Grants',
+      link: 'grants',
     },
     {
-      "text": "Casts",
-      "link": "casts"
+      text: 'Casts',
+      link: 'casts',
     },
     {
-      "text": "Miscellaneous",
-      "link": "misc"
-    }
-  ]
+      text: 'Miscellaneous',
+      link: 'misc',
+    },
+  ];
 }

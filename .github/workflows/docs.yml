@@ -7,7 +7,7 @@ on:
       - '.github/workflows/docs.yml'
       - 'package.json'
     branches:
-      - "main"
+      - 'main'
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:

@@ -3,8 +3,8 @@
 layout: home
 
 hero:
-  name: "Node PG Migrate"
-  text: "PostgreSQL database migration management tool"
+  name: 'Node PG Migrate'
+  text: 'PostgreSQL database migration management tool'
   actions:
     - theme: brand
       text: What is node-pg-migrate?
@@ -17,11 +17,10 @@ hero:
       link: https://github.com/salsita/node-pg-migrate
 
 features:
-  - title: Feature A      
+  - title: Feature A
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
   - title: Feature B
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
   - title: Feature C
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
-

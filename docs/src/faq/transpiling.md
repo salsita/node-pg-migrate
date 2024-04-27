@@ -7,12 +7,13 @@ You can use babel for transpiling migration files. You have e.g. these options:
 ### Use global configuration
 
 Update `scripts` section in your `package.json` to contain babel-node command:
+
 ```jsonc
 {
   "scripts": {
     // ..
-    "migrate": "babel-node node_modules/node-pg-migrate/bin/node-pg-migrate.js" // [!code ++]
-  }
+    "migrate": "babel-node node_modules/node-pg-migrate/bin/node-pg-migrate.js", // [!code ++]
+  },
 }
 ```
 
@@ -23,10 +24,12 @@ It requires a little setup to use:
 1. Update `scripts` section in your `package.json` to contain `'migrate': 'node migrate.js'`
 2. Create `migrate.js` file with contents:
 
-    ```js
-    require('babel-core/register')( { /* ... your babel config ... */ } );
-    require('./node_modules/node-pg-migrate/bin/node-pg-migrate.js');
-    ```
+   ```js
+   require('babel-core/register')({
+     /* ... your babel config ... */
+   });
+   require('./node_modules/node-pg-migrate/bin/node-pg-migrate.js');
+   ```
 
 ## Transpiling Typescript
 
@@ -44,8 +47,8 @@ globally or as a dependency.
 {
   "scripts": {
     // ..
-    "migrate": "ts-node node_modules/.bin/node-pg-migrate.js -j ts" // [!code ++]
-  }
+    "migrate": "ts-node node_modules/.bin/node-pg-migrate.js -j ts", // [!code ++]
+  },
 }
 ```
 
@@ -54,7 +57,9 @@ globally or as a dependency.
 If you need some more advanced TS config, you need to register transpiler yourself like in using babel configuration.
 
 ```js
-const config = { /* ... your ts config ... */ }
+const config = {
+  /* ... your ts config ... */
+};
 require('ts-node').register(config);
 // e.g. require("tsconfig-paths").register(config.compilerOptions);
 require('./node_modules/node-pg-migrate/bin/node-pg-migrate.js');

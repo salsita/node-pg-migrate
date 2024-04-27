@@ -1,4 +1,4 @@
-# Getting Started 
+# Getting Started
 
 ## Preconditions
 
@@ -63,7 +63,7 @@ Add `node-pg-migrate` to `scripts` section of your `package.json` so you are abl
   "scripts": {
     // ..
     "migrate": "node-pg-migrate" // [!code ++]
-  },
+  }
 }
 ```
 

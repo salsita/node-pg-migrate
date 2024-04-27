@@ -26,18 +26,23 @@ exports.down = function down(pgm) {};
 
 ```js
 exports.shorthands = {
-  id: {type: 'uuid', primaryKey: true },
-  createdAt: { type: 'timestamp', notNull: true, default: new PgLiteral('current_timestamp') } 
+  id: { type: 'uuid', primaryKey: true },
+  createdAt: {
+    type: 'timestamp',
+    notNull: true,
+    default: new PgLiteral('current_timestamp'),
+  },
 };
 ```
-It will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL 
+
+It will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL
+
 ```sql
 CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);
 ```
 
-
 These shorthands are inherited from previous migrations. You can override/change value by simply defining a new value for a given shorthand name
- if it is used in current and all following migrations (until changed again).
+if it is used in current and all following migrations (until changed again).
 
 > [!IMPORTANT]
 > Calling the migration functions on `pgm` doesn't migrate your database. These functions just add sql commands to a stack that is run.
