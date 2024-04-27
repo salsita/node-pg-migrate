@@ -11,7 +11,7 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 - `notNull` _[boolean]_ - set to true to make this column not null
 - `default` _[string]_ - adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.
 - `check` _[string]_ - sql for a check constraint for this column
-- `references` _[[Name](migrations.md#type) or string]_ - a table name that this column is a foreign key to
+- `references` _[[Name](/migrations/#type) or string]_ - a table name that this column is a foreign key to
 - `referencesConstraintName` _[string]_ - name of the created constraint
 - `referencesConstraintComment` _[string]_ - comment on the created constraint
 - `onDelete` _[string]_ - adds ON DELETE constraint for a reference column
@@ -50,7 +50,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `new_columns` _[object]_ - column names / options -- see [column definitions section](#column-definitions)
 - `options` _[object]_ - options:
   - `ifNotExists` _[boolean]_ adds column only if it does not exist
@@ -66,7 +66,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `columns` _[array of strings or object]_ - columns to drop (if object, uses keys)
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops column only if it exists
@@ -82,7 +82,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `old_column_name` _[string]_ - current column name
 - `new_column_name` _[string]_ - new column name
 
@@ -96,7 +96,7 @@ is equivalent to
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `column_name` _[string]_ - column to alter
 - `column_options` _[object]_ - optional new column options
   - `default` _[string or null]_ - null, string

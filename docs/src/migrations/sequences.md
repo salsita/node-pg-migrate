@@ -19,7 +19,7 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 **Arguments:**
 
-- `sequence_name` _[[Name](migrations.md#type)]_ - name of the new sequence
+- `sequence_name` _[[Name](/migrations/#type)]_ - name of the new sequence
 - `options` _[object]_ - options:
   - sequence options -- see [sequence options section](#sequence-options)
   - `temporary` _[boolean]_ - adds `TEMPORARY` clause
@@ -35,7 +35,7 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 **Arguments:**
 
-- `sequence_name` _[[Name](migrations.md#type)]_ - name of the the sequence to drop
+- `sequence_name` _[[Name](/migrations/#type)]_ - name of the the sequence to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops sequence only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -48,7 +48,7 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 **Arguments:**
 
-- `sequence_name` _[[Name](migrations.md#type)]_ - name of the new sequence
+- `sequence_name` _[[Name](/migrations/#type)]_ - name of the new sequence
 - `options` _[object]_ - options:
   - sequence options -- see [sequence options section](#sequence-options)
   - `restart` _[number or true]_ - sets first value of sequence or using `start` value (on true value)
@@ -61,5 +61,5 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 
 **Arguments:**
 
-- `old_sequence_name` _[[Name](migrations.md#type)]_ - old name of the sequence
-- `new_sequence_name` _[[Name](migrations.md#type)]_ - new name of the sequence
+- `old_sequence_name` _[[Name](/migrations/#type)]_ - old name of the sequence
+- `new_sequence_name` _[[Name](/migrations/#type)]_ - new name of the sequence

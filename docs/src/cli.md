@@ -87,7 +87,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 - `check-order` - Check order of migrations before running them (defaults to `true`, to switch it off supply `--no-check-order` on the command line).
   (There should be no migration with timestamp lesser than last run migration.)
 - `single-transaction` - Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back (defaults to `true`, to switch it off supply `--no-single-transaction` on the command line).
-- `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](migrations.md#locking))
+- `no-lock` - Disables locking mechanism and checks (useful for DBs which does not support SQL commands used for [locking](/migrations/#locking))
 - `fake` - Mark migrations as run without actually performing them (use with caution!)
 - `decamelize` - Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names
 - `verbose` - Print all debug messages like DB queries run (defaults to `true`, to switch it off supply `--no-verbose` on the command line)

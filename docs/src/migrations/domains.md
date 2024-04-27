@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `domain_name` _[[Name](migrations.md#type)]_ - name of the new domain
+- `domain_name` _[[Name](/migrations/#type)]_ - name of the new domain
 - `type` _[string]_ - type of the new domain
 - `options` _[object]_ - options:
   - `default` _[string]_ - default value of domain
@@ -25,7 +25,7 @@
 
 **Arguments:**
 
-- `domain_name` _[[Name](migrations.md#type)]_ - name of the the domain to drop
+- `domain_name` _[[Name](/migrations/#type)]_ - name of the the domain to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops domain only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -38,7 +38,7 @@
 
 **Arguments:**
 
-- `domain_name` _[[Name](migrations.md#type)]_ - name of the new domain
+- `domain_name` _[[Name](/migrations/#type)]_ - name of the new domain
 - `options` _[object]_ - options:
   - `default` _[string]_ - default value of domain
   - `collation` _[string]_ - collation of data type
@@ -55,5 +55,5 @@
 
 **Arguments:**
 
-- `old_domain_name` _[[Name](migrations.md#type)]_ - old name of the domain
-- `new_domain_name` _[[Name](migrations.md#type)]_ - new name of the domain
+- `old_domain_name` _[[Name](/migrations/#type)]_ - old name of the domain
+- `new_domain_name` _[[Name](/migrations/#type)]_ - new name of the domain

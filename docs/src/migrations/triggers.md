@@ -6,13 +6,13 @@
 
 **Arguments:**
 
-- `table_name` _[[Name](migrations.md#type)]_ - name of the table where the new trigger will live
+- `table_name` _[[Name](/migrations/#type)]_ - name of the table where the new trigger will live
 - `trigger_name` _[string]_ - name of the new trigger
 - `trigger_options` _[object]_ - options:
   - `when` _[string]_ - `BEFORE`, `AFTER`, or `INSTEAD OF`
   - `operation` _[string or array of strings]_ - `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`
   - `constraint` _[boolean]_ - creates constraint trigger
-  - `function` _[[Name](migrations.md#type)]_ - the name of procedure to execute
+  - `function` _[[Name](/migrations/#type)]_ - the name of procedure to execute
   - `functionParams` _[array]_ - parameters of the procedure
   - `level` _[string]_ - `STATEMENT`, or `ROW`
   - `condition` _[string]_ - condition to met to execute trigger
@@ -30,7 +30,7 @@
 
 **Arguments:**
 
-- `table_name` _[[Name](migrations.md#type)]_ - name of the table where the trigger lives
+- `table_name` _[[Name](/migrations/#type)]_ - name of the table where the trigger lives
 - `trigger_name` _[string]_ - name of the trigger to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops trigger only if it exists
@@ -44,6 +44,6 @@
 
 **Arguments:**
 
-- `table_name` _[[Name](migrations.md#type)]_ - name of the table where the trigger lives
+- `table_name` _[[Name](/migrations/#type)]_ - name of the table where the trigger lives
 - `old_trigger_name` _[string]_ - old name of the trigger
 - `new_trigger_name` _[string]_ - new name of the trigger
