@@ -76,7 +76,7 @@ async function getLastSuffix(
     return files.length > 0
       ? getSuffixFromFileName(files[files.length - 1])
       : undefined;
-  } catch (err) {
+  } catch {
     return undefined;
   }
 }
@@ -131,7 +131,7 @@ export class Migration implements RunMigration {
     const now = new Date();
     const time =
       filenameFormat === FilenameFormat.utc
-        ? now.toISOString().replace(/[^\d]/g, '')
+        ? now.toISOString().replace(/\D/g, '')
         : now.valueOf();
 
     const templateFileName =

@@ -159,15 +159,17 @@ export function parseColumns(
 } {
   const extendingTypeShorthands = mOptions.typeShorthands;
 
-  let columnsWithOptions = Object.keys(columns).reduce<{
-    [x: string]: ColumnDefinition & FunctionParamType;
-  }>(
-    (previous, column) => ({
-      ...previous,
-      [column]: applyType(columns[column], extendingTypeShorthands),
-    }),
-    {}
-  );
+  let columnsWithOptions = Object.keys(columns)
+    // eslint-disable-next-line unicorn/prefer-object-from-entries
+    .reduce<{
+      [x: string]: ColumnDefinition & FunctionParamType;
+    }>(
+      (previous, column) => ({
+        ...previous,
+        [column]: applyType(columns[column], extendingTypeShorthands),
+      }),
+      {}
+    );
 
   const primaryColumns = Object.entries(columnsWithOptions)
     .filter(([, { primaryKey }]) => Boolean(primaryKey))
@@ -175,22 +177,21 @@ export function parseColumns(
   const multiplePrimaryColumns = primaryColumns.length > 1;
 
   if (multiplePrimaryColumns) {
-    columnsWithOptions = Object.entries(columnsWithOptions).reduce(
-      (previous, [columnName, options]) => ({
-        ...previous,
-        [columnName]: {
+    columnsWithOptions = Object.fromEntries(
+      Object.entries(columnsWithOptions).map(([columnName, options]) => [
+        columnName,
+        {
           ...options,
           primaryKey: false,
         },
-      }),
-      {}
+      ])
     );
   }
 
   const comments = Object.entries(columnsWithOptions)
     .map(([columnName, { comment }]) => {
       return (
-        typeof comment !== 'undefined' &&
+        comment !== undefined &&
         makeComment(
           'COLUMN',
           `${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`,
@@ -287,9 +288,8 @@ export function parseColumns(
         constraints.push(`GENERATED ALWAYS AS (${expressionGenerated}) STORED`);
       }
 
-      const constraintsStr = constraints.length
-        ? ` ${constraints.join(' ')}`
-        : '';
+      const constraintsStr =
+        constraints.length > 0 ? ` ${constraints.join(' ')}` : '';
 
       const sType = typeof type === 'object' ? mOptions.literal(type) : type;
 
@@ -326,10 +326,10 @@ export function parseConstraints(
 
   if (check) {
     if (Array.isArray(check)) {
-      check.forEach((ch, i) => {
+      for (const [i, ch] of check.entries()) {
         const name = literal(optionName || `${tableName}_chck_${i + 1}`);
         constraints.push(`CONSTRAINT ${name} CHECK (${ch})`);
-      });
+      }
     } else {
       const name = literal(optionName || `${tableName}_chck`);
       constraints.push(`CONSTRAINT ${name} CHECK (${check})`);
@@ -342,16 +342,16 @@ export function parseConstraints(
       Array.isArray(uniqueSet)
     );
 
-    (
-      (isArrayOfArrays ? uniqueArray : [uniqueArray]) as Array<Name | Name[]>
-    ).forEach((uniqueSet) => {
+    for (const uniqueSet of (isArrayOfArrays
+      ? uniqueArray
+      : [uniqueArray]) as Array<Name | Name[]>) {
       const cols = toArray(uniqueSet);
       const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`);
 
       constraints.push(
         `CONSTRAINT ${name} UNIQUE (${cols.map(literal).join(', ')})`
       );
-    });
+    }
   }
 
   if (primaryKey) {
@@ -362,7 +362,7 @@ export function parseConstraints(
   }
 
   if (foreignKeys) {
-    toArray(foreignKeys).forEach((fk) => {
+    for (const fk of toArray(foreignKeys)) {
       const { columns, referencesConstraintName, referencesConstraintComment } =
         fk;
 
@@ -388,7 +388,7 @@ export function parseConstraints(
           )
         );
       }
-    });
+    }
   }
 
   if (exclude) {

@@ -41,7 +41,7 @@ export function generateColumnString(
   mOptions: MigrationOptions
 ): string {
   const name = mOptions.schemalize(column);
-  const isSpecial = /[. ()]/.test(name);
+  const isSpecial = /[ ().]/.test(name);
 
   return isSpecial
     ? name // expression

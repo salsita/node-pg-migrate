@@ -4,6 +4,7 @@ const { readGitignoreFiles } = require('eslint-gitignore');
 
 /// <reference types="@eslint-types/prettier" />
 /// <reference types="@eslint-types/typescript-eslint" />
+/// <reference types="@eslint-types/unicorn" />
 
 module.exports = defineConfig({
   ignorePatterns: [
@@ -19,6 +20,7 @@ module.exports = defineConfig({
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/strict-type-checked',
+    'plugin:unicorn/recommended',
     'plugin:prettier/recommended',
   ],
   parserOptions: {
@@ -31,6 +33,30 @@ module.exports = defineConfig({
     'prefer-exponentiation-operator': 'error',
     'prefer-template': 'error',
     quotes: 'off',
+
+    'unicorn/consistent-function-scoping': 'off',
+    'unicorn/filename-case': 'off',
+    'unicorn/import-style': [
+      'error',
+      { styles: { 'node:path': { named: true } } },
+    ],
+    'unicorn/no-array-callback-reference': 'off', // reduces readability
+    'unicorn/no-array-reduce': 'off',
+    'unicorn/no-nested-ternary': 'off', // incompatible with prettier
+    'unicorn/no-null': 'off', // incompatible with TypeScript
+    'unicorn/no-zero-fractions': 'off', // deactivated to raise awareness of floating operations
+    'unicorn/number-literal-case': 'off', // incompatible with prettier
+    'unicorn/prefer-module': 'off',
+    'unicorn/prefer-ternary': 'off', // ternaries aren't always better
+    'unicorn/prefer-type-error': 'off',
+
+    // TODO @Shinigami92 2024-04-27: Potentially enable later
+    'unicorn/no-process-exit': 'off',
+    'unicorn/prefer-at': 'off',
+    'unicorn/prefer-native-coercion-functions': 'off',
+    'unicorn/prefer-string-replace-all': 'off',
+    'unicorn/prefer-top-level-await': 'off',
+    'unicorn/prevent-abbreviations': 'off',
 
     '@typescript-eslint/array-type': [
       'error',
@@ -108,6 +134,8 @@ module.exports = defineConfig({
     {
       files: ['test/migrations/*.js'],
       rules: {
+        'unicorn/prefer-module': 'off',
+
         '@typescript-eslint/no-throw-literal': 'off',
       },
     },

@@ -357,8 +357,10 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
             );
           }
 
+          // eslint-disable-next-line unicorn/prefer-spread
           this._steps = this._steps.concat(operation.reverse(...args));
         } else {
+          // eslint-disable-next-line unicorn/prefer-spread
           this._steps = this._steps.concat(operation(...args));
         }
       };
@@ -526,6 +528,6 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
 
   getSqlSteps(): string[] {
     // In reverse mode, we flip the order of the statements
-    return this._REVERSE_MODE ? this._steps.slice().reverse() : this._steps;
+    return this._REVERSE_MODE ? [...this._steps].reverse() : this._steps;
   }
 }

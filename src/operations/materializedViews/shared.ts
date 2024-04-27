@@ -3,7 +3,7 @@ import type { Nullable } from '../generalTypes';
 export type StorageParameters = { [key: string]: boolean | number };
 
 export function dataClause(data?: boolean): string {
-  return data !== undefined ? ` WITH${data ? '' : ' NO'} DATA` : '';
+  return data === undefined ? '' : ` WITH${data ? '' : ' NO'} DATA`;
 }
 
 export function storageParameterStr<

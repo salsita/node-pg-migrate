@@ -78,9 +78,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     }
 
     if (sequenceGenerated !== undefined) {
-      if (!sequenceGenerated) {
-        actions.push('DROP IDENTITY');
-      } else {
+      if (sequenceGenerated) {
         const sequenceOptions = parseSequenceOptions(
           mOptions.typeShorthands,
           sequenceGenerated
@@ -89,6 +87,8 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
         actions.push(
           `ADD GENERATED ${sequenceGenerated.precedence} AS IDENTITY${sequenceOptions ? ` (${sequenceOptions})` : ''}`
         );
+      } else {
+        actions.push('DROP IDENTITY');
       }
     }
 
@@ -105,7 +105,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       );
     }
 
-    if (typeof comment !== 'undefined') {
+    if (comment !== undefined) {
       queries.push(
         makeComment(
           'COLUMN',

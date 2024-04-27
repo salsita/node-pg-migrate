@@ -18,7 +18,7 @@ import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
  */
-const PG_MIGRATE_LOCK_ID = 7241865325823964;
+const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
 
 const idColumn = 'id';
 const nameColumn = 'name';
@@ -33,29 +33,29 @@ async function loadMigrations(
     let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
 
-    return (
-      await Promise.all(
-        files.map(async (file) => {
-          const filePath = `${options.dir}/${file}`;
-          const actions: MigrationBuilderActions =
-            extname(filePath) === '.sql'
-              ? await migrateSqlFile(filePath)
-              : require(relative(__dirname, filePath));
-          shorthands = { ...shorthands, ...actions.shorthands };
+    const migrations = await Promise.all(
+      files.map(async (file) => {
+        const filePath = `${options.dir}/${file}`;
+        const actions: MigrationBuilderActions =
+          extname(filePath) === '.sql'
+            ? await migrateSqlFile(filePath)
+            : require(relative(__dirname, filePath));
+        shorthands = { ...shorthands, ...actions.shorthands };
 
-          return new Migration(
-            db,
-            filePath,
-            actions,
-            options,
-            {
-              ...shorthands,
-            },
-            logger
-          );
-        })
-      )
-    ).sort((m1, m2) => {
+        return new Migration(
+          db,
+          filePath,
+          actions,
+          options,
+          {
+            ...shorthands,
+          },
+          logger
+        );
+      })
+    );
+
+    return migrations.sort((m1, m2) => {
       const compare = m1.timestamp - m2.timestamp;
 
       if (compare !== 0) {
@@ -65,8 +65,8 @@ async function loadMigrations(
       return m1.name.localeCompare(m2.name);
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    throw new Error(`Can't get migration files: ${err.stack}`);
+  } catch (error: any) {
+    throw new Error(`Can't get migration files: ${error.stack}`);
   }
 }
 
@@ -125,8 +125,8 @@ async function ensureMigrationsTable(
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    throw new Error(`Unable to ensure migrations table: ${err.stack}`);
+  } catch (error: any) {
+    throw new Error(`Unable to ensure migrations table: ${error.stack}`);
   }
 }
 
@@ -180,7 +180,7 @@ function getMigrationsToRun(
       (migration): migration is string => typeof migration === 'string'
     );
 
-    if (deletedMigrations.length) {
+    if (deletedMigrations.length > 0) {
       const deletedMigrationsStr = deletedMigrations.join(', ');
       throw new Error(
         `Definitions of migrations ${deletedMigrationsStr} have been deleted.`
@@ -195,7 +195,7 @@ function getMigrationsToRun(
       !runNames.includes(name) && (!options.file || options.file === name)
   );
 
-  const { count = Infinity } = options;
+  const { count = Number.POSITIVE_INFINITY } = options;
 
   return options.timestamp
     ? upMigrations.filter(({ timestamp }) => timestamp <= count)
@@ -254,7 +254,7 @@ function getLogger(options: RunnerOption): Logger {
       };
 }
 
-export default async (options: RunnerOption): Promise<RunMigration[]> => {
+async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
   const db = Db(
     (options as RunnerOptionClient).dbClient ||
@@ -308,16 +308,16 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       migrations
     );
 
-    if (!toRun.length) {
+    if (toRun.length === 0) {
       logger.info('No migrations to run!');
       return [];
     }
 
     // TODO: add some fancy colors to logging
     logger.info('> Migrating files:');
-    toRun.forEach((m) => {
+    for (const m of toRun) {
       logger.info(`> - ${m.name}`);
-    });
+    }
 
     if (options.fake) {
       await runMigrations(toRun, 'markAsRun', options.direction);
@@ -327,10 +327,10 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       try {
         await runMigrations(toRun, 'apply', options.direction);
         await db.query('COMMIT');
-      } catch (err) {
+      } catch (error) {
         logger.warn('> Rolling back attempted migration ...');
         await db.query('ROLLBACK');
-        throw err;
+        throw error;
       }
     } else {
       await runMigrations(toRun, 'apply', options.direction);
@@ -352,4 +352,6 @@ export default async (options: RunnerOption): Promise<RunMigration[]> => {
       db.close();
     }
   }
-};
+}
+
+export default runner;

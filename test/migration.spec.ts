@@ -39,9 +39,9 @@ describe('migration', () => {
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
 
-      expect(
-        getTimestamp(logger, now.toISOString().replace(/[^\d]/g, ''))
-      ).toBe(now.valueOf());
+      expect(getTimestamp(logger, now.toISOString().replace(/\D/g, ''))).toBe(
+        now.valueOf()
+      );
     });
   });
 

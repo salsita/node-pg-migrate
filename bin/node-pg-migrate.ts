@@ -19,12 +19,12 @@ process.on('uncaughtException', (err) => {
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
     return require(moduleName);
-  } catch (err) {
+  } catch (error) {
     if (
       // @ts-expect-error: TS doesn't know about code property
-      err?.code !== 'MODULE_NOT_FOUND'
+      error?.code !== 'MODULE_NOT_FOUND'
     ) {
-      throw err;
+      throw error;
     }
 
     return null;
@@ -255,7 +255,7 @@ function readTsconfig() {
 
     try {
       const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
-        encoding: 'utf-8',
+        encoding: 'utf8',
       });
       tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
 
@@ -264,13 +264,15 @@ function readTsconfig() {
           ...tsconfig,
           ...tsconfig['ts-node'],
           compilerOptions: {
+            // eslint-disable-next-line unicorn/no-useless-fallback-in-spread
             ...(tsconfig.compilerOptions ?? {}),
+            // eslint-disable-next-line unicorn/no-useless-fallback-in-spread
             ...(tsconfig['ts-node'].compilerOptions ?? {}),
           },
         };
       }
-    } catch (err) {
-      console.error("Can't load tsconfig.json:", err);
+    } catch (error) {
+      console.error("Can't load tsconfig.json:", error);
     }
 
     const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
@@ -440,9 +442,9 @@ VERBOSE ??= true;
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
-  let newMigrationName = argv._.length ? argv._.join('-') : '';
+  let newMigrationName = argv._.length > 0 ? argv._.join('-') : '';
   // forces use of dashes in names - keep thing clean
-  newMigrationName = newMigrationName.replace(/[_ ]+/g, '-');
+  newMigrationName = newMigrationName.replace(/[ _]+/g, '-');
 
   if (!newMigrationName) {
     console.error("'migrationName' is required.");
@@ -463,8 +465,8 @@ if (action === 'create') {
       console.log(format('Created migration -- %s', migrationPath));
       process.exit(0);
     })
-    .catch((err: unknown) => {
-      console.error(err);
+    .catch((error: unknown) => {
+      console.error(error);
       process.exit(1);
     });
 } else if (action === 'up' || action === 'down' || action === 'redo') {
@@ -495,12 +497,12 @@ if (action === 'create') {
     console.log('no lock');
   }
 
-  const upDownArg = argv._.length ? argv._[0] : null;
+  const upDownArg = argv._.length > 0 ? argv._[0] : null;
   let numMigrations: number;
   let migrationName: string;
 
   if (upDownArg !== null) {
-    const parsedUpDownArg = parseInt(`${upDownArg}`, 10);
+    const parsedUpDownArg = Number.parseInt(`${upDownArg}`, 10);
     // eslint-disable-next-line eqeqeq
     if (parsedUpDownArg == upDownArg) {
       numMigrations = parsedUpDownArg;
@@ -537,12 +539,14 @@ if (action === 'create') {
             }
           : undefined),
       },
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,
       migrationsSchema: MIGRATIONS_SCHEMA,
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       migrationsTable: MIGRATIONS_TABLE!,
       count,
       timestamp,
@@ -560,7 +564,7 @@ if (action === 'create') {
   const promise =
     action === 'redo'
       ? migrationRunner(options('down')).then(() =>
-          migrationRunner(options('up', Infinity, false))
+          migrationRunner(options('up', Number.POSITIVE_INFINITY, false))
         )
       : migrationRunner(options(action));
   promise
@@ -568,8 +572,8 @@ if (action === 'create') {
       console.log('Migrations complete!');
       process.exit(0);
     })
-    .catch((err: unknown) => {
-      console.error(err);
+    .catch((error: unknown) => {
+      console.error(error);
       process.exit(1);
     });
 } else {

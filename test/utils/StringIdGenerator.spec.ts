@@ -7,9 +7,9 @@ describe('utils', () => {
       const ids = new StringIdGenerator();
       const results = [...'abcdefghijklmnopqrstuvwxyz', 'aa', 'ab'];
 
-      results.forEach((res) => {
+      for (const res of results) {
         expect(ids.next()).toBe(res);
-      });
+      }
     });
 
     it('should generate correct sequence with custom chars', () => {
@@ -43,9 +43,9 @@ describe('utils', () => {
         'aad',
       ];
 
-      results.forEach((res) => {
+      for (const res of results) {
         expect(ids.next()).toBe(res);
-      });
+      }
     });
   });
 });
