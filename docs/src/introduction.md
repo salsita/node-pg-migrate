@@ -1,4 +1,4 @@
-# What is Node pg migrate?
+# What is node-pg-migrate?
 
 > [!IMPORTANT]
 > The core maintainer of this project moved to [@Shinigami92](https://github.com/Shinigami92) (also core maintainer of FakerJS and core member of Vite).  
