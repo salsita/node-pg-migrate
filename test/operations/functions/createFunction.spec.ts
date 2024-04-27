@@ -19,14 +19,14 @@ describe('operations', () => {
             returns: 'integer',
             language: 'SQL',
           },
-          'select $1 + $2;'
+          'SELECT $1 + $2;'
         );
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           `CREATE FUNCTION "add"(integer, integer)
   RETURNS integer
-  AS $pga$select $1 + $2;$pga$
+  AS $pga$SELECT $1 + $2;$pga$
   VOLATILE
   LANGUAGE SQL;`
         );
@@ -44,14 +44,14 @@ describe('operations', () => {
             parallel: 'UNSAFE',
             replace: true,
           },
-          'select $1 + $2;'
+          'SELECT $1 + $2;'
         );
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           `CREATE OR REPLACE FUNCTION "add"(integer, integer)
   RETURNS integer
-  AS $pga$select $1 + $2;$pga$
+  AS $pga$SELECT $1 + $2;$pga$
   VOLATILE
   LANGUAGE SQL
   WINDOW
@@ -69,7 +69,7 @@ describe('operations', () => {
             {
               returns: 'integer',
             },
-            'select $1 + $2;'
+            'SELECT $1 + $2;'
           )
         ).toThrow(new Error('Language for function add have to be specified'));
       });
@@ -87,7 +87,7 @@ describe('operations', () => {
               returns: 'integer',
               language: 'SQL',
             },
-            'select $1 + $2;'
+            'SELECT $1 + $2;'
           );
 
           expect(statement).toBeTypeOf('string');

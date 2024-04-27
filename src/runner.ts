@@ -24,11 +24,11 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-const loadMigrations = async (
+async function loadMigrations(
   db: DBConnection,
   options: RunnerOption,
   logger: Logger
-) => {
+): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
     const files = await loadMigrationFiles(options.dir, options.ignorePattern);
@@ -68,32 +68,32 @@ const loadMigrations = async (
   } catch (err: any) {
     throw new Error(`Can't get migration files: ${err.stack}`);
   }
-};
+}
 
-const lock = async (db: DBConnection): Promise<void> => {
+async function lock(db: DBConnection): Promise<void> {
   const [result] = await db.select(
-    `select pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) as "lockObtained"`
+    `SELECT pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) AS "lockObtained"`
   );
 
   if (!result.lockObtained) {
     throw new Error('Another migration is already running');
   }
-};
+}
 
-const unlock = async (db: DBConnection): Promise<void> => {
+async function unlock(db: DBConnection): Promise<void> {
   const [result] = await db.select(
-    `select pg_advisory_unlock(${PG_MIGRATE_LOCK_ID}) as "lockReleased"`
+    `SELECT pg_advisory_unlock(${PG_MIGRATE_LOCK_ID}) AS "lockReleased"`
   );
 
   if (!result.lockReleased) {
     throw new Error('Failed to release migration lock');
   }
-};
+}
 
-const ensureMigrationsTable = async (
+async function ensureMigrationsTable(
   db: DBConnection,
   options: RunnerOption
-): Promise<void> => {
+): Promise<void> {
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
@@ -121,16 +121,19 @@ const ensureMigrationsTable = async (
       }
     } else {
       await db.query(
-        `CREATE TABLE ${fullTableName} ( ${idColumn} SERIAL PRIMARY KEY, ${nameColumn} varchar(255) NOT NULL, ${runOnColumn} timestamp NOT NULL)`
+        `CREATE TABLE ${fullTableName} (${idColumn} SERIAL PRIMARY KEY, ${nameColumn} varchar(255) NOT NULL, ${runOnColumn} timestamp NOT NULL)`
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     throw new Error(`Unable to ensure migrations table: ${err.stack}`);
   }
-};
+}
 
-const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
+async function getRunMigrations(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<string[]> {
   const schema = getMigrationTableSchema(options);
   const { migrationsTable } = options;
   const fullTableName = createSchemalize({
@@ -145,13 +148,13 @@ const getRunMigrations = async (db: DBConnection, options: RunnerOption) => {
     nameColumn,
     `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
   );
-};
+}
 
-const getMigrationsToRun = (
+function getMigrationsToRun(
   options: RunnerOption,
   runNames: string[],
   migrations: Migration[]
-): Migration[] => {
+): Migration[] {
   if (options.direction === 'down') {
     const downMigrations: Array<string | Migration> = runNames
       .filter(
@@ -197,9 +200,9 @@ const getMigrationsToRun = (
   return options.timestamp
     ? upMigrations.filter(({ timestamp }) => timestamp <= count)
     : upMigrations.slice(0, Math.abs(count));
-};
+}
 
-const checkOrder = (runNames: string[], migrations: Migration[]) => {
+function checkOrder(runNames: string[], migrations: Migration[]): void {
   const len = Math.min(runNames.length, migrations.length);
 
   for (let i = 0; i < len; i += 1) {
@@ -212,20 +215,20 @@ const checkOrder = (runNames: string[], migrations: Migration[]) => {
       );
     }
   }
-};
+}
 
-const runMigrations = (
+function runMigrations(
   toRun: Migration[],
   method: 'markAsRun' | 'apply',
   direction: MigrationDirection
-) =>
-  toRun.reduce(
-    (promise: Promise<unknown>, migration) =>
-      promise.then(() => migration[method](direction)),
+): Promise<unknown> {
+  return toRun.reduce<Promise<unknown>>(
+    (promise, migration) => promise.then(() => migration[method](direction)),
     Promise.resolve()
   );
+}
 
-const getLogger: (options: RunnerOption) => Logger = (options) => {
+function getLogger(options: RunnerOption): Logger {
   const { log, logger, verbose } = options;
 
   let loggerObject: Logger = console;
@@ -249,7 +252,7 @@ const getLogger: (options: RunnerOption) => Logger = (options) => {
         warn: loggerObject.warn.bind(loggerObject),
         error: loggerObject.error.bind(loggerObject),
       };
-};
+}
 
 export default async (options: RunnerOption): Promise<RunMigration[]> => {
   const logger = getLogger(options);

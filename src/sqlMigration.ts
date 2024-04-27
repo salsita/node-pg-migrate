@@ -5,7 +5,7 @@ function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
   return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
 }
 
-export const getActions = (content: string): MigrationBuilderActions => {
+export function getActions(content: string): MigrationBuilderActions {
   const upMigrationCommentRegex = createMigrationCommentRegex('up');
   const downMigrationCommentRegex = createMigrationCommentRegex('down');
 
@@ -40,7 +40,7 @@ export const getActions = (content: string): MigrationBuilderActions => {
             pgm.sql(downSql);
           },
   };
-};
+}
 
 export default async (sqlPath: string): Promise<MigrationBuilderActions> => {
   const content = await readFile(sqlPath, 'utf-8');

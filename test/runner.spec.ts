@@ -41,7 +41,7 @@ describe('runner', () => {
     const dbClient = {
       query: vi.fn((query) => {
         switch (query) {
-          case 'select pg_try_advisory_lock(7241865325823964) as "lockObtained"': {
+          case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
             return Promise.resolve({
               rows: [{ lockObtained: true }], // lock obtained
             });
@@ -125,7 +125,7 @@ describe('runner', () => {
     const dbClient = {
       query: vi.fn((query) => {
         switch (query) {
-          case 'select pg_try_advisory_lock(7241865325823964) as "lockObtained"': {
+          case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
             return Promise.resolve({
               rows: [{ lockObtained: true }], // lock obtained
             });
