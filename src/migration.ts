@@ -110,8 +110,9 @@ export function getTimestamp(logger: Logger, filename: string): number {
 
 async function resolveSuffix(
   directory: string,
-  { language, ignorePattern }: CreateOptionsDefault
+  options: CreateOptionsDefault
 ): Promise<string> {
+  const { language, ignorePattern } = options;
   return language || (await getLastSuffix(directory, ignorePattern)) || 'js';
 }
 
@@ -251,8 +252,8 @@ export class Migration implements RunMigration {
       this.logger.debug(`${sqlSteps.join('\n')}\n\n`);
     }
 
-    return sqlSteps.reduce(
-      (promise: Promise<unknown>, sql) =>
+    return sqlSteps.reduce<Promise<unknown>>(
+      (promise, sql) =>
         promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
       Promise.resolve()
     );

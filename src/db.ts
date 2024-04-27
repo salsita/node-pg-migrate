@@ -42,10 +42,10 @@ enum ConnectionStatus {
   ERROR = 'ERROR',
 }
 
-const db = (
+function db(
   connection: ClientBase | string | ClientConfig,
   logger: Logger = console
-): DBConnection => {
+): DBConnection {
   const isExternalClient =
     typeof connection === 'object' &&
     'query' in connection &&
@@ -58,7 +58,7 @@ const db = (
 
   const beforeCloseListeners: any[] = [];
 
-  const createConnection: () => Promise<void> = () =>
+  const createConnection: DBConnection['createConnection'] = () =>
     new Promise((resolve, reject) => {
       if (isExternalClient || connectionStatus === ConnectionStatus.CONNECTED) {
         resolve();
@@ -160,6 +160,6 @@ ${err}
       }
     },
   };
-};
+}
 
 export default db;

@@ -4,9 +4,9 @@ const schema = process.env.SCHEMA || 'public';
 
 exports.up = async (pgm) => {
   const [{ comment }] = await pgm.db.select(
-    `SELECT obj_description(c.oid) as "comment"
-          FROM pg_class c join pg_namespace n ON (c.relnamespace = n.oid)
-          WHERE c.relname = 't2' and c.relkind = 'r' and n.nspname = '${schema}'`
+    `SELECT obj_description(c.oid) AS "comment"
+          FROM pg_class c JOIN pg_namespace n ON (c.relnamespace = n.oid)
+          WHERE c.relname = 't2' AND c.relkind = 'r' AND n.nspname = '${schema}'`
   );
   if (comment !== table.comment) {
     throw new Error('Comment not set');
@@ -47,6 +47,6 @@ exports.up = async (pgm) => {
 };
 
 exports.down = (pgm) => {
-  pgm.sql('DELETE from t2');
-  pgm.sql('DELETE from t1');
+  pgm.sql('DELETE FROM t2');
+  pgm.sql('DELETE FROM t1');
 };
