@@ -40,7 +40,7 @@ arg ([see](/cli#configuration))
 Another option is to use [ts-node](https://www.npmjs.com/package/ts-node) CLI directly and it needs to be available
 globally or as a dependency.
 
-```json
+```jsonc
 {
   "scripts": {
     // ..
