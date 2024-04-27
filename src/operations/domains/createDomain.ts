@@ -51,9 +51,8 @@ export function createDomain(mOptions: MigrationOptions): CreateDomain {
       }
     }
 
-    const constraintsStr = constraints.length
-      ? ` ${constraints.join(' ')}`
-      : '';
+    const constraintsStr =
+      constraints.length > 0 ? ` ${constraints.join(' ')}` : '';
 
     const typeStr = applyType(type, mOptions.typeShorthands).type;
     const domainNameStr = mOptions.literal(domainName);

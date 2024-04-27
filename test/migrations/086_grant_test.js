@@ -9,9 +9,9 @@ const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
     WHERE table_name='${tableName}'
     AND grantee = '${role}'
   `);
-  const foundPrivileges = rows.map((entry) => entry.privilege_type);
+  const foundPrivileges = new Set(rows.map((entry) => entry.privilege_type));
   return privileges.reduce(
-    (acc, privilege) => acc && foundPrivileges.includes(privilege),
+    (acc, privilege) => acc && foundPrivileges.has(privilege),
     true
   );
 };
@@ -20,16 +20,16 @@ const hasSchemaPrivilege = async (pgm, role, schemaName, privilege) => {
   const rows = await pgm.db.select(`
     SELECT has_schema_privilege('${role}', '${schemaName}', '${privilege}');
   `);
-  return rows.length && rows[0].has_schema_privilege;
+  return rows.length > 0 && rows[0].has_schema_privilege;
 };
 
 const isMemberOf = async (pgm, role, roleGroups) => {
   const rows = await pgm.db.select(`
     SELECT rolname FROM pg_roles WHERE pg_has_role('${role}', oid, 'member') AND rolname <> '${role}';
   `);
-  const foundRoleGroups = rows.map((entry) => entry.rolname);
+  const foundRoleGroups = new Set(rows.map((entry) => entry.rolname));
   return roleGroups.reduce(
-    (acc, roleGroup) => acc && foundRoleGroups.includes(roleGroup),
+    (acc, roleGroup) => acc && foundRoleGroups.has(roleGroup),
     true
   );
 };

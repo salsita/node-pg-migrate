@@ -88,8 +88,9 @@ function db(
     await createConnection();
     try {
       return await client.query(queryTextOrConfig, values);
-    } catch (err: any) {
-      const { message, position }: { message: string; position: number } = err;
+    } catch (error: any) {
+      const { message, position }: { message: string; position: number } =
+        error;
 
       const string: string =
         typeof queryTextOrConfig === 'string'
@@ -113,11 +114,11 @@ ${message}
       } else {
         logger.error(`Error executing:
 ${string}
-${err}
+${error}
 `);
       }
 
-      throw err;
+      throw error;
     }
   };
 
@@ -149,8 +150,8 @@ ${err}
     close: async () => {
       await beforeCloseListeners.reduce(
         (promise, listener) =>
-          promise.then(listener).catch((err: any) => {
-            logger.error(err.stack || err);
+          promise.then(listener).catch((error: any) => {
+            logger.error(error.stack || error);
           }),
         Promise.resolve()
       );

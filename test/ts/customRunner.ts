@@ -49,8 +49,8 @@ export const run = async (options: Options): Promise<boolean> => {
     console.log('Down success');
     console.log(downResult);
     return true;
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     return false;
   }
 };

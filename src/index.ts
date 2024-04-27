@@ -269,4 +269,5 @@ export { isPgLiteral, PgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';
 
 import runner from './runner';
+// eslint-disable-next-line unicorn/prefer-export-from
 export default runner;

@@ -10,8 +10,8 @@ exports.down = async (pgm) => {
     await pgm.db.query('DROP TABLE "tmp"');
     // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw 1;
-  } catch (err) {
-    if (err === 1) {
+  } catch (error) {
+    if (error === 1) {
       throw new Error('Missing TEMPORARY clause');
     }
 

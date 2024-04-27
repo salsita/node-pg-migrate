@@ -53,9 +53,11 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
     };
     const { constraints: constraintLines, comments: constraintComments } =
       parseConstraints(tableName, constraints, '', mOptions.literal);
-    const tableDefinition = [...columnLines, ...constraintLines].concat(
-      like ? [parseLike(like, mOptions.literal)] : []
-    );
+    const tableDefinition = [
+      ...columnLines,
+      ...constraintLines,
+      ...(like ? [parseLike(like, mOptions.literal)] : []),
+    ];
 
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
@@ -69,7 +71,7 @@ ${formatLines(tableDefinition)}
 )${inheritsStr};`;
     const comments = [...columnComments, ...constraintComments];
 
-    if (typeof comment !== 'undefined') {
+    if (comment !== undefined) {
       comments.push(makeComment('TABLE', mOptions.literal(tableName), comment));
     }
 

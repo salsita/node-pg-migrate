@@ -1,11 +1,11 @@
 import { Client } from 'pg';
 import { run } from './customRunner';
 
-async function start() {
+async function start(): Promise<void> {
   process.exitCode = 1;
   const dbClient = new Client(process.env.DATABASE_URL);
   await dbClient.connect();
-  const result = await run({ dbClient, count: Infinity });
+  const result = await run({ dbClient, count: Number.POSITIVE_INFINITY });
   // dbClient.end()
   process.exit(result ? 0 : 1);
 }
