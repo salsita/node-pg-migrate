@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Node PG Migrate"
-  text: "Postgresql database migration management tool"
+  text: "PostgreSQL database migration management tool"
   actions:
     - theme: brand
       text: What is Node PG Migrate?
