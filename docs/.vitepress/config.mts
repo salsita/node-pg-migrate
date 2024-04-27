@@ -3,7 +3,7 @@ import {DefaultTheme, defineConfig} from 'vitepress'
 const repository = "https://github.com/salsita/node-pg-migrate"
 const pkg = require('../../package.json')
 export default defineConfig({
-  title: "Node PG Migrate",
+  title: "node-pg-migrate",
   description: "Postgresql database migration management tool",
   base: '/node-pg-migrate/', // for GitHub Pages
   srcDir: 'src',
