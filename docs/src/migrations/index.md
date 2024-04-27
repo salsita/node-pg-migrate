@@ -1,4 +1,12 @@
+---
+next:
+  text: 'Tables'
+  link: '/migrations/tables'
+---
+
 # Defining Migrations
+
+## Running Migrations
 
 When you run `node-pg-migrate create` a new migration file is created that looks like this:
 
@@ -12,22 +20,35 @@ exports.down = function down(pgm) {};
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
 
-`shorthands` is optional for column type shorthands. You can specify custom types which will be expanded to column definition
-(e.g. for `exports.shorthands = { id: { type: 'uuid', primaryKey: true }, createdAt: { type: 'timestamp', notNull: true, default: new PgLiteral('current_timestamp') } };`
-it will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL `CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);`).
-These shorthands are inherited from previous migrations. You can override/change value by simply defining new value for given shorthand name,
-if will be used in current and all following migrations (until changed again).
+`shorthands` is optional for column type shorthands. You can specify custom types which will be expanded to column definition.
 
-**IMPORTANT**
-Calling the migration functions on `pgm` doesn't actually migrate your database. These functions just add sql commands to a stack that is run.
+### Example
 
-### Automatic Down Migrations
+```js
+exports.shorthands = {
+  id: {type: 'uuid', primaryKey: true },
+  createdAt: { type: 'timestamp', notNull: true, default: new PgLiteral('current_timestamp') } 
+};
+```
+It will in `pgm.createTable('test', { id: 'id', createdAt: 'createdAt' });` produce SQL 
+```sql
+CREATE TABLE "test" ("id" uuid PRIMARY KEY, "createdAt" timestamp DEFAULT current_timestamp NOT NULL);
+```
 
-If `exports.down` is not present in a migration, node-pg-migrate will try to automatically infer the operations that make up the down migration by reversing the operations of the up migration. Only some operations have automatically inferrable equivalents (details below on each operation). Sometimes, migrations are destructive and cannot be rolled back. In this case, you can set `exports.down = false` to tell node-pg-migrate that the down migration is impossible.
 
-### Async Migrations
+These shorthands are inherited from previous migrations. You can override/change value by simply defining a new value for a given shorthand name
+ if it is used in current and all following migrations (until changed again).
 
-In some cases, you may want to perform some async operation during a migration, for example fetching some information from an external server, or inserting some data into the database. To make a migration block operate in async mode, just add another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed until `run()` is called. Here's an example:
+> [!IMPORTANT]
+> Calling the migration functions on `pgm` doesn't migrate your database. These functions just add sql commands to a stack that is run.
+
+## Automatic Down Migrations
+
+If `exports.down` is not present in a migration, node-pg-migrate will try to automatically infer the operations that make up the down migration by reversing the operations of the up migration. Only some operations have automatically inferrable equivalents (the details below on each operation). Sometimes, migrations are destructive and cannot be rolled back. In this case, you can set `exports.down = false` to tell node-pg-migrate that the down migration is impossible.
+
+## Async Migrations
+
+In some cases, you may want to perform some async operation during a migration, for example, fetching some information from an external server, or inserting some data into the database. To make a migration block operate in async mode, add another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed until `run()` is called. Here's an example:
 
 ```javascript
 exports.up = function up(pgm, run) {
@@ -56,7 +77,7 @@ exports.up = async (pgm) => {
 };
 ```
 
-### Using schemas
+## Using schemas
 
 Instead of passing string as name to `pgm` functions, you can pass an object with keys `schema` and `name`. E.g.
 
@@ -70,18 +91,18 @@ CREATE TABLE "my_schema"."my_table_name" (
 );
 ```
 
-#### Type
+### Type
 
 ```ts
 type Name = string | { schema: string; name: string };
 ```
 
-### Locking
+## Locking
 
 `node-pg-migrate` automatically checks if no other migration is running. To do so, it uses an
 [advisory lock](https://www.postgresql.org/docs/current/static/explicit-locking.html#id-1.5.12.6.9.2)
 (see [#239](https://github.com/salsita/node-pg-migrate/pull/239)).
-Lock is held for duration of DB session, so if migration scripts hangs up, you need to kill it,
+Lock is held for the duration of DB session, so if migration scripts froze up, you need to kill it,
 before running another migration script.
 
 ## Migration methods

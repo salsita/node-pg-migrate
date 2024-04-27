@@ -15,11 +15,13 @@
     "test": "vitest",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --coverage",
-    "docs:dev": "docsify serve docs",
     "premigrate": "run-s build:bin",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
-    "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
+    "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"
@@ -111,7 +113,6 @@
     "@vitest/ui": "1.5.2",
     "config": "3.3.11",
     "cross-env": "7.0.3",
-    "docsify-cli": "4.4.4",
     "dotenv": "16.4.5",
     "dotenv-expand": "11.0.6",
     "eslint": "9.1.1",
@@ -129,7 +130,8 @@
     "ts-node": "10.9.2",
     "tsup": "8.0.2",
     "typescript": "4.8.4",
-    "vitest": "1.5.2"
+    "vitest": "1.5.2",
+    "vitepress": "1.1.3"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",

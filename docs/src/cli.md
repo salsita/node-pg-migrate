@@ -1,5 +1,7 @@
 # CLI Usage
 
+## Database Connection
+
 You can specify your database connection information using [config](https://www.npmjs.com/package/config).
 
 ```json
@@ -45,19 +47,22 @@ You can specify custom JSON file with config (format is same as for `db` entry o
 }
 ```
 
-If a .env file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the node-pg-migrate binary. If the .env file is not on the same level where the command has been called, you can use the `--envPath` option to point to the location of your .env file.
+> [!TIP]
+> If a `.env` file exists, it will be loaded using [dotenv](https://www.npmjs.com/package/dotenv) (if installed) when running the node-pg-migrate binary. If the .env file is not on the same level where the command has been called, you can use the `--envPath` option to point to the location of your .env file.
 
 Depending on your project's setup, it may make sense to write some custom grunt/gulp/whatever tasks that set this env var and run your migration commands. More on that below.
 
-**The following are the available commands:**
+## Available Commands
 
-- `node-pg-migrate create {migration-name}` - creates a new migration file with the name you give it. Dashes will replace spaces and underscores, and a timestamp is prepended to your file name.
-- `node-pg-migrate up` - runs all up migrations from the current state.
-- `node-pg-migrate up {N}` - runs N up migrations from the current state.
-- `node-pg-migrate down` - runs a single down migration.
-- `node-pg-migrate down {N}` - runs N down migrations from the current state.
-- `node-pg-migrate redo` - redoes last migration (runs a single down migration, then single up migration).
-- `node-pg-migrate redo {N}` - redoes N last migrations (runs N down migrations, then N up migrations).
+| Command                                   |                                                       Description                                                       |
+|-------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------:|
+| `node-pg-migrate create {migration-name}` | creates a new migration file with a timestamp prepended to the name you provide. Dashes replace spaces and underscores. |
+| `node-pg-migrate up`                      |                                     runs all up migrations from the current state.                                      |
+| `node-pg-migrate up {N}`                  |                                      runs N up migrations from the current state.                                       |
+| `node-pg-migrate down`                    |                                              runs a single down migration.                                              |
+| `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
+| `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
+| `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
 
 ## Configuration
 
