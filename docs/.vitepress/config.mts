@@ -1,6 +1,7 @@
 import {DefaultTheme, defineConfig} from 'vitepress'
 
-const repository = "https://github.com/salsita/node-pg-migrate";
+const repository = "https://github.com/salsita/node-pg-migrate"
+const pkg = require('../../package.json')
 export default defineConfig({
   title: "Node PG Migrate",
   description: "Postgresql database migration management tool",
@@ -58,9 +59,9 @@ function navBarItems(): DefaultTheme.NavItem[] {
       activeMatch: `^/migrations/`
     },
     {
-      text: 'About',
-      activeMatch: `^/about/`,
+      text: pkg.version,
       items: [
+        {text: 'Changelog', link: repository + '/blob/main/CHANGELOG.md'},
         {text: 'Releases', link: repository + '/releases'},
         {text: 'License', link: repository + '/blob/main/LICENSE'},
       ]
