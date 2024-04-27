@@ -7,7 +7,7 @@ You can use babel for transpiling migration files. You have e.g. these options:
 ### Use global configuration
 
 Update `scripts` section in your `package.json` to contain babel-node command:
-```json
+```jsonc
 {
   "scripts": {
     // ..
