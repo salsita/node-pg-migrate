@@ -7,7 +7,7 @@ hero:
   text: "PostgreSQL database migration management tool"
   actions:
     - theme: brand
-      text: What is Node PG Migrate?
+      text: What is node-pg-migrate?
       link: /introduction
     - theme: alt
       text: Quickstart
