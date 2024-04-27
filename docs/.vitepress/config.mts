@@ -4,6 +4,7 @@ const repository = "https://github.com/salsita/node-pg-migrate";
 export default defineConfig({
   title: "Node PG Migrate",
   description: "Postgresql database migration management tool",
+  base: '/node-pg-migrate/', // for GitHub Pages
   srcDir: 'src',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
