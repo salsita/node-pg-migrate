@@ -15,13 +15,13 @@
     "test": "vitest",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --coverage",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "premigrate": "run-s build:bin",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
   },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js"
