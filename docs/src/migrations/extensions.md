@@ -1,28 +1,47 @@
 # Extension Operations
 
-### `pgm.createExtension( extension )`
+## Operation: `createExtension`
 
-> Install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createextension.html.html)
+#### `pgm.createExtension( extension )`
 
-**Arguments:**
+> [!IMPORTANT]
+> Install postgres extension(
+> s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createextension.html.html)
+>
+> Alias: `addExtension`
 
-- `extension` _[string or array of strings]_ - name(s) of extensions to install
-- `options` _[object]_ - options:
-  - `ifNotExists` _[boolean]_ - default `false`
-  - `schema` _[string]_ - the name of the schema in which to install the extension's objects
+### Arguments
 
-**Aliases:** `addExtension`
-**Reverse Operation:** `dropExtension`
+| Name        | Type                        | Description                       |
+|-------------|-----------------------------|-----------------------------------|
+| `extension` | `string` or `array[string]` | Name(s) of extensions to install  |
+| `options`   | `object`                    | Check below for available options |
 
----
+#### Options
 
-### `pgm.dropExtension( extension )`
+| Option        | Type      | Description                                                        |
+|---------------|-----------|--------------------------------------------------------------------|
+| `ifNotExists` | `boolean` | Install extension only if it does not exist (default `false`)      |
+| `schema`      | `string`  | The name of the schema in which to install the extension's objects |
 
+## Reverse Operation: `dropExtension`
+
+#### `pgm.dropExtension( extension )`
+
+> [!IMPORTANT]
 > Un-install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropextension.html)
 
-**Arguments:**
+### Arguments
 
-- `extension` _[string or array of strings]_ - name(s) of extensions to install
-- `drop_options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops extension only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+| Name           | Type                        | Description                       |
+|----------------|-----------------------------|-----------------------------------|
+| `extension`    | `string` or `array[string]` | Name(s) of extensions to install  |
+| `drop_options` | `object`                    | Check below for available options |
+
+#### Options
+
+| Option     | Type      | Description                       |
+|------------|-----------|-----------------------------------|
+| `ifExists` | `boolean` | Drops extension only if it exists |
+| `cascade`  | `boolean` | Drops also dependent objects      |
+
