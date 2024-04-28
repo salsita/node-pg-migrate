@@ -18,7 +18,7 @@ Do not combine it with `?ssl=true` as it overrides ssl config from `--no-reject-
 
 ## Camel case, Snake case, case sensitivity
 
-In PostgresSQL, unquoted identifiers are case-insensitive. Thus `SELECT * FROM hello` and `SELECT * FROM HELLO` are equivalent.
+In PostgreSQL, unquoted identifiers are case-insensitive. Thus `SELECT * FROM hello` and `SELECT * FROM HELLO` are equivalent.
 However, quoted identifiers are case-sensitive. `SELECT * FROM "hello"`, `SELECT * FROM "HELLO"` and `SELECT * FROM "HeLLo"`
 are trying to read from three different tables.
 Unquoted identifiers are always folded to a lower case.
