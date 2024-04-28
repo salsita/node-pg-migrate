@@ -131,7 +131,7 @@
     "tsup": "8.0.2",
     "typescript": "4.8.4",
     "vitest": "1.5.2",
-    "vitepress": "1.1.3"
+    "vitepress": "1.1.4"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",
