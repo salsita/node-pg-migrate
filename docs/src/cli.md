@@ -8,8 +8,8 @@ You can specify your database connection information using [config](https://www.
 // config/default.json
 {
   "db": {
-    "url": "postgres://postgres:password@localhost:5432/database"
-  }
+    "url": "postgres://postgres:password@localhost:5432/database",
+  },
 }
 ```
 
@@ -23,8 +23,8 @@ or
     "password": "",
     "host": "localhost",
     "port": 5432,
-    "database": "database"
-  }
+    "database": "database",
+  },
 }
 ```
 
@@ -44,7 +44,7 @@ of [config](https://www.npmjs.com/package/config) file), for example:
   "password": "",
   "host": "localhost",
   "port": 5432,
-  "database": "database"
+  "database": "database",
 }
 ```
 
@@ -62,7 +62,7 @@ More on that below.
 ## Available Commands
 
 | Command                                   |                                                       Description                                                       |
-|-------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------:|
+| ----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------: |
 | `node-pg-migrate create {migration-name}` | creates a new migration file with a timestamp prepended to the name you provide. Dashes replace spaces and underscores. |
 | `node-pg-migrate up`                      |                                     runs all up migrations from the current state.                                      |
 | `node-pg-migrate up {N}`                  |                                      runs N up migrations from the current state.                                       |
@@ -81,7 +81,7 @@ More on that below.
 You can adjust defaults by passing arguments to `node-pg-migrate`:
 
 | Argument                    | Aliases | Default                         | Description                                                                                                                                                          |
-|-----------------------------|---------|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------- | ------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `config-file`               | `f`     | `undefined`                     | The file with migration JSON config                                                                                                                                  |
 | `config-value`              |         | `db`                            | Name of config section with db options                                                                                                                               |
 | `schema`                    | `s`     | `public`                        | The schema(s) on which migration will be run, used to set `search_path`                                                                                              |
@@ -139,4 +139,3 @@ Other available options are:
   "tsconfig": "tsconfig.json",
 }
 ```
-

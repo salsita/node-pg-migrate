@@ -13,11 +13,9 @@ When you run `node-pg-migrate create` a new migration file is created that looks
 ```javascript
 exports.shorthands = undefined;
 
-exports.up = function up(pgm) {
-};
+exports.up = function up(pgm) {};
 
-exports.down = function down(pgm) {
-};
+exports.down = function down(pgm) {};
 ```
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
@@ -29,7 +27,7 @@ definition.
 
 ```js
 exports.shorthands = {
-  id: {type: 'uuid', primaryKey: true},
+  id: { type: 'uuid', primaryKey: true },
   createdAt: {
     type: 'timestamp',
     notNull: true,
@@ -99,8 +97,11 @@ exports.up = async (pgm) => {
 Instead of passing string as name to `pgm` functions, you can pass an object with keys `schema` and `name`. E.g.
 
 ```javascript
-pgm.createTable({schema: 'my_schema', name: 'my_table_name'}, {id: 'serial'});
-````
+pgm.createTable(
+  { schema: 'my_schema', name: 'my_table_name' },
+  { id: 'serial' }
+);
+```
 
 will generate
 

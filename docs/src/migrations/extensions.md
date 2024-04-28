@@ -12,14 +12,14 @@
 ### Arguments
 
 | Name        | Type                        | Description                       |
-|-------------|-----------------------------|-----------------------------------|
+| ----------- | --------------------------- | --------------------------------- |
 | `extension` | `string` or `array[string]` | Name(s) of extensions to install  |
 | `options`   | `object`                    | Check below for available options |
 
 #### Options
 
 | Option        | Type      | Description                                                        |
-|---------------|-----------|--------------------------------------------------------------------|
+| ------------- | --------- | ------------------------------------------------------------------ |
 | `ifNotExists` | `boolean` | Install extension only if it does not exist (default `false`)      |
 | `schema`      | `string`  | The name of the schema in which to install the extension's objects |
 
@@ -33,14 +33,13 @@
 ### Arguments
 
 | Name           | Type                        | Description                       |
-|----------------|-----------------------------|-----------------------------------|
+| -------------- | --------------------------- | --------------------------------- |
 | `extension`    | `string` or `array[string]` | Name(s) of extensions to install  |
 | `drop_options` | `object`                    | Check below for available options |
 
 #### Options
 
 | Option     | Type      | Description                       |
-|------------|-----------|-----------------------------------|
+| ---------- | --------- | --------------------------------- |
 | `ifExists` | `boolean` | Drops extension only if it exists |
 | `cascade`  | `boolean` | Drops also dependent objects      |
-

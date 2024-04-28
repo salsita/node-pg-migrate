@@ -5,11 +5,11 @@ which takes options argument with the following structure (similar to [command l
 
 ## Options
 
->[!NOTE]
+> [!NOTE]
 > If you use `dbClient`, you should not use `databaseUrl` at the same time and vice versa.
 
 | Option                   | Type                                        | Description                                                                                                                                                                   |
-|--------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `databaseUrl`            | `string or object`                          | Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)                                                       |
 | `dbClient`               | `pg.Client`                                 | Instance of [new pg.Client](https://node-postgres.com/api/client). Instance should be connected to DB, and after finishing migration, user is responsible to close connection |
 | `migrationsTable`        | `string`                                    | The table storing which migrations have been run                                                                                                                              |
@@ -32,4 +32,3 @@ which takes options argument with the following structure (similar to [command l
 | `logger`                 | `object with debug/info/warn/error methods` | Redirect messages to this logger object, rather than `console`                                                                                                                |
 | `verbose`                | `boolean`                                   | Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method)                                                                     |
 | `decamelize`             | `boolean`                                   | Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names                                                  |
-

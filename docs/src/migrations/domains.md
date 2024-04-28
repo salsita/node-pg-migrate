@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name          | Type                      | Description                       |
-|---------------|---------------------------|-----------------------------------|
+| ------------- | ------------------------- | --------------------------------- |
 | `domain_name` | [Name](/migrations/#type) | Name of the new domain            |
 | `type`        | `string`                  | Type of the new domain            |
 | `options`     | `object`                  | Check below for available options |
@@ -18,7 +18,7 @@
 #### Options
 
 | Option           | Type      | Description                                                                                                                  |
-|------------------|-----------|------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `default`        | `string`  | Default value of domain                                                                                                      |
 | `collation`      | `string`  | Collation of data type                                                                                                       |
 | `notNull`        | `boolean` | Sets NOT NULL if true ([not recommended](https://www.postgresql.org/docs/10/static/sql-createdomain.html#idm46428678330368)) |
@@ -35,14 +35,14 @@
 ### Arguments
 
 | Name           | Type                      | Description                       |
-|----------------|---------------------------|-----------------------------------|
+| -------------- | ------------------------- | --------------------------------- |
 | `domain_name`  | [Name](/migrations/#type) | Name of the domain to drop        |
 | `drop_options` | `object`                  | Check below for available options |
 
 #### Options
 
 | Option     | Type      | Description                    |
-|------------|-----------|--------------------------------|
+| ---------- | --------- | ------------------------------ |
 | `ifExists` | `boolean` | Drops domain only if it exists |
 | `cascade`  | `boolean` | Drops also dependent objects   |
 
@@ -56,14 +56,14 @@
 ### Arguments
 
 | Name          | Type                      | Description                       |
-|---------------|---------------------------|-----------------------------------|
+| ------------- | ------------------------- | --------------------------------- |
 | `domain_name` | [Name](/migrations/#type) | Name of the new domain            |
 | `options`     | `object`                  | Check below for available options |
 
 #### Options
 
 | Option           | Type      | Description                                  |
-|------------------|-----------|----------------------------------------------|
+| ---------------- | --------- | -------------------------------------------- |
 | `default`        | `string`  | Default value of domain                      |
 | `collation`      | `string`  | Collation of data type                       |
 | `notNull`        | `boolean` | sets NOT NULL if true or NULL if false       |
@@ -81,6 +81,6 @@
 ### Arguments
 
 | Name              | Type                      | Description            |
-|-------------------|---------------------------|------------------------|
+| ----------------- | ------------------------- | ---------------------- |
 | `old_domain_name` | [Name](/migrations/#type) | Old name of the domain |
 | `new_domain_name` | [Name](/migrations/#type) | New name of the domain |

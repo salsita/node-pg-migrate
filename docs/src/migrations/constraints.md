@@ -12,7 +12,7 @@
 ### Arguments
 
 | Name              | Type                      | Description                                                                                                  |
-|-------------------|---------------------------|--------------------------------------------------------------------------------------------------------------|
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `tablename`       | [Name](/migrations/#type) | Name of the table to alter                                                                                   |
 | `constraint_name` | `string`                  | Name for the constraint                                                                                      |
 | `expression`      | `string` or `object`      | Constraint expression (raw sql) or definition -- see [constraint definition section](#constraint-definition) |
@@ -20,7 +20,7 @@
 #### Constraint Definition
 
 | Option        | Type                                                     | Description                                                             |
-|---------------|----------------------------------------------------------|-------------------------------------------------------------------------|
+| ------------- | -------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `check`       | `string` or `array`                                      | SQL for a check constraint(s)                                           |
 | `unique`      | `Name` or `array of Names` or `array of arrays of Names` | Names of unique columns                                                 |
 | `primaryKey`  | `Name` or `array of Names`                               | Names of primary columns                                                |
@@ -33,7 +33,7 @@
 #### Foreign Keys
 
 | Option                        | Type                       | Description                                                                        |
-|-------------------------------|----------------------------|------------------------------------------------------------------------------------|
+| ----------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
 | `columns`                     | `Name` or `array of Names` | Names of columns                                                                   |
 | `references`                  | `Name`                     | Names of foreign table and column names                                            |
 | `referencesConstraintName`    | `string`                   | Name of the created constraint (only necessary when creating multiple constraints) |
@@ -52,7 +52,7 @@
 ### Arguments
 
 | Name              | Type                      | Description                       |
-|-------------------|---------------------------|-----------------------------------|
+| ----------------- | ------------------------- | --------------------------------- |
 | `tablename`       | [Name](/migrations/#type) | Name of the table to alter        |
 | `constraint_name` | `string`                  | Name of the constraint            |
 | `options`         | `object`                  | Check below for available options |
@@ -60,7 +60,7 @@
 #### Options
 
 | Option     | Type      | Description                        |
-|------------|-----------|------------------------------------|
+| ---------- | --------- | ---------------------------------- |
 | `ifExists` | `boolean` | Drops constraint only if it exists |
 | `cascade`  | `boolean` | Drops also dependent objects       |
 
@@ -76,7 +76,7 @@
 ### Arguments
 
 | Name                  | Type                      | Description                |
-|-----------------------|---------------------------|----------------------------|
+| --------------------- | ------------------------- | -------------------------- |
 | `tablename`           | [Name](/migrations/#type) | Name of the table to alter |
 | `old_constraint_name` | `string`                  | Current constraint name    |
 | `new_constraint_name` | `string`                  | New constraint name        |

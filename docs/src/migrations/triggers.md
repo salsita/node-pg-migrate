@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name              | Type                      | Description                                                                     |
-|-------------------|---------------------------|---------------------------------------------------------------------------------|
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------- |
 | `table_name`      | [Name](/migrations/#type) | Name of the table where the new trigger will live                               |
 | `trigger_name`    | `string`                  | Name of the new trigger                                                         |
 | `trigger_options` | `object`                  | Check below for available options                                               |
@@ -19,7 +19,7 @@
 #### Trigger Options:
 
 | Option           | Type                      | Description                                               |
-|------------------|---------------------------|-----------------------------------------------------------|
+| ---------------- | ------------------------- | --------------------------------------------------------- |
 | `when`           | `string`                  | `BEFORE`, `AFTER`, or `INSTEAD OF`                        |
 | `operation`      | `string or array[string]` | `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`       |
 | `constraint`     | `boolean`                 | Creates constraint trigger                                |
@@ -39,30 +39,30 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                                                                 |
-|-----------------|---------------------------|-----------------------------------------------------------------------------|
-| `table_name`    | [Name](/migrations/#type) | Name of the table where the trigger lives                                   |
-| `trigger_name`  | `string`                  | Name of the trigger to drop                                                 |
-| `drop_options`  | `object`                  | Check below for available options                                           |
+| Name           | Type                      | Description                               |
+| -------------- | ------------------------- | ----------------------------------------- |
+| `table_name`   | [Name](/migrations/#type) | Name of the table where the trigger lives |
+| `trigger_name` | `string`                  | Name of the trigger to drop               |
+| `drop_options` | `object`                  | Check below for available options         |
 
 #### Drop Options:
 
-| Option     | Type      | Description                                      |
-|------------|-----------|--------------------------------------------------|
-| `ifExists` | `boolean` | Drops trigger only if it exists                  |
-| `cascade`  | `boolean` | Drops also dependent objects                     |
+| Option     | Type      | Description                     |
+| ---------- | --------- | ------------------------------- |
+| `ifExists` | `boolean` | Drops trigger only if it exists |
+| `cascade`  | `boolean` | Drops also dependent objects    |
 
 ## Operation: `renameTrigger`
 
 #### `pgm.renameTrigger( table_name, old_trigger_name, new_trigger_name )`
 
->[!IMPORTANT]
+> [!IMPORTANT]
 > Rename a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertrigger.html)
 
 ### Arguments
 
 | Name               | Type                      | Description                               |
-|--------------------|---------------------------|-------------------------------------------|
+| ------------------ | ------------------------- | ----------------------------------------- |
 | `table_name`       | [Name](/migrations/#type) | Name of the table where the trigger lives |
 | `old_trigger_name` | `string`                  | Old name of the trigger                   |
 | `new_trigger_name` | `string`                  | New name of the trigger                   |

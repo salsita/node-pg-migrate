@@ -7,7 +7,7 @@ It is an object (key/value) where each key is the name of the column,
 and the value is another object that defines the options for the column.
 
 | Option                        | Type                                  | Description                                                                                  |
-|-------------------------------|---------------------------------------|----------------------------------------------------------------------------------------------|
+| ----------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `type`                        | `string`                              | Data type (use normal postgres types)                                                        |
 | `collation`                   | `string`                              | Collation of data type                                                                       |
 | `unique`                      | `boolean`                             | Set to true to add a unique constraint on this column                                        |
@@ -38,25 +38,25 @@ queries by hand.
 **There is a shorthand to pass only the type instead of an option object:**
 
 ```ts
-pgm.addColumns('myTable', {age: 'integer'});
+pgm.addColumns('myTable', { age: 'integer' });
 ```
 
 Equivalent to:
 
 ```ts
-pgm.addColumns('myTable', {age: {type: 'integer'}});
+pgm.addColumns('myTable', { age: { type: 'integer' } });
 ```
 
 **There is a shorthand for normal auto-increment IDs:**
 
 ```ts
-pgm.addColumns('myTable', {id: 'id'});
+pgm.addColumns('myTable', { id: 'id' });
 ```
 
 Equivalent to:
 
 ```ts
-pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
+pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });
 ```
 
 ## Methods
@@ -73,7 +73,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 #### Arguments
 
 | Name          | Type                      | Description                                                                     |
-|---------------|---------------------------|---------------------------------------------------------------------------------|
+| ------------- | ------------------------- | ------------------------------------------------------------------------------- |
 | `tablename`   | [Name](/migrations/#type) | Name of the table to alter                                                      |
 | `new_columns` | `object`                  | Column names / options -- see [column definitions section](#column-definitions) |
 | `options`     | `object`                  | Check below for available options                                               |
@@ -81,7 +81,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 ##### Options
 
 | Option        | Type      | Description                           |
-|---------------|-----------|---------------------------------------|
+| ------------- | --------- | ------------------------------------- |
 | `ifNotExists` | `boolean` | Adds column only if it does not exist |
 
 ### Reverse Operation: `dropColumns`
@@ -96,7 +96,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 #### Arguments
 
 | Name        | Type                           | Description                              |
-|-------------|--------------------------------|------------------------------------------|
+| ----------- | ------------------------------ | ---------------------------------------- |
 | `tablename` | [Name](/migrations/#type)      | Name of the table to alter               |
 | `columns`   | `array of strings` or `object` | Columns to drop (if objected, uses keys) |
 | `options`   | `object`                       | Check below for available options        |
@@ -104,7 +104,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 ##### Options
 
 | Option     | Type      | Description                    |
-|------------|-----------|--------------------------------|
+| ---------- | --------- | ------------------------------ |
 | `ifExists` | `boolean` | Drops column only if it exists |
 | `cascade`  | `boolean` | Drop also dependent objects    |
 
@@ -120,7 +120,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 #### Arguments
 
 | Name              | Type                      | Description         |
-|-------------------|---------------------------|---------------------|
+| ----------------- | ------------------------- | ------------------- |
 | `tablename`       | [Name](/migrations/#type) | Name of the table   |
 | `old_column_name` | `string`                  | Current column name |
 | `new_column_name` | `string`                  | New column name     |
@@ -136,7 +136,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 #### Arguments
 
 | Name             | Type                      | Description                 |
-|------------------|---------------------------|-----------------------------|
+| ---------------- | ------------------------- | --------------------------- |
 | `tablename`      | [Name](/migrations/#type) | Name of the table           |
 | `column_name`    | `string`                  | Column to alter             |
 | `column_options` | `object`                  | Optional new column options |
@@ -144,7 +144,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 ##### Column Options
 
 | Option              | Type                      | Description                                    |
-|---------------------|---------------------------|------------------------------------------------|
+| ------------------- | ------------------------- | ---------------------------------------------- |
 | `default`           | `string or null`          | null, string                                   |
 | `type`              | `string`                  | New datatype                                   |
 | `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false         |
@@ -152,7 +152,7 @@ pgm.addColumns('myTable', {id: {type: 'serial', primaryKey: true}});
 | `using`             | `string`                  | Adds USING clause to change values in column   |
 | `collation`         | `string`                  | Adds COLLATE clause to change values in column |
 | `comment`           | `string`                  | Adds comment on column                         |
-| `sequenceGenerated` | `object or null or false` | Sets or drops identity column                  | 
+| `sequenceGenerated` | `object or null or false` | Sets or drops identity column                  |
 
 ##### `sequenceGenerated` Options
 

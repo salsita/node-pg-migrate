@@ -11,11 +11,9 @@
 ### Arguments
 
 | Name   | Type     | Description                                                              |
-|--------|----------|--------------------------------------------------------------------------|
+| ------ | -------- | ------------------------------------------------------------------------ |
 | `sql`  | `string` | SQL query to run                                                         |
 | `args` | `object` | (optional) key/val of arguments to replace in the SQL query (templating) |
-
-
 
 ## Operation `pgm.func`
 
@@ -27,9 +25,9 @@
 
 ### Arguments
 
-| Name   | Type     | Description              |
-|--------|----------|--------------------------|
-| `sql`  | `string` | String to not be escaped |
+| Name  | Type     | Description              |
+| ----- | -------- | ------------------------ |
+| `sql` | `string` | String to not be escaped |
 
 ## Operation `pgm.db`
 
@@ -40,7 +38,6 @@
 > See [pg.Client.query](https://node-postgres.com/api/client#client-query)
 
 Returns promise with either result of query or returned rows of a query (in case of `select`).
-
 
 ## Operation `pgm.noTransaction`
 
