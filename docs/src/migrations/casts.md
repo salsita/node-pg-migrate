@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name          | Type     | Description                                  |
-| ------------- | -------- | -------------------------------------------- |
+|---------------|----------|----------------------------------------------|
 | `source_type` | `string` | The name of the source data type of the cast |
 | `target_type` | `string` | The name of the target data type of the cast |
 | `options`     | `object` | Check below for available options            |
@@ -18,7 +18,7 @@
 #### Options
 
 | Option          | Type      | Description                                        |
-| --------------- | --------- | -------------------------------------------------- |
+|-----------------|-----------|----------------------------------------------------|
 | `functionName`  | `string`  | Name of function to use to do the cast             |
 | `argumentTypes` | `array`   | Array of types of arguments for the function       |
 | `inout`         | `boolean` | Use standard I/O routines for conversion           |
@@ -47,7 +47,7 @@
 ### Arguments
 
 | Name          | Type     | Description                                  |
-| ------------- | -------- | -------------------------------------------- |
+|---------------|----------|----------------------------------------------|
 | `source_type` | `string` | The name of the source data type of the cast |
 | `target_type` | `string` | The name of the target data type of the cast |
 | `options`     | `object` | Check below for available options            |
@@ -55,5 +55,5 @@
 #### Options
 
 | Option     | Type      | Description                                      |
-| ---------- | --------- | ------------------------------------------------ |
+|------------|-----------|--------------------------------------------------|
 | `ifExists` | `boolean` | Do not throw an error if the cast does not exist |
