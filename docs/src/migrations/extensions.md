@@ -5,8 +5,7 @@
 #### `pgm.createExtension( extension )`
 
 > [!IMPORTANT]
-> Install postgres extension(
-> s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createextension.html.html)
+> Install postgres extension(s) - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createextension.html.html)
 >
 > Alias: `addExtension`
 
