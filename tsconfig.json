@@ -5,6 +5,7 @@
     "moduleResolution": "Node",
     "lib": ["ES2020", "DOM"],
     "noEmit": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "sourceMap": false,
     "forceConsistentCasingInFileNames": true,

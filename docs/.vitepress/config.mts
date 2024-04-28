@@ -1,7 +1,8 @@
 import { DefaultTheme, defineConfig } from 'vitepress';
 
+import pkg from '../../package.json';
+
 const repository = 'https://github.com/salsita/node-pg-migrate';
-const pkg = require('../../package.json');
 export default defineConfig({
   title: 'node-pg-migrate',
   description: 'Postgresql database migration management tool',
