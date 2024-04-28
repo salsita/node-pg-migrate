@@ -17,10 +17,13 @@ hero:
       link: https://github.com/salsita/node-pg-migrate
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Migration Made Easy
+    icon: 🛠️
+    details: Manage migrations effortlessly with CLI support for up-down migrations, ensuring smooth database transitions.
+  - title: TypeScript & Programmatic Support
+    icon: 🚀
+    details: Integrate seamlessly with TypeScript, and access a programmatic API for advanced customization and automation.
+  - title: Flexible Schema Manipulation
+    icon: 💡
+    details: Effortlessly modify schemas using direct SQL generation, leveraging PostgreSQL's features for enhanced functionality.
 ---
