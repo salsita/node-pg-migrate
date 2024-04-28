@@ -8,37 +8,22 @@ export default defineConfig({
   description: 'Postgresql database migration management tool',
   base: '/node-pg-migrate/', // for GitHub Pages
   srcDir: 'src',
-  themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
-    nav: navBarItems(),
+  lastUpdated: true,
+  cleanUrls: true,
+  metaChunk: true,
 
-    sidebar: [
-      {
-        base: '/',
-        text: 'Reference',
-        collapsed: false,
-        items: sidebarReference(),
-      },
-      {
-        base: '/migrations/',
-        text: 'Defining Migrations',
-        link: '/',
-        collapsed: false,
-        items: sidebarMigrations(),
-      },
-      {
-        base: '/faq/',
-        text: 'FAQ',
-        collapsed: false,
-        items: sidebarFAQ(),
-      },
-    ],
+  themeConfig: {
+    nav: navBarItems(),
+    sidebar: sidebar(),
 
     search: {
       provider: 'local',
     },
 
-    socialLinks: [{ icon: 'github', link: repository }],
+    socialLinks: [
+      { icon: 'github', link: repository },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/node-pg-migrate' },
+    ],
 
     editLink: {
       pattern: repository + '/edit/main/docs/src/:path',
@@ -63,6 +48,30 @@ function navBarItems(): DefaultTheme.NavItem[] {
         { text: 'Releases', link: repository + '/releases' },
         { text: 'License', link: repository + '/blob/main/LICENSE' },
       ],
+    },
+  ];
+}
+
+function sidebar(): DefaultTheme.Sidebar {
+  return [
+    {
+      base: '/',
+      text: 'Reference',
+      collapsed: false,
+      items: sidebarReference(),
+    },
+    {
+      base: '/migrations/',
+      text: 'Defining Migrations',
+      link: '/',
+      collapsed: false,
+      items: sidebarMigrations(),
+    },
+    {
+      base: '/faq/',
+      text: 'FAQ',
+      collapsed: false,
+      items: sidebarFAQ(),
     },
   ];
 }
