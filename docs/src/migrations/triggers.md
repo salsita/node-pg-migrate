@@ -34,6 +34,7 @@
 
 #### `pgm.dropTrigger( table_name, trigger_name, drop_options )`
 
+> [!IMPORTANT]
 > Drop a trigger - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptrigger.html)
 
 ### Arguments
