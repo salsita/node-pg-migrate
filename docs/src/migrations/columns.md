@@ -3,7 +3,7 @@
 ## Column Definitions
 
 The `createTable` and `addColumns` methods both take a `columns` argument that specifies column names and options.
-It is a object (key/value) where each key is the name of the column,
+It is an object (key/value) where each key is the name of the column,
 and the value is another object that defines the options for the column.
 
 | Option                        | Type                                  | Description                                                                                  |
