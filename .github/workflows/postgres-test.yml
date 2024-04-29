@@ -61,7 +61,7 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
-  config-test:
+  config-1-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -87,7 +87,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-    name: 'Config Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'Config 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
@@ -125,7 +125,7 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
-  config-url-object-test:
+  config-2-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -151,7 +151,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-    name: 'Config Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'Config 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
