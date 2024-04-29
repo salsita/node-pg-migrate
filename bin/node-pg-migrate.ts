@@ -391,7 +391,7 @@ function readJson(json: unknown): void {
     tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
 
     // @ts-expect-error: this is a TS 4.8 bug
-    if ('url' in json && json.url && isString(json.url)) {
+    if ('url' in json && json.url) {
       // @ts-expect-error: this is a TS 4.8 bug
       DB_CONNECTION ??= json.url;
     } else if (isClientConfig(json)) {
