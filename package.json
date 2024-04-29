@@ -1,7 +1,7 @@
 {
   "name": "node-pg-migrate",
   "version": "7.2.0",
-  "description": "Postgresql database migration management tool for node.js",
+  "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
     "build:bin": "tsup-node ./bin/node-pg-migrate.ts --clean false --out-dir ./bin",

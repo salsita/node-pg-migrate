@@ -5,7 +5,7 @@ import pkg from '../../package.json';
 const repository = 'https://github.com/salsita/node-pg-migrate';
 export default defineConfig({
   title: 'node-pg-migrate',
-  description: 'Postgresql database migration management tool',
+  description: 'PostgreSQL database migration management tool',
   base: '/node-pg-migrate/', // for GitHub Pages
   srcDir: 'src',
   lastUpdated: true,
