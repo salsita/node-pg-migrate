@@ -1,7 +1,7 @@
 {
   "name": "node-pg-migrate",
   "version": "7.2.0",
-  "description": "Postgresql database migration management tool for node.js",
+  "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
     "build:bin": "tsup-node ./bin/node-pg-migrate.ts --clean false --out-dir ./bin",
@@ -15,7 +15,9 @@
     "test": "vitest",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --coverage",
-    "docs:dev": "docsify serve docs",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "premigrate": "run-s build:bin",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
@@ -111,7 +113,6 @@
     "@vitest/ui": "1.5.2",
     "config": "3.3.11",
     "cross-env": "7.0.3",
-    "docsify-cli": "4.4.4",
     "dotenv": "16.4.5",
     "dotenv-expand": "11.0.6",
     "eslint": "9.1.1",
@@ -129,7 +130,8 @@
     "ts-node": "10.9.2",
     "tsup": "8.0.2",
     "typescript": "4.8.4",
-    "vitest": "1.5.2"
+    "vitest": "1.5.2",
+    "vitepress": "1.1.4"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",

@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `function_name` _[[Name](migrations.md#type)]_ - name of the new function
+- `function_name` _[[Name](/migrations/#type)]_ - name of the new function
 - `function_params` _[array]_ - parameters of the new function
 
   Either array of strings or objects.
@@ -37,7 +37,7 @@
 
 **Arguments:**
 
-- `function_name` _[[Name](migrations.md#type)]_ - name of the function to drop
+- `function_name` _[[Name](/migrations/#type)]_ - name of the function to drop
 - `function_params` _[array]_ - [see](#pgmcreatefunction-function_name-function_params-function_options-definition-)
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops function only if it exists
@@ -51,6 +51,6 @@
 
 **Arguments:**
 
-- `old_function_name` _[[Name](migrations.md#type)]_ - old name of the function
+- `old_function_name` _[[Name](/migrations/#type)]_ - old name of the function
 - `function_params` _[array]_ - [see](#pgmcreatefunction-function_name-function_params-function_options-definition-)
-- `new_function_name` _[[Name](migrations.md#type)]_ - new name of the function
+- `new_function_name` _[[Name](/migrations/#type)]_ - new name of the function

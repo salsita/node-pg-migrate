@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `tableName` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tableName` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `policyName` _[string]_ - name of the new policy
 - `options` _[object]_ - options:
   - `command` _[string]_ - `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`
@@ -24,7 +24,7 @@
 
 **Arguments:**
 
-- `tableName` _[[Name](migrations.md#type)]_ - name of the table where the policy is
+- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
 - `policyName` _[string]_ - name of the policy to delete
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops policy only if it exists
@@ -37,7 +37,7 @@
 
 **Arguments:**
 
-- `tableName` _[[Name](migrations.md#type)]_ - name of the table where the policy is
+- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
 - `policyName` _[string]_ - name of the policy to alter
 - `options` _[object]_ - options:
   - `role` _[string or array]_ - the role(s) to which the policy is to be applied
@@ -52,6 +52,6 @@
 
 **Arguments:**
 
-- `tableName` _[[Name](migrations.md#type)]_ - name of the table where the policy is
+- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
 - `policyName` _[string]_ - old name of the policy
 - `newPolicyName` _[string]_ - new name of the policy

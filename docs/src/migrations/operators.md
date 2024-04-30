@@ -6,15 +6,15 @@
 
 **Arguments:**
 
-- `operator_name` _[[Name](migrations.md#type)]_ - name of the new operator
+- `operator_name` _[[Name](/migrations/#type)]_ - name of the new operator
 - `options` _[object]_ - options:
-  - `procedure` _[[Name](migrations.md#type)]_ - name of procedure performing operation
-  - `left` _[[Name](migrations.md#type)]_ - type of left argument
-  - `right` _[[Name](migrations.md#type)]_ - type of right argument
-  - `commutator` _[[Name](migrations.md#type)]_ - name of commutative operator
-  - `negator` _[[Name](migrations.md#type)]_ - name of negating operator
-  - `restrict` _[[Name](migrations.md#type)]_ - name of restriction procedure
-  - `join` _[[Name](migrations.md#type)]_ - name of join procedure
+  - `procedure` _[[Name](/migrations/#type)]_ - name of procedure performing operation
+  - `left` _[[Name](/migrations/#type)]_ - type of left argument
+  - `right` _[[Name](/migrations/#type)]_ - type of right argument
+  - `commutator` _[[Name](/migrations/#type)]_ - name of commutative operator
+  - `negator` _[[Name](/migrations/#type)]_ - name of negating operator
+  - `restrict` _[[Name](/migrations/#type)]_ - name of restriction procedure
+  - `join` _[[Name](/migrations/#type)]_ - name of join procedure
   - `hashes` _[boolean]_ - adds `HASHES` clause
   - `merges` _[boolean]_ - adds `MERGES` clause
 
@@ -28,12 +28,12 @@
 
 **Arguments:**
 
-- `operator_name` _[[Name](migrations.md#type)]_ - name of the operator to drop
+- `operator_name` _[[Name](/migrations/#type)]_ - name of the operator to drop
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops schema only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
-  - `left` _[[Name](migrations.md#type)]_ - type of left argument
-  - `right` _[[Name](migrations.md#type)]_ - type of right argument
+  - `left` _[[Name](/migrations/#type)]_ - type of left argument
+  - `right` _[[Name](/migrations/#type)]_ - type of right argument
 
 ---
 
@@ -43,9 +43,9 @@
 
 **Arguments:**
 
-- `operator_class_name` _[[Name](migrations.md#type)]_ - name of the new operator class
+- `operator_class_name` _[[Name](/migrations/#type)]_ - name of the new operator class
 - `type` _[string]_ - data type of the new operator class
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator class
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
 - `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
 - `options` _[object]_ - options:
   - `default` _[boolean]_ - adds `DEFAULT` clause
@@ -61,8 +61,8 @@
 
 **Arguments:**
 
-- `operator_class_name` _[[Name](migrations.md#type)]_ - name of the operator class to drop
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator class
+- `operator_class_name` _[[Name](/migrations/#type)]_ - name of the operator class to drop
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops schema only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -75,9 +75,9 @@
 
 **Arguments:**
 
-- `old_operator_class_name` _[[Name](migrations.md#type)]_ - old name of the operator class
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator class
-- `new_operator_class_name` _[[Name](migrations.md#type)]_ - new name of the operator class
+- `old_operator_class_name` _[[Name](/migrations/#type)]_ - old name of the operator class
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
+- `new_operator_class_name` _[[Name](/migrations/#type)]_ - new name of the operator class
 
 ---
 
@@ -87,8 +87,8 @@
 
 **Arguments:**
 
-- `operator_family_name` _[[Name](migrations.md#type)]_ - name of the new operator family
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator family
+- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the new operator family
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
 
 **Reverse Operation:** `dropOperatorFamily`
 
@@ -100,8 +100,8 @@
 
 **Arguments:**
 
-- `operator_family_name` _[[Name](migrations.md#type)]_ - name of the operator family to drop
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator family
+- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family to drop
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
 - `drop_options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops schema only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -114,9 +114,9 @@
 
 **Arguments:**
 
-- `old_operator_family_name` _[[Name](migrations.md#type)]_ - old name of the operator family
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator family
-- `new_operator_family_name` _[[Name](migrations.md#type)]_ - new name of the operator family
+- `old_operator_family_name` _[[Name](/migrations/#type)]_ - old name of the operator family
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
+- `new_operator_family_name` _[[Name](/migrations/#type)]_ - new name of the operator family
 
 ---
 
@@ -126,8 +126,8 @@
 
 **Arguments:**
 
-- `operator_family_name` _[[Name](migrations.md#type)]_ - name of the operator family
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator family
+- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
 - `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
 
 ---
@@ -138,8 +138,8 @@
 
 **Arguments:**
 
-- `operator_family_name` _[[Name](migrations.md#type)]_ - name of the operator family
-- `index_method` _[[Name](migrations.md#type)]_ - name of the index method of operator family
+- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family
+- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
 - `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
 
 ---
@@ -150,5 +150,5 @@ Some functions for defining operators take as parameter `operator_list` which is
 
 - `type` _[string]_ - `function` or `operator`
 - `number` _[number]_ - index
-- `name` _[[Name](migrations.md#type)]_ - name of operator or procedure
+- `name` _[[Name](/migrations/#type)]_ - name of operator or procedure
 - `params` _[array]_ - list of argument types of operator or procedure

@@ -6,7 +6,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](migrations.md#type)]_ - name of the new view
+- `viewName` _[[Name](/migrations/#type)]_ - name of the new view
 - `options` _[object]_ - options:
   - `temporary` _[boolean]_ - default false
   - `replace` _[boolean]_ - default false
@@ -26,7 +26,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](migrations.md#type)]_ - name of the view to delete
+- `viewName` _[[Name](/migrations/#type)]_ - name of the view to delete
 - `options` _[object]_ - options:
   - `ifExists` _[boolean]_ - drops view only if it exists
   - `cascade` _[boolean]_ - drops also dependent objects
@@ -39,7 +39,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
+- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
 - `options` _[object]_ - options:
   - `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to reset
   - `options` _[object]_ - key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html)
@@ -52,7 +52,7 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](migrations.md#type)]_ - name of the view to alter
+- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
 - `columnName` _[string]_ - name of the column to alter
 - `options` _[object]_ - options:
   - `default` _[string]_ - default value of column
@@ -65,5 +65,5 @@
 
 **Arguments:**
 
-- `viewName` _[[Name](migrations.md#type)]_ - old name of the view
-- `newViewName` _[[Name](migrations.md#type)]_ - new name of the view
+- `viewName` _[[Name](/migrations/#type)]_ - old name of the view
+- `newViewName` _[[Name](/migrations/#type)]_ - new name of the view

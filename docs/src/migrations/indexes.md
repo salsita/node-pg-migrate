@@ -6,8 +6,8 @@
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
-- `columns` _[string or array of (array of) strings]_ - columns to add to the index with optional operator class (_[Name](migrations.md#type)_) and sort (_string_)
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
+- `columns` _[string or array of (array of) strings]_ - columns to add to the index with optional operator class (_[Name](/migrations/#type)_) and sort (_string_)
 
   Examples:
 
@@ -36,7 +36,7 @@
 
 **Arguments:**
 
-- `tablename` _[[Name](migrations.md#type)]_ - name of the table to alter
+- `tablename` _[[Name](/migrations/#type)]_ - name of the table to alter
 - `columns` _[string or array of strings]_ - column names, used only to infer an index name
 - `options` _[index options]_ - optional options:
   - `name` _[string]_ - name of the index to drop
