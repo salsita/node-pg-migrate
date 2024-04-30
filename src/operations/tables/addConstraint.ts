@@ -24,6 +24,7 @@ export type CreateConstraint = Reversible<CreateConstraintFn>;
 
 export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
   const _add: CreateConstraint = (tableName, constraintName, expression) => {
+    const tableNameStr = mOptions.literal(tableName);
     const { constraints, comments } =
       typeof expression === 'string'
         ? {
@@ -33,7 +34,7 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
             comments: [],
           }
         : parseConstraints(
-            tableName,
+            tableNameStr,
             expression,
             constraintName,
             mOptions.literal
@@ -41,10 +42,9 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
 
     const constraintStr = formatLines(constraints, '  ADD ');
 
-    return [
-      `ALTER TABLE ${mOptions.literal(tableName)}\n${constraintStr};`,
-      ...comments,
-    ].join('\n');
+    return [`ALTER TABLE ${tableNameStr}\n${constraintStr};`, ...comments].join(
+      '\n'
+    );
   };
 
   _add.reverse = (tableName, constraintName, options) => {
