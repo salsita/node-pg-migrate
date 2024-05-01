@@ -383,7 +383,7 @@ export function parseConstraints(
         comments.push(
           makeComment(
             `CONSTRAINT ${name} ON`,
-            literal(tableName),
+            literal(table),
             referencesConstraintComment
           )
         );
@@ -410,7 +410,7 @@ export function parseConstraints(
     comments.push(
       makeComment(
         `CONSTRAINT ${literal(optionName)} ON`,
-        literal(tableName),
+        literal(table),
         comment
       )
     );
