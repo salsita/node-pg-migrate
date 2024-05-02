@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 import type { DotenvConfigOptions } from 'dotenv';
+// Import as node-pg-migrate, so tsup does not self-reference as '../dist'
+// otherwise this could not be imported by esm
+import { default as migrationRunner, Migration } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
-import ConnectionParameters from 'pg/lib/connection-parameters';
+// This needs to be imported with .js extension, otherwise it will fail in esm
+import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
-import { default as migrationRunner, Migration } from '../dist';
 import type { RunnerOption } from '../src';
 import type { FilenameFormat } from '../src/migration';
 
