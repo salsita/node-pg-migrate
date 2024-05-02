@@ -94,7 +94,7 @@
   "homepage": "https://github.com/salsita/node-pg-migrate",
   "repository": {
     "type": "git",
-    "url": "https://github.com/salsita/node-pg-migrate.git"
+    "url": "git+https://github.com/salsita/node-pg-migrate.git"
   },
   "dependencies": {
     "yargs": "~17.7.0"
