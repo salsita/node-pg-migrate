@@ -3,6 +3,8 @@
 import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
+// @ts-ignore: when a clean was made, the types are not present in the first run
 import { default as migrationRunner, Migration } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -464,10 +466,16 @@ if (action === 'create') {
           ignorePattern: IGNORE_PATTERN,
         }),
   })
-    .then((migrationPath) => {
-      console.log(format('Created migration -- %s', migrationPath));
-      process.exit(0);
-    })
+    .then(
+      (
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/prefer-ts-expect-error
+        // @ts-ignore: when a clean was made, the types are not present in the first run
+        migrationPath
+      ) => {
+        console.log(format('Created migration -- %s', migrationPath));
+        process.exit(0);
+      }
+    )
     .catch((error: unknown) => {
       console.error(error);
       process.exit(1);
