@@ -82,6 +82,7 @@ versions.json
 /migrations
 /bin/*.js
 /bin/*.mjs
+/bin/esm
 
 TAGS
 REVISION
