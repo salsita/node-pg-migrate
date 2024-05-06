@@ -196,8 +196,6 @@ export type {
   ConstraintOptions,
   CreateConstraint,
   CreateConstraintFn,
-  CreateConstraintFn1,
-  CreateConstraintFn2,
   CreateTable,
   CreateTableFn,
   DropColumns,
