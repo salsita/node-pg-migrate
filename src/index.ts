@@ -263,11 +263,8 @@ export type {
   RenameViewFn,
   ViewOptions,
 } from './operations/views';
+export { runner as default, runner } from './runner';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
 export { isPgLiteral, PgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';
-
-import runner from './runner';
-// eslint-disable-next-line unicorn/prefer-export-from
-export default runner;

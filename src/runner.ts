@@ -254,7 +254,7 @@ function getLogger(options: RunnerOption): Logger {
       };
 }
 
-async function runner(options: RunnerOption): Promise<RunMigration[]> {
+export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
   const db = Db(
     (options as RunnerOptionClient).dbClient ||
