@@ -18,9 +18,9 @@ export type CreateConstraint = Reversible<CreateConstraintFn>;
 
 export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
   const _add: CreateConstraint = (
-    tableName: Name,
-    constraintName: string | null,
-    expressionOrOptions: string | (ConstraintOptions & DropConstraintOptions)
+    tableName,
+    constraintName,
+    expressionOrOptions
   ) => {
     const { constraints, comments } =
       typeof expressionOrOptions === 'string'
@@ -45,11 +45,7 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
     ].join('\n');
   };
 
-  const reverse: CreateConstraintFn = (
-    tableName: Name,
-    constraintName: string | null,
-    expressionOrOptions: string | (ConstraintOptions & DropConstraintOptions)
-  ) => {
+  _add.reverse = (tableName, constraintName, expressionOrOptions) => {
     if (constraintName === null) {
       throw new Error(
         'Impossible to automatically infer down migration for addConstraint without naming constraint'
@@ -68,8 +64,6 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
       expressionOrOptions
     );
   };
-
-  _add.reverse = reverse;
 
   return _add;
 }
