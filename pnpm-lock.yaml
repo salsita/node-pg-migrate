@@ -78,6 +78,9 @@ importers:
       json5:
         specifier: 2.2.3
         version: 2.2.3
+      node-pg-migrate:
+        specifier: file:.
+        version: file:(@types/pg@8.11.6)(pg@8.11.5)
       npm-run-all2:
         specifier: 6.1.2
         version: 6.1.2
@@ -1838,6 +1841,17 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  'node-pg-migrate@file:':
+    resolution: {directory: '', type: directory}
+    engines: {node: '>=16.18.0'}
+    hasBin: true
+    peerDependencies:
+      '@types/pg': '>=6.0.0 <9.0.0'
+      pg: '>=4.3.0 <9.0.0'
+    peerDependenciesMeta:
+      '@types/pg':
+        optional: true
 
   node-releases@2.0.14:
     resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
@@ -4471,6 +4485,13 @@ snapshots:
   nanoid@3.3.7: {}
 
   natural-compare@1.4.0: {}
+
+  node-pg-migrate@file:(@types/pg@8.11.6)(pg@8.11.5):
+    dependencies:
+      pg: 8.11.5
+      yargs: 17.7.2
+    optionalDependencies:
+      '@types/pg': 8.11.6
 
   node-releases@2.0.14: {}
 
