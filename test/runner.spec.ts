@@ -1,6 +1,6 @@
 import type { ClientBase } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { default as runner } from '../src';
+import { runner } from '../src';
 
 describe('runner', () => {
   it('should return a function', () => {
