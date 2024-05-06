@@ -6,35 +6,33 @@ import { dropConstraint } from './dropConstraint';
 import type { ConstraintOptions } from './shared';
 import { parseConstraints } from './shared';
 
-export type CreateConstraintFn1 = (
+export type CreateConstraintFn = (
   tableName: Name,
   constraintName: string | null,
-  constraintOptions: ConstraintOptions & DropConstraintOptions
+  constraintExpressionOrOptions:
+    | (ConstraintOptions & DropConstraintOptions)
+    | string
 ) => string;
-
-export type CreateConstraintFn2 = (
-  tableName: Name,
-  constraintName: string | null,
-  expression: string
-) => string;
-
-export type CreateConstraintFn = CreateConstraintFn1 & CreateConstraintFn2;
 
 export type CreateConstraint = Reversible<CreateConstraintFn>;
 
 export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
-  const _add: CreateConstraint = (tableName, constraintName, expression) => {
+  const _add: CreateConstraint = (
+    tableName: Name,
+    constraintName: string | null,
+    expressionOrOptions: string | (ConstraintOptions & DropConstraintOptions)
+  ) => {
     const { constraints, comments } =
-      typeof expression === 'string'
+      typeof expressionOrOptions === 'string'
         ? {
             constraints: [
-              `${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}${expression}`,
+              `${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}${expressionOrOptions}`,
             ],
             comments: [],
           }
         : parseConstraints(
             tableName,
-            expression,
+            expressionOrOptions,
             constraintName,
             mOptions.literal
           );
@@ -47,21 +45,31 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
     ].join('\n');
   };
 
-  _add.reverse = (tableName, constraintName, options) => {
+  const reverse: CreateConstraintFn = (
+    tableName: Name,
+    constraintName: string | null,
+    expressionOrOptions: string | (ConstraintOptions & DropConstraintOptions)
+  ) => {
     if (constraintName === null) {
       throw new Error(
         'Impossible to automatically infer down migration for addConstraint without naming constraint'
       );
     }
 
-    if (typeof options === 'string') {
+    if (typeof expressionOrOptions === 'string') {
       throw new Error(
         'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
       );
     }
 
-    return dropConstraint(mOptions)(tableName, constraintName, options);
+    return dropConstraint(mOptions)(
+      tableName,
+      constraintName,
+      expressionOrOptions
+    );
   };
+
+  _add.reverse = reverse;
 
   return _add;
 }
