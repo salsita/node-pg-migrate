@@ -145,10 +145,5 @@
   "packageManager": "pnpm@9.0.6",
   "engines": {
     "node": ">=16.18.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@types/pg@8.11.5": "patches/@types__pg@8.11.5.patch"
-    }
   }
 }
