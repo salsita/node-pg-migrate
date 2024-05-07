@@ -349,7 +349,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         });
       }
 
-      db.close();
+      await db.close();
     }
   }
 }
