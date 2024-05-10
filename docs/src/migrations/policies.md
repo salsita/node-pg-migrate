@@ -1,57 +1,84 @@
 # Policies Operations
 
-### `pgm.createPolicy( tableName, policyName, options )`
+## Operation: `createPolicy`
 
+#### `pgm.createPolicy( tableName, policyName, options )`
+
+> [!IMPORTANT]
 > Create a new policy - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createpolicy.html)
 
-**Arguments:**
+### Arguments
 
-- `tableName` _[[Name](/migrations/#type)]_ - name of the table to alter
-- `policyName` _[string]_ - name of the new policy
-- `options` _[object]_ - options:
-  - `command` _[string]_ - `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`
-  - `role` _[string or array]_ - the role(s) to which the policy is to be applied
-  - `using` _[string]_ - SQL conditional expression for visibility check
-  - `check` _[string]_ - SQL conditional expression for insert/update check
+| Name         | Type                      | Description                       |
+| ------------ | ------------------------- | --------------------------------- |
+| `tableName`  | [Name](/migrations/#type) | name of the table to alter        |
+| `policyName` | `string`                  | name of the new policy            |
+| `options`    | `object`                  | Check below for available options |
 
-**Reverse Operation:** `dropPolicy`
+#### Options
 
----
+| Option    | Type                | Description                                        |
+| --------- | ------------------- | -------------------------------------------------- |
+| `command` | `string`            | `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`   |
+| `role`    | `string` or `array` | the role(s) to which the policy is to be applied   |
+| `using`   | `string`            | SQL conditional expression for visibility check    |
+| `check`   | `string`            | SQL conditional expression for insert/update check |
 
-### `pgm.dropPolicy( tableName, policyName, options )`
+## Reverse Operation: `dropPolicy`
 
+#### `pgm.dropPolicy( tableName, policyName, options )`
+
+> [!IMPORTANT]
 > Drop a policy - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droppolicy.html)
 
-**Arguments:**
+### Arguments
 
-- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
-- `policyName` _[string]_ - name of the policy to delete
-- `options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops policy only if it exists
+| Name         | Type                      | Description                           |
+| ------------ | ------------------------- | ------------------------------------- |
+| `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
+| `policyName` | `string`                  | name of the policy to delete          |
+| `options`    | `object`                  | Check below for available options     |
 
----
+#### Options
 
-### `pgm.alterPolicy( tableName, policyName, options )`
+| Option     | Type      | Description                    |
+| ---------- | --------- | ------------------------------ |
+| `ifExists` | `boolean` | drops policy only if it exists |
 
+## Operation: `alterPolicy`
+
+#### `pgm.alterPolicy( tableName, policyName, options )`
+
+> [!IMPORTANT]
 > Alter a policy - [postgres docs](https://www.postgresql.org/docs/current/static/sql-alterpolicy.html)
 
-**Arguments:**
+### Arguments
 
-- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
-- `policyName` _[string]_ - name of the policy to alter
-- `options` _[object]_ - options:
-  - `role` _[string or array]_ - the role(s) to which the policy is to be applied
-  - `using` _[string]_ - SQL conditional expression for visibility check
-  - `check` _[string]_ - SQL conditional expression for insert/update check
+| Name         | Type                      | Description                           |
+| ------------ | ------------------------- | ------------------------------------- |
+| `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
+| `policyName` | `string`                  | name of the policy to alter           |
+| `options`    | `object`                  | Check below for available options     |
 
----
+#### Options
 
-### `pgm.renamePolicy( tableName, policyName, newPolicyName )`
+| Option  | Type     | Description                                        |
+| ------- | -------- | -------------------------------------------------- |
+| `role`  | `string` | the role(s) to which the policy is to be applied   |
+| `using` | `string` | SQL conditional expression for visibility check    |
+| `check` | `string` | SQL conditional expression for insert/update check |
 
+## Operation: `renamePolicy`
+
+#### `pgm.renamePolicy( tableName, policyName, newPolicyName )`
+
+> [!IMPORTANT]
 > Rename a policy - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterpolicy.html)
 
-**Arguments:**
+### Arguments
 
-- `tableName` _[[Name](/migrations/#type)]_ - name of the table where the policy is
-- `policyName` _[string]_ - old name of the policy
-- `newPolicyName` _[string]_ - new name of the policy
+| Name            | Type                      | Description                           |
+| --------------- | ------------------------- | ------------------------------------- |
+| `tableName`     | [Name](/migrations/#type) | name of the table where the policy is |
+| `policyName`    | `string`                  | old name of the policy                |
+| `newPolicyName` | `string`                  | new name of the policy                |

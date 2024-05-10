@@ -1,110 +1,150 @@
 # Type Operations
 
+## Operation: `createType`
+
 ### `pgm.createType( type_name, values )`
 
+> [!IMPORTANT]
 > Create a new data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createtype.html)
+> Alias: `addType`
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the new type
-- `values` _[array of strings or object]_ if an array the contents are possible values for an enum type, if an object names and types for a composite type
+| Name        | Type                        | Description                                                              |
+| ----------- | --------------------------- | ------------------------------------------------------------------------ |
+| `type_name` | [Name](/migrations/#type)   | name of the new type                                                     |
+| `values`    | `array[string]` or `object` | possible values for an enum type or names and types for a composite type |
 
-**Aliases:** `addType`
-**Reverse Operation:** `dropType`
+## Reverse Operation: `dropType`
 
----
+#### `pgm.dropType( type_name )`
 
-### `pgm.dropType( type_name )`
-
+> [!IMPORTANT]
 > Drop a custom data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the new type
+| Name        | Type                      | Description              |
+| ----------- | ------------------------- | ------------------------ |
+| `type_name` | [Name](/migrations/#type) | name of the type to drop |
 
----
+## Operation: `alterType`
 
-### `pgm.renameType( type_name, new_type_name )`
+#### `pgm.renameType( type_name, new_type_name )`
 
+> [!IMPORTANT]
 > Rename a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type to rename
-- `new_type_name` _[[Name](/migrations/#type)]_ - name of the new type
+| Name            | Type                      | Description                |
+| --------------- | ------------------------- | -------------------------- |
+| `type_name`     | [Name](/migrations/#type) | name of the type to rename |
+| `new_type_name` | [Name](/migrations/#type) | name of the new type       |
 
----
+## Operation: `alterType`
 
-### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
+#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
 
-> Add attribute to an existing data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+> [!IMPORTANT]
+> Add attribute to an existing data
+> type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `attribute_name` _[string]_ - name of the attribute to add
-- `attribute_type` _[string]_ - type of the attribute to add
+| Name             | Type                      | Description                  |
+| ---------------- | ------------------------- | ---------------------------- |
+| `type_name`      | [Name](/migrations/#type) | name of the type             |
+| `attribute_name` | `string`                  | name of the attribute to add |
+| `attribute_type` | `string`                  | type of the attribute to add |
 
----
+## Reverse Operation: `dropTypeAttribute`
 
-### `pgm.dropTypeAttribute( type_name, attribute_name, options )`
+#### `pgm.dropTypeAttribute( type_name, attribute_name, options )`
 
+> [!IMPORTANT]
 > Drop attribute from a data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `attribute_name` _[string]_ - name of the attribute to drop
-- `options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - default false
+| Name             | Type                      | Description                       |
+| ---------------- | ------------------------- | --------------------------------- |
+| `type_name`      | [Name](/migrations/#type) | name of the type                  |
+| `attribute_name` | `string`                  | name of the attribute to drop     |
+| `options`        | `object`                  | Check below for available options |
 
----
+### Options
 
-### `pgm.setTypeAttribute( type_name, attribute_name, attribute_type )`
+| Option     | Type      | Description                       |
+| ---------- | --------- | --------------------------------- |
+| `ifExists` | `boolean` | drops attribute only if it exists |
 
-> Set data type of an existing attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+## Operation: `alterType`
 
-**Arguments:**
+#### `pgm.setTypeAttribute( type_name, attribute_name, attribute_type )`
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `attribute_name` _[string]_ - name of the attribute
-- `attribute_type` _[string]_ - new type of the attribute
+> [!IMPORTANT]
+> Set data type of an existing data attribute
+> type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
----
+### Arguments
 
-### `pgm.addTypeValue( type_name, value, options )`
+| Name             | Type                      | Description                  |
+| ---------------- | ------------------------- | ---------------------------- |
+| `type_name`      | [Name](/migrations/#type) | name of the type             |
+| `attribute_name` | `string`                  | name of the attribute to set |
+| `attribute_type` | `string`                  | new type of the attribute    |
 
-> Add value to a list of enum data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
+## Operation: `alterType`
 
-**Arguments:**
+#### `pgm.addTypeValue( type_name, value, options )`
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `value` _[string]_ - value to add to list
-- `options` _[object]_ - options:
-  - `ifNotExists` _[boolean]_ - default false
-  - `before` _[string]_ - value before which the new value should be add
-  - `after` _[string]_ - value after which the new value should be add
+> [!IMPORTANT]
+> Add value to a list of enum data
+> type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
----
+### Arguments
 
-### `pgm.renameTypeAttribute( type_name, attribute_name, new_attribute_name )`
+| Name        | Type                      | Description                       |
+| ----------- | ------------------------- | --------------------------------- |
+| `type_name` | [Name](/migrations/#type) | name of the type                  |
+| `value`     | `string`                  | value to add to list              |
+| `options`   | `object`                  | Check below for available options |
 
+### Options
+
+| Option        | Type      | Description                                    |
+| ------------- | --------- | ---------------------------------------------- |
+| `ifNotExists` | `boolean` | default false                                  |
+| `before`      | `string`  | value before which the new value should be add |
+| `after`       | `string`  | value after which the new value should be add  |
+
+## Reverse Operation: `dropTypeValue`
+
+#### `pgm.renameTypeAttribute( type_name, attribute_name, new_attribute_name )`
+
+> [!IMPORTANT]
 > Rename an attribute of data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altertype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `attribute_name` _[string]_ - name of the attribute to rename
-- `new_attribute_name` _[string]_ - new name of the attribute
+| Name                 | Type                      | Description                     |
+| -------------------- | ------------------------- | ------------------------------- |
+| `type_name`          | [Name](/migrations/#type) | name of the type                |
+| `attribute_name`     | `string`                  | name of the attribute to rename |
+| `new_attribute_name` | `string`                  | new name of the attribute       |
 
----
+## Operation: `alterType`
 
-### `pgm.renameTypeValue( type_name, value, new_value )`
+#### `pgm.renameTypeValue( type_name, value, new_value )`
 
+> [!IMPORTANT]
 > Rename a value of enum data type - [postgres docs](https://www.postgresql.org/docs/current/static/sql-altertype.html)
 
-**Arguments:**
+### Arguments
 
-- `type_name` _[[Name](/migrations/#type)]_ - name of the type
-- `value` _[string]_ - value to rename
-- `new_value` _[string]_ - new value
+| Name        | Type                      | Description      |
+| ----------- | ------------------------- | ---------------- |
+| `type_name` | [Name](/migrations/#type) | name of the type |
+| `value`     | `string`                  | value to rename  |
+| `new_value` | `string`                  | new value        |
