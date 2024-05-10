@@ -10,14 +10,14 @@
 ### Arguments
 
 | Name           | Type                      | Description                       |
-|----------------|---------------------------|-----------------------------------|
+| -------------- | ------------------------- | --------------------------------- |
 | `role_name`    | [Name](/migrations/#type) | name of the new role              |
 | `role_options` | `object`                  | Check below for available options |
 
 ### role_options
 
 | Option        | Type                        | Description            |
-|---------------|-----------------------------|------------------------|
+| ------------- | --------------------------- | ---------------------- |
 | `superuser`   | `boolean`                   | default `false`        |
 | `createdb`    | `boolean`                   | default `false`        |
 | `createrole`  | `boolean`                   | default `false`        |
@@ -43,7 +43,7 @@
 ### Arguments
 
 | Name        | Type                      | Description              |
-|-------------|---------------------------|--------------------------|
+| ----------- | ------------------------- | ------------------------ |
 | `role_name` | [Name](/migrations/#type) | name of the role to drop |
 
 ## Operation: `alterRole`
@@ -56,10 +56,9 @@
 ### Arguments
 
 | Name           | Type                      | Description          |
-|----------------|---------------------------|----------------------|
+| -------------- | ------------------------- | -------------------- |
 | `role_name`    | [Name](/migrations/#type) | name of the role     |
 | `role_options` | `object`                  | [see](#role_options) |
-
 
 ## Operation: `renameRole`
 
@@ -71,6 +70,6 @@
 ### Arguments
 
 | Name            | Type                      | Description          |
-|-----------------|---------------------------|----------------------|
+| --------------- | ------------------------- | -------------------- |
 | `old_role_name` | [Name](/migrations/#type) | old name of the role |
 | `new_role_name` | [Name](/migrations/#type) | new name of the role |

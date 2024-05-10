@@ -6,7 +6,7 @@ The `createSequence` and `alterSequence` methods both take an `options` argument
 sequence.
 
 | Option      | Type                          | Description                                                                 |
-|-------------|-------------------------------|-----------------------------------------------------------------------------|
+| ----------- | ----------------------------- | --------------------------------------------------------------------------- |
 | `type`      | `string`                      | type of the sequence                                                        |
 | `increment` | `number`                      | sets first value of sequence                                                |
 | `minvalue`  | `number` or `null` or `false` | sets minimum value of sequence or `NO MINVALUE` (if value is false or null) |
@@ -26,14 +26,14 @@ sequence.
 ### Arguments
 
 | Name            | Type     | Description                       |
-|-----------------|----------|-----------------------------------|
+| --------------- | -------- | --------------------------------- |
 | `sequence_name` | `string` | name of the new sequence          |
 | `options`       | `object` | Check below for available options |
 
 ### Options
 
 | Option           | Type      | Description                                       |
-|------------------|-----------|---------------------------------------------------|
+| ---------------- | --------- | ------------------------------------------------- |
 | `temporary`      | `boolean` | adds `TEMPORARY` clause                           |
 | `ifNotExists`    | `boolean` | adds `IF NOT EXISTS` clause                       |
 | sequence options | `object`  | see [sequence options section](#sequence-options) |
@@ -48,14 +48,14 @@ sequence.
 ### Arguments
 
 | Name            | Type     | Description                       |
-|-----------------|----------|-----------------------------------|
+| --------------- | -------- | --------------------------------- |
 | `sequence_name` | `string` | name of the sequence to drop      |
 | `drop_options`  | `object` | Check below for available options |
 
 ### Options
 
 | Option     | Type      | Description                      |
-|------------|-----------|----------------------------------|
+| ---------- | --------- | -------------------------------- |
 | `ifExists` | `boolean` | drops sequence only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects     |
 
@@ -69,14 +69,14 @@ sequence.
 ### Arguments
 
 | Name            | Type     | Description                       |
-|-----------------|----------|-----------------------------------|
+| --------------- | -------- | --------------------------------- |
 | `sequence_name` | `string` | name of the sequence to alter     |
 | `options`       | `object` | Check below for available options |
 
 ### Options
 
 | Option           | Type               | Description                                                         |
-|------------------|--------------------|---------------------------------------------------------------------|
+| ---------------- | ------------------ | ------------------------------------------------------------------- |
 | `restart`        | `number` or `true` | sets first value of sequence or using `start` value (on true value) |
 | sequence options | `object`           | see [sequence options section](#sequence-options)                   |
 
@@ -90,6 +90,6 @@ sequence.
 ### Arguments
 
 | Name                | Type     | Description                                   |
-|---------------------|----------|-----------------------------------------------|
+| ------------------- | -------- | --------------------------------------------- |
 | `old_sequence_name` | `string` | old [Name](/migrations/#type) of the sequence |
 | `new_sequence_name` | `string` | new [Name](/migrations/#type) of the sequence |

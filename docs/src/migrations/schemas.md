@@ -10,14 +10,14 @@
 ### Arguments
 
 | Name             | Type     | Description                       |
-|------------------|----------|-----------------------------------|
+| ---------------- | -------- | --------------------------------- |
 | `schema_name`    | `string` | name of the new schema            |
 | `schema_options` | `object` | Check below for available options |
 
 ### schema_options
 
 | Option          | Type      | Description                        |
-|-----------------|-----------|------------------------------------|
+| --------------- | --------- | ---------------------------------- |
 | `ifNotExists`   | `boolean` | adds `IF NOT EXISTS` clause        |
 | `authorization` | `string`  | alternative user to own new schema |
 
@@ -31,14 +31,14 @@
 ### Arguments
 
 | Name           | Type     | Description                       |
-|----------------|----------|-----------------------------------|
+| -------------- | -------- | --------------------------------- |
 | `schema_name`  | `string` | name of the schema to drop        |
 | `drop_options` | `object` | Check below for available options |
 
 ### drop_options
 
 | Option     | Type      | Description                    |
-|------------|-----------|--------------------------------|
+| ---------- | --------- | ------------------------------ |
 | `ifExists` | `boolean` | drops schema only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects   |
 
@@ -52,6 +52,6 @@
 ### Arguments
 
 | Name              | Type     | Description            |
-|-------------------|----------|------------------------|
+| ----------------- | -------- | ---------------------- |
 | `old_schema_name` | `string` | old name of the schema |
 | `new_schema_name` | `string` | new name of the schema |

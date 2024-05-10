@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name         | Type     | Description                       |
-|--------------|----------|-----------------------------------|
+| ------------ | -------- | --------------------------------- |
 | `viewName`   | `string` | name of the new view              |
 | `options`    | `object` | Check below for available options |
 | `definition` | `string` | SQL of SELECT statement           |
@@ -18,7 +18,7 @@
 ### Options
 
 | Option        | Type                | Description                                                                                    |
-|---------------|---------------------|------------------------------------------------------------------------------------------------|
+| ------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
 | `temporary`   | `boolean`           | adds `TEMPORARY` clause                                                                        |
 | `replace`     | `boolean`           | adds `OR REPLACE` clause                                                                       |
 | `recursive`   | `boolean`           | adds `RECURSIVE` clause                                                                        |
@@ -36,14 +36,14 @@
 ### Arguments
 
 | Name       | Type     | Description                       |
-|------------|----------|-----------------------------------|
+| ---------- | -------- | --------------------------------- |
 | `viewName` | `string` | name of the view to delete        |
 | `options`  | `object` | Check below for available options |
 
 ### Options
 
 | Option     | Type      | Description                  |
-|------------|-----------|------------------------------|
+| ---------- | --------- | ---------------------------- |
 | `ifExists` | `boolean` | drops view only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects |
 
@@ -57,14 +57,14 @@
 ### Arguments
 
 | Name       | Type     | Description                       |
-|------------|----------|-----------------------------------|
+| ---------- | -------- | --------------------------------- |
 | `viewName` | `string` | name of the view to alter         |
 | `options`  | `object` | Check below for available options |
 
 ### Options
 
 | Option        | Type     | Description                                                                                                     |
-|---------------|----------|-----------------------------------------------------------------------------------------------------------------|
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
 | `checkOption` | `string` | `CASCADED`, `LOCAL` or `null` to reset                                                                          |
 | `options`     | `object` | key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html) |
 
@@ -78,7 +78,7 @@
 ### Arguments
 
 | Name         | Type     | Description                       |
-|--------------|----------|-----------------------------------|
+| ------------ | -------- | --------------------------------- |
 | `viewName`   | `string` | name of the view to alter         |
 | `columnName` | `string` | name of the column to alter       |
 | `options`    | `object` | Check below for available options |
@@ -86,7 +86,7 @@
 ### Options
 
 | Option    | Type     | Description             |
-|-----------|----------|-------------------------|
+| --------- | -------- | ----------------------- |
 | `default` | `string` | default value of column |
 
 ## Operation: `renameView`
@@ -99,6 +99,6 @@
 ### Arguments
 
 | Name          | Type     | Description          |
-|---------------|----------|----------------------|
+| ------------- | -------- | -------------------- |
 | `viewName`    | `string` | old name of the view |
 | `newViewName` | `string` | new name of the view |

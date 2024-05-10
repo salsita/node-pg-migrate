@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name        | Type                      | Description                                                                               |
-|-------------|---------------------------|-------------------------------------------------------------------------------------------|
+| ----------- | ------------------------- | ----------------------------------------------------------------------------------------- |
 | `tablename` | [Name](/migrations/#type) | name for the new table                                                                    |
 | `columns`   | `object`                  | column names / options -- see [column definitions section](columns.md#column-definitions) |
 | `options`   | `object`                  | table options (optional)                                                                  |
@@ -18,7 +18,7 @@
 ### Options
 
 | Option        | Type                                  | Description                                                                                                                   |
-|---------------|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| ------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `temporary`   | `boolean`                             | default `false`                                                                                                               |
 | `ifNotExists` | `boolean`                             | default `false`                                                                                                               |
 | `inherits`    | [Name](/migrations/#type)             | table(s) to inherit from                                                                                                      |
@@ -29,7 +29,7 @@
 #### like options
 
 | Option      | Type                        | Description                                                                                  |
-|-------------|-----------------------------|----------------------------------------------------------------------------------------------|
+| ----------- | --------------------------- | -------------------------------------------------------------------------------------------- |
 | `including` | `string` or `array[string]` | 'COMMENTS', 'CONSTRAINTS', 'DEFAULTS', 'IDENTITY', 'INDEXES', 'STATISTICS', 'STORAGE', 'ALL' |
 | `excluding` | `string` or `array[string]` | 'COMMENTS', 'CONSTRAINTS', 'DEFAULTS', 'IDENTITY', 'INDEXES', 'STATISTICS', 'STORAGE', 'ALL' |
 
@@ -43,14 +43,14 @@
 ### Arguments
 
 | Name        | Type                      | Description                       |
-|-------------|---------------------------|-----------------------------------|
+| ----------- | ------------------------- | --------------------------------- |
 | `tablename` | [Name](/migrations/#type) | name of the table to drop         |
 | `options`   | `object`                  | Check below for available options |
 
 ### Options
 
 | Option     | Type      | Description                   |
-|------------|-----------|-------------------------------|
+| ---------- | --------- | ----------------------------- |
 | `ifExists` | `boolean` | drops table only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects  |
 
@@ -66,7 +66,7 @@
 ### Arguments
 
 | Name            | Type                      | Description                 |
-|-----------------|---------------------------|-----------------------------|
+| --------------- | ------------------------- | --------------------------- |
 | `tablename`     | [Name](/migrations/#type) | name of the table to rename |
 | `new_tablename` | [Name](/migrations/#type) | new name of the table       |
 
@@ -80,12 +80,12 @@
 ### Arguments
 
 | Name        | Type                      | Description                       |
-|-------------|---------------------------|-----------------------------------|
+| ----------- | ------------------------- | --------------------------------- |
 | `tablename` | [Name](/migrations/#type) | name of the table to alter        |
 | `options`   | `object`                  | Check below for available options |
 
 ### Options
 
 | Option          | Type     | Description                                 |
-|-----------------|----------|---------------------------------------------|
+| --------------- | -------- | ------------------------------------------- |
 | `levelSecurity` | `string` | `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE` |

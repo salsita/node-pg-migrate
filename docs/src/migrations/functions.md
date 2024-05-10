@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name               | Type                            | Description                       |
-|--------------------|---------------------------------|-----------------------------------|
+| ------------------ | ------------------------------- | --------------------------------- |
 | `function_name`    | [Name](/migrations/#type)       | name of the new function          |
 | `function_params`  | `array[string]` `array[object]` | parameters of the new function    |
 | `function_options` | `object`                        | Check below for available options |
@@ -22,7 +22,7 @@ Either array of strings or objects.
 If array of strings, it is interpreted as is, if array of objects:
 
 | Option    | Type     | Description                         |
-|-----------|----------|-------------------------------------|
+| --------- | -------- | ----------------------------------- |
 | `mode`    | `string` | `IN`, `OUT`, `INOUT`, or `VARIADIC` |
 | `name`    | `string` | name of argument                    |
 | `type`    | `string` | datatype of argument                |
@@ -31,7 +31,7 @@ If array of strings, it is interpreted as is, if array of objects:
 ### function_options
 
 | Option     | Type      | Description                          |
-|------------|-----------|--------------------------------------|
+| ---------- | --------- | ------------------------------------ |
 | `returns`  | `string`  | returns clause                       |
 | `language` | `string`  | language name of function definition |
 | `replace`  | `boolean` | create or replace function           |
@@ -50,7 +50,7 @@ If array of strings, it is interpreted as is, if array of objects:
 ### Arguments
 
 | Name              | Type                            | Description                       |
-|-------------------|---------------------------------|-----------------------------------|
+| ----------------- | ------------------------------- | --------------------------------- |
 | `function_name`   | [Name](/migrations/#type)       | name of the function to drop      |
 | `function_params` | `array[string]` `array[object]` | parameters of the function        |
 | `drop_options`    | `object`                        | Check below for available options |
@@ -58,7 +58,7 @@ If array of strings, it is interpreted as is, if array of objects:
 ### drop_options
 
 | Option     | Type      | Description                      |
-|------------|-----------|----------------------------------|
+| ---------- | --------- | -------------------------------- |
 | `ifExists` | `boolean` | drops function only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects     |
 
@@ -72,7 +72,7 @@ If array of strings, it is interpreted as is, if array of objects:
 ### Arguments
 
 | Name                | Type                            | Description                |
-|---------------------|---------------------------------|----------------------------|
+| ------------------- | ------------------------------- | -------------------------- |
 | `old_function_name` | [Name](/migrations/#type)       | old name of the function   |
 | `function_params`   | `array[string]` `array[object]` | parameters of the function |
 | `new_function_name` | [Name](/migrations/#type)       | new name of the function   |

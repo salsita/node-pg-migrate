@@ -10,7 +10,7 @@
 ### Arguments
 
 | Name         | Type                      | Description                       |
-|--------------|---------------------------|-----------------------------------|
+| ------------ | ------------------------- | --------------------------------- |
 | `tableName`  | [Name](/migrations/#type) | name of the table to alter        |
 | `policyName` | `string`                  | name of the new policy            |
 | `options`    | `object`                  | Check below for available options |
@@ -18,7 +18,7 @@
 #### Options
 
 | Option    | Type                | Description                                        |
-|-----------|---------------------|----------------------------------------------------|
+| --------- | ------------------- | -------------------------------------------------- |
 | `command` | `string`            | `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`   |
 | `role`    | `string` or `array` | the role(s) to which the policy is to be applied   |
 | `using`   | `string`            | SQL conditional expression for visibility check    |
@@ -34,7 +34,7 @@
 ### Arguments
 
 | Name         | Type                      | Description                           |
-|--------------|---------------------------|---------------------------------------|
+| ------------ | ------------------------- | ------------------------------------- |
 | `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
 | `policyName` | `string`                  | name of the policy to delete          |
 | `options`    | `object`                  | Check below for available options     |
@@ -42,7 +42,7 @@
 #### Options
 
 | Option     | Type      | Description                    |
-|------------|-----------|--------------------------------|
+| ---------- | --------- | ------------------------------ |
 | `ifExists` | `boolean` | drops policy only if it exists |
 
 ## Operation: `alterPolicy`
@@ -55,7 +55,7 @@
 ### Arguments
 
 | Name         | Type                      | Description                           |
-|--------------|---------------------------|---------------------------------------|
+| ------------ | ------------------------- | ------------------------------------- |
 | `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
 | `policyName` | `string`                  | name of the policy to alter           |
 | `options`    | `object`                  | Check below for available options     |
@@ -63,7 +63,7 @@
 #### Options
 
 | Option  | Type     | Description                                        |
-|---------|----------|----------------------------------------------------|
+| ------- | -------- | -------------------------------------------------- |
 | `role`  | `string` | the role(s) to which the policy is to be applied   |
 | `using` | `string` | SQL conditional expression for visibility check    |
 | `check` | `string` | SQL conditional expression for insert/update check |
@@ -78,7 +78,7 @@
 ### Arguments
 
 | Name            | Type                      | Description                           |
-|-----------------|---------------------------|---------------------------------------|
+| --------------- | ------------------------- | ------------------------------------- |
 | `tableName`     | [Name](/migrations/#type) | name of the table where the policy is |
 | `policyName`    | `string`                  | old name of the policy                |
 | `newPolicyName` | `string`                  | new name of the policy                |
