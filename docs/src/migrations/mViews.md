@@ -1,81 +1,125 @@
 # Materialized View Operations
 
-### `pgm.createMaterializedView( viewName, options, definition )`
+## Operation: `createMaterializedView`
 
-> Create a new materialized view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
+#### `pgm.createMaterializedView( viewName, options, definition )`
 
-**Arguments:**
+> [!IMPORTANT]
+> Create a new materialized
+> view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the new materialized view
-- `options` _[object]_ - options:
-  - `ifNotExists` _[boolean]_ - default false
-  - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
-  - `tablespace` _[string]_ - optional
-  - `storageParameters` _[object]_ - optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
-  - `data` _[boolean]_ - default undefined
-- `definition` _[string]_ - SQL of SELECT statement
+### Arguments
 
-**Reverse Operation:** `dropMaterializedView`
+| Name         | Type     | Description                       |
+|--------------|----------|-----------------------------------|
+| `viewName`   | `string` | name of the new materialized view |
+| `options`    | `object` | Check below for available options |
+| `definition` | `string` | SQL of SELECT statement           |
 
----
+### Options
 
-### `pgm.dropMaterializedView( viewName, options )`
+| Option              | Type                | Description                                                                                                                                              |
+|---------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ifNotExists`       | `boolean`           | adds `IF NOT EXISTS` clause                                                                                                                              |
+| `columns`           | `string` or `array` | use if you want to name columns differently then inferred from definition                                                                                |
+| `tablespace`        | `string`            | optional                                                                                                                                                 |
+| `storageParameters` | `object`            | optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS) |
+| `data`              | `boolean`           | default `undefined`                                                                                                                                      |
 
-> Drop a materialized view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropmaterializedview.html)
+## Reverse Operation: `dropMaterializedView`
 
-**Arguments:**
+#### `pgm.dropMaterializedView( viewName, options )`
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to delete
-- `options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops view only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+> [!IMPORTANT]
+> Drop a materialized
+> view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropmaterializedview.html)
 
----
+### Arguments
 
-### `pgm.alterMaterializedView( viewName, options )`
+| Name       | Type     | Description                       |
+|------------|----------|-----------------------------------|
+| `viewName` | `string` | name of the view to delete        |
+| `options`  | `object` | Check below for available options |
 
-> Alter a materialized view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
+### Options
 
-**Arguments:**
+| Option     | Type      | Description                  |
+|------------|-----------|------------------------------|
+| `ifExists` | `boolean` | drops view only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects |
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
-- `options` _[object]_ - options:
-  - `cluster` _[string]_ - optional index name for clustering
-  - `extension` _[string]_ - optional name of extension view is dependent on
-  - `storageParameters` _[object]_ - optional key value (`null` to reset) pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)
+## Operation: `alterMaterializedView`
 
----
+#### `pgm.alterMaterializedView( viewName, options )`
 
-### `pgm.renameMaterializedView( viewName, newViewName )`
+> [!IMPORTANT]
+> Alter a materialized
+> view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
 
-> Rename a materialized view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
+### Arguments
 
-**Arguments:**
+| Name       | Type     | Description                       |
+|------------|----------|-----------------------------------|
+| `viewName` | `string` | name of the view to alter         |
+| `options`  | `object` | Check below for available options |
 
-- `viewName` _[[Name](/migrations/#type)]_ - old name of the view
-- `newViewName` _[[Name](/migrations/#type)]_ - new name of the view
+### Options
 
----
+| Option              | Type     | Description                                                                                                                                                                |
+|---------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `cluster`           | `string` | optional index name for clustering                                                                                                                                         |
+| `extension`         | `string` | optional name of extension view is dependent on                                                                                                                            |
+| `storageParameters` | `object` | optional key value (`null` to reset) pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS) |
 
-### `pgm.renameMaterializedViewColumn( viewName, columnName, newColumnName )`
+## Operation: `renameMaterializedView`
 
-> Rename a materialized view column - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
+#### `pgm.renameMaterializedView( viewName, newViewName )`
 
-**Arguments:**
+> [!IMPORTANT]
+> Rename a materialized
+> view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
-- `columnName` _[string]_ - current column name
-- `newColumnName` _[string]_ - new column name
+### Arguments
 
----
+| Name          | Type     | Description          |
+|---------------|----------|----------------------|
+| `viewName`    | `string` | old name of the view |
+| `newViewName` | `string` | new name of the view |
 
-### `pgm.refreshMaterializedView( viewName, options )`
+## Operation: `alterMaterializedViewColumn`
 
-> Refreshes a materialized view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-refreshmaterializedview.html)
+#### `pgm.renameMaterializedViewColumn( viewName, columnName, newColumnName )`
 
-**Arguments:**
+> [!IMPORTANT]
+> Rename a materialized view
+> column - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altermaterializedview.html)
 
-- `viewName` _[[Name](/migrations/#type)]_ - old name of the view
-- `options` _[object]_ - options:
-  - `concurrently` _[boolean]_ - default false
-  - `data` _[boolean]_ - default undefined
+### Arguments
+
+| Name            | Type     | Description               |
+|-----------------|----------|---------------------------|
+| `viewName`      | `string` | name of the view to alter |
+| `columnName`    | `string` | current column name       |
+| `newColumnName` | `string` | new column name           |
+
+## Operation: `refreshMaterializedView`
+
+#### `pgm.refreshMaterializedView( viewName, options )`
+
+> [!IMPORTANT]
+> Refreshes a materialized
+> view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-refreshmaterializedview.html)
+
+### Arguments
+
+| Name       | Type     | Description                                      |
+|------------|----------|--------------------------------------------------|
+| `viewName` | `string` | [Name](/migrations/#type) of the view to refresh |
+| `options`  | `object` | Check below for available options                |
+
+### Options
+
+| Option         | Type      | Description         |
+|----------------|-----------|---------------------|
+| `concurrently` | `boolean` | default `false`     |
+| `data`         | `boolean` | default `undefined` |
