@@ -2,64 +2,94 @@
 
 ## Sequence Options
 
-The `createSequence` and `alterSequence` methods both take an `options` argument that specifies parameters of sequence.
+The `createSequence` and `alterSequence` methods both take an `options` argument that specifies parameters of a
+sequence.
 
-- `type` _[string]_ - type of the sequence
-- `increment` _[number]_ - sets first value of sequence
-- `minvalue` _[number or null or false]_ - sets minimum value of sequence or `NO MINVALUE` (if value is false or null)
-- `maxvalue` _[number or null or false]_ - sets maximum value of sequencee or `NO MAXVALUE` (if value is false or null)
-- `start` _[number]_ - sets first value of sequence
-- `cache` _[number]_ - sets how many sequence numbers should be preallocated
-- `cycle` _[boolean]_ - adds `CYCLE` or `NO CYCLE` clause if option is present
-- `owner` _[string or null or false]_ - sets owner of sequence or no owner (if value is false or null)
+| Option      | Type                          | Description                                                                 |
+|-------------|-------------------------------|-----------------------------------------------------------------------------|
+| `type`      | `string`                      | type of the sequence                                                        |
+| `increment` | `number`                      | sets first value of sequence                                                |
+| `minvalue`  | `number` or `null` or `false` | sets minimum value of sequence or `NO MINVALUE` (if value is false or null) |
+| `maxvalue`  | `number` or `null` or `false` | sets maximum value of sequence or `NO MAXVALUE` (if value is false or null) |
+| `start`     | `number`                      | sets first value of sequence                                                |
+| `cache`     | `number`                      | sets how many sequence numbers should be pre-allocated                      |
+| `cycle`     | `boolean`                     | adds `CYCLE` or `NO CYCLE` clause if option is present                      |
+| `owner`     | `string` or `null` or `false` | sets owner of sequence or no owner (if value is false or null)              |
 
-### `pgm.createSequence( sequence_name, options )`
+## Operation: `createSequence`
 
+#### `pgm.createSequence( sequence_name, options )`
+
+> [!IMPORTANT]
 > Create a new sequence - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createsequence.html)
 
-**Arguments:**
+### Arguments
 
-- `sequence_name` _[[Name](/migrations/#type)]_ - name of the new sequence
-- `options` _[object]_ - options:
-  - sequence options -- see [sequence options section](#sequence-options)
-  - `temporary` _[boolean]_ - adds `TEMPORARY` clause
-  - `ifNotExists` _[boolean]_ - adds `IF NOT EXISTS` clause
+| Name            | Type     | Description                       |
+|-----------------|----------|-----------------------------------|
+| `sequence_name` | `string` | name of the new sequence          |
+| `options`       | `object` | Check below for available options |
 
-**Reverse Operation:** `dropSequence`
+### Options
 
----
+| Option           | Type      | Description                                       |
+|------------------|-----------|---------------------------------------------------|
+| `temporary`      | `boolean` | adds `TEMPORARY` clause                           |
+| `ifNotExists`    | `boolean` | adds `IF NOT EXISTS` clause                       |
+| sequence options | `object`  | see [sequence options section](#sequence-options) |
 
-### `pgm.dropSequence( sequence_name, drop_options )`
+### Reverse Operation: `dropSequence`
 
+#### `pgm.dropSequence( sequence_name, drop_options )`
+
+> [!IMPORTANT]
 > Drop a sequence - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropsequence.html)
 
-**Arguments:**
+### Arguments
 
-- `sequence_name` _[[Name](/migrations/#type)]_ - name of the the sequence to drop
-- `drop_options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops sequence only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+| Name            | Type     | Description                       |
+|-----------------|----------|-----------------------------------|
+| `sequence_name` | `string` | name of the sequence to drop      |
+| `drop_options`  | `object` | Check below for available options |
 
----
+### Options
 
-### `pgm.alterSequence( sequence_name, options )`
+| Option     | Type      | Description                      |
+|------------|-----------|----------------------------------|
+| `ifExists` | `boolean` | drops sequence only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects     |
 
+## Operation: `alterSequence`
+
+#### `pgm.alterSequence( sequence_name, options )`
+
+> [!IMPORTANT]
 > Alter a sequence - [postgres docs](https://www.postgresql.org/docs/current/static/sql-altersequence.html)
 
-**Arguments:**
+### Arguments
 
-- `sequence_name` _[[Name](/migrations/#type)]_ - name of the new sequence
-- `options` _[object]_ - options:
-  - sequence options -- see [sequence options section](#sequence-options)
-  - `restart` _[number or true]_ - sets first value of sequence or using `start` value (on true value)
+| Name            | Type     | Description                       |
+|-----------------|----------|-----------------------------------|
+| `sequence_name` | `string` | name of the sequence to alter     |
+| `options`       | `object` | Check below for available options |
 
----
+### Options
 
-### `pgm.renameSequence( old_sequence_name, new_sequence_name )`
+| Option           | Type               | Description                                                         |
+|------------------|--------------------|---------------------------------------------------------------------|
+| `restart`        | `number` or `true` | sets first value of sequence or using `start` value (on true value) |
+| sequence options | `object`           | see [sequence options section](#sequence-options)                   |
 
+## Reverse Operation: `renameSequence`
+
+#### `pgm.renameSequence( old_sequence_name, new_sequence_name )`
+
+> [!IMPORTANT]
 > Rename a sequence - [postgres docs](http://www.postgresql.org/docs/current/static/sql-altersequence.html)
 
-**Arguments:**
+### Arguments
 
-- `old_sequence_name` _[[Name](/migrations/#type)]_ - old name of the sequence
-- `new_sequence_name` _[[Name](/migrations/#type)]_ - new name of the sequence
+| Name                | Type     | Description                                   |
+|---------------------|----------|-----------------------------------------------|
+| `old_sequence_name` | `string` | old [Name](/migrations/#type) of the sequence |
+| `new_sequence_name` | `string` | new [Name](/migrations/#type) of the sequence |
