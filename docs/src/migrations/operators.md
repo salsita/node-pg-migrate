@@ -1,154 +1,206 @@
 # Operator Operations
 
-### `pgm.createOperator( operator_name, options )`
+## Operation: `createOperator`
 
+#### `pgm.createOperator( operator_name, options )`
+
+> [!IMPORTANT]
 > Create a new operator - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createoperator.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_name` _[[Name](/migrations/#type)]_ - name of the new operator
-- `options` _[object]_ - options:
-  - `procedure` _[[Name](/migrations/#type)]_ - name of procedure performing operation
-  - `left` _[[Name](/migrations/#type)]_ - type of left argument
-  - `right` _[[Name](/migrations/#type)]_ - type of right argument
-  - `commutator` _[[Name](/migrations/#type)]_ - name of commutative operator
-  - `negator` _[[Name](/migrations/#type)]_ - name of negating operator
-  - `restrict` _[[Name](/migrations/#type)]_ - name of restriction procedure
-  - `join` _[[Name](/migrations/#type)]_ - name of join procedure
-  - `hashes` _[boolean]_ - adds `HASHES` clause
-  - `merges` _[boolean]_ - adds `MERGES` clause
+| Name            | Type                      | Description                       |
+|-----------------|---------------------------|-----------------------------------|
+| `operator_name` | [Name](/migrations/#type) | name of the new operator          |
+| `options`       | `object`                  | Check below for available options |
 
-**Reverse Operation:** `dropOperator`
+### Options
 
----
+| Option       | Type                      | Description                            |
+|--------------|---------------------------|----------------------------------------|
+| `procedure`  | [Name](/migrations/#type) | name of procedure performing operation |
+| `left`       | [Name](/migrations/#type) | type of left argument                  |
+| `right`      | [Name](/migrations/#type) | type of right argument                 |
+| `commutator` | [Name](/migrations/#type) | name of commutative operator           |
+| `negator`    | [Name](/migrations/#type) | name of negating operator              |
+| `restrict`   | [Name](/migrations/#type) | name of restriction procedure          |
+| `join`       | [Name](/migrations/#type) | name of join procedure                 |
+| `hashes`     | `boolean`                 | adds `HASHES` clause                   |
+| `merges`     | `boolean`                 | adds `MERGES` clause                   |
 
-### `pgm.dropOperator( operator_name, drop_options )`
+## Reverse Operation: `dropOperator`
 
+#### `pgm.dropOperator( operator_name, drop_options )`
+
+> [!IMPORTANT]
 > Drop a operator - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropoperator.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_name` _[[Name](/migrations/#type)]_ - name of the operator to drop
-- `drop_options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops schema only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
-  - `left` _[[Name](/migrations/#type)]_ - type of left argument
-  - `right` _[[Name](/migrations/#type)]_ - type of right argument
+| Name            | Type                      | Description                       |
+|-----------------|---------------------------|-----------------------------------|
+| `operator_name` | [Name](/migrations/#type) | name of the operator to drop      |
+| `drop_options`  | `object`                  | Check below for available options |
 
----
+### Options
 
-### `pgm.createOperatorClass( operator_class_name, type, index_method, operator_list, options )`
+| Option     | Type                      | Description                    |
+|------------|---------------------------|--------------------------------|
+| `ifExists` | `boolean`                 | drops schema only if it exists |
+| `cascade`  | `boolean`                 | drops also dependent objects   |
+| `left`     | [Name](/migrations/#type) | type of left argument          |
+| `right`    | [Name](/migrations/#type) | type of right argument         |
 
+## Operation: `renameOperator`
+
+#### `pgm.createOperatorClass( operator_class_name, type, index_method, operator_list, options )`
+
+> [!IMPORTANT]
 > Create a new operator class - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createopclass.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_class_name` _[[Name](/migrations/#type)]_ - name of the new operator class
-- `type` _[string]_ - data type of the new operator class
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
-- `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
-- `options` _[object]_ - options:
-  - `default` _[boolean]_ - adds `DEFAULT` clause
-  - `family` _[string]_ - type of left argument
+| Name                  | Type                      | Description                                       |
+|-----------------------|---------------------------|---------------------------------------------------|
+| `operator_class_name` | [Name](/migrations/#type) | name of the new operator class                    |
+| `type`                | `string`                  | data type of the new operator class               |
+| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class        |
+| `operator_list`       | `array`                   | of [operator objects](#operator-list-definitions) |
+| `options`             | `object`                  | Check below for available options                 |
 
-**Reverse Operation:** `dropOperatorClass`
+### Options
 
----
+| Option    | Type      | Description           |
+|-----------|-----------|-----------------------|
+| `default` | `boolean` | adds `DEFAULT` clause |
+| `family`  | `string`  | type of left argument |
 
-### `pgm.dropOperatorClass( operator_class_name, index_methoddrop_options )`
+## Reverse Operation: `dropOperatorClass`
 
+#### `pgm.dropOperatorClass( operator_class_name, index_methoddrop_options )`
+
+> [IMPORTANT]
 > Drop a operator class - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopclass.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_class_name` _[[Name](/migrations/#type)]_ - name of the operator class to drop
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
-- `drop_options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops schema only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+| Name                  | Type                      | Description                                |
+|-----------------------|---------------------------|--------------------------------------------|
+| `operator_class_name` | [Name](/migrations/#type) | name of the operator class to drop         |
+| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class |
+| `drop_options`        | `object`                  | Check below for available options          |
 
----
+### Options
 
-### `pgm.renameOperatorClass( old_operator_class_name, index_method, new_operator_class_name )`
+| Option     | Type      | Description                    |
+|------------|-----------|--------------------------------|
+| `ifExists` | `boolean` | drops schema only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects   |
 
+## Operation: `renameOperatorClass`
+
+#### `pgm.renameOperatorClass( old_operator_class_name, index_method, new_operator_class_name )`
+
+> [!IMPORTANT]
 > Rename a operator class - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alteropclass.html)
 
-**Arguments:**
+### Arguments
 
-- `old_operator_class_name` _[[Name](/migrations/#type)]_ - old name of the operator class
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator class
-- `new_operator_class_name` _[[Name](/migrations/#type)]_ - new name of the operator class
+| Name                      | Type                      | Description                                |
+|---------------------------|---------------------------|--------------------------------------------|
+| `old_operator_class_name` | [Name](/migrations/#type) | old name of the operator class             |
+| `index_method`            | [Name](/migrations/#type) | name of the index method of operator class |
+| `new_operator_class_name` | [Name](/migrations/#type) | new name of the operator class             |
 
----
+## Operation: `alterOperatorClass`
 
-### `pgm.createOperatorFamily( operator_family_name, index_method )`
+#### `pgm.createOperatorFamily( operator_family_name, index_method )`
 
+> [!IMPORTANT]
 > Create a new operator family - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createopfamily.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the new operator family
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
+| Name                   | Type                      | Description                                 |
+|------------------------|---------------------------|---------------------------------------------|
+| `operator_family_name` | [Name](/migrations/#type) | name of the new operator family             |
+| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
 
-**Reverse Operation:** `dropOperatorFamily`
+## Reverse Operation: `dropOperatorFamily`
 
----
+#### `pgm.dropOperatorFamily( operator_family_name, index_methoddrop_options )`
 
-### `pgm.dropOperatorFamily( operator_family_name, index_methoddrop_options )`
-
+> [!IMPORTANT]
 > Drop a operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopfamily.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family to drop
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
-- `drop_options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops schema only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+| Name                   | Type                      | Description                                 |
+|------------------------|---------------------------|---------------------------------------------|
+| `operator_family_name` | [Name](/migrations/#type) | name of the operator family to drop         |
+| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
+| `drop_options`         | `object`                  | Check below for available options           |
 
----
+### Options
 
-### `pgm.renameOperatorFamily( old_operator_family_name, index_method, new_operator_family_name )`
+| Option     | Type      | Description                    |
+|------------|-----------|--------------------------------|
+| `ifExists` | `boolean` | drops schema only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects   |
 
+## Operation: `renameOperatorFamily`
+
+#### `pgm.renameOperatorFamily( old_operator_family_name, index_method, new_operator_family_name )`
+
+> [!IMPORTANT]
 > Rename a operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alteropfamily.html)
 
-**Arguments:**
+### Arguments
 
-- `old_operator_family_name` _[[Name](/migrations/#type)]_ - old name of the operator family
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
-- `new_operator_family_name` _[[Name](/migrations/#type)]_ - new name of the operator family
+| Name                       | Type                      | Description                                 |
+|----------------------------|---------------------------|---------------------------------------------|
+| `old_operator_family_name` | [Name](/migrations/#type) | old name of the operator family             |
+| `index_method`             | [Name](/migrations/#type) | name of the index method of operator family |
+| `new_operator_family_name` | [Name](/migrations/#type) | new name of the operator family             |
 
----
+## Operation: `alterOperatorFamily`
 
-### `pgm.addToOperatorFamily( operator_family_name, index_method, operator_list )`
+#### `pgm.addToOperatorFamily( operator_family_name, index_method, operator_list )`
 
+> [!IMPORTANT]
 > Rename a operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alteropfamily.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
-- `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
+| Name                   | Type                      | Description                                       |
+|------------------------|---------------------------|---------------------------------------------------|
+| `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
+| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
+| `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
 
----
+## Reverse Operation: `dropFromOperatorFamily`
 
-### `pgm.removeFromOperatorFamily( operator_family_name, index_method, operator_list )`
+#### `pgm.removeFromOperatorFamily( operator_family_name, index_method, operator_list )`
 
+> [!IMPORTANT]
 > Rename a operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alteropfamily.html)
 
-**Arguments:**
+### Arguments
 
-- `operator_family_name` _[[Name](/migrations/#type)]_ - name of the operator family
-- `index_method` _[[Name](/migrations/#type)]_ - name of the index method of operator family
-- `operator_list` _[array]_ - of [operator objects](#operator-list-definitions)
+| Name                   | Type                      | Description                                       |
+|------------------------|---------------------------|---------------------------------------------------|
+| `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
+| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
+| `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
 
----
+## Operator List Definitions
 
-### Operator List Definitions
+Some functions for defining operators take as parameter `operator_list` which is array of objects with the following
+structure:
 
-Some functions for defining operators take as parameter `operator_list` which is array of objects with following structure:
-
-- `type` _[string]_ - `function` or `operator`
-- `number` _[number]_ - index
-- `name` _[[Name](/migrations/#type)]_ - name of operator or procedure
-- `params` _[array]_ - list of argument types of operator or procedure
+| Name     | Type                      | Description                                     |
+|----------|---------------------------|-------------------------------------------------|
+| `type`   | `string`                  | `function` or `operator`                        |
+| `number` | `number`                  | index                                           |
+| `name`   | [Name](/migrations/#type) | name of operator or procedure                   |
+| `params` | `array`                   | list of argument types of operator or procedure |
