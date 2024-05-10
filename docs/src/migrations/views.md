@@ -1,69 +1,104 @@
 # View Operations
 
-### `pgm.createView( viewName, options, definition )`
+## Operation: `createView`
 
+#### `pgm.createView( viewName, options, definition )`
+
+> [!IMPORTANT]
 > Create a new view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-createview.html)
 
-**Arguments:**
+### Arguments
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the new view
-- `options` _[object]_ - options:
-  - `temporary` _[boolean]_ - default false
-  - `replace` _[boolean]_ - default false
-  - `recursive` _[boolean]_ - default false
-  - `columns` _[string or array]_ - use if you want to name columns differently then inferred from definition
-  - `options` _[object]_ - key value pairs of [View Options](https://www.postgresql.org/docs/current/sql-createview.html)
-  - `checkOption` _[string]_ - `CASCADED` or `LOCAL`
-- `definition` _[string]_ - SQL of SELECT statement
+| Name         | Type     | Description                       |
+|--------------|----------|-----------------------------------|
+| `viewName`   | `string` | name of the new view              |
+| `options`    | `object` | Check below for available options |
+| `definition` | `string` | SQL of SELECT statement           |
 
-**Reverse Operation:** `dropView`
+### Options
 
----
+| Option        | Type                | Description                                                                                    |
+|---------------|---------------------|------------------------------------------------------------------------------------------------|
+| `temporary`   | `boolean`           | adds `TEMPORARY` clause                                                                        |
+| `replace`     | `boolean`           | adds `OR REPLACE` clause                                                                       |
+| `recursive`   | `boolean`           | adds `RECURSIVE` clause                                                                        |
+| `columns`     | `string` or `array` | use if you want to name columns differently then inferred from definition                      |
+| `options`     | `object`            | key value pairs of [View Options](https://www.postgresql.org/docs/current/sql-createview.html) |
+| `checkOption` | `string`            | `CASCADED` or `LOCAL`                                                                          |
 
-### `pgm.dropView( viewName, options )`
+## Reverse Operation: `dropView`
 
+#### `pgm.dropView( viewName, options )`
+
+> [!IMPORTANT]
 > Drop a view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropview.html)
 
-**Arguments:**
+### Arguments
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to delete
-- `options` _[object]_ - options:
-  - `ifExists` _[boolean]_ - drops view only if it exists
-  - `cascade` _[boolean]_ - drops also dependent objects
+| Name       | Type     | Description                       |
+|------------|----------|-----------------------------------|
+| `viewName` | `string` | name of the view to delete        |
+| `options`  | `object` | Check below for available options |
 
----
+### Options
 
-### `pgm.alterView( viewName, options )`
+| Option     | Type      | Description                  |
+|------------|-----------|------------------------------|
+| `ifExists` | `boolean` | drops view only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects |
 
+## Operation: `alterView`
+
+#### `pgm.alterView( viewName, options )`
+
+> [!IMPORTANT]
 > Alter a view - [postgres docs](https://www.postgresql.org/docs/current/static/sql-alterview.html)
 
-**Arguments:**
+### Arguments
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
-- `options` _[object]_ - options:
-  - `checkOption` _[string]_ - `CASCADED`, `LOCAL` or `null` to reset
-  - `options` _[object]_ - key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html)
+| Name       | Type     | Description                       |
+|------------|----------|-----------------------------------|
+| `viewName` | `string` | name of the view to alter         |
+| `options`  | `object` | Check below for available options |
 
----
+### Options
 
-### `pgm.alterViewColumn( viewName, columnName, options )`
+| Option        | Type     | Description                                                                                                     |
+|---------------|----------|-----------------------------------------------------------------------------------------------------------------|
+| `checkOption` | `string` | `CASCADED`, `LOCAL` or `null` to reset                                                                          |
+| `options`     | `object` | key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html) |
 
+## Operation: `alterViewColumn`
+
+#### `pgm.alterViewColumn( viewName, columnName, options )`
+
+> [!IMPORTANT]
 > Alter a view column - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterview.html)
 
-**Arguments:**
+### Arguments
 
-- `viewName` _[[Name](/migrations/#type)]_ - name of the view to alter
-- `columnName` _[string]_ - name of the column to alter
-- `options` _[object]_ - options:
-  - `default` _[string]_ - default value of column
+| Name         | Type     | Description                       |
+|--------------|----------|-----------------------------------|
+| `viewName`   | `string` | name of the view to alter         |
+| `columnName` | `string` | name of the column to alter       |
+| `options`    | `object` | Check below for available options |
 
----
+### Options
 
-### `pgm.renameView( viewName, newViewName )`
+| Option    | Type     | Description             |
+|-----------|----------|-------------------------|
+| `default` | `string` | default value of column |
 
+## Operation: `renameView`
+
+#### `pgm.renameView( viewName, newViewName )`
+
+> [!IMPORTANT]
 > Rename a view - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterview.html)
 
-**Arguments:**
+### Arguments
 
-- `viewName` _[[Name](/migrations/#type)]_ - old name of the view
-- `newViewName` _[[Name](/migrations/#type)]_ - new name of the view
+| Name          | Type     | Description          |
+|---------------|----------|----------------------|
+| `viewName`    | `string` | old name of the view |
+| `newViewName` | `string` | new name of the view |
