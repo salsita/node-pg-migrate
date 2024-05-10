@@ -1,58 +1,76 @@
 # Role Operations
 
-### `pgm.createRole( role_name, role_options )`
+## Operation: `createRole`
 
+#### `pgm.createRole( role_name, role_options )`
+
+> [!IMPORTANT]
 > Create a new role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createrole.html)
 
-**Arguments:**
+### Arguments
 
-- `role_name` _[[Name](/migrations/#type)]_ - name of the new role
-- `role_options` _[object]_ - options:
-  - `superuser` _[boolean]_ - default false
-  - `createdb` _[boolean]_ - default false
-  - `createrole` _[boolean]_ - default false
-  - `inherit` _[boolean]_ - default true
-  - `login` _[boolean]_ - default false
-  - `replication` _[boolean]_ - default false
-  - `bypassrls` _[boolean]_
-  - `limit` _[number]_ -
-  - `password` _[string]_ -
-  - `encrypted` _[boolean]_ - default true
-  - `valid` _[string]_ - timestamp
-  - `inRole` _[string or array of strings]_ - role or array of roles
-  - `role` _[string or array of strings]_ - role or array of roles
-  - `admin` _[string or array of strings]_ - role or array of roles
+| Name           | Type                      | Description                       |
+|----------------|---------------------------|-----------------------------------|
+| `role_name`    | [Name](/migrations/#type) | name of the new role              |
+| `role_options` | `object`                  | Check below for available options |
 
-**Reverse Operation:** `dropRole`
+### role_options
 
----
+| Option        | Type                        | Description            |
+|---------------|-----------------------------|------------------------|
+| `superuser`   | `boolean`                   | default `false`        |
+| `createdb`    | `boolean`                   | default `false`        |
+| `createrole`  | `boolean`                   | default `false`        |
+| `inherit`     | `boolean`                   | default `true`         |
+| `login`       | `boolean`                   | default `false`        |
+| `replication` | `boolean`                   | default `false`        |
+| `bypassrls`   | `boolean`                   |                        |
+| `limit`       | `number`                    |                        |
+| `password`    | `string`                    |                        |
+| `encrypted`   | `boolean`                   | default `true`         |
+| `valid`       | `string`                    | timestamp              |
+| `inRole`      | `string` or `array[string]` | role or array of roles |
+| `role`        | `string` or `array[string]` | role or array of roles |
+| `admin`       | `string` or `array[string]` | role or array of roles |
 
-### `pgm.dropRole( role_name )`
+## Reverse Operation: `dropRole`
 
+#### `pgm.dropRole( role_name )`
+
+> [!IMPORTANT]
 > Drop a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droprole.html)
 
-**Arguments:**
+### Arguments
 
-- `role_name` _[[Name](/migrations/#type)]_ - name of the new role
+| Name        | Type                      | Description              |
+|-------------|---------------------------|--------------------------|
+| `role_name` | [Name](/migrations/#type) | name of the role to drop |
 
----
+## Operation: `alterRole`
 
-### `pgm.alterRole( role_name, role_options )`
+#### `pgm.alterRole( role_name, role_options )`
 
+> [!IMPORTANT]
 > Alter a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
-**Arguments:**
+### Arguments
 
-- `role_name` _[[Name](/migrations/#type)]_ - name of the new role
-- `role_options` _[object]_ - [see](#pgmcreaterole-role_name-role_options-)
+| Name           | Type                      | Description          |
+|----------------|---------------------------|----------------------|
+| `role_name`    | [Name](/migrations/#type) | name of the role     |
+| `role_options` | `object`                  | [see](#role_options) |
 
----
 
-### `pgm.renameRole( old_role_name, new_role_name )`
+## Operation: `renameRole`
 
+#### `pgm.renameRole( old_role_name, new_role_name )`
+
+> [!IMPORTANT]
 > Rename a role - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterrole.html)
 
-**Arguments:**
+### Arguments
 
-- `old_role_name` _[[Name](/migrations/#type)]_ - old name of the role
-- `new_role_name` _[[Name](/migrations/#type)]_ - new name of the role
+| Name            | Type                      | Description          |
+|-----------------|---------------------------|----------------------|
+| `old_role_name` | [Name](/migrations/#type) | old name of the role |
+| `new_role_name` | [Name](/migrations/#type) | new name of the role |
