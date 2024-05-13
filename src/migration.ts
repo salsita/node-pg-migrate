@@ -8,7 +8,8 @@
 
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { basename, dirname, extname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migrationBuilder';
@@ -47,6 +48,9 @@ export type CreateOptions = {
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url));
 
 export async function loadMigrationFiles(
   dir: string,
@@ -138,7 +142,7 @@ export class Migration implements RunMigration {
       'templateFileName' in options
         ? resolve(process.cwd(), options.templateFileName)
         : resolve(
-            __dirname,
+            _dirname,
             `../templates/migration-template.${await resolveSuffix(directory, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);

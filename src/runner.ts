@@ -1,4 +1,5 @@
-import { extname, relative } from 'node:path';
+import { dirname, extname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
@@ -23,6 +24,9 @@ const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
 const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
+const _dirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : dirname(fileURLToPath(import.meta.url));
 
 async function loadMigrations(
   db: DBConnection,
@@ -39,7 +43,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : require(relative(__dirname, filePath));
+            : require(relative(_dirname, filePath));
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
