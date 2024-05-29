@@ -29,6 +29,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       language,
       window = false,
       behavior = 'VOLATILE',
+      security = 'INVOKER',
       onNull = false,
       parallel,
     } = functionOptions;
@@ -45,6 +46,10 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       throw new Error(
         `Language for function ${functionName} have to be specified`
       );
+    }
+
+    if (security !== 'INVOKER') {
+      options.push(`SECURITY ${security}`);
     }
 
     if (window) {
