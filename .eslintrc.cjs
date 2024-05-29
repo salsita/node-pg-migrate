@@ -62,6 +62,13 @@ module.exports = defineConfig({
       'error',
       { default: 'array-simple', readonly: 'generic' },
     ],
+    '@typescript-eslint/ban-ts-comment': [
+      'error',
+      {
+        'ts-expect-error': 'allow-with-description',
+        'ts-ignore': 'allow-with-description',
+      },
+    ],
     '@typescript-eslint/consistent-type-exports': 'error',
     '@typescript-eslint/consistent-type-imports': [
       'error',
