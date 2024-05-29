@@ -23,6 +23,8 @@ export interface FunctionOptions {
 
   behavior?: 'IMMUTABLE' | 'STABLE' | 'VOLATILE';
 
+  security?: 'INVOKER' | 'DEFINER';
+
   onNull?: boolean;
 
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';

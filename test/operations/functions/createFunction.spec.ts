@@ -60,6 +60,48 @@ describe('operations', () => {
         );
       });
 
+      it('should return sql statement with security', () => {
+        const statement = createFunctionFn(
+          'check_password',
+          [
+            { name: 'uname', type: 'text' },
+            { name: 'pass', type: 'text' },
+          ],
+          {
+            returns: 'boolean',
+            language: 'plpgsql',
+            security: 'DEFINER',
+          },
+          `
+DECLARE passed BOOLEAN;
+BEGIN
+  SELECT (pwd = $2) INTO passed
+  FROM pwds
+  WHERE username = $1;
+  RETURN passed;
+END;
+`
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE FUNCTION "check_password"("uname" text, "pass" text)
+  RETURNS boolean
+  AS $pga$
+DECLARE passed BOOLEAN;
+BEGIN
+  SELECT (pwd = $2) INTO passed
+  FROM pwds
+  WHERE username = $1;
+  RETURN passed;
+END;
+$pga$
+  VOLATILE
+  LANGUAGE plpgsql
+  SECURITY DEFINER;`
+        );
+      });
+
       it('should throw if no language provided', () => {
         expect(() =>
           createFunctionFn(

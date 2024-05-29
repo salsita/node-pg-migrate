@@ -37,6 +37,7 @@ If array of strings, it is interpreted as is, if array of objects:
 | `replace`  | `boolean` | create or replace function           |
 | `window`   | `boolean` | window function                      |
 | `behavior` | `string`  | `IMMUTABLE`, `STABLE`, or `VOLATILE` |
+| `security` | `string`  | `INVOKER` or `DEFINER`               |
 | `onNull`   | `boolean` | `RETURNS NULL ON NULL INPUT`         |
 | `parallel` | `string`  | `UNSAFE`, `RESTRICTED`, or `SAFE`    |
 
