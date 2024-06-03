@@ -24,7 +24,9 @@
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
   },
   "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate.js"
+    "node-pg-migrate": "bin/node-pg-migrate.js",
+    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
+    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
   },
   "type": "commonjs",
   "main": "dist/index.js",

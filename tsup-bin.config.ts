@@ -10,4 +10,10 @@ export default defineConfig({
   minify: false,
   sourcemap: false,
   bundle: false,
+  shims: true,
+  banner: {
+    js: `import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+`,
+  },
 });

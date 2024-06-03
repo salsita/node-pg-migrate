@@ -8,7 +8,7 @@
 
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { basename, extname, join, resolve } from 'node:path';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migrationBuilder';
@@ -139,7 +139,11 @@ export class Migration implements RunMigration {
         ? resolve(process.cwd(), options.templateFileName)
         : resolve(
             __dirname,
-            `../templates/migration-template.${await resolveSuffix(directory, options)}`
+            join(
+              '..',
+              'templates',
+              `migration-template.${await resolveSuffix(directory, options)}`
+            )
           );
     const suffix = getSuffixFromFileName(templateFileName);
 
