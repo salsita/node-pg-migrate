@@ -5,15 +5,9 @@ export default defineConfig({
   outDir: 'bin',
   clean: false,
   format: ['esm', 'cjs'],
-  target: ['es2020', 'node16'],
+  target: ['es2022', 'node18'],
   dts: false,
   minify: false,
   sourcemap: false,
   bundle: false,
-  shims: true,
-  banner: {
-    js: `import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-`,
-  },
 });

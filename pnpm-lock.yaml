@@ -1836,7 +1836,7 @@ packages:
 
   'node-pg-migrate@file:':
     resolution: {directory: '', type: directory}
-    engines: {node: '>=16.18.0'}
+    engines: {node: '>=18.19.0'}
     hasBin: true
     peerDependencies:
       '@types/pg': '>=6.0.0 <9.0.0'

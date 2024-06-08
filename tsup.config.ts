@@ -7,7 +7,7 @@ export default defineConfig([
     outDir: 'dist/esm',
     clean: true,
     format: 'esm',
-    target: ['es2020', 'node16'],
+    target: ['es2022', 'node18'],
     dts: false,
     minify: false,
     sourcemap: false,

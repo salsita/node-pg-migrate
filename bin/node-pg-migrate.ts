@@ -6,6 +6,7 @@ import type { DotenvConfigOptions } from 'dotenv';
 // @ts-ignore: when a clean was made, the types are not present in the first run
 import { default as migrationRunner, Migration } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
@@ -20,9 +21,25 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+let xRequire!: NodeRequire;
+
+try {
+  xRequire = require;
+} catch (error) {
+  if (
+    error instanceof ReferenceError &&
+    error.message === 'require is not defined'
+  ) {
+    xRequire = createRequire(
+      // @ts-expect-error: ignore until esm only
+      import.meta.url
+    );
+  }
+}
+
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
-    return require(moduleName);
+    return xRequire(moduleName);
   } catch (error) {
     if (
       // @ts-expect-error: TS doesn't know about code property
@@ -426,7 +443,7 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = require(resolve(configFileName));
+  const jsonConfig = xRequire(resolve(configFileName));
   readJson(jsonConfig);
 }
 
