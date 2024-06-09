@@ -22,14 +22,13 @@ export function dropColumns(mOptions: MigrationOptions): DropColumns {
 
     const ifExistsStr = ifExists ? 'IF EXISTS ' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
-    const columnsStr = formatLines(
-      columns.map(mOptions.literal),
-      `  DROP ${ifExistsStr}`,
-      `${cascadeStr},`
-    );
+
+    const lines = columns
+      .map(mOptions.literal)
+      .map((column) => `DROP ${ifExistsStr}${column}${cascadeStr}`);
 
     return `ALTER TABLE ${mOptions.literal(tableName)}
-${columnsStr};`;
+${formatLines(lines)};`;
   };
 
   return _drop;
