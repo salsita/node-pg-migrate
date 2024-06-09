@@ -138,8 +138,8 @@ export class Migration implements RunMigration {
       'templateFileName' in options
         ? resolve(process.cwd(), options.templateFileName)
         : resolve(
-            __dirname,
-            `../templates/migration-template.${await resolveSuffix(directory, options)}`
+            'node_modules/node-pg-migrate/templates',
+            `migration-template.${await resolveSuffix(directory, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);
 
