@@ -149,7 +149,6 @@ export class Migration implements RunMigration {
         : resolve(
             moduleDir,
             join(
-              '..',
               'templates',
               `migration-template.${await resolveSuffix(directory, options)}`
             )
