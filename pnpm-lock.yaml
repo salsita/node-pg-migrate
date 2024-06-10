@@ -106,8 +106,8 @@ importers:
         specifier: 4.8.4
         version: 4.8.4
       vitepress:
-        specifier: 1.2.2
-        version: 1.2.2(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4)
+        specifier: 1.2.3
+        version: 1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4)
       vitest:
         specifier: 1.6.0
         version: 1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0)
@@ -2562,8 +2562,8 @@ packages:
       terser:
         optional: true
 
-  vitepress@1.2.2:
-    resolution: {integrity: sha512-uZ3nXR5NY4nYj3RJWCo5jev9qlNZAQo5SUXu1U0QSUx84cUm/o7hCTDVjZ4njVSVui+PsV1oAbdQOg8ygbaf4w==}
+  vitepress@1.2.3:
+    resolution: {integrity: sha512-GvEsrEeNLiDE1+fuwDAYJCYLNZDAna+EtnXlPajhv/MYeTjbNK6Bvyg6NoTdO1sbwuQJ0vuJR99bOlH53bo6lg==}
     hasBin: true
     peerDependencies:
       markdown-it-mathjax3: ^4
@@ -5169,7 +5169,7 @@ snapshots:
       '@types/node': 18.19.33
       fsevents: 2.3.3
 
-  vitepress@1.2.2(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4):
+  vitepress@1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4):
     dependencies:
       '@docsearch/css': 3.6.0
       '@docsearch/js': 3.6.0(@algolia/client-search@4.23.3)(search-insights@2.14.0)
