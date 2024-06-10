@@ -104,7 +104,7 @@
     "@eslint-types/typescript-eslint": "7.5.0",
     "@eslint-types/unicorn": "52.0.0",
     "@types/config": "3.3.4",
-    "@types/node": "18.19.33",
+    "@types/node": "18.19.34",
     "@types/pg": "8.11.6",
     "@types/yargs": "17.0.32",
     "@typescript-eslint/eslint-plugin": "7.12.0",
@@ -124,14 +124,14 @@
     "json5": "2.2.3",
     "node-pg-migrate": "file:.",
     "npm-run-all2": "6.2.0",
-    "pg": "8.11.5",
-    "prettier": "3.3.0",
+    "pg": "8.12.0",
+    "prettier": "3.3.1",
     "prettier-plugin-organize-imports": "3.2.4",
     "rimraf": "5.0.7",
     "ts-node": "10.9.2",
     "tsup": "8.1.0",
     "typescript": "4.8.4",
-    "vitepress": "1.2.2",
+    "vitepress": "1.2.3",
     "vitest": "1.6.0"
   },
   "peerDependencies": {
@@ -143,7 +143,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@9.3.0",
   "engines": {
     "node": ">=18.19.0"
   }
