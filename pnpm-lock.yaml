@@ -25,8 +25,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       '@types/node':
-        specifier: 18.19.33
-        version: 18.19.33
+        specifier: 18.19.34
+        version: 18.19.34
       '@types/pg':
         specifier: 8.11.6
         version: 8.11.6
@@ -41,7 +41,7 @@ importers:
         version: 7.12.0(eslint@8.57.0)(typescript@4.8.4)
       '@vitest/coverage-v8':
         specifier: 1.6.0
-        version: 1.6.0(vitest@1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0))
+        version: 1.6.0(vitest@1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0))
       '@vitest/ui':
         specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0)
@@ -80,13 +80,13 @@ importers:
         version: 2.2.3
       node-pg-migrate:
         specifier: file:.
-        version: file:(@types/pg@8.11.6)(pg@8.11.5)
+        version: file:(@types/pg@8.11.6)(pg@8.12.0)
       npm-run-all2:
         specifier: 6.2.0
         version: 6.2.0
       pg:
-        specifier: 8.11.5
-        version: 8.11.5
+        specifier: 8.12.0
+        version: 8.12.0
       prettier:
         specifier: 3.3.1
         version: 3.3.1
@@ -98,19 +98,19 @@ importers:
         version: 5.0.7
       ts-node:
         specifier: 10.9.2
-        version: 10.9.2(@types/node@18.19.33)(typescript@4.8.4)
+        version: 10.9.2(@types/node@18.19.34)(typescript@4.8.4)
       tsup:
         specifier: 8.1.0
-        version: 8.1.0(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.33)(typescript@4.8.4))(typescript@4.8.4)
+        version: 8.1.0(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.34)(typescript@4.8.4))(typescript@4.8.4)
       typescript:
         specifier: 4.8.4
         version: 4.8.4
       vitepress:
         specifier: 1.2.3
-        version: 1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4)
+        version: 1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.34)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4)
       vitest:
         specifier: 1.6.0
-        version: 1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0)
+        version: 1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0)
 
 packages:
 
@@ -726,8 +726,8 @@ packages:
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
-  '@types/node@18.19.33':
-    resolution: {integrity: sha512-NR9+KrpSajr2qBVp/Yt5TU/rp+b5Mayi3+OlMlcg2cVCfRmcG5PWZ7S4+MG9PZ5gWBoc9Pd0BKSRViuBCRPu0A==}
+  '@types/node@18.19.34':
+    resolution: {integrity: sha512-eXF4pfBNV5DAMKGbI02NnDtWrQ40hAN558/2vvS4gMpMIxaf6JmD7YjnZbq0Q9TDSSkKBamime8ewRoomHdt4g==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2005,8 +2005,8 @@ packages:
     resolution: {integrity: sha512-cRL3JpS3lKMGsKaWndugWQoLOCoP+Cic8oseVcbr0qhPzYD5DWXK+RZ9LY9wxRf7RQia4SCwQlXk0q6FCPrVng==}
     engines: {node: '>=10'}
 
-  pg@8.11.5:
-    resolution: {integrity: sha512-jqgNHSKL5cbDjFlHyYsCXmQDrfIX/3RsNwYqpd4N0Kt8niLuNoRNH+aazv6cOd43gPh9Y4DjQCtb+X0MH0Hvnw==}
+  pg@8.12.0:
+    resolution: {integrity: sha512-A+LHUSnwnxrnL/tZ+OLfqR1SxLN3c/pgDztZ47Rpbsd4jUytsTtwQo/TLPRzPJMp/1pbhYVhH9cuSZLAajNfjQ==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -3168,7 +3168,7 @@ snapshots:
 
   '@types/mdurl@2.0.0': {}
 
-  '@types/node@18.19.33':
+  '@types/node@18.19.34':
     dependencies:
       undici-types: 5.26.5
 
@@ -3176,7 +3176,7 @@ snapshots:
 
   '@types/pg@8.11.6':
     dependencies:
-      '@types/node': 18.19.33
+      '@types/node': 18.19.34
       pg-protocol: 1.6.1
       pg-types: 4.0.2
 
@@ -3271,12 +3271,12 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vitejs/plugin-vue@5.0.5(vite@5.2.12(@types/node@18.19.33))(vue@3.4.27(typescript@4.8.4))':
+  '@vitejs/plugin-vue@5.0.5(vite@5.2.12(@types/node@18.19.34))(vue@3.4.27(typescript@4.8.4))':
     dependencies:
-      vite: 5.2.12(@types/node@18.19.33)
+      vite: 5.2.12(@types/node@18.19.34)
       vue: 3.4.27(typescript@4.8.4)
 
-  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0))':
+  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -3291,7 +3291,7 @@ snapshots:
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
-      vitest: 1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0)
+      vitest: 1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -3326,7 +3326,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.0.1
       sirv: 2.0.4
-      vitest: 1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0)
+      vitest: 1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0)
 
   '@vitest/utils@1.6.0':
     dependencies:
@@ -4465,9 +4465,9 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-pg-migrate@file:(@types/pg@8.11.6)(pg@8.11.5):
+  node-pg-migrate@file:(@types/pg@8.11.6)(pg@8.12.0):
     dependencies:
-      pg: 8.11.5
+      pg: 8.12.0
       yargs: 17.7.2
     optionalDependencies:
       '@types/pg': 8.11.6
@@ -4604,9 +4604,9 @@ snapshots:
 
   pg-numeric@1.0.2: {}
 
-  pg-pool@3.6.2(pg@8.11.5):
+  pg-pool@3.6.2(pg@8.12.0):
     dependencies:
-      pg: 8.11.5
+      pg: 8.12.0
 
   pg-protocol@1.6.1: {}
 
@@ -4628,10 +4628,10 @@ snapshots:
       postgres-interval: 3.0.0
       postgres-range: 1.1.4
 
-  pg@8.11.5:
+  pg@8.12.0:
     dependencies:
       pg-connection-string: 2.6.4
-      pg-pool: 3.6.2(pg@8.11.5)
+      pg-pool: 3.6.2(pg@8.12.0)
       pg-protocol: 1.6.1
       pg-types: 2.2.0
       pgpass: 1.0.5
@@ -4660,13 +4660,13 @@ snapshots:
 
   possible-typed-array-names@1.0.0: {}
 
-  postcss-load-config@4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.33)(typescript@4.8.4)):
+  postcss-load-config@4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.34)(typescript@4.8.4)):
     dependencies:
       lilconfig: 3.1.1
       yaml: 2.4.3
     optionalDependencies:
       postcss: 8.4.38
-      ts-node: 10.9.2(@types/node@18.19.33)(typescript@4.8.4)
+      ts-node: 10.9.2(@types/node@18.19.34)(typescript@4.8.4)
 
   postcss@8.4.38:
     dependencies:
@@ -5026,14 +5026,14 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-node@10.9.2(@types/node@18.19.33)(typescript@4.8.4):
+  ts-node@10.9.2(@types/node@18.19.34)(typescript@4.8.4):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 18.19.33
+      '@types/node': 18.19.34
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3
@@ -5046,7 +5046,7 @@ snapshots:
 
   tslib@2.6.2: {}
 
-  tsup@8.1.0(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.33)(typescript@4.8.4))(typescript@4.8.4):
+  tsup@8.1.0(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.34)(typescript@4.8.4))(typescript@4.8.4):
     dependencies:
       bundle-require: 4.2.1(esbuild@0.21.4)
       cac: 6.7.14
@@ -5056,7 +5056,7 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.33)(typescript@4.8.4))
+      postcss-load-config: 4.0.2(postcss@8.4.38)(ts-node@10.9.2(@types/node@18.19.34)(typescript@4.8.4))
       resolve-from: 5.0.0
       rollup: 4.18.0
       source-map: 0.8.0-beta.0
@@ -5143,13 +5143,13 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vite-node@1.6.0(@types/node@18.19.33):
+  vite-node@1.6.0(@types/node@18.19.34):
     dependencies:
       cac: 6.7.14
       debug: 4.3.5
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.2.12(@types/node@18.19.33)
+      vite: 5.2.12(@types/node@18.19.34)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -5160,23 +5160,23 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.2.12(@types/node@18.19.33):
+  vite@5.2.12(@types/node@18.19.34):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.18.0
     optionalDependencies:
-      '@types/node': 18.19.33
+      '@types/node': 18.19.34
       fsevents: 2.3.3
 
-  vitepress@1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.33)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4):
+  vitepress@1.2.3(@algolia/client-search@4.23.3)(@types/node@18.19.34)(postcss@8.4.38)(search-insights@2.14.0)(typescript@4.8.4):
     dependencies:
       '@docsearch/css': 3.6.0
       '@docsearch/js': 3.6.0(@algolia/client-search@4.23.3)(search-insights@2.14.0)
       '@shikijs/core': 1.6.2
       '@shikijs/transformers': 1.6.2
       '@types/markdown-it': 14.1.1
-      '@vitejs/plugin-vue': 5.0.5(vite@5.2.12(@types/node@18.19.33))(vue@3.4.27(typescript@4.8.4))
+      '@vitejs/plugin-vue': 5.0.5(vite@5.2.12(@types/node@18.19.34))(vue@3.4.27(typescript@4.8.4))
       '@vue/devtools-api': 7.2.1(vue@3.4.27(typescript@4.8.4))
       '@vue/shared': 3.4.27
       '@vueuse/core': 10.10.0(vue@3.4.27(typescript@4.8.4))
@@ -5185,7 +5185,7 @@ snapshots:
       mark.js: 8.11.1
       minisearch: 6.3.0
       shiki: 1.6.2
-      vite: 5.2.12(@types/node@18.19.33)
+      vite: 5.2.12(@types/node@18.19.34)
       vue: 3.4.27(typescript@4.8.4)
     optionalDependencies:
       postcss: 8.4.38
@@ -5216,7 +5216,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@1.6.0(@types/node@18.19.33)(@vitest/ui@1.6.0):
+  vitest@1.6.0(@types/node@18.19.34)(@vitest/ui@1.6.0):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
@@ -5235,11 +5235,11 @@ snapshots:
       strip-literal: 2.1.0
       tinybench: 2.8.0
       tinypool: 0.8.4
-      vite: 5.2.12(@types/node@18.19.33)
-      vite-node: 1.6.0(@types/node@18.19.33)
+      vite: 5.2.12(@types/node@18.19.34)
+      vite-node: 1.6.0(@types/node@18.19.34)
       why-is-node-running: 2.2.2
     optionalDependencies:
-      '@types/node': 18.19.33
+      '@types/node': 18.19.34
       '@vitest/ui': 1.6.0(vitest@1.6.0)
     transitivePeerDependencies:
       - less
