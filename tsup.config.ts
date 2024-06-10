@@ -4,11 +4,11 @@ export default defineConfig([
   // src esm
   {
     entry: ['src/index.ts'],
-    outDir: 'dist/esm',
+    outDir: 'dist',
     clean: true,
     format: 'esm',
     target: ['es2020', 'node16'],
-    dts: false,
+    dts: true,
     minify: false,
     sourcemap: false,
     bundle: true,
@@ -21,7 +21,7 @@ export default defineConfig([
     clean: false,
     format: 'cjs',
     target: ['es2020', 'node16'],
-    dts: false,
+    dts: true,
     minify: false,
     sourcemap: false,
     bundle: false,

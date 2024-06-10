@@ -7,8 +7,7 @@
     "build:bin": "tsup-node --config tsup-bin.config.ts",
     "build:clean": "rimraf dist",
     "build:code": "tsup-node",
-    "build:types": "tsc --project tsconfig.build.json",
-    "build": "run-s build:clean build:code build:types build:bin",
+    "build": "run-s build:clean build:code build:bin",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
     "ts-check": "tsc",
@@ -24,35 +23,18 @@
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
   },
   "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate.js"
+    "node-pg-migrate": "bin/node-pg-migrate.js",
+    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
+    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
   },
   "type": "commonjs",
   "main": "dist/index.js",
-  "module": "dist/esm/index.mjs",
-  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
   "exports": {
-    "./dist/*": {
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.js",
-      "import": "./dist/esm/*.mjs",
-      "default": "./dist/*.js"
-    },
-    "./bin/*": {
-      "require": "./bin/*.js",
-      "import": "./bin/*.mjs",
-      "default": "./bin/*.js"
-    },
     ".": {
-      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/esm/index.mjs",
-      "default": "./dist/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.js"
-    },
-    "./package.json": "./package.json"
+      "import": "./dist/index.mjs"
+    }
   },
   "files": [
     "bin",

@@ -94,10 +94,10 @@ jobs:
         run: pnpm install
 
       - name: Build types
-        run: pnpm run build:types
+        run: pnpm run build
 
       - name: Check scripts
-        run: pnpm run ts-check
+        run: pnpm run ts-check && pnpm run ts-check dist/index.d.mts
 
   create-migration-test:
     runs-on: ubuntu-latest
