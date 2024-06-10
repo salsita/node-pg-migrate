@@ -13,12 +13,6 @@ export default defineConfig([
     sourcemap: false,
     bundle: true,
     outExtension: () => ({ js: '.mjs' }),
-    shims: true,
-    banner: {
-      js: `import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-`,
-    },
   },
   // src cjs
   {

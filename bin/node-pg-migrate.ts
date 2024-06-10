@@ -21,25 +21,14 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-let xRequire!: NodeRequire;
-
-try {
-  xRequire = require;
-} catch (error) {
-  if (
-    error instanceof ReferenceError &&
-    error.message === 'require is not defined'
-  ) {
-    xRequire = createRequire(
-      // @ts-expect-error: ignore until esm only
-      import.meta.url
-    );
-  }
-}
+const crossRequire = createRequire(
+  // @ts-expect-error: ignore until esm only
+  import.meta.url || __dirname
+);
 
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
-    return xRequire(moduleName);
+    return crossRequire(moduleName);
   } catch (error) {
     if (
       // @ts-expect-error: TS doesn't know about code property
@@ -443,7 +432,7 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = xRequire(resolve(configFileName));
+  const jsonConfig = crossRequire(resolve(configFileName));
   readJson(jsonConfig);
 }
 

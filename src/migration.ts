@@ -8,7 +8,8 @@
 
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migrationBuilder';
@@ -134,11 +135,19 @@ export class Migration implements RunMigration {
         ? now.toISOString().replace(/\D/g, '')
         : now.valueOf();
 
+    const crossRequire = createRequire(
+      // @ts-expect-error: ignore until esm only
+      import.meta.url || __dirname
+    );
+    const moduleDir = dirname(
+      crossRequire.resolve('node-pg-migrate/package.json')
+    );
+
     const templateFileName =
       'templateFileName' in options
         ? resolve(process.cwd(), options.templateFileName)
         : resolve(
-            __dirname,
+            moduleDir,
             join(
               '..',
               'templates',
