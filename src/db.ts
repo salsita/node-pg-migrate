@@ -11,8 +11,7 @@ import type {
   QueryConfig,
   QueryResult,
 } from 'pg';
-// This needs to be imported as `*`, otherwise it will fail in esm
-import * as pg from 'pg';
+import pg from 'pg';
 import type { DB, Logger } from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import pg, { Client } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
 import Db from '../src/db';
@@ -13,6 +13,9 @@ const hoisted = vi.hoisted(() => ({
 }));
 
 vi.mock('pg', () => ({
+  default: {
+    Client: vi.fn().mockImplementation(() => hoisted.client),
+  },
   Client: vi.fn().mockImplementation(() => hoisted.client),
 }));
 
@@ -36,7 +39,7 @@ describe('db', () => {
     it('should call pg.Client with connection string', () => {
       db = Db('connection_string');
 
-      expect(Client).toBeCalledWith('connection_string');
+      expect(pg.Client).toBeCalledWith('connection_string');
     });
 
     it('should use external client', async () => {
