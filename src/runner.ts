@@ -1,4 +1,5 @@
-import { extname, relative } from 'node:path';
+import { dirname, extname, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
@@ -24,6 +25,29 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
+async function resolveMigrationFile(
+  filePath: string
+): Promise<MigrationBuilderActions> {
+  let directory: string;
+
+  try {
+    directory = __dirname;
+  } catch {
+    directory = dirname(
+      fileURLToPath(
+        // @ts-expect-error: ignore until esm only
+        import.meta.url
+      )
+    );
+  }
+
+  const relativeFilePath = relative(directory, filePath);
+
+  return (
+    globalThis.require?.(relativeFilePath) ?? (await import(relativeFilePath))
+  );
+}
+
 async function loadMigrations(
   db: DBConnection,
   options: RunnerOption,
@@ -39,7 +63,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : require(relative(__dirname, filePath));
+            : await resolveMigrationFile(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
