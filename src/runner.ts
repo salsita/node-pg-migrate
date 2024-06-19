@@ -1,4 +1,5 @@
-import { extname, relative } from 'node:path';
+import { createRequire } from 'node:module';
+import { extname, resolve } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
@@ -35,11 +36,11 @@ async function loadMigrations(
 
     const migrations = await Promise.all(
       files.map(async (file) => {
-        const filePath = `${options.dir}/${file}`;
+        const filePath = resolve(options.dir, file);
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : require(relative(__dirname, filePath));
+            : createRequire(resolve('noop.js'))(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(

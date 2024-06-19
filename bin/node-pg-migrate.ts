@@ -21,10 +21,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const crossRequire = createRequire(
-  // @ts-expect-error: ignore until esm only
-  import.meta.url || __dirname
-);
+const crossRequire = createRequire(resolve('noop.js'));
 
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
