@@ -104,11 +104,11 @@
     "@eslint-types/typescript-eslint": "7.5.0",
     "@eslint-types/unicorn": "52.0.0",
     "@types/config": "3.3.4",
-    "@types/node": "18.19.34",
+    "@types/node": "18.19.36",
     "@types/pg": "8.11.6",
     "@types/yargs": "17.0.32",
-    "@typescript-eslint/eslint-plugin": "7.12.0",
-    "@typescript-eslint/parser": "7.12.0",
+    "@typescript-eslint/eslint-plugin": "7.13.1",
+    "@typescript-eslint/parser": "7.13.1",
     "@vitest/coverage-v8": "1.6.0",
     "@vitest/ui": "1.6.0",
     "config": "3.3.11",
@@ -125,7 +125,7 @@
     "node-pg-migrate": "file:.",
     "npm-run-all2": "6.2.0",
     "pg": "8.12.0",
-    "prettier": "3.3.1",
+    "prettier": "3.3.2",
     "prettier-plugin-organize-imports": "3.2.4",
     "rimraf": "5.0.7",
     "ts-node": "10.9.2",
@@ -143,7 +143,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.3.0",
+  "packageManager": "pnpm@9.4.0",
   "engines": {
     "node": ">=18.19.0"
   }
