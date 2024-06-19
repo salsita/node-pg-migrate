@@ -102,7 +102,7 @@
     "@eslint-types/typescript-eslint": "7.5.0",
     "@eslint-types/unicorn": "52.0.0",
     "@types/config": "3.3.4",
-    "@types/node": "18.19.34",
+    "@types/node": "18.19.36",
     "@types/pg": "8.11.6",
     "@types/yargs": "17.0.32",
     "@typescript-eslint/eslint-plugin": "7.13.1",
