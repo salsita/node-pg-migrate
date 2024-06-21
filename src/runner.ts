@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { extname, resolve } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import type { DBConnection } from './db';
 import Db from './db';
@@ -41,7 +41,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : createRequire(resolve(cwd()))(filePath);
+            : createRequire(resolve(join(cwd(), '_')))(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
