@@ -1,6 +1,5 @@
 import { createRequire } from 'node:module';
-import { extname, join, resolve } from 'node:path';
-import { cwd } from 'node:process';
+import { extname, resolve } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
@@ -41,7 +40,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : createRequire(resolve(join(cwd(), '_')))(filePath);
+            : createRequire(resolve('non-existing-file.js'))(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(

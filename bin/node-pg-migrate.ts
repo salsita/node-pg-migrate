@@ -22,7 +22,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const crossRequire = createRequire(resolve(join(cwd(), '_')));
+const crossRequire = createRequire(resolve('non-existing-file.js'));
 
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
