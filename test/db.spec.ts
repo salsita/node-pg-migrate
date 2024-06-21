@@ -12,9 +12,15 @@ const hoisted = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('pg', () => ({
-  Client: vi.fn().mockImplementation(() => hoisted.client),
-}));
+vi.mock('pg', () => {
+  const client = vi.fn().mockImplementation(() => hoisted.client);
+  return {
+    default: {
+      Client: client,
+    },
+    Client: client,
+  };
+});
 
 describe('db', () => {
   const log: Logger = {
