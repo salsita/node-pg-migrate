@@ -8,7 +8,8 @@
 
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
+import { basename, extname, join, resolve } from 'node:path';
+import { cwd } from 'node:process';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import MigrationBuilder from './migrationBuilder';
@@ -136,15 +137,15 @@ export class Migration implements RunMigration {
 
     const templateFileName =
       'templateFileName' in options
-        ? resolve(process.cwd(), options.templateFileName)
+        ? resolve(cwd(), options.templateFileName)
         : resolve(
-            'node_modules/node-pg-migrate/templates',
+            join('node_modules', 'node-pg-migrate', 'templates'),
             `migration-template.${await resolveSuffix(directory, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);
 
     // file name looks like migrations/1391877300255_migration-title.js
-    const newFile = `${directory}/${time}${SEPARATOR}${name}.${suffix}`;
+    const newFile = join(directory, `${time}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
     await new Promise((resolve, reject) => {

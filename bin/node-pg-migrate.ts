@@ -7,7 +7,8 @@ import type { DotenvConfigOptions } from 'dotenv';
 import { default as migrationRunner, Migration } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
+import { cwd } from 'node:process';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 // This needs to be imported with .js extension, otherwise it will fail in esm
@@ -261,7 +262,7 @@ function readTsconfig() {
     const json5 = tryRequire<typeof import('json5')>('json5');
 
     try {
-      const config = readFileSync(resolve(process.cwd(), tsconfigPath), {
+      const config = readFileSync(resolve(cwd(), tsconfigPath), {
         encoding: 'utf8',
       });
       tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
@@ -438,7 +439,7 @@ readTsconfig();
 const action = argv._.shift();
 
 // defaults
-MIGRATIONS_DIR ??= `${process.cwd()}/migrations`;
+MIGRATIONS_DIR ??= join(cwd(), 'migrations');
 MIGRATIONS_FILE_LANGUAGE ??= 'js';
 MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
 MIGRATIONS_TABLE ??= 'pgmigrations';
