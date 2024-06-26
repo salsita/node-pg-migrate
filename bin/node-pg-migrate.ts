@@ -239,7 +239,7 @@ let MIGRATIONS_DIR = argv[migrationsDirArg];
 let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
   process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
-let SCHEMA = argv[schemaArg];
+let SCHEMA: string | string[] | undefined = argv[schemaArg];
 let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
@@ -347,7 +347,7 @@ function readJson(json: unknown): void {
       SCHEMA,
       schemaArg,
       json,
-      (val): val is string[] =>
+      (val): val is string | string[] =>
         Array.isArray(val) || (isString(val) && val.length > 0)
     );
     CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
