@@ -343,8 +343,12 @@ function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
 
 function readJson(json: unknown): void {
   if (typeof json === 'object' && json !== null) {
-    SCHEMA = applyIf(SCHEMA, schemaArg, json, (val): val is string[] =>
-      Array.isArray(val)
+    SCHEMA = applyIf(
+      SCHEMA,
+      schemaArg,
+      json,
+      (val): val is string[] =>
+        Array.isArray(val) || (isString(val) && val.length > 0)
     );
     CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
     MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
