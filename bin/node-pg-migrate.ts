@@ -490,9 +490,12 @@ if (action === 'create') {
   if (!DB_CONNECTION) {
     const cp = new ConnectionParameters();
 
-    if (!cp.host && !cp.port && !cp.database) {
+    if (
+      !process.env[argv[databaseUrlVarArg]] &&
+      (!process.env.PGHOST || !cp.user || !cp.database)
+    ) {
       console.error(
-        `The $${argv[databaseUrlVarArg]} environment variable is not set.`
+        `The ${argv[databaseUrlVarArg]} environment variable is not set or incomplete connection parameters are provided.`
       );
       process.exit(1);
     }
