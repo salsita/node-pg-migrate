@@ -149,7 +149,7 @@ const parser = yargs(process.argv.slice(2))
     },
     [migrationFilenameFormatArg]: {
       defaultDescription: '"timestamp"',
-      choices: ['timestamp', 'utc'],
+      choices: ['timestamp', 'utc', 'year/utc', 'year/timestamp'],
       describe:
         'Prefix type of migration filename (Only valid with the create action)',
       type: 'string',
@@ -381,7 +381,11 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILENAME_FORMAT,
       migrationFilenameFormatArg,
       json,
-      (val): val is `${FilenameFormat}` => val === 'timestamp' || val === 'utc'
+      (val): val is `${FilenameFormat}` =>
+        val === 'timestamp' ||
+        val === 'utc' ||
+        val === 'year/utc' ||
+        val === 'year/timestamp'
     );
     TEMPLATE_FILE_NAME = applyIf(
       TEMPLATE_FILE_NAME,

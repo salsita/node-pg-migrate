@@ -1,7 +1,7 @@
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
-import { getTimestamp, Migration } from '../src/migration';
+import { getTimestamp, loadMigrationFiles, Migration } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
@@ -20,7 +20,7 @@ describe('migration', () => {
     error: () => null,
   };
 
-  const options = { migrationsTable } as RunnerOption;
+  const options = { migrationsTable, dir: '' } as RunnerOption;
 
   let queryMock: Mock;
 
@@ -192,6 +192,26 @@ describe('migration', () => {
         expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
       );
       expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
+    });
+  });
+
+  describe('loadMigrationFiles', () => {
+    it('should load cockroach migration files', async () => {
+      const migrations = await loadMigrationFiles('test/cockroach');
+      expect(migrations).toHaveLength(12);
+      expect(migrations).toMatchSnapshot();
+    });
+
+    it('should load normal migration files', async () => {
+      const migrations = await loadMigrationFiles('test/migrations');
+      expect(migrations).toHaveLength(90);
+      expect(migrations).toMatchSnapshot();
+    });
+
+    it('should load migration files from subdirectories', async () => {
+      const migrations = await loadMigrationFiles('test/migrations-subdir');
+      expect(migrations).toHaveLength(4);
+      expect(migrations).toMatchSnapshot();
     });
   });
 });

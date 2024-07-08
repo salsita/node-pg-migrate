@@ -31,73 +31,9 @@ describe('runner', () => {
   );
 
   it('should execute a basic up migration', async () => {
-    const executedMigrations: Array<{
-      id: number;
-      name: string;
-      run_on: Date;
-    }> = [];
-    let id = 1;
+    const executedMigrations: ExecutedMigrations = [];
 
-    const dbClient = {
-      query: vi.fn((query) => {
-        switch (query) {
-          case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
-            return Promise.resolve({
-              rows: [{ lockObtained: true }], // lock obtained
-            });
-          }
-
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
-            return Promise.resolve({
-              rows: [], // no migration table
-            });
-          }
-
-          case 'CREATE TABLE "public"."pgmigrations" ( id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)': {
-            return Promise.resolve({}); // migration table created
-          }
-
-          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
-            return Promise.resolve({
-              rows: executedMigrations,
-            });
-          }
-
-          case 'BEGIN;': {
-            return Promise.resolve({}); // transaction started
-          }
-
-          case 'COMMIT;': {
-            return Promise.resolve({}); // transaction committed
-          }
-
-          default: {
-            if (
-              query.startsWith(
-                'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES'
-              )
-            ) {
-              const name: string =
-                /VALUES \('([^']+)'/.exec(query as string)?.[1] ?? 'failed'; // migration name
-
-              // insert migration
-              executedMigrations.push({
-                id: id++,
-                name,
-                run_on: new Date(),
-              });
-
-              return Promise.resolve({}); // migration inserted
-            }
-
-            break;
-          }
-        }
-
-        // bypass migration queries
-        return Promise.resolve({ rows: [{}] });
-      }),
-    } as unknown as ClientBase;
+    const dbClient = mockMigrationClient(() => executedMigrations);
 
     await expect(
       runner({
@@ -110,75 +46,16 @@ describe('runner', () => {
       })
     ).resolves.not.toThrow();
     expect(executedMigrations).toHaveLength(12);
+    expect(executedMigrations).toMatchSnapshot();
   });
 
   it('should execute a basic down migration', async () => {
-    const executedMigrations: Array<{
-      id: number;
-      name: string;
-      run_on: Date;
-    }> = [
+    const executedMigrations: ExecutedMigrations = [
       { id: 1, name: '004_table', run_on: new Date() },
       { id: 2, name: '006_table_rename', run_on: new Date() },
     ];
 
-    const dbClient = {
-      query: vi.fn((query) => {
-        switch (query) {
-          case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
-            return Promise.resolve({
-              rows: [{ lockObtained: true }], // lock obtained
-            });
-          }
-
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
-            return Promise.resolve({
-              rows: [{}], // migration table exists
-            });
-          }
-
-          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
-            return Promise.resolve({}); // no primary key constraint found
-          }
-
-          case 'ALTER TABLE "public"."pgmigrations" ADD PRIMARY KEY (id)': {
-            return Promise.resolve({}); // primary key constraint added
-          }
-
-          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
-            return Promise.resolve({
-              rows: executedMigrations,
-            });
-          }
-
-          case 'BEGIN;': {
-            return Promise.resolve({}); // transaction started
-          }
-
-          case 'COMMIT;': {
-            return Promise.resolve({}); // transaction committed
-          }
-
-          default: {
-            if (
-              query.startsWith(
-                'DELETE FROM "public"."pgmigrations" WHERE name='
-              )
-            ) {
-              // delete migration
-              executedMigrations.pop();
-
-              return Promise.resolve({}); // migration deleted
-            }
-
-            break;
-          }
-        }
-
-        // bypass migration queries
-        return Promise.resolve({ rows: [{}] });
-      }),
-    } as unknown as ClientBase;
+    const dbClient = mockMigrationClient(() => executedMigrations);
 
     await expect(
       runner({
@@ -192,5 +69,105 @@ describe('runner', () => {
       })
     ).resolves.not.toThrow();
     expect(executedMigrations).toHaveLength(0);
+    expect(executedMigrations).toMatchSnapshot();
+  });
+
+  it('should execute a basic up migration in nested directories', async () => {
+    const executedMigrations: ExecutedMigrations = [];
+
+    const dbClient = mockMigrationClient(() => executedMigrations);
+
+    await expect(
+      runner({
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        // We use cockroach migrations for now, as they are more simple
+        // We either could mock the migration files later or define specific migrations for unit-testing
+        dir: 'test/migrations-subdir',
+        direction: 'up',
+      })
+    ).resolves.not.toThrow();
+    expect(executedMigrations).toHaveLength(4);
+    expect(executedMigrations).toMatchSnapshot();
   });
 });
+
+type ExecutedMigrations = Array<{ id: number; name: string; run_on: Date }>;
+
+function mockMigrationClient(
+  getExecutedMigrations: () => ExecutedMigrations
+): ClientBase {
+  let id = 1;
+  return {
+    query: vi.fn((query) => {
+      switch (query) {
+        case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
+          return Promise.resolve({
+            rows: [{ lockObtained: true }], // lock obtained
+          });
+        }
+
+        case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+          return Promise.resolve({
+            rows: [{}], // empty migrations table
+          });
+        }
+
+        case 'CREATE TABLE "public"."pgmigrations" ( id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)': {
+          return Promise.resolve([{}]); // migration table created
+        }
+
+        case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+          return Promise.resolve({
+            rows: getExecutedMigrations(),
+          });
+        }
+
+        case 'BEGIN;': {
+          return Promise.resolve({}); // transaction started
+        }
+
+        case 'COMMIT;': {
+          return Promise.resolve({}); // transaction committed
+        }
+
+        default: {
+          if (
+            query.startsWith(
+              'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES'
+            )
+          ) {
+            const name: string =
+              /VALUES \('([^']+)'/.exec(query as string)?.[1] ?? 'failed'; // migration name
+
+            // insert migration
+            getExecutedMigrations().push({
+              name,
+              run_on: new Date(
+                +new Date('2024-01-01T00:00:00Z') +
+                  (id - 1) * (24 * 60 * 60 * 1000)
+              ),
+              id: id++,
+            });
+
+            return Promise.resolve({}); // migration inserted
+          }
+
+          if (
+            query.startsWith('DELETE FROM "public"."pgmigrations" WHERE name=')
+          ) {
+            const name = /WHERE name='([^']+)'/.exec(query as string)?.[1];
+            const migrations = getExecutedMigrations();
+            const index = migrations.findIndex((m) => m.name === name);
+            if (index === -1) throw new Error(`migration not found: ${name}`);
+            migrations.splice(index, 1);
+            return Promise.resolve({}); // migration inserted
+          }
+        }
+      }
+
+      // bypass migration queries
+      return Promise.resolve({ rows: [{}] });
+    }),
+  } as unknown as ClientBase;
+}

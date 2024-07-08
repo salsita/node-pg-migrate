@@ -8,7 +8,7 @@
 
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, join, resolve } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
@@ -32,6 +32,8 @@ export interface RunMigration {
 export enum FilenameFormat {
   timestamp = 'timestamp',
   utc = 'utc',
+  year_timestamp = 'year/timestamp',
+  year_utc = 'year/utc',
 }
 
 export interface CreateOptionsTemplate {
@@ -44,7 +46,7 @@ export interface CreateOptionsDefault {
 }
 
 export type CreateOptions = {
-  filenameFormat?: FilenameFormat | `${FilenameFormat}`;
+  filenameFormat?: FilenameFormat;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
@@ -53,10 +55,13 @@ export async function loadMigrationFiles(
   dir: string,
   ignorePattern?: string
 ): Promise<string[]> {
-  const dirContent = await readdir(`${dir}/`, { withFileTypes: true });
+  const dirContent = await readdir(`${dir}/`, {
+    withFileTypes: true,
+    recursive: true,
+  });
   const files = dirContent
-    .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
-    .filter((file): file is string => Boolean(file))
+    .flatMap((file) => (file.isFile() || file.isSymbolicLink() ? [file] : []))
+    .map((file) => relative(dir, join(file.parentPath ?? file.path, file.name)))
     .sort();
   const filter = new RegExp(`^(${ignorePattern})$`);
   return ignorePattern === undefined
@@ -129,12 +134,6 @@ export class Migration implements RunMigration {
     // ensure the migrations directory exists
     await mkdir(directory, { recursive: true });
 
-    const now = new Date();
-    const time =
-      filenameFormat === FilenameFormat.utc
-        ? now.toISOString().replace(/\D/g, '')
-        : now.valueOf();
-
     const templateFileName =
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
@@ -145,6 +144,7 @@ export class Migration implements RunMigration {
     const suffix = getSuffixFromFileName(templateFileName);
 
     // file name looks like migrations/1391877300255_migration-title.js
+    const time = Migration.filenameTime(filenameFormat);
     const newFile = join(directory, `${time}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
@@ -186,13 +186,44 @@ export class Migration implements RunMigration {
   ) {
     this.db = db;
     this.path = migrationPath;
-    this.name = basename(migrationPath, extname(migrationPath));
+    this.name = relative(options.dir, migrationPath).replace(
+      new RegExp(`${extname(migrationPath)}$`),
+      ''
+    );
     this.timestamp = getTimestamp(logger, this.name);
     this.up = up;
     this.down = down;
     this.options = options;
     this.typeShorthands = typeShorthands;
     this.logger = logger;
+  }
+
+  private static filenameTime(filenameFormat: FilenameFormat): string {
+    const now = new Date();
+    switch (filenameFormat) {
+      case FilenameFormat.utc: {
+        return now.toISOString().replace(/\D/g, '');
+      }
+
+      case FilenameFormat.year_utc: {
+        return join(
+          now.getFullYear().toString(),
+          now.toISOString().replace(/\D/g, '')
+        );
+      }
+
+      case FilenameFormat.timestamp: {
+        return now.valueOf().toString();
+      }
+
+      case FilenameFormat.year_timestamp: {
+        return join(now.getFullYear().toString(), now.valueOf().toString());
+      }
+
+      default: {
+        throw new Error(`unrecognized filenameFormat: ${filenameFormat}`);
+      }
+    }
   }
 
   _getMarkAsRun(action: MigrationAction): string {
