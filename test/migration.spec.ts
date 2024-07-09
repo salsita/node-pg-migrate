@@ -32,16 +32,26 @@ describe('migration', () => {
   describe('getTimestamp', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
-
-      expect(getTimestamp(logger, String(now))).toBe(now);
+      const timestamp = String(now);
+      expect(getTimestamp(logger, timestamp)).toBe(now);
     });
 
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
+      const timestamp = now.toISOString().replace(/\D/g, '');
+      expect(getTimestamp(logger, timestamp)).toBe(now.valueOf());
+    });
 
-      expect(getTimestamp(logger, now.toISOString().replace(/\D/g, ''))).toBe(
-        now.valueOf()
-      );
+    it('should get timestamp for normal timestamp with year prefix', () => {
+      const now = Date.now();
+      const timestamp = `${new Date(now).getFullYear()}/${now}`;
+      expect(getTimestamp(logger, timestamp)).toBe(now);
+    });
+
+    it('should get timestamp for shortened iso format with year prefix', () => {
+      const now = new Date();
+      const timestamp = `${new Date(now).getFullYear()}/${now.toISOString().replace(/\D/g, '')}`;
+      expect(getTimestamp(logger, timestamp)).toBe(now.valueOf());
     });
   });
 

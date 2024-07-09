@@ -88,7 +88,11 @@ async function getLastSuffix(
 }
 
 export function getTimestamp(logger: Logger, filename: string): number {
-  const prefix = filename.split(SEPARATOR)[0];
+  let prefix = filename.split(SEPARATOR)[0];
+
+  // Strip off a leading year, if present
+  prefix = prefix?.replace(/^\d{4}\//, '');
+
   if (prefix && /^\d+$/.test(prefix)) {
     if (prefix.length === 13) {
       // timestamp: 1391877300255
