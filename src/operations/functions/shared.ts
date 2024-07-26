@@ -31,6 +31,6 @@ export interface FunctionOptions {
 
   set?: Array<{
     name: string;
-    value: 'FROM CURRENT' | string;
+    value: LiteralUnion<'FROM CURRENT'>;
   }>;
 }
