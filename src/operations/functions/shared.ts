@@ -30,7 +30,7 @@ export interface FunctionOptions {
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
 
   set?: Array<{
-    name: string;
+    configurationParameter: string;
     value: LiteralUnion<'FROM CURRENT'>;
   }>;
 }

@@ -110,7 +110,7 @@ $pga$
             language: 'plpgsql',
             set: [
               {
-                name: 'search_path',
+                configurationParameter: 'search_path',
                 value: "''",
               },
             ],
