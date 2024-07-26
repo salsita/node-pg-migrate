@@ -102,6 +102,37 @@ $pga$
         );
       });
 
+      it('should return sql statement with set', () => {
+        const statement = createFunctionFn(
+          'example_function',
+          [],
+          {
+            language: 'plpgsql',
+            set: [
+              {
+                name: 'search_path',
+                value: "''",
+              },
+            ],
+          },
+          `
+-- SQL here
+`
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE FUNCTION "example_function"()
+  RETURNS void
+  AS $pga$
+-- SQL here
+$pga$
+  VOLATILE
+  LANGUAGE plpgsql
+  SET search_path TO '';`
+        );
+      });
+
       it('should throw if no language provided', () => {
         expect(() =>
           createFunctionFn(

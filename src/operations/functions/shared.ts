@@ -28,4 +28,9 @@ export interface FunctionOptions {
   onNull?: boolean;
 
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
+
+  set?: Array<{
+    name: string;
+    value: 'FROM CURRENT' | string;
+  }>;
 }
