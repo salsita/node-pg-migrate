@@ -1,4 +1,4 @@
-import type { Value } from '../generalTypes';
+import type { LiteralUnion, Value } from '../generalTypes';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
