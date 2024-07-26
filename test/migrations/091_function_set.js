@@ -12,7 +12,7 @@ exports.up = (pgm) => {
       security: 'DEFINER',
       set: [
         {
-          name: 'search_path',
+          configurationParameter: 'search_path',
           value: "''",
         },
       ],
