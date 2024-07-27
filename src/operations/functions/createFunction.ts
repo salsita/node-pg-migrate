@@ -68,9 +68,13 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
     if (set) {
       for (const { configurationParameter, value } of set) {
         if (value === 'FROM CURRENT') {
-          options.push(`SET ${configurationParameter} FROM CURRENT`);
+          options.push(
+            `SET ${mOptions.literal(configurationParameter)} FROM CURRENT`
+          );
         } else {
-          options.push(`SET ${configurationParameter} TO ${value}`);
+          options.push(
+            `SET ${mOptions.literal(configurationParameter)} TO ${value}`
+          );
         }
       }
     }

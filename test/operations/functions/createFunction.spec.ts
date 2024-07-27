@@ -129,7 +129,7 @@ $pga$
 $pga$
   VOLATILE
   LANGUAGE plpgsql
-  SET search_path TO '';`
+  SET "search_path" TO '';`
         );
       });
 
