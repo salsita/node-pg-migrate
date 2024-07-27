@@ -9,7 +9,7 @@ export { getSchemas } from './getSchemas';
 export { identity } from './identity';
 export { intersection } from './intersection';
 export { makeComment } from './makeComment';
-export { isPgLiteral, PgLiteral } from './PgLiteral';
+export { PgLiteral, isPgLiteral } from './PgLiteral';
 export type { PgLiteralValue } from './PgLiteral';
 export { quote } from './quote';
 export { StringIdGenerator } from './StringIdGenerator';
