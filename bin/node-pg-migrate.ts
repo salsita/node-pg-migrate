@@ -326,18 +326,10 @@ function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
   return (
     typeof val === 'object' &&
     val !== null &&
-    (('host' in val &&
-      // @ts-expect-error: this is a TS 4.8 bug
-      !!val.host) ||
-      ('port' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.port) ||
-      ('name' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.name) ||
-      ('database' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.database))
+    (('host' in val && !!val.host) ||
+      ('port' in val && !!val.port) ||
+      ('name' in val && !!val.name) ||
+      ('database' in val && !!val.database))
   );
 }
 
@@ -402,9 +394,7 @@ function readJson(json: unknown): void {
     );
     tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
 
-    // @ts-expect-error: this is a TS 4.8 bug
     if ('url' in json && json.url) {
-      // @ts-expect-error: this is a TS 4.8 bug
       DB_CONNECTION ??= json.url;
     } else if (isClientConfig(json)) {
       DB_CONNECTION ??= {
