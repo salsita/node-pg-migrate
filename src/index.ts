@@ -264,5 +264,5 @@ export type {
 export { runner as default, runner } from './runner';
 export { PgType } from './types';
 export type { MigrationBuilder, RunnerOption } from './types';
-export { isPgLiteral, PgLiteral } from './utils';
+export { PgLiteral, isPgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';
