@@ -32,6 +32,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       security = 'INVOKER',
       onNull = false,
       parallel,
+      set,
     } = functionOptions;
 
     const options: string[] = [];
@@ -62,6 +63,20 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
 
     if (parallel) {
       options.push(`PARALLEL ${parallel}`);
+    }
+
+    if (set) {
+      for (const { configurationParameter, value } of set) {
+        if (value === 'FROM CURRENT') {
+          options.push(
+            `SET ${mOptions.literal(configurationParameter)} FROM CURRENT`
+          );
+        } else {
+          options.push(
+            `SET ${mOptions.literal(configurationParameter)} TO ${value}`
+          );
+        }
+      }
     }
 
     const replaceStr = replace ? ' OR REPLACE' : '';
