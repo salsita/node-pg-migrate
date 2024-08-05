@@ -146,7 +146,7 @@ ${error}
     select,
     column,
 
-    connected: () => connectionStatus === ConnectionStatus.CONNECTED,
+    connected: () => connectionStatus === ConnectionStatus.CONNECTED || isExternalClient,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
     close: async () => {
       await beforeCloseListeners.reduce(
