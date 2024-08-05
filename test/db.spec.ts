@@ -134,4 +134,12 @@ describe('db', () => {
       expect(hoisted.client.end).toHaveBeenCalled();
     });
   });
+
+  describe('connected', () => {
+    it('should treat external connection as conencted', () => {
+      const mockClient = new Client();
+      const db = Db(mockClient, log);
+      expect(db.connected()).toBeTruthy();
+    });
+  });
 });
