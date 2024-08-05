@@ -788,6 +788,11 @@ export interface RunnerOptionConfig {
   dir: string;
 
   /**
+   * If migration discovery should consider subdirectories.
+   */
+  migrationSubdirs?: boolean;
+
+  /**
    * Check order of migrations before running them.
    */
   checkOrder?: boolean;

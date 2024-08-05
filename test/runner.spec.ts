@@ -164,6 +164,7 @@ describe('runner', () => {
         // We use cockroach migrations for now, as they are more simple
         // We either could mock the migration files later or define specific migrations for unit-testing
         dir: 'test/migrations-subdir',
+        migrationSubdirs: true,
         direction: 'up',
       })
     ).resolves.not.toThrow();

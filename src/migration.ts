@@ -53,16 +53,17 @@ const SEPARATOR = '_';
 
 export async function loadMigrationFiles(
   dir: string,
+  subdirs: boolean,
   ignorePattern?: string
 ): Promise<string[]> {
   const dirContent = await readdir(`${dir}/`, {
     withFileTypes: true,
-    recursive: true,
+    recursive: subdirs,
   });
   const files = dirContent
     .flatMap((file) => (file.isFile() || file.isSymbolicLink() ? [file] : []))
     .map((file) => relative(dir, join(file.parentPath ?? file.path, file.name)))
-    .sort();
+    .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
   const filter = new RegExp(`^(${ignorePattern})$`);
   return ignorePattern === undefined
     ? files
@@ -75,10 +76,11 @@ function getSuffixFromFileName(fileName: string): string {
 
 async function getLastSuffix(
   dir: string,
+  subdirs: boolean,
   ignorePattern?: string
 ): Promise<string | undefined> {
   try {
-    const files = await loadMigrationFiles(dir, ignorePattern);
+    const files = await loadMigrationFiles(dir, subdirs, ignorePattern);
     return files.length > 0
       ? getSuffixFromFileName(files[files.length - 1])
       : undefined;
@@ -120,10 +122,13 @@ export function getTimestamp(logger: Logger, filename: string): number {
 
 async function resolveSuffix(
   directory: string,
+  subdirs: boolean,
   options: CreateOptionsDefault
 ): Promise<string> {
   const { language, ignorePattern } = options;
-  return language || (await getLastSuffix(directory, ignorePattern)) || 'js';
+  return (
+    language || (await getLastSuffix(directory, subdirs, ignorePattern)) || 'js'
+  );
 }
 
 export class Migration implements RunMigration {
@@ -131,6 +136,7 @@ export class Migration implements RunMigration {
   static async create(
     name: string,
     directory: string,
+    subdirs: boolean,
     options: CreateOptions = {}
   ): Promise<string> {
     const { filenameFormat = FilenameFormat.timestamp } = options;
@@ -143,7 +149,7 @@ export class Migration implements RunMigration {
         ? resolve(cwd(), options.templateFileName)
         : resolve(
             join('node_modules', 'node-pg-migrate', 'templates'),
-            `migration-template.${await resolveSuffix(directory, options)}`
+            `migration-template.${await resolveSuffix(directory, subdirs, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);
 

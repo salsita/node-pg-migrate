@@ -12,8 +12,8 @@ exports[`migration > loadMigrationFiles > should load cockroach migration files 
   "017_drop_constraint.js",
   "019_add_index.js",
   "020_create_index.js",
-  "062_view.js",
   "062_view_test.js",
+  "062_view.js",
 ]
 `;
 

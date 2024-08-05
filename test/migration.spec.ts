@@ -207,21 +207,38 @@ describe('migration', () => {
 
   describe('loadMigrationFiles', () => {
     it('should load cockroach migration files', async () => {
-      const migrations = await loadMigrationFiles('test/cockroach');
+      const migrations = await loadMigrationFiles('test/cockroach', false);
       expect(migrations).toHaveLength(12);
       expect(migrations).toMatchSnapshot();
     });
 
     it('should load normal migration files', async () => {
-      const migrations = await loadMigrationFiles('test/migrations');
+      const migrations = await loadMigrationFiles('test/migrations', false);
       expect(migrations).toHaveLength(90);
       expect(migrations).toMatchSnapshot();
     });
 
     it('should load migration files from subdirectories', async () => {
-      const migrations = await loadMigrationFiles('test/migrations-subdir');
+      const migrations = await loadMigrationFiles(
+        'test/migrations-subdir',
+        true
+      );
       expect(migrations).toHaveLength(4);
       expect(migrations).toMatchSnapshot();
+    });
+
+    it('should sort migration files correctly', async () => {
+      const migrations = await loadMigrationFiles(
+        'test/migrations-subdir-numeric-ordering',
+        true
+      );
+      expect(migrations).toStrictEqual([
+        '3/a.sql',
+        '123/c.sql',
+        '123/test/b.sql',
+        '2014/d.sql',
+        'test/e.sql',
+      ]);
     });
   });
 });

@@ -43,6 +43,7 @@ const schemaArg = 'schema';
 const createSchemaArg = 'create-schema';
 const databaseUrlVarArg = 'database-url-var';
 const migrationsDirArg = 'migrations-dir';
+const migrationsSubdirsArg = 'migrations-subdirs';
 const migrationsTableArg = 'migrations-table';
 const migrationsSchemaArg = 'migrations-schema';
 const createMigrationsSchemaArg = 'create-migrations-schema';
@@ -79,6 +80,11 @@ const parser = yargs(process.argv.slice(2))
       defaultDescription: '"migrations"',
       describe: 'The directory containing your migration files',
       type: 'string',
+    },
+    [migrationsSubdirsArg]: {
+      defaultDescription: 'false',
+      describe: 'Search for migrations in subdirectories',
+      type: 'boolean',
     },
     [migrationsTableArg]: {
       alias: 't',
@@ -236,6 +242,7 @@ if (dotenv) {
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
+let MIGRATIONS_SUBDIRS = argv[migrationsSubdirsArg];
 let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
   process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
@@ -352,6 +359,12 @@ function readJson(json: unknown): void {
     );
     CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
     MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
+    MIGRATIONS_SUBDIRS = applyIf(
+      MIGRATIONS_SUBDIRS,
+      migrationsSubdirsArg,
+      json,
+      isBoolean
+    );
     MIGRATIONS_SCHEMA = applyIf(
       MIGRATIONS_SCHEMA,
       migrationsSchemaArg,
@@ -448,6 +461,7 @@ const action = argv._.shift();
 
 // defaults
 MIGRATIONS_DIR ??= join(cwd(), 'migrations');
+MIGRATIONS_SUBDIRS ??= false;
 MIGRATIONS_FILE_LANGUAGE ??= 'js';
 MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
 MIGRATIONS_TABLE ??= 'pgmigrations';
@@ -562,6 +576,7 @@ if (action === 'create') {
       },
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
+      migrationSubdirs: MIGRATIONS_SUBDIRS,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,
