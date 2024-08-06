@@ -1,7 +1,7 @@
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
-import { getTimestamp, Migration } from '../src/migration';
+import { getTimestamp, loadMigrationFiles, Migration } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
@@ -20,7 +20,7 @@ describe('migration', () => {
     error: () => null,
   };
 
-  const options = { migrationsTable } as RunnerOption;
+  const options = { migrationsTable, dir: '' } as RunnerOption;
 
   let queryMock: Mock;
 
@@ -32,16 +32,26 @@ describe('migration', () => {
   describe('getTimestamp', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
-
-      expect(getTimestamp(logger, String(now))).toBe(now);
+      const timestamp = String(now);
+      expect(getTimestamp(logger, timestamp)).toBe(now);
     });
 
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
+      const timestamp = now.toISOString().replace(/\D/g, '');
+      expect(getTimestamp(logger, timestamp)).toBe(now.valueOf());
+    });
 
-      expect(getTimestamp(logger, now.toISOString().replace(/\D/g, ''))).toBe(
-        now.valueOf()
-      );
+    it('should get timestamp for normal timestamp with year prefix', () => {
+      const now = Date.now();
+      const timestamp = `${new Date(now).getFullYear()}/${now}`;
+      expect(getTimestamp(logger, timestamp)).toBe(now);
+    });
+
+    it('should get timestamp for shortened iso format with year prefix', () => {
+      const now = new Date();
+      const timestamp = `${new Date(now).getFullYear()}/${now.toISOString().replace(/\D/g, '')}`;
+      expect(getTimestamp(logger, timestamp)).toBe(now.valueOf());
     });
   });
 
@@ -192,6 +202,43 @@ describe('migration', () => {
         expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
       );
       expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
+    });
+  });
+
+  describe('loadMigrationFiles', () => {
+    it('should load cockroach migration files', async () => {
+      const migrations = await loadMigrationFiles('test/cockroach', false);
+      expect(migrations).toHaveLength(12);
+      expect(migrations).toMatchSnapshot();
+    });
+
+    it('should load normal migration files', async () => {
+      const migrations = await loadMigrationFiles('test/migrations', false);
+      expect(migrations).toHaveLength(90);
+      expect(migrations).toMatchSnapshot();
+    });
+
+    it('should load migration files from subdirectories', async () => {
+      const migrations = await loadMigrationFiles(
+        'test/migrations-subdir',
+        true
+      );
+      expect(migrations).toHaveLength(4);
+      expect(migrations).toMatchSnapshot();
+    });
+
+    it('should sort migration files correctly', async () => {
+      const migrations = await loadMigrationFiles(
+        'test/migrations-subdir-numeric-ordering',
+        true
+      );
+      expect(migrations).toStrictEqual([
+        '3/a.sql',
+        '123/c.sql',
+        '123/test/b.sql',
+        '2014/d.sql',
+        'test/e.sql',
+      ]);
     });
   });
 });

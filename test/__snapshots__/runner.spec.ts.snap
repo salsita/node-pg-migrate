@@ -1,0 +1,93 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runner > should execute a basic down migration 1`] = `[]`;
+
+exports[`runner > should execute a basic up migration 1`] = `
+[
+  {
+    "id": 1,
+    "name": "004_table",
+    "run_on": 2024-01-01T00:00:00.000Z,
+  },
+  {
+    "id": 2,
+    "name": "006_table_rename",
+    "run_on": 2024-01-02T00:00:00.000Z,
+  },
+  {
+    "id": 3,
+    "name": "008_column_drop",
+    "run_on": 2024-01-03T00:00:00.000Z,
+  },
+  {
+    "id": 4,
+    "name": "009_column",
+    "run_on": 2024-01-04T00:00:00.000Z,
+  },
+  {
+    "id": 5,
+    "name": "011_column_rename",
+    "run_on": 2024-01-05T00:00:00.000Z,
+  },
+  {
+    "id": 6,
+    "name": "012_column_alter",
+    "run_on": 2024-01-06T00:00:00.000Z,
+  },
+  {
+    "id": 7,
+    "name": "014_add_constraint",
+    "run_on": 2024-01-07T00:00:00.000Z,
+  },
+  {
+    "id": 8,
+    "name": "017_drop_constraint",
+    "run_on": 2024-01-08T00:00:00.000Z,
+  },
+  {
+    "id": 9,
+    "name": "019_add_index",
+    "run_on": 2024-01-09T00:00:00.000Z,
+  },
+  {
+    "id": 10,
+    "name": "020_create_index",
+    "run_on": 2024-01-10T00:00:00.000Z,
+  },
+  {
+    "id": 11,
+    "name": "062_view",
+    "run_on": 2024-01-11T00:00:00.000Z,
+  },
+  {
+    "id": 12,
+    "name": "062_view_test",
+    "run_on": 2024-01-12T00:00:00.000Z,
+  },
+]
+`;
+
+exports[`runner > should execute a basic up migration in nested directories 1`] = `
+[
+  {
+    "id": 1,
+    "name": "001/004_table",
+    "run_on": 2024-01-01T00:00:00.000Z,
+  },
+  {
+    "id": 2,
+    "name": "001/006_table_rename",
+    "run_on": 2024-01-02T00:00:00.000Z,
+  },
+  {
+    "id": 3,
+    "name": "002/008_column_drop",
+    "run_on": 2024-01-03T00:00:00.000Z,
+  },
+  {
+    "id": 4,
+    "name": "002/009_column",
+    "run_on": 2024-01-04T00:00:00.000Z,
+  },
+]
+`;
