@@ -41,6 +41,7 @@ enum ConnectionStatus {
   DISCONNECTED = 'DISCONNECTED',
   CONNECTED = 'CONNECTED',
   ERROR = 'ERROR',
+  EXTERNAL = 'EXTERNAL',
 }
 
 function db(
@@ -51,17 +52,24 @@ function db(
     typeof connection === 'object' &&
     'query' in connection &&
     typeof connection.query === 'function';
-  let connectionStatus = ConnectionStatus.DISCONNECTED;
 
   const client: Client = isExternalClient
     ? (connection as Client)
     : new pg.Client(connection as string | ClientConfig);
 
+  let connectionStatus = isExternalClient
+    ? ConnectionStatus.EXTERNAL
+    : ConnectionStatus.DISCONNECTED;
+
   const beforeCloseListeners: any[] = [];
+
+  const connected: DBConnection['connected'] = () =>
+    connectionStatus === ConnectionStatus.CONNECTED ||
+    connectionStatus === ConnectionStatus.EXTERNAL;
 
   const createConnection: DBConnection['createConnection'] = () =>
     new Promise((resolve, reject) => {
-      if (isExternalClient || connectionStatus === ConnectionStatus.CONNECTED) {
+      if (connected()) {
         resolve();
       } else if (connectionStatus === ConnectionStatus.ERROR) {
         reject(
@@ -146,7 +154,7 @@ ${error}
     select,
     column,
 
-    connected: () => connectionStatus === ConnectionStatus.CONNECTED,
+    connected,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
     close: async () => {
       await beforeCloseListeners.reduce(
