@@ -24,7 +24,7 @@ module.exports = defineConfig({
     'plugin:prettier/recommended',
   ],
   parserOptions: {
-    project: ['./tsconfig.lint.json'],
+    project: ['./tsconfig.json'],
     warnOnUnsupportedTypeScriptVersion: false,
   },
   rules: {

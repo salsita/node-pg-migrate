@@ -1,11 +1,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
     "noEmit": false,
-    "declaration": true,
     "emitDeclarationOnly": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+
+    // This negates what is set in the extended tsconfig.json
+    "skipLibCheck": false,
+    "allowSyntheticDefaultImports": false,
+    "resolveJsonModule": false
   },
   "include": ["src"]
 }

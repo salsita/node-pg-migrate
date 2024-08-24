@@ -25,34 +25,24 @@
   },
   "bin": {
     "node-pg-migrate": "bin/node-pg-migrate.js",
-    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
-    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+    "node-pg-migrate-cjs": "bin/node-pg-migrate.cjs",
+    "node-pg-migrate-esm": "bin/node-pg-migrate.js"
   },
-  "type": "commonjs",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.mjs",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    "./dist/*": {
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.js",
-      "import": "./dist/esm/*.mjs",
-      "default": "./dist/*.js"
-    },
-    "./bin/*": {
-      "require": "./bin/*.js",
-      "import": "./bin/*.mjs",
-      "default": "./bin/*.js"
-    },
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/esm/index.mjs",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.js"
+    "./bin/*": {
+      "import": "./bin/*.js",
+      "require": "./bin/*.cjs",
+      "default": "./bin/*.js"
     },
     "./package.json": "./package.json"
   },
