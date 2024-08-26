@@ -1,4 +1,4 @@
-const trigger = require('./043_trigger_create_rename');
+const trigger = require('./043_trigger_create_rename.cjs');
 
 exports.up = (pgm) => {
   pgm.dropTrigger('tt', 'trig');

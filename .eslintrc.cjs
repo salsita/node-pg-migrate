@@ -141,7 +141,7 @@ module.exports = defineConfig({
   },
   overrides: [
     {
-      files: ['test/migrations/*.js'],
+      files: ['test/migrations/*.js', 'test/migrations/*.cjs'],
       rules: {
         'unicorn/prefer-module': 'off',
 

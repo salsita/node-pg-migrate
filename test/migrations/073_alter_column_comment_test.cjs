@@ -1,7 +1,7 @@
 const {
   table: { schema, name },
   comment,
-} = require('./072_alter_column_comment');
+} = require('./072_alter_column_comment.cjs');
 
 exports.up = async (pgm) => {
   const [{ description }] = await pgm.db.select(

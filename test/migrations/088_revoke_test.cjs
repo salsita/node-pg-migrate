@@ -1,10 +1,10 @@
 const {
   constants: { schema, table, role1, role2, tablePrivileges, schemaPrivilege },
-} = require('./085_grant_tables_schemas_roles');
+} = require('./085_grant_tables_schemas_roles.cjs');
 
 const {
   utils: { hasTablePrivileges, hasSchemaPrivilege, isMemberOf },
-} = require('./086_grant_test');
+} = require('./086_grant_test.cjs');
 
 exports.up = async (pgm) => {
   const hasGrantedTablePrivileges = await hasTablePrivileges(

@@ -1,4 +1,4 @@
-const { params } = require('./039_function_create');
+const { params } = require('./039_function_create.cjs');
 
 exports.up = (pgm) => {
   pgm.renameFunction('f', params, 'add');

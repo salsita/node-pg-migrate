@@ -1,4 +1,4 @@
-const domain = require('./046_domain_create_rename');
+const domain = require('./046_domain_create_rename.cjs');
 
 exports.up = (pgm) => {
   pgm.dropTable('td');
