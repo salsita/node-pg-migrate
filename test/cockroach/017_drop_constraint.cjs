@@ -1,4 +1,4 @@
-const constraint = require('./014_add_constraint');
+const constraint = require('./014_add_constraint.cjs');
 
 exports.up = (pgm) => {
   pgm.dropConstraint('t1', constraint.constraint);
