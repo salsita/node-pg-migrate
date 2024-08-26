@@ -5,12 +5,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "rootDir": "src",
-    "outDir": "dist",
-
-    // This negates what is set in the extended tsconfig.json
-    "skipLibCheck": false,
-    "allowSyntheticDefaultImports": false,
-    "resolveJsonModule": false
+    "outDir": "dist"
   },
   "include": ["src"]
 }

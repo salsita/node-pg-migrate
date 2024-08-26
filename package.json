@@ -36,13 +36,11 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "require": "./dist/index.cjs"
     },
     "./bin/*": {
       "import": "./bin/*.js",
-      "require": "./bin/*.cjs",
-      "default": "./bin/*.js"
+      "require": "./bin/*.cjs"
     },
     "./package.json": "./package.json"
   },
