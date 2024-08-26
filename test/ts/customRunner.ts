@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Client } from 'pg';
 import type { RunnerOption } from '../../dist';
 import { runner } from '../../dist';
@@ -12,6 +13,8 @@ type TestOptions = {
 type Options =
   | ({ databaseUrl: string } & TestOptions)
   | ({ dbClient: Client } & TestOptions);
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const run = async (options: Options): Promise<boolean> => {
   const opts: Omit<RunnerOption, 'direction'> & Options = {
