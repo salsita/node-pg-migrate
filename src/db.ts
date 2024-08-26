@@ -11,7 +11,7 @@ import type {
   QueryConfig,
   QueryResult,
 } from 'pg';
-import * as pg from 'pg';
+import pg from 'pg';
 import type { DB, Logger } from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
