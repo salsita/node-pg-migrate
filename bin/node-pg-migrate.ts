@@ -304,11 +304,6 @@ function readTsconfig(): void {
 
     if (useTsx) {
       process.env.TSX_TSCONFIG_PATH = tsconfigPath;
-      const tsx =
-        tryRequire<typeof import('tsx/dist/cjs/api/index.cjs')>('tsx/cjs');
-      if (!tsx) {
-        console.error("For TSX support, please install 'tsx' module");
-      }
     } else if (useTsNode) {
       const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
       if (!tsnode) {
@@ -461,6 +456,14 @@ if (configFileName) {
 }
 
 readTsconfig();
+
+if (useTsx) {
+  const tsx =
+    tryRequire<typeof import('tsx/dist/cjs/api/index.cjs')>('tsx/cjs');
+  if (!tsx) {
+    console.error("For TSX support, please install 'tsx' module");
+  }
+}
 
 const action = argv._.shift();
 
