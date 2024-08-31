@@ -28,8 +28,8 @@ importers:
         specifier: 18.19.47
         version: 18.19.47
       '@types/pg':
-        specifier: 8.11.7
-        version: 8.11.7
+        specifier: 8.11.8
+        version: 8.11.8
       '@types/yargs':
         specifier: 17.0.33
         version: 17.0.33
@@ -80,7 +80,7 @@ importers:
         version: 2.2.3
       node-pg-migrate:
         specifier: file:.
-        version: file:(@types/pg@8.11.7)(pg@8.12.0)
+        version: file:(@types/pg@8.11.8)(pg@8.12.0)
       npm-run-all2:
         specifier: 6.2.2
         version: 6.2.2
@@ -737,8 +737,8 @@ packages:
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
-  '@types/pg@8.11.7':
-    resolution: {integrity: sha512-k4VGqp1LQzJP5pSK2TR3bJGr9CnErXeRubUEtJu+l1hFGbUwKyMZEjLAlWpfGkrZAatz0O4jP4YPqDepv8CRbQ==}
+  '@types/pg@8.11.8':
+    resolution: {integrity: sha512-IqpCf8/569txXN/HoP5i1LjXfKZWL76Yr2R77xgeIICUbAYHeoaEZFhYHo2uDftecLWrTJUq63JvQu8q3lnDyA==}
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
@@ -3205,7 +3205,7 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
-  '@types/pg@8.11.7':
+  '@types/pg@8.11.8':
     dependencies:
       '@types/node': 18.19.47
       pg-protocol: 1.6.1
@@ -4514,12 +4514,12 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-pg-migrate@file:(@types/pg@8.11.7)(pg@8.12.0):
+  node-pg-migrate@file:(@types/pg@8.11.8)(pg@8.12.0):
     dependencies:
       pg: 8.12.0
       yargs: 17.7.2
     optionalDependencies:
-      '@types/pg': 8.11.7
+      '@types/pg': 8.11.8
 
   node-releases@2.0.18: {}
 
