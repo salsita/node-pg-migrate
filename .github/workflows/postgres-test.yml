@@ -573,7 +573,7 @@ jobs:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
 
-  typescript-migration-test:
+  typescript-migration-via-ts-node-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -599,7 +599,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-    name: 'TypeScript Migration Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'TypeScript Migration Test with ts-node: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -620,7 +620,58 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up --tsconfig tsconfig.json -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json -m test/ts/migrations --timestamps
+        run: pnpm run migrate up --tsconfig tsconfig.json --ts-node -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json --ts-node -m test/ts/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+  typescript-migration-via-tsx-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [20]
+        postgres_version: [16.2]
+      fail-fast: false
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres_version }}-alpine
+        env:
+          POSTGRES_USER: ubuntu
+          POSTGRES_PASSWORD: ubuntu
+          POSTGRES_DB: integration_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    name: 'TypeScript Migration Test with tsx: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Integration Test
+        run: pnpm run migrate up --tsconfig tsconfig.json --tsx -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json --tsx -m test/ts/migrations --timestamps
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 

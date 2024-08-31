@@ -24,6 +24,11 @@ process.on('uncaughtException', (err) => {
 
 const crossRequire = createRequire(resolve('_'));
 
+/**
+ * Try to require a module and return null if it doesn't exist.
+ *
+ * @param moduleName The name of the module to require.
+ */
 function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
   try {
     return crossRequire(moduleName);
@@ -60,6 +65,8 @@ const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
 const decamelizeArg = 'decamelize';
 const tsconfigArg = 'tsconfig';
+const tsNodeArg = 'ts-node';
+const tsxArg = 'tsx';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
@@ -162,6 +169,16 @@ const parser = yargs(process.argv.slice(2))
       describe: 'Path to tsconfig.json file',
       type: 'string',
     },
+    [tsNodeArg]: {
+      default: true,
+      describe: 'Use ts-node for typescript files',
+      type: 'boolean',
+    },
+    [tsxArg]: {
+      default: false,
+      describe: 'Use tsx for typescript files',
+      type: 'boolean',
+    },
     [envPathArg]: {
       describe: 'Path to the .env file that should be used for configuration',
       type: 'string',
@@ -255,8 +272,10 @@ let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
 let tsconfigPath = argv[tsconfigArg];
+let useTsNode = argv[tsNodeArg];
+let useTsx = argv[tsxArg];
 
-function readTsconfig() {
+function readTsconfig(): void {
   if (tsconfigPath) {
     let tsconfig;
     const json5 = tryRequire<typeof import('json5')>('json5');
@@ -283,18 +302,24 @@ function readTsconfig() {
       console.error("Can't load tsconfig.json:", error);
     }
 
-    const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
-    if (!tsnode) {
-      console.error("For TypeScript support, please install 'ts-node' module");
-    }
-
-    if (tsconfig && tsnode) {
-      tsnode.register(tsconfig);
-      if (!MIGRATIONS_FILE_LANGUAGE) {
-        MIGRATIONS_FILE_LANGUAGE = 'ts';
+    if (useTsx) {
+      process.env.TSX_TSCONFIG_PATH = tsconfigPath;
+    } else if (useTsNode) {
+      const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
+      if (!tsnode) {
+        console.error(
+          "For TypeScript support, please install 'ts-node' module"
+        );
       }
-    } else {
-      process.exit(1);
+
+      if (tsconfig && tsnode) {
+        tsnode.register(tsconfig);
+        if (!MIGRATIONS_FILE_LANGUAGE) {
+          MIGRATIONS_FILE_LANGUAGE = 'ts';
+        }
+      } else {
+        process.exit(1);
+      }
     }
   }
 }
@@ -393,6 +418,8 @@ function readJson(json: unknown): void {
         typeof val === 'string' || typeof val === 'object'
     );
     tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
+    useTsNode = applyIf(useTsNode, tsNodeArg, json, isBoolean);
+    useTsx = applyIf(useTsx, tsxArg, json, isBoolean);
 
     if ('url' in json && json.url) {
       DB_CONNECTION ??= json.url;
@@ -429,6 +456,14 @@ if (configFileName) {
 }
 
 readTsconfig();
+
+if (useTsx) {
+  const tsx =
+    tryRequire<typeof import('tsx/dist/cjs/api/index.cjs')>('tsx/cjs');
+  if (!tsx) {
+    console.error("For TSX support, please install 'tsx' module");
+  }
+}
 
 const action = argv._.shift();
 
