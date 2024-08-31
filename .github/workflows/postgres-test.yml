@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [18, 20]
+        node_version: [20, 22]
         postgres_version: [13.18, 14.15, 15.10, 16.6, 17.2]
       fail-fast: false
     timeout-minutes: 10
