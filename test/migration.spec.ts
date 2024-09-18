@@ -1,7 +1,8 @@
+import { resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
-import { getTimestamp, Migration } from '../src/migration';
+import { getTimestamp, loadMigrationFiles, Migration } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
@@ -33,15 +34,80 @@ describe('migration', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
 
-      expect(getTimestamp(logger, String(now))).toBe(now);
+      expect(getTimestamp(String(now), logger)).toBe(now);
     });
 
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
 
-      expect(getTimestamp(logger, now.toISOString().replace(/\D/g, ''))).toBe(
+      expect(getTimestamp(now.toISOString().replace(/\D/g, ''), logger)).toBe(
         now.valueOf()
       );
+    });
+  });
+
+  describe('loadMigrationFiles', () => {
+    it('should resolve files directly in `dir`', async () => {
+      const dir = 'test/migrations';
+      const resolvedDir = resolve(dir);
+      const filePaths = await loadMigrationFiles(
+        dir,
+        undefined,
+        undefined,
+        logger
+      );
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(91);
+      expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(filePath).toMatch(resolvedDir);
+        expect(filePath).toMatch(/\.js$/);
+      }
+    });
+
+    it('should resolve files directly in `dir` and ignore matching ignorePattern', async () => {
+      const dir = 'test/migrations';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '.+test.+';
+
+      const filePaths = await loadMigrationFiles(
+        dir,
+        ignorePattern,
+        undefined,
+        logger
+      );
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(66);
+    });
+
+    it('should resolve files matching `dir` glob (starting from cwd())', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+
+      const filePaths = await loadMigrationFiles(dir, undefined, true, logger);
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(104);
+      expect(filePaths).toContainEqual(expect.stringContaining('nested'));
+    });
+
+    it('should resolve files matching `dir` glob (starting from cwd()) and ignore matching ignorePattern', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '*/cockroach/*test*';
+
+      const filePaths = await loadMigrationFiles(
+        dir,
+        ignorePattern,
+        true,
+        logger
+      );
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(103);
+      expect(filePaths).toContainEqual(expect.stringContaining('nested'));
     });
   });
 

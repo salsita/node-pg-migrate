@@ -32,11 +32,14 @@ async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const files = await loadMigrationFiles(options.dir, options.ignorePattern);
+    const absoluteFilePaths = await loadMigrationFiles(
+      options.dir,
+      options.ignorePattern,
+      options.useGlob
+    );
 
     const migrations = await Promise.all(
-      files.map(async (file) => {
-        const filePath = resolve(options.dir, file);
+      absoluteFilePaths.map(async (filePath) => {
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
@@ -56,15 +59,7 @@ async function loadMigrations(
       })
     );
 
-    return migrations.sort((m1, m2) => {
-      const compare = m1.timestamp - m2.timestamp;
-
-      if (compare !== 0) {
-        return compare;
-      }
-
-      return m1.name.localeCompare(m2.name);
-    });
+    return migrations;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Can't get migration files: ${error.stack}`);

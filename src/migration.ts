@@ -6,6 +6,7 @@
 
  */
 
+import { glob } from 'glob';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
@@ -49,19 +50,67 @@ export type CreateOptions = {
 
 const SEPARATOR = '_';
 
+function compareStringsByValue(a: string, b: string): number {
+  return a.localeCompare(b, 'en', {
+    usage: 'sort',
+    numeric: true,
+    sensitivity: 'variant',
+  });
+}
+
+function compareFileNamesByTimestamp(
+  a: string,
+  b: string,
+  logger?: Logger
+): number {
+  const aTimestamp = getTimestamp(a, logger);
+  const bTimestamp = getTimestamp(b, logger);
+
+  return aTimestamp - bTimestamp;
+}
+
+// TODO should be renamed to make clear that this function doesn't actually load the files - it only reads their names / paths from `dir`
 export async function loadMigrationFiles(
-  dir: string,
-  ignorePattern?: string
+  dir: string | string[],
+  ignorePattern?: string | string[],
+  useGlob: boolean = false,
+  logger?: Logger
 ): Promise<string[]> {
+  if (useGlob) {
+    /**
+     * By default, a `**` in a pattern will follow 1 symbolic link if
+     * it is not the first item in the pattern, or none if it is the
+     * first item in the pattern, following the same behavior as Bash.
+     *
+     * only want files, no dirs.
+     */
+    const globMatches = await glob(dir, { ignore: ignorePattern, nodir: true });
+    return globMatches.sort(compareStringsByValue);
+  }
+
+  if (Array.isArray(dir) || Array.isArray(ignorePattern)) {
+    throw new TypeError(
+      'Options "dir" and "ignorePattern" can only be arrays when "useGlob" is true'
+    );
+  }
+
+  const ignoreRegexp = new RegExp(
+    ignorePattern?.length ? `^${ignorePattern}$` : '^\\..*'
+  );
+
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true });
-  const files = dirContent
-    .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
-    .filter((file): file is string => Boolean(file))
-    .sort();
-  const filter = new RegExp(`^(${ignorePattern})$`);
-  return ignorePattern === undefined
-    ? files
-    : files.filter((i) => !filter.test(i));
+  return dirContent
+    .filter(
+      (dirent) =>
+        (dirent.isFile() || dirent.isSymbolicLink()) &&
+        !ignoreRegexp.test(dirent.name)
+    )
+    .sort(
+      (a, b) =>
+        compareFileNamesByTimestamp(a.name, b.name, logger) ||
+        compareStringsByValue(a.name, b.name)
+    )
+    .map((dirent) => resolve(dir, dirent.name));
 }
 
 function getSuffixFromFileName(fileName: string): string {
@@ -82,7 +131,10 @@ async function getLastSuffix(
   }
 }
 
-export function getTimestamp(logger: Logger, filename: string): number {
+export function getTimestamp(
+  filename: string,
+  logger: Logger = console
+): number {
   const prefix = filename.split(SEPARATOR)[0];
   if (prefix && /^\d+$/.test(prefix)) {
     if (prefix.length === 13) {
@@ -187,7 +239,7 @@ export class Migration implements RunMigration {
     this.db = db;
     this.path = migrationPath;
     this.name = basename(migrationPath, extname(migrationPath));
-    this.timestamp = getTimestamp(logger, this.name);
+    this.timestamp = getTimestamp(this.name, logger);
     this.up = up;
     this.down = down;
     this.options = options;
