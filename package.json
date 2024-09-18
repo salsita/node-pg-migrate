@@ -34,21 +34,21 @@
   "types": "dist/index.d.ts",
   "exports": {
     "./dist/*": {
+      "default": "./dist/*.js",
       "types": "./dist/*.d.ts",
       "require": "./dist/*.js",
-      "import": "./dist/esm/*.mjs",
-      "default": "./dist/*.js"
+      "import": "./dist/esm/*.mjs"
     },
     "./bin/*": {
+      "default": "./bin/*.js",
       "require": "./bin/*.js",
-      "import": "./bin/*.mjs",
-      "default": "./bin/*.js"
+      "import": "./bin/*.mjs"
     },
     ".": {
+      "default": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/esm/index.mjs",
-      "default": "./dist/index.js"
+      "import": "./dist/esm/index.mjs"
     },
     "./*": {
       "types": "./dist/*.d.ts",
