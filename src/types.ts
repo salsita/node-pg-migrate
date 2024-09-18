@@ -797,7 +797,7 @@ export interface RunnerOptionConfig {
    *
    * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
    *
-   * @default: false
+   * @default false
    */
   useGlob?: boolean;
 
