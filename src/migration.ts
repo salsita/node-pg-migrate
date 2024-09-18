@@ -70,16 +70,44 @@ function compareFileNamesByTimestamp(
   return aTimestamp - bTimestamp;
 }
 
+interface LoadMigrationFilesOptions {
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `isGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  ignorePattern?: string | string[];
+  /**
+   * Use [glob](https://www.npmjs.com/package/glob) to find migration files.
+   * This will use `dir` _and_ `options.ignorePattern` to glob-search for migration files.
+   *
+   * @default: false
+   */
+  useGlob?: boolean;
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
+  logger?: Logger;
+}
+
 /**
  * ! this function does not actually load the files - it only reads their names / paths from `dir`
  * ? should the function body be adjusted to do only what can be expected from it's name
  */
 export async function loadMigrationFiles(
+  /**
+   * The directory containing your migration files. This path is resolved from `cwd()`.
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `options.useGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `options.ignorePattern` as glob patterns
+   */
   dir: string | string[],
-  ignorePattern?: string | string[],
-  useGlob: boolean = false,
-  logger?: Logger
+  options: LoadMigrationFilesOptions = {}
 ): Promise<string[]> {
+  const { ignorePattern, useGlob = false, logger } = options;
   if (useGlob) {
     /**
      * By default, a `**` in a pattern will follow 1 symbolic link if
@@ -126,7 +154,7 @@ async function getLastSuffix(
   ignorePattern?: string
 ): Promise<string | undefined> {
   try {
-    const files = await loadMigrationFiles(dir, ignorePattern);
+    const files = await loadMigrationFiles(dir, { ignorePattern });
     return files.length > 0
       ? getSuffixFromFileName(files[files.length - 1])
       : undefined;

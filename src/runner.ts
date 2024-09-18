@@ -32,11 +32,11 @@ async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const absoluteFilePaths = await loadMigrationFiles(
-      options.dir,
-      options.ignorePattern,
-      options.useGlob
-    );
+    const absoluteFilePaths = await loadMigrationFiles(options.dir, {
+      ignorePattern: options.ignorePattern,
+      useGlob: options.useGlob,
+      logger,
+    });
 
     const migrations = await Promise.all(
       absoluteFilePaths.map(async (filePath) => {

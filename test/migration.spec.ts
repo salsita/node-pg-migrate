@@ -50,12 +50,7 @@ describe('migration', () => {
     it('should resolve files directly in `dir`', async () => {
       const dir = 'test/migrations';
       const resolvedDir = resolve(dir);
-      const filePaths = await loadMigrationFiles(
-        dir,
-        undefined,
-        undefined,
-        logger
-      );
+      const filePaths = await loadMigrationFiles(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(91);
@@ -72,12 +67,10 @@ describe('migration', () => {
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '.+test.+';
 
-      const filePaths = await loadMigrationFiles(
-        dir,
+      const filePaths = await loadMigrationFiles(dir, {
         ignorePattern,
-        undefined,
-        logger
-      );
+        logger,
+      });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(66);
@@ -86,7 +79,10 @@ describe('migration', () => {
     it('should resolve files matching `dir` glob (starting from cwd())', async () => {
       const dir = 'test/{cockroach,migrations}/**';
 
-      const filePaths = await loadMigrationFiles(dir, undefined, true, logger);
+      const filePaths = await loadMigrationFiles(dir, {
+        useGlob: true,
+        logger,
+      });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(104);
@@ -98,12 +94,11 @@ describe('migration', () => {
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '*/cockroach/*test*';
 
-      const filePaths = await loadMigrationFiles(
-        dir,
+      const filePaths = await loadMigrationFiles(dir, {
         ignorePattern,
-        true,
-        logger
-      );
+        useGlob: true,
+        logger,
+      });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(103);
