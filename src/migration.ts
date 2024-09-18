@@ -50,7 +50,7 @@ export type CreateOptions = {
 
 const SEPARATOR = '_';
 
-function compareStringsByValue(a: string, b: string): number {
+function localeCompareStringsNumerically(a: string, b: string): number {
   return a.localeCompare(b, undefined, {
     usage: 'sort',
     numeric: true,
@@ -70,7 +70,10 @@ function compareFileNamesByTimestamp(
   return aTimestamp - bTimestamp;
 }
 
-// TODO should be renamed to make clear that this function doesn't actually load the files - it only reads their names / paths from `dir`
+/**
+ * ! this function does not actually load the files - it only reads their names / paths from `dir`
+ * ? should the function body be adjusted to do only what can be expected from it's name
+ */
 export async function loadMigrationFiles(
   dir: string | string[],
   ignorePattern?: string | string[],
@@ -86,7 +89,7 @@ export async function loadMigrationFiles(
      * only want files, no dirs.
      */
     const globMatches = await glob(dir, { ignore: ignorePattern, nodir: true });
-    return globMatches.sort(compareStringsByValue);
+    return globMatches.sort(localeCompareStringsNumerically);
   }
 
   if (Array.isArray(dir) || Array.isArray(ignorePattern)) {
@@ -109,7 +112,7 @@ export async function loadMigrationFiles(
     .sort(
       (a, b) =>
         compareFileNamesByTimestamp(a.name, b.name, logger) ||
-        compareStringsByValue(a.name, b.name)
+        localeCompareStringsNumerically(a.name, b.name)
     )
     .map((dirent) => resolve(dir, dirent.name));
 }
@@ -132,6 +135,10 @@ async function getLastSuffix(
   }
 }
 
+/**
+ * ! this function does not only resolve a timestamp numeric value. When prefix is numeric but neither 13 nor 17 digits, it returns the numeric prefix.
+ * ? should the function body be adjusted to do only what can be expected from it's name
+ */
 export function getTimestamp(
   filename: string,
   logger: Logger = console
