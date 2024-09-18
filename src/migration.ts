@@ -51,10 +51,11 @@ export type CreateOptions = {
 const SEPARATOR = '_';
 
 function compareStringsByValue(a: string, b: string): number {
-  return a.localeCompare(b, 'en', {
+  return a.localeCompare(b, undefined, {
     usage: 'sort',
     numeric: true,
     sensitivity: 'variant',
+    ignorePunctuation: true,
   });
 }
 
