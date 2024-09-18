@@ -85,12 +85,12 @@ const parser = yargs(process.argv.slice(2))
     [migrationsDirArg]: {
       alias: 'm',
       defaultDescription: '"migrations"',
-      describe: `The directory name or glob pattern containing your migration files (resolved from cwd()). When using glob pattern, '${useGlobArg}' must be used as well`,
+      describe: `The directory name or glob pattern containing your migration files (resolved from cwd()). When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
     },
     [useGlobArg]: {
       defaultDescription: 'false',
-      describe: `Use glob to find migration files. This will use '${migrationsDirArg}' _and_ '${ignorePatternArg}' to glob-search for migration files.`,
+      describe: `Use glob to find migration files. This will use "${migrationsDirArg}" _and_ "${ignorePatternArg}" to glob-search for migration files.`,
       type: 'boolean',
     },
     [migrationsTableArg]: {
@@ -134,7 +134,7 @@ const parser = yargs(process.argv.slice(2))
     },
     [ignorePatternArg]: {
       defaultDescription: '"\\..*"',
-      describe: `Regex or glob pattern for migration files to be ignored. When using glob pattern, '${useGlobArg}' must be used as well`,
+      describe: `Regex or glob pattern for migration files to be ignored. When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
     },
     [decamelizeArg]: {
