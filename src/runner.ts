@@ -3,7 +3,7 @@ import { extname, resolve } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
-import { loadMigrationFiles, Migration } from './migration';
+import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
 import migrateSqlFile from './sqlMigration';
 import type {
@@ -32,7 +32,7 @@ async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const absoluteFilePaths = await loadMigrationFiles(options.dir, {
+    const absoluteFilePaths = await getMigrationFilePaths(options.dir, {
       ignorePattern: options.ignorePattern,
       useGlob: options.useGlob,
       logger,

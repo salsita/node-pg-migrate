@@ -64,8 +64,8 @@ function compareFileNamesByTimestamp(
   b: string,
   logger?: Logger
 ): number {
-  const aTimestamp = getTimestamp(a, logger);
-  const bTimestamp = getTimestamp(b, logger);
+  const aTimestamp = getNumericPrefix(a, logger);
+  const bTimestamp = getNumericPrefix(b, logger);
 
   return aTimestamp - bTimestamp;
 }
@@ -93,10 +93,19 @@ interface LoadMigrationFilesOptions {
 }
 
 /**
- * ! this function does not actually load the files - it only reads their names / paths from `dir`
- * ? should the function body be adjusted to do only what can be expected from it's name
+ * reads files from `dir`, sorts them and returns an array of their absolute paths.
+ * When not using globs, files are sorted by their numeric prefix values first. 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
+ * Glob matches are sorted via String.localeCompare with ignored punctuation.
+ *
+ * @param dir The directory containing your migration files. This path is resolved from `cwd()`.
+ * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+ * an array of glob patterns and set `options.useGlob = true`
+ *
+ * Note: enabling glob will read both, `dir` _and_ `options.ignorePattern` as glob patterns
+ * @param {LoadMigrationFilesOptions} options
+ * @returns {Promise<Array<String>>} Array of absolute paths
  */
-export async function loadMigrationFiles(
+export async function getMigrationFilePaths(
   /**
    * The directory containing your migration files. This path is resolved from `cwd()`.
    * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
@@ -154,7 +163,7 @@ async function getLastSuffix(
   ignorePattern?: string
 ): Promise<string | undefined> {
   try {
-    const files = await loadMigrationFiles(dir, { ignorePattern });
+    const files = await getMigrationFilePaths(dir, { ignorePattern });
     return files.length > 0
       ? getSuffixFromFileName(files[files.length - 1])
       : undefined;
@@ -164,10 +173,13 @@ async function getLastSuffix(
 }
 
 /**
- * ! this function does not only resolve a timestamp numeric value. When prefix is numeric but neither 13 nor 17 digits, it returns the numeric prefix.
- * ? should the function body be adjusted to do only what can be expected from it's name
+ * extracts numeric value from everything in `filename` before `SEPARATOR`.
+ * 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
+ * @param filename filename to extract the prefix from
+ * @param logger Redirect messages to this logger object, rather than `console`.
+ * @returns {number} numeric value of the filename prefix (everything before SEPARATOR).
  */
-export function getTimestamp(
+export function getNumericPrefix(
   filename: string,
   logger: Logger = console
 ): number {
@@ -275,7 +287,7 @@ export class Migration implements RunMigration {
     this.db = db;
     this.path = migrationPath;
     this.name = basename(migrationPath, extname(migrationPath));
-    this.timestamp = getTimestamp(this.name, logger);
+    this.timestamp = getNumericPrefix(this.name, logger);
     this.up = up;
     this.down = down;
     this.options = options;

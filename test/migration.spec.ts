@@ -2,7 +2,11 @@ import { resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
-import { getTimestamp, loadMigrationFiles, Migration } from '../src/migration';
+import {
+  getMigrationFilePaths,
+  getNumericPrefix,
+  Migration,
+} from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
@@ -30,27 +34,27 @@ describe('migration', () => {
     dbMock.query = queryMock;
   });
 
-  describe('getTimestamp', () => {
+  describe('getMigrationFilePaths', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
 
-      expect(getTimestamp(String(now), logger)).toBe(now);
+      expect(getNumericPrefix(String(now), logger)).toBe(now);
     });
 
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
 
-      expect(getTimestamp(now.toISOString().replace(/\D/g, ''), logger)).toBe(
-        now.valueOf()
-      );
+      expect(
+        getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
+      ).toBe(now.valueOf());
     });
   });
 
-  describe('loadMigrationFiles', () => {
+  describe('getMigrationFilePaths', () => {
     it('should resolve files directly in `dir`', async () => {
       const dir = 'test/migrations';
       const resolvedDir = resolve(dir);
-      const filePaths = await loadMigrationFiles(dir, { logger });
+      const filePaths = await getMigrationFilePaths(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(91);
@@ -67,7 +71,7 @@ describe('migration', () => {
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '.+test.+';
 
-      const filePaths = await loadMigrationFiles(dir, {
+      const filePaths = await getMigrationFilePaths(dir, {
         ignorePattern,
         logger,
       });
@@ -79,7 +83,7 @@ describe('migration', () => {
     it('should resolve files matching `dir` glob (starting from cwd())', async () => {
       const dir = 'test/{cockroach,migrations}/**';
 
-      const filePaths = await loadMigrationFiles(dir, {
+      const filePaths = await getMigrationFilePaths(dir, {
         useGlob: true,
         logger,
       });
@@ -94,7 +98,7 @@ describe('migration', () => {
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '*/cockroach/*test*';
 
-      const filePaths = await loadMigrationFiles(dir, {
+      const filePaths = await getMigrationFilePaths(dir, {
         ignorePattern,
         useGlob: true,
         logger,
