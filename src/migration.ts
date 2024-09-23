@@ -93,7 +93,7 @@ interface LoadMigrationFilesOptions {
 }
 
 /**
- * reads files from `dir`, sorts them and returns an array of their absolute paths.
+ * Reads files from `dir`, sorts them and returns an array of their absolute paths.
  * When not using globs, files are sorted by their numeric prefix values first. 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
  * Glob matches are sorted via String.localeCompare with ignored punctuation.
  *
@@ -102,8 +102,8 @@ interface LoadMigrationFilesOptions {
  * an array of glob patterns and set `options.useGlob = true`
  *
  * Note: enabling glob will read both, `dir` _and_ `options.ignorePattern` as glob patterns
- * @param {LoadMigrationFilesOptions} options
- * @returns {Promise<Array<String>>} Array of absolute paths
+ * @param options
+ * @returns Array of absolute paths
  */
 export async function getMigrationFilePaths(
   /**
@@ -123,7 +123,7 @@ export async function getMigrationFilePaths(
      * it is not the first item in the pattern, or none if it is the
      * first item in the pattern, following the same behavior as Bash.
      *
-     * only want files, no dirs.
+     * Only want files, no dirs.
      */
     const globMatches = await glob(dir, { ignore: ignorePattern, nodir: true });
     return globMatches.sort(localeCompareStringsNumerically);
@@ -177,7 +177,7 @@ async function getLastSuffix(
  * 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
  * @param filename filename to extract the prefix from
  * @param logger Redirect messages to this logger object, rather than `console`.
- * @returns {number} numeric value of the filename prefix (everything before SEPARATOR).
+ * @returns numeric value of the filename prefix (everything before `SEPARATOR`).
  */
 export function getNumericPrefix(
   filename: string,
