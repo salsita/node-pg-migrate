@@ -3,7 +3,7 @@ import { extname, resolve } from 'node:path';
 import type { DBConnection } from './db';
 import Db from './db';
 import type { RunMigration } from './migration';
-import { loadMigrationFiles, Migration } from './migration';
+import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
 import migrateSqlFile from './sqlMigration';
 import type {
@@ -32,11 +32,14 @@ async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const files = await loadMigrationFiles(options.dir, options.ignorePattern);
+    const absoluteFilePaths = await getMigrationFilePaths(options.dir, {
+      ignorePattern: options.ignorePattern,
+      useGlob: options.useGlob,
+      logger,
+    });
 
     const migrations = await Promise.all(
-      files.map(async (file) => {
-        const filePath = resolve(options.dir, file);
+      absoluteFilePaths.map(async (filePath) => {
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
@@ -56,15 +59,7 @@ async function loadMigrations(
       })
     );
 
-    return migrations.sort((m1, m2) => {
-      const compare = m1.timestamp - m2.timestamp;
-
-      if (compare !== 0) {
-        return compare;
-      }
-
-      return m1.name.localeCompare(m2.name);
-    });
+    return migrations;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Can't get migration files: ${error.stack}`);

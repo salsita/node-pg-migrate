@@ -48,6 +48,7 @@ const schemaArg = 'schema';
 const createSchemaArg = 'create-schema';
 const databaseUrlVarArg = 'database-url-var';
 const migrationsDirArg = 'migrations-dir';
+const useGlobArg = 'use-glob';
 const migrationsTableArg = 'migrations-table';
 const migrationsSchemaArg = 'migrations-schema';
 const createMigrationsSchemaArg = 'create-migrations-schema';
@@ -84,8 +85,13 @@ const parser = yargs(process.argv.slice(2))
     [migrationsDirArg]: {
       alias: 'm',
       defaultDescription: '"migrations"',
-      describe: 'The directory containing your migration files',
+      describe: `The directory name or glob pattern containing your migration files (resolved from cwd()). When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
+    },
+    [useGlobArg]: {
+      defaultDescription: 'false',
+      describe: `Use glob to find migration files. This will use "${migrationsDirArg}" _and_ "${ignorePatternArg}" to glob-search for migration files.`,
+      type: 'boolean',
     },
     [migrationsTableArg]: {
       alias: 't',
@@ -128,7 +134,7 @@ const parser = yargs(process.argv.slice(2))
     },
     [ignorePatternArg]: {
       defaultDescription: '"\\..*"',
-      describe: 'Regex pattern for file names to ignore',
+      describe: `Regex or glob pattern for migration files to be ignored. When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
     },
     [decamelizeArg]: {
@@ -253,6 +259,7 @@ if (dotenv) {
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
+let USE_GLOB = argv[useGlobArg];
 let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
   process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
@@ -469,11 +476,11 @@ const action = argv._.shift();
 
 // defaults
 MIGRATIONS_DIR ??= join(cwd(), 'migrations');
+USE_GLOB ??= false;
 MIGRATIONS_FILE_LANGUAGE ??= 'js';
 MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
 MIGRATIONS_TABLE ??= 'pgmigrations';
 SCHEMA ??= ['public'];
-IGNORE_PATTERN ??= '\\..*';
 CHECK_ORDER ??= true;
 VERBOSE ??= true;
 
@@ -583,6 +590,7 @@ if (action === 'create') {
       },
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
+      useGlob: USE_GLOB,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,

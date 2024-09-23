@@ -783,9 +783,23 @@ export interface RunnerOptionConfig {
   schema?: string | string[];
 
   /**
-   * The directory containing your migration files.
+   * The directory containing your migration files. This path is resolved from `cwd()`.
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `useGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
    */
-  dir: string;
+  dir: string | string[];
+
+  /**
+   * Use [glob](https://www.npmjs.com/package/glob) to find migration files.
+   * This will use `dir` _and_ `ignorePattern` to glob-search for migration files.
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   *
+   * @default false
+   */
+  useGlob?: boolean;
 
   /**
    * Check order of migrations before running them.
@@ -809,8 +823,12 @@ export interface RunnerOptionConfig {
 
   /**
    * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `isGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
    */
-  ignorePattern?: string;
+  ignorePattern?: string | string[];
 
   /**
    * Run only migration with this name.

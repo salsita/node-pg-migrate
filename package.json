@@ -97,6 +97,7 @@
     "url": "git+https://github.com/salsita/node-pg-migrate.git"
   },
   "dependencies": {
+    "glob": "11.0.0",
     "yargs": "~17.7.0"
   },
   "devDependencies": {

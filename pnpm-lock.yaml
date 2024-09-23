@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      glob:
+        specifier: 11.0.0
+        version: 11.0.0
       yargs:
         specifier: ~17.7.0
         version: 17.7.2
