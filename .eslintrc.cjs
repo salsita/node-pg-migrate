@@ -24,7 +24,7 @@ module.exports = defineConfig({
     'plugin:prettier/recommended',
   ],
   parserOptions: {
-    project: ['./tsconfig.lint.json'],
+    project: ['./tsconfig.json'],
     warnOnUnsupportedTypeScriptVersion: false,
   },
   rules: {
@@ -141,7 +141,7 @@ module.exports = defineConfig({
   },
   overrides: [
     {
-      files: ['test/migrations/*.js'],
+      files: ['test/migrations/*.js', 'test/migrations/*.cjs'],
       rules: {
         'unicorn/prefer-module': 'off',
 

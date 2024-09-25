@@ -1,4 +1,4 @@
-const sequence = require('./049_sequence_create_rename');
+const sequence = require('./049_sequence_create_rename.cjs');
 
 exports.up = (pgm) => {
   pgm.dropTable('ts');

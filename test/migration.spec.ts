@@ -9,8 +9,8 @@ import {
 } from '../src/migration';
 import type { Logger, RunnerOption } from '../src/types';
 
-const callbackMigration = '1414549381268_names.js';
-const promiseMigration = '1414549381268_names_promise.js';
+const callbackMigration = '1414549381268_names.cjs';
+const promiseMigration = '1414549381268_names_promise.cjs';
 const migrationsTable = 'pgmigrations';
 
 const actionsCallback = require(`./${callbackMigration}`);

@@ -1,19 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
+    "target": "ESNext",
     "moduleResolution": "Node",
+    "module": "ESNext",
     "lib": ["ES2022", "DOM"],
+    "strict": true,
     "noEmit": true,
-    "resolveJsonModule": true,
+    "declaration": true,
+    "stripInternal": true,
+    "verbatimModuleSyntax": true,
+
     "esModuleInterop": true,
     "sourceMap": false,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true
+
+    // These are configs specifically for !build and have to be reverted in the tsconfig.build.json
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "templates", "dist", "migrations"]
+  "exclude": ["node_modules", "dist"]
 }

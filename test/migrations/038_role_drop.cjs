@@ -1,5 +1,5 @@
-const create = require('./035_role_add');
-const rename = require('./037_role_rename');
+const create = require('./035_role_add.cjs');
+const rename = require('./037_role_rename.cjs');
 
 exports.up = (pgm) => {
   pgm.dropRole('rx');

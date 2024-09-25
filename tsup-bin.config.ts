@@ -7,7 +7,7 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   target: ['es2022', 'node18'],
   dts: false,
-  minify: false,
+  minify: true,
   sourcemap: false,
   bundle: false,
 });

@@ -1,4 +1,4 @@
-const table = require('./004_table');
+const table = require('./004_table.cjs');
 
 const schema = process.env.SCHEMA || 'public';
 

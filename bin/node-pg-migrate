@@ -1,7 +1,0 @@
-#!/usr/bin/env node
-
-console.warn(
-  'bin/node-pg-migrate is deprecated. Please use bin/node-pg-migrate.js instead.'
-);
-
-require('./node-pg-migrate.js');

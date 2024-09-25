@@ -1,6 +1,6 @@
 const {
   constants: { schema, table, role1, role2, tablePrivileges, schemaPrivilege },
-} = require('./085_grant_tables_schemas_roles');
+} = require('./085_grant_tables_schemas_roles.cjs');
 
 exports.up = (pgm) => {
   pgm.revokeRoles(role1, role2);
