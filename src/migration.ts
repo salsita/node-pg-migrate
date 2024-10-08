@@ -125,7 +125,11 @@ export async function getMigrationFilePaths(
      *
      * Only want files, no dirs.
      */
-    const globMatches = await glob(dir, { ignore: ignorePattern, nodir: true, absolute: true });
+    const globMatches = await glob(dir, {
+      ignore: ignorePattern,
+      nodir: true,
+      absolute: true,
+    });
     return globMatches.sort(localeCompareStringsNumerically);
   }
 
