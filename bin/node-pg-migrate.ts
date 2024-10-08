@@ -375,6 +375,7 @@ function readJson(json: unknown): void {
         Array.isArray(val) || (isString(val) && val.length > 0)
     );
     CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
+    USE_GLOB = applyIf(USE_GLOB, useGlobArg, json, isBoolean);
     MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
     MIGRATIONS_SCHEMA = applyIf(
       MIGRATIONS_SCHEMA,
