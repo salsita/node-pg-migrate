@@ -39,7 +39,7 @@ jobs:
     name: 'Postgres Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -90,7 +90,7 @@ jobs:
     name: 'Config 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -154,7 +154,7 @@ jobs:
     name: 'Config 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -216,7 +216,7 @@ jobs:
     name: 'Dotenv Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -271,7 +271,7 @@ jobs:
     name: 'Dotenv Expand Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -330,7 +330,7 @@ jobs:
     name: 'Password 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -381,7 +381,7 @@ jobs:
     name: 'Password 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -445,7 +445,7 @@ jobs:
     name: 'Env Vars Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -498,7 +498,7 @@ jobs:
     name: 'Schema Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -550,7 +550,7 @@ jobs:
     name: 'Schemas Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -602,7 +602,7 @@ jobs:
     name: 'TypeScript Migration Test with ts-node: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -653,7 +653,7 @@ jobs:
     name: 'TypeScript Migration Test with tsx: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -704,7 +704,7 @@ jobs:
     name: 'TypeScript Customrunner Url Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -755,7 +755,7 @@ jobs:
     name: 'TypeScript Customrunner Client Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
@@ -806,7 +806,7 @@ jobs:
     name: 'TypeScript Customrunner undef count Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
       - name: Install pnpm
         uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
