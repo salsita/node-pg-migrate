@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import { isAbsolute, resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
@@ -63,6 +63,7 @@ describe('migration', () => {
       for (const filePath of filePaths) {
         expect(filePath).toMatch(resolvedDir);
         expect(filePath).toMatch(/\.js$/);
+        expect(isAbsolute(filePath)).toBeTruthy();
       }
     });
 
@@ -78,6 +79,10 @@ describe('migration', () => {
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(66);
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
     });
 
     it('should resolve files matching `dir` glob (starting from cwd())', async () => {
@@ -91,6 +96,10 @@ describe('migration', () => {
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(104);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
     });
 
     it('should resolve files matching `dir` glob (starting from cwd()) and ignore matching ignorePattern', async () => {
@@ -107,6 +116,10 @@ describe('migration', () => {
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(103);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
     });
   });
 
