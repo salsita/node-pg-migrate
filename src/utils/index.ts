@@ -4,6 +4,7 @@ export { decamelize } from './decamelize';
 export { escapeValue } from './escapeValue';
 export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
+export { formatPartitionColumns } from './formatPartitionColumns';
 export { getMigrationTableSchema } from './getMigrationTableSchema';
 export { getSchemas } from './getSchemas';
 export { identity } from './identity';
