@@ -1,5 +1,4 @@
-
-import { PartitionColumnOptions, PartitionOptions } from '../operations/tables';
+import type { PartitionColumnOptions, PartitionOptions } from '../operations/tables';
 import { toArray } from './toArray';
 
 function formatPartitionColumn(
@@ -15,6 +14,7 @@ function formatPartitionColumn(
   if (column.collate) {
     formatted += ` COLLATE ${column.collate}`;
   }
+
   if (column.opclass) {
     formatted += ` ${column.opclass}`;
   }

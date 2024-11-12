@@ -1,5 +1,10 @@
 import type { MigrationOptions } from '../../types';
-import { formatLines, formatPartitionColumns, intersection, makeComment } from '../../utils';
+import {
+  formatLines,
+  formatPartitionColumns,
+  intersection,
+  makeComment,
+} from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropTableOptions } from './dropTable';
 import { dropTable } from './dropTable';
