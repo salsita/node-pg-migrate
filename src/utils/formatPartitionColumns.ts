@@ -1,4 +1,7 @@
-import type { PartitionColumnOptions, PartitionOptions } from '../operations/tables';
+import type {
+  PartitionColumnOptions,
+  PartitionOptions,
+} from '../operations/tables';
 import { toArray } from './toArray';
 
 function formatPartitionColumn(
