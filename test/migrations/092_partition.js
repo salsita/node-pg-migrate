@@ -2,7 +2,7 @@ exports.up = (pgm) => {
   pgm.createTable(
     't_partition',
     {
-      id: 'id',
+      id: 'serial',
       string: { type: 'text', notNull: true },
       created: {
         type: 'timestamp',
@@ -11,6 +11,9 @@ exports.up = (pgm) => {
       },
     },
     {
+      constraints: {
+        primaryKey: ['id', 'created'],
+      },
       partition: {
         strategy: 'RANGE',
         columns: 'created',
