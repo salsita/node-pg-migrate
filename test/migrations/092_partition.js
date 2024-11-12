@@ -1,6 +1,6 @@
 exports.up = (pgm) => {
   pgm.createTable(
-    't1',
+    't_partition',
     {
       id: 'id',
       string: { type: 'text', notNull: true },
