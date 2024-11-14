@@ -102,6 +102,22 @@ export interface ConstraintOptions {
   comment?: string;
 }
 
+export type PartitionStrategy = 'RANGE' | 'LIST' | 'HASH';
+
+export interface PartitionColumnOptions {
+  name: string;
+  collate?: string;
+  opclass?: string;
+}
+
+export interface PartitionOptions {
+  strategy: PartitionStrategy;
+  columns:
+    | Array<string | PartitionColumnOptions>
+    | string
+    | PartitionColumnOptions;
+}
+
 export interface TableOptions extends IfNotExistsOption {
   temporary?: boolean;
 
@@ -112,6 +128,8 @@ export interface TableOptions extends IfNotExistsOption {
   constraints?: ConstraintOptions;
 
   comment?: string | null;
+
+  partition?: PartitionOptions;
 }
 
 export function parseReferences(

@@ -1,5 +1,10 @@
 import type { MigrationOptions } from '../../types';
-import { formatLines, intersection, makeComment } from '../../utils';
+import {
+  formatLines,
+  formatPartitionColumns,
+  intersection,
+  makeComment,
+} from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropTableOptions } from './dropTable';
 import { dropTable } from './dropTable';
@@ -27,6 +32,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       like,
       constraints: optionsConstraints = {},
       comment,
+      partition,
     } = options;
 
     const {
@@ -64,11 +70,16 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
     const inheritsStr = inherits
       ? ` INHERITS (${mOptions.literal(inherits)})`
       : '';
+
+    const partitionStr = partition
+      ? ` PARTITION BY ${partition.strategy} (${formatPartitionColumns(partition, mOptions.literal)})`
+      : '';
+
     const tableNameStr = mOptions.literal(tableName);
 
     const createTableQuery = `CREATE${temporaryStr} TABLE${ifNotExistsStr} ${tableNameStr} (
 ${formatLines(tableDefinition)}
-)${inheritsStr};`;
+)${inheritsStr}${partitionStr};`;
     const comments = [...columnComments, ...constraintComments];
 
     if (comment !== undefined) {
