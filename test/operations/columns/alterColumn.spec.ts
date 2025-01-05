@@ -27,15 +27,16 @@ describe('operations', () => {
           notNull: false,
           sequenceGenerated: null,
           comment: 'Address of the distributor',
+          expressionGenerated: 'other +1',
         });
-
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           `ALTER TABLE "distributors"
   ALTER "address" DROP DEFAULT,
   ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,
   ALTER "address" DROP NOT NULL,
-  ALTER "address" DROP IDENTITY;
+  ALTER "address" DROP IDENTITY,
+  ALTER "address" SET EXPRESSION AS (other +1);
 COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`
         );
       });

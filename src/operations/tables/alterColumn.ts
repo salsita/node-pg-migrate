@@ -30,6 +30,7 @@ export interface AlterColumnOptions {
   generated?: null | false | SequenceGeneratedOptions;
 
   sequenceGenerated?: null | false | SequenceGeneratedOptions;
+  expressionGenerated?: null | string;
 }
 
 export type AlterColumn = (
@@ -48,6 +49,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       notNull,
       allowNull,
       comment,
+      expressionGenerated,
     } = options;
 
     const sequenceGenerated =
@@ -90,6 +92,10 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       } else {
         actions.push('DROP IDENTITY');
       }
+    }
+
+    if (typeof expressionGenerated === 'string') {
+      actions.push(`SET EXPRESSION AS (${expressionGenerated})`);
     }
 
     const queries: string[] = [];
