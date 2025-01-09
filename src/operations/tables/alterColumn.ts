@@ -94,8 +94,14 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       }
     }
 
-    if (typeof expressionGenerated === 'string') {
-      actions.push(`SET EXPRESSION AS (${expressionGenerated})`);
+    if (expressionGenerated !== undefined) {
+      if (typeof expressionGenerated === 'string') {
+        actions.push(`SET EXPRESSION AS (${expressionGenerated})`);
+      }
+
+      if (expressionGenerated === null) {
+        actions.push('DROP EXPRESSION');
+      }
     }
 
     const queries: string[] = [];
