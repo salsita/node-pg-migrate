@@ -34,7 +34,7 @@ describe('migration', () => {
     dbMock.query = queryMock;
   });
 
-  describe('getMigrationFilePaths', () => {
+  describe('getNumericPrefix', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
 
