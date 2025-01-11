@@ -7,8 +7,8 @@ describe('runner', () => {
     expect(runner).toBeTypeOf('function');
   });
 
-  it('should throw an error when not options passed', () => {
-    expect(
+  it('should throw an error when not options passed', async () => {
+    await expect(
       // @ts-expect-error: runner needs options
       runner()
     ).rejects.toThrow(
@@ -20,8 +20,8 @@ describe('runner', () => {
 
   it.todo(
     'should throw an error when no databaseUrl or dbClient passed',
-    () => {
-      expect(
+    async () => {
+      await expect(
         // @ts-expect-error: runner needs options
         runner({ log: console.log })
       ).rejects.toThrow(

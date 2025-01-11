@@ -42,7 +42,7 @@ describe('db', () => {
     it('should call pg.Client with connection string', () => {
       db = Db('connection_string');
 
-      expect(Client).toBeCalledWith('connection_string');
+      expect(Client).toHaveBeenCalledWith('connection_string');
     });
 
     it('should use external client', async () => {
@@ -94,32 +94,32 @@ describe('db', () => {
       expect(hoisted.client.query).toHaveBeenCalledWith('query', undefined);
     });
 
-    it('should not call client.query if client.connect fails', () => {
+    it('should not call client.query if client.connect fails', async () => {
       const error = 'error';
 
       vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) =>
         fn(new Error(error))
       );
 
-      expect(() => db.query('query')).rejects.toThrow(error);
+      await expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.query).not.toHaveBeenCalled();
     });
 
-    it('should resolve promise if query throws no error', () => {
+    it('should resolve promise if query throws no error', async () => {
       const result = 'result';
 
       vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
       vi.spyOn(hoisted.client, 'query').mockResolvedValue(result);
 
-      expect(db.query('query')).resolves.toBe(result);
+      await expect(db.query('query')).resolves.toBe(result);
     });
 
-    it('should reject promise if query throws error', () => {
+    it('should reject promise if query throws error', async () => {
       const error = 'error';
 
       vi.spyOn(hoisted.client, 'query').mockRejectedValue(new Error(error));
 
-      expect(() => db.query('query')).rejects.toThrow(error);
+      await expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
   });
