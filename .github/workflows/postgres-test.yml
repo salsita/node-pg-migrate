@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node_version: [18, 20]
-        postgres_version: [12.18, 13.14, 14.11, 15.6, 16.2]
+        postgres_version: [13.18, 14.15, 15.10, 16.6, 17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -66,7 +66,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -130,7 +130,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -192,7 +192,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -247,7 +247,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -305,7 +305,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -357,7 +357,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -421,7 +421,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -474,7 +474,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -526,7 +526,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -578,7 +578,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -629,7 +629,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -680,7 +680,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -731,7 +731,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 
@@ -782,7 +782,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [16.2]
+        postgres_version: [17.2]
       fail-fast: false
     timeout-minutes: 10
 

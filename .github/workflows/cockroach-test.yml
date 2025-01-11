@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20]
-        cockroach_version: [22.2.19, 23.2.4]
+        cockroach_version: [22.2.19, 23.2.19, 24.3.3]
       fail-fast: false
     timeout-minutes: 10
 
