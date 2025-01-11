@@ -11,8 +11,13 @@ const isSupportedVersion = (major) => major >= 17;
 exports.up = async (pgm) => {
   const major = await getMajorVersion(pgm);
   if (isSupportedVersion(major)) {
-    pgm.createTable('t093', { id: { type: 'integer', notNull: true } });
-    pgm.alterColumn('t093', 'col1', { expressionGenerated: 'other + 1' });
+    pgm.createTable('t093', {
+      id: { type: 'integer', notNull: true },
+      other: { type: 'integer', notNull: true },
+      col1: { type: 'integer', expressionGenerated: 'other + 1' },
+      col2: { type: 'integer', expressionGenerated: 'other + 1' },
+    });
+    pgm.alterColumn('t093', 'col1', { expressionGenerated: 'other + 2' });
     pgm.alterColumn('t093', 'col2', { expressionGenerated: null });
   }
 };
