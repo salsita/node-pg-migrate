@@ -23,15 +23,42 @@
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
   },
-  "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate.js",
-    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
-    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+  "keywords": [
+    "db",
+    "database",
+    "migrate",
+    "migration",
+    "migrations",
+    "migrator",
+    "db-migrate",
+    "sql",
+    "pg",
+    "postgre",
+    "postgres",
+    "postgresql",
+    "cockroach",
+    "cockroachdb",
+    "extensible",
+    "expandable",
+    "programatic",
+    "programable",
+    "api"
+  ],
+  "homepage": "https://github.com/salsita/node-pg-migrate",
+  "bugs": {
+    "url": "https://github.com/salsita/node-pg-migrate/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salsita/node-pg-migrate.git"
+  },
+  "license": "MIT",
+  "author": "Theo Ephraim",
+  "contributors": [
+    "Salsita Software <jando@salsitasoft.com>",
+    "Christopher Quadflieg <chrissi92@hotmail.de>"
+  ],
   "type": "commonjs",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.mjs",
-  "types": "dist/index.d.ts",
   "exports": {
     "./dist/*": {
       "types": "./dist/*.d.ts",
@@ -56,46 +83,19 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "dist/index.js",
+  "module": "dist/esm/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "node-pg-migrate": "bin/node-pg-migrate.js",
+    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
+    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+  },
   "files": [
     "bin",
     "dist",
     "templates"
   ],
-  "author": "Theo Ephraim",
-  "contributors": [
-    "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
-  ],
-  "keywords": [
-    "db",
-    "database",
-    "migrate",
-    "migration",
-    "migrations",
-    "migrator",
-    "db-migrate",
-    "sql",
-    "pg",
-    "postgre",
-    "postgres",
-    "postgresql",
-    "cockroach",
-    "cockroachdb",
-    "extensible",
-    "expandable",
-    "programatic",
-    "programable",
-    "api"
-  ],
-  "bugs": {
-    "url": "https://github.com/salsita/node-pg-migrate/issues"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/salsita/node-pg-migrate",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/salsita/node-pg-migrate.git"
-  },
   "dependencies": {
     "glob": "11.0.0",
     "yargs": "~17.7.0"
@@ -128,6 +128,7 @@
     "pg": "8.13.1",
     "prettier": "3.4.2",
     "prettier-plugin-organize-imports": "4.1.0",
+    "prettier-plugin-packagejson": "2.5.6",
     "rimraf": "6.0.1",
     "ts-node": "10.9.2",
     "tsup": "8.3.5",
