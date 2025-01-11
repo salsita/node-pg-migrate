@@ -10,7 +10,7 @@
     "build:types": "tsc --project tsconfig.build.json",
     "build": "run-s build:clean build:code build:types build:bin",
     "format": "prettier --cache --write .",
-    "lint": "eslint --cache --cache-strategy content --report-unused-disable-directives .",
+    "lint": "eslint --cache --cache-strategy content .",
     "ts-check": "tsc",
     "test": "vitest",
     "test:update-snapshots": "vitest run -u",
@@ -23,15 +23,42 @@
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
   },
-  "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate.js",
-    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
-    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+  "keywords": [
+    "db",
+    "database",
+    "migrate",
+    "migration",
+    "migrations",
+    "migrator",
+    "db-migrate",
+    "sql",
+    "pg",
+    "postgre",
+    "postgres",
+    "postgresql",
+    "cockroach",
+    "cockroachdb",
+    "extensible",
+    "expandable",
+    "programatic",
+    "programable",
+    "api"
+  ],
+  "homepage": "https://github.com/salsita/node-pg-migrate",
+  "bugs": {
+    "url": "https://github.com/salsita/node-pg-migrate/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salsita/node-pg-migrate.git"
+  },
+  "license": "MIT",
+  "author": "Theo Ephraim",
+  "contributors": [
+    "Salsita Software <jando@salsitasoft.com>",
+    "Christopher Quadflieg <chrissi92@hotmail.de>"
+  ],
   "type": "commonjs",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.mjs",
-  "types": "dist/index.d.ts",
   "exports": {
     "./dist/*": {
       "types": "./dist/*.d.ts",
@@ -56,85 +83,61 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "dist/index.js",
+  "module": "dist/esm/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "node-pg-migrate": "bin/node-pg-migrate.js",
+    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
+    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+  },
   "files": [
     "bin",
     "dist",
     "templates"
   ],
-  "author": "Theo Ephraim",
-  "contributors": [
-    "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
-  ],
-  "keywords": [
-    "db",
-    "database",
-    "migrate",
-    "migration",
-    "migrations",
-    "migrator",
-    "db-migrate",
-    "sql",
-    "pg",
-    "postgre",
-    "postgres",
-    "postgresql",
-    "cockroach",
-    "cockroachdb",
-    "extensible",
-    "expandable",
-    "programatic",
-    "programable",
-    "api"
-  ],
-  "bugs": {
-    "url": "https://github.com/salsita/node-pg-migrate/issues"
-  },
-  "license": "MIT",
-  "homepage": "https://github.com/salsita/node-pg-migrate",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/salsita/node-pg-migrate.git"
-  },
   "dependencies": {
     "glob": "11.0.0",
     "yargs": "~17.7.0"
   },
   "devDependencies": {
-    "@eslint-types/prettier": "5.1.3",
-    "@eslint-types/typescript-eslint": "7.5.0",
-    "@eslint-types/unicorn": "52.0.0",
+    "@eslint/compat": "1.2.5",
+    "@eslint/js": "9.18.0",
+    "@stylistic/eslint-plugin": "2.12.1",
     "@types/config": "3.3.5",
-    "@types/node": "18.19.64",
+    "@types/eslint__js": "8.42.3",
+    "@types/node": "22.10.5",
     "@types/pg": "8.11.10",
     "@types/yargs": "17.0.33",
-    "@typescript-eslint/eslint-plugin": "7.18.0",
-    "@typescript-eslint/parser": "7.18.0",
-    "@vitest/coverage-v8": "2.1.5",
-    "@vitest/ui": "2.1.5",
+    "@vitest/coverage-v8": "2.1.8",
+    "@vitest/eslint-plugin": "1.1.24",
+    "@vitest/ui": "2.1.8",
     "config": "3.3.12",
     "cross-env": "7.0.3",
-    "dotenv": "16.4.5",
-    "dotenv-expand": "11.0.7",
-    "eslint": "8.57.1",
+    "dotenv": "16.4.7",
+    "dotenv-expand": "12.0.1",
+    "eslint": "9.18.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-define-config": "2.1.0",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-prettier": "5.2.1",
-    "eslint-plugin-unicorn": "55.0.0",
+    "eslint-plugin-unicorn": "56.0.1",
+    "jiti": "2.4.2",
     "json5": "2.2.3",
     "node-pg-migrate": "file:.",
-    "npm-run-all2": "6.2.6",
+    "npm-run-all2": "7.0.2",
     "pg": "8.13.1",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "prettier-plugin-organize-imports": "4.1.0",
+    "prettier-plugin-packagejson": "2.5.6",
     "rimraf": "6.0.1",
     "ts-node": "10.9.2",
     "tsup": "8.3.5",
     "tsx": "4.19.2",
-    "typescript": "5.6.3",
+    "typescript": "5.7.3",
+    "typescript-eslint": "8.19.1",
     "vitepress": "1.5.0",
-    "vitest": "2.1.5"
+    "vitest": "2.1.8"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",
@@ -145,7 +148,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@9.13.0",
+  "packageManager": "pnpm@9.15.3",
   "engines": {
     "node": ">=18.19.0"
   }
