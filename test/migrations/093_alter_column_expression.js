@@ -13,8 +13,21 @@ exports.up = async (pgm) => {
   if (isSupportedVersion(major)) {
     pgm.createTable('t093', {
       id: { type: 'integer', notNull: true },
-      col1: { type: 'integer' },
-      col2: { type: 'integer' },
+      other: { type: 'integer', notNull: true },
+      col1: {
+        type: 'integer',
+        sequenceGenerated: {
+          precedence: 'ALWAYS',
+          increment: 1,
+        },
+      },
+      col2: {
+        type: 'integer',
+        sequenceGenerated: {
+          precedence: 'ALWAYS',
+          increment: 1,
+        },
+      },
     });
     pgm.alterColumn('t093', 'col1', { expressionGenerated: 'other + 1' });
     pgm.alterColumn('t093', 'col2', { expressionGenerated: null });
