@@ -117,7 +117,7 @@
     "dotenv": "16.4.7",
     "dotenv-expand": "12.0.1",
     "eslint": "9.18.0",
-    "eslint-config-prettier": "9.1.0",
+    "eslint-config-prettier": "10.0.1",
     "eslint-define-config": "2.1.0",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-prettier": "5.2.1",
