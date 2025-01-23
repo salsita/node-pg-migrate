@@ -465,6 +465,7 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
         env:
+          PGHOST: localhost
           PGUSER: ubuntu
           PGPASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
           PGDATABASE: integration_test
