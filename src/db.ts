@@ -68,7 +68,7 @@ function db(
     connectionStatus === ConnectionStatus.EXTERNAL;
 
   const createConnection: DBConnection['createConnection'] = () =>
-    new Promise((resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
       if (connected()) {
         resolve();
       } else if (connectionStatus === ConnectionStatus.ERROR) {

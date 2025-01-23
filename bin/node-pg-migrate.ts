@@ -577,6 +577,7 @@ if (action === 'create') {
     return {
       dryRun,
       databaseUrl: {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
           ? {

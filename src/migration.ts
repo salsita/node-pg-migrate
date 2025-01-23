@@ -259,7 +259,7 @@ export class Migration implements RunMigration {
     const newFile = join(directory, `${time}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       createReadStream(templateFileName)
         .pipe(createWriteStream(newFile))
         .on('close', resolve)
