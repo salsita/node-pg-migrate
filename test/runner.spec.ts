@@ -12,7 +12,7 @@ describe('runner', () => {
       // @ts-expect-error: runner needs options
       runner()
     ).rejects.toThrow(
-      new Error(
+      new TypeError(
         "Cannot destructure property 'log' of 'options' as it is undefined."
       )
     );
