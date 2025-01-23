@@ -5,6 +5,7 @@ describe('utils', () => {
   describe('StringIdGenerator', () => {
     it('should generate correct sequence with default chars', () => {
       const ids = new StringIdGenerator();
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       const results = [...'abcdefghijklmnopqrstuvwxyz', 'aa', 'ab'];
 
       for (const res of results) {
