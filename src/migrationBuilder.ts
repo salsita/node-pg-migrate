@@ -531,3 +531,29 @@ export default class MigrationBuilderImpl implements MigrationBuilder {
     return this._REVERSE_MODE ? [...this._steps].reverse() : this._steps;
   }
 }
+
+export function createMigrationBuilder({
+  db,
+  typeShorthands,
+  shouldDecamelize = true,
+  logger = console,
+}: {
+  db?: DB;
+  typeShorthands?: ColumnDefinitions;
+  shouldDecamelize?: boolean;
+  logger?: Logger;
+} = {}): MigrationBuilderImpl {
+  return new MigrationBuilderImpl(
+    db || {
+      select: () => {
+        throw new Error('Not implemented');
+      },
+      query: () => {
+        throw new Error('Not implemented');
+      },
+    },
+    typeShorthands,
+    shouldDecamelize,
+    logger
+  );
+}
