@@ -589,7 +589,7 @@ if (action === 'create') {
               },
             }
           : undefined),
-      },
+      } as ClientConfig,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
       useGlob: USE_GLOB,
