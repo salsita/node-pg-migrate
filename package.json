@@ -97,7 +97,7 @@
     "templates"
   ],
   "dependencies": {
-    "glob": "11.0.1",
+    "glob": "~11.0.0",
     "yargs": "~17.7.0"
   },
   "devDependencies": {
