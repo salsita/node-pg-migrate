@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       glob:
-        specifier: 11.0.1
+        specifier: ~11.0.0
         version: 11.0.1
       yargs:
         specifier: ~17.7.0
