@@ -1,6 +1,6 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.noTransaction();
   pgm.addTypeValue('list', 'd', { ifNotExists: true });
 };
 
-exports.down = () => null;
+export const down = () => null;

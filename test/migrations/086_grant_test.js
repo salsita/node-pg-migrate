@@ -1,6 +1,7 @@
-const {
-  constants: { schema, table, role1, role2, tablePrivileges, schemaPrivilege },
-} = require('./085_grant_tables_schemas_roles');
+import { constants } from './085_grant_tables_schemas_roles.js';
+
+const { schema, table, role1, role2, tablePrivileges, schemaPrivilege } =
+  constants;
 
 const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
   const rows = await pgm.db.select(`
@@ -34,9 +35,9 @@ const isMemberOf = async (pgm, role, roleGroups) => {
   );
 };
 
-exports.utils = { hasTablePrivileges, hasSchemaPrivilege, isMemberOf };
+export const utils = { hasTablePrivileges, hasSchemaPrivilege, isMemberOf };
 
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const hasGrantedTablePrivileges = await hasTablePrivileges(
     pgm,
     role1,
@@ -66,4 +67,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

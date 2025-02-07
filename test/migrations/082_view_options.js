@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('tvo', {
     id: 'id',
     string: { type: 'text', notNull: true },
@@ -30,7 +30,7 @@ exports.up = (pgm) => {
   });
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.dropView('vo');
   pgm.dropTable('tvo');
 };

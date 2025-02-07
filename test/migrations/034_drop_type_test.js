@@ -1,4 +1,4 @@
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_drop;');
   try {
     await pgm.db.query('CREATE TEMPORARY TABLE t_list_3 (l list_for_drop);');
@@ -13,4 +13,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

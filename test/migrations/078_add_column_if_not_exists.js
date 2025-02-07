@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.addColumns(
     't1',
     {
@@ -16,6 +16,6 @@ exports.up = (pgm) => {
   );
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.dropColumns('t1', 'string');
 };

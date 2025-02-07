@@ -1,9 +1,9 @@
-const trigger = require('./043_trigger_create_rename');
+import * as trigger from './043_trigger_create_rename.js';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.dropTrigger('tt', 'trig');
   pgm.dropFunction('trig', []);
   pgm.dropTable('tt');
 };
 
-exports.down = trigger.up;
+export const down = trigger.up;

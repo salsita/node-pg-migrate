@@ -1,8 +1,8 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.dropColumns('t1', 'string');
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.addColumns('t1', {
     string: { type: 'text', notNull: false },
   });

@@ -722,7 +722,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm ts-node test/ts/customRunnerDBUrl.ts
+        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerDBUrl.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -773,7 +773,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm ts-node test/ts/customRunnerDBClient.ts
+        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerDBClient.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -824,6 +824,6 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm ts-node test/ts/customRunnerUndefCount.ts
+        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerUndefCount.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test

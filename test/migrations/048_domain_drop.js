@@ -1,8 +1,8 @@
-const domain = require('./046_domain_create_rename');
+import * as domain from './046_domain_create_rename.js';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.dropTable('td');
   pgm.dropDomain('dom');
 };
 
-exports.down = domain.up;
+export const down = domain.up;

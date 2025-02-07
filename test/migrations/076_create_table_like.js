@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable(
     't_like',
     {},
@@ -14,4 +14,4 @@ exports.up = (pgm) => {
   );
 };
 
-exports.down = () => null;
+export const down = () => null;

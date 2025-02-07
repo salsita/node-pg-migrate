@@ -1,11 +1,11 @@
-const constraint = require('./016_rename_constraint');
+import { constraint } from './016_rename_constraint.js';
 
-exports.up = (pgm) => {
-  pgm.dropConstraint('t1', constraint.constraint);
+export const up = (pgm) => {
+  pgm.dropConstraint('t1', constraint);
 };
 
-exports.down = (pgm) => {
-  pgm.addConstraint('t1', constraint.constraint, {
+export const down = (pgm) => {
+  pgm.addConstraint('t1', constraint, {
     check: 'true',
   });
 };

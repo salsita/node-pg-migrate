@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.alterMaterializedView('mv', {
     storageParameters: {
       autovacuum_enabled: false,
@@ -7,4 +7,4 @@ exports.up = (pgm) => {
   });
 };
 
-exports.down = () => null;
+export const down = () => null;

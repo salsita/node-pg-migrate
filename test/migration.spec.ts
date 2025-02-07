@@ -13,8 +13,8 @@ const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
 const migrationsTable = 'pgmigrations';
 
-const actionsCallback = require(`./${callbackMigration}`);
-const actionsPromise = require(`./${promiseMigration}`);
+const actionsCallback = await import(`./${callbackMigration}`);
+const actionsPromise = await import(`./${promiseMigration}`);
 
 describe('migration', () => {
   const dbMock = {} as DBConnection;

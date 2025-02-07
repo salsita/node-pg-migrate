@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('ft1', { id: 'id' });
   pgm.createTable('ft2', {
     id: {

@@ -1,4 +1,4 @@
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const [{ id }] = await pgm.db.select(
     'INSERT INTO ts DEFAULT VALUES RETURNING id;'
   );
@@ -7,4 +7,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

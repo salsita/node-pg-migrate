@@ -1,6 +1,6 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('test-comment', {}, { comment: "table's comment" });
   pgm.dropTable('test-comment');
 };
 
-exports.down = () => null;
+export const down = () => null;

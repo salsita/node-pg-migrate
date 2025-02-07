@@ -1,6 +1,6 @@
-exports.comment = 'comment on table t2';
+export const comment = 'comment on table t2';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('t1', {
     id: 'id',
     string: { type: 'text', notNull: true },
@@ -18,7 +18,7 @@ exports.up = (pgm) => {
     },
     {
       ifNotExists: true,
-      comment: exports.comment,
+      comment: comment,
     }
   );
 };

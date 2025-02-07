@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createSequence('s', { minvalue: 10 });
   pgm.renameSequence('s', 'seq');
   pgm.createTable('ts', {
