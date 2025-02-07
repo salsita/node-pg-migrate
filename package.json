@@ -58,38 +58,26 @@
     "Salsita Software <jando@salsitasoft.com>",
     "Christopher Quadflieg <chrissi92@hotmail.de>"
   ],
-  "type": "commonjs",
+  "type": "module",
   "exports": {
-    "./dist/*": {
-      "types": "./dist/*.d.ts",
-      "require": "./dist/*.js",
-      "import": "./dist/esm/*.mjs",
-      "default": "./dist/*.js"
-    },
     "./bin/*": {
-      "require": "./bin/*.js",
-      "import": "./bin/*.mjs",
       "default": "./bin/*.js"
     },
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/esm/index.mjs",
       "default": "./dist/index.js"
     },
     "./*": {
       "types": "./dist/*.d.ts",
-      "require": "./dist/*.js"
+      "default": "./dist/*.js"
     },
     "./package.json": "./package.json"
   },
   "main": "dist/index.js",
-  "module": "dist/esm/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "node-pg-migrate": "bin/node-pg-migrate.js",
-    "node-pg-migrate-cjs": "bin/node-pg-migrate.js",
-    "node-pg-migrate-esm": "bin/node-pg-migrate.mjs"
+    "node-pg-migrate": "bin/node-pg-migrate.js"
   },
   "files": [
     "bin",

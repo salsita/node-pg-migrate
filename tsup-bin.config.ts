@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ['bin/node-pg-migrate.ts'],
   outDir: 'bin',
   clean: false,
-  format: ['esm', 'cjs'],
+  format: 'esm',
   target: ['es2023', 'node20'],
   dts: false,
   minify: false,

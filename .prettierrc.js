@@ -3,7 +3,7 @@
 /**
  * @type {import('prettier').Config}
  */
-module.exports = {
+export default {
   plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-packagejson'],
   singleQuote: true,
   trailingComma: 'es5',

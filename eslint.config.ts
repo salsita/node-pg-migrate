@@ -245,6 +245,7 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
     rules: {
       'no-undef': 'off',
       'unicorn/prefer-module': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-throw-literal': 'off',
       'unicorn/no-array-reduce': 'off',
