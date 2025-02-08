@@ -35,15 +35,15 @@ async function tryImport<TModule = unknown>(
     const module = await import(moduleName);
     return module.default || module;
   } catch (error) {
-    console.log(`Error importing module ${moduleName}:`, error);
     if (
-      // @ts-expect-error: TS doesn't know about code property
-      error?.code !== 'MODULE_NOT_FOUND'
+      error instanceof Error &&
+      'code' in error &&
+      error.code === 'ERR_MODULE_NOT_FOUND'
     ) {
-      throw error;
+      return null;
     }
 
-    return null;
+    throw error;
   }
 }
 
@@ -462,7 +462,9 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = await import(resolve(configFileName));
+  const jsonConfig = await import(`file://${resolve(configFileName)}`, {
+    with: { type: 'json' },
+  });
   readJson(jsonConfig);
 }
 

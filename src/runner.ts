@@ -42,7 +42,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : await import(filePath);
+            : await import(`file://${filePath}`);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
