@@ -249,8 +249,10 @@ export class Migration implements RunMigration {
     const templateFileName =
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
-        : resolve(
-            join('node_modules', 'node-pg-migrate', 'templates'),
+        : join(
+            import.meta.dirname,
+            '..',
+            'templates',
             `migration-template.${await resolveSuffix(directory, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);
