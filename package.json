@@ -98,7 +98,7 @@
     "@types/pg": "8.11.11",
     "@types/yargs": "17.0.33",
     "@vitest/coverage-v8": "3.0.5",
-    "@vitest/eslint-plugin": "1.1.26",
+    "@vitest/eslint-plugin": "1.1.31",
     "@vitest/ui": "3.0.5",
     "config": "3.3.12",
     "cross-env": "7.0.3",
