@@ -90,8 +90,8 @@
   },
   "devDependencies": {
     "@eslint/compat": "1.2.6",
-    "@eslint/js": "9.19.0",
-    "@stylistic/eslint-plugin": "3.0.1",
+    "@eslint/js": "9.20.0",
+    "@stylistic/eslint-plugin": "3.1.0",
     "@types/config": "3.3.5",
     "@types/eslint__js": "8.42.3",
     "@types/node": "20.17.17",
@@ -104,7 +104,7 @@
     "cross-env": "7.0.3",
     "dotenv": "16.4.7",
     "dotenv-expand": "12.0.1",
-    "eslint": "9.19.0",
+    "eslint": "9.20.1",
     "eslint-config-prettier": "10.0.1",
     "eslint-define-config": "2.1.0",
     "eslint-gitignore": "0.1.0",
@@ -123,7 +123,7 @@
     "tsup": "8.3.6",
     "tsx": "4.19.2",
     "typescript": "5.7.3",
-    "typescript-eslint": "8.23.0",
+    "typescript-eslint": "8.24.0",
     "vitepress": "1.6.3",
     "vitest": "3.0.5"
   },
