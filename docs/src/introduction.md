@@ -1,9 +1,5 @@
 # What is node-pg-migrate?
 
-> [!IMPORTANT]
-> The core maintainer of this project moved to [@Shinigami92](https://github.com/Shinigami92) (also core maintainer of FakerJS and core member of Vite).  
-> The project is and remains under the MIT license.
-
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)  
 Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to [Salsita Software](https://www.salsitasoft.com/) and now maintained by [@Shinigami92](https://github.com/Shinigami92).
 
