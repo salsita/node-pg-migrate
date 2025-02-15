@@ -1,10 +1,10 @@
-exports.comment = 'comment on table t2';
+export const comment = 'comment on table t2';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('tmp', { id: 'id' }, { temporary: true });
 };
 
-exports.down = async (pgm) => {
+export const down = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_temp_table;');
   try {
     await pgm.db.query('DROP TABLE "tmp"');

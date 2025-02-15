@@ -1,9 +1,12 @@
-exports.params = ['integer', { name: 'arg2', mode: 'in', type: 'integer' }];
+export const params = [
+  'integer',
+  { name: 'arg2', mode: 'in', type: 'integer' },
+];
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createFunction(
     'f',
-    exports.params,
+    params,
     {
       returns: 'integer',
       language: 'plpgsql',

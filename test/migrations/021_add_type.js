@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createType('list', ['a', 'b', 'c']);
   pgm.createType('obj', {
     id: 'integer',

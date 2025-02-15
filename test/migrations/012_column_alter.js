@@ -1,10 +1,10 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.alterColumn('t1', 'nmbr', {
     type: 'smallint',
   });
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.alterColumn('t1', 'nmbr', {
     type: 'integer',
   });

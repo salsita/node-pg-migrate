@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   const schema = 'a.b::c';
   const tableName = { schema, name: 'bar' };
   const columnName = 'baz';
@@ -22,4 +22,4 @@ exports.up = (pgm) => {
   pgm.dropSchema(schema);
 };
 
-exports.down = () => null;
+export const down = () => null;

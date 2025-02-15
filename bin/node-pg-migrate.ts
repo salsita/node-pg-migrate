@@ -6,9 +6,10 @@ import type { DotenvConfigOptions } from 'dotenv';
 // @ts-ignore: when a clean was made, the types are not present in the first run
 import { Migration, default as migrationRunner } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { register } from 'node:module';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
+import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 // This needs to be imported with .js extension, otherwise it will fail in esm
@@ -22,25 +23,27 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const crossRequire = createRequire(resolve('_'));
-
 /**
- * Try to require a module and return null if it doesn't exist.
+ * Try to import a module and return null if it doesn't exist.
  *
- * @param moduleName The name of the module to require.
+ * @param moduleName The name of the module to import.
  */
-function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
+async function tryImport<TModule = unknown>(
+  moduleName: string
+): Promise<TModule | null> {
   try {
-    return crossRequire(moduleName);
+    const module = await import(moduleName);
+    return module.default || module;
   } catch (error) {
     if (
-      // @ts-expect-error: TS doesn't know about code property
-      error?.code !== 'MODULE_NOT_FOUND'
+      error instanceof Error &&
+      'code' in error &&
+      error.code === 'ERR_MODULE_NOT_FOUND'
     ) {
-      throw error;
+      return null;
     }
 
-    return null;
+    throw error;
   }
 }
 
@@ -247,12 +250,12 @@ if (envPath) {
   dotenvConfig.path = envPath;
 }
 
-const dotenv = tryRequire<typeof import('dotenv')>('dotenv');
+const dotenv = await tryImport<typeof import('dotenv')>('dotenv');
 if (dotenv) {
   // Load config from ".env" file
   const myEnv = dotenv.config(dotenvConfig);
   const dotenvExpand =
-    tryRequire<typeof import('dotenv-expand')>('dotenv-expand');
+    await tryImport<typeof import('dotenv-expand')>('dotenv-expand');
   if (dotenvExpand && dotenvExpand.expand) {
     dotenvExpand.expand(myEnv);
   }
@@ -282,10 +285,10 @@ let tsconfigPath = argv[tsconfigArg];
 let useTsNode = argv[tsNodeArg];
 let useTsx = argv[tsxArg];
 
-function readTsconfig(): void {
+async function readTsconfig(): Promise<void> {
   if (tsconfigPath) {
     let tsconfig;
-    const json5 = tryRequire<typeof import('json5')>('json5');
+    const json5 = await tryImport<typeof import('json5')>('json5');
 
     try {
       const config = readFileSync(resolve(cwd(), tsconfigPath), {
@@ -312,7 +315,7 @@ function readTsconfig(): void {
     if (useTsx) {
       process.env.TSX_TSCONFIG_PATH = tsconfigPath;
     } else if (useTsNode) {
-      const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
+      const tsnode = await tryImport<typeof import('ts-node')>('ts-node');
       if (!tsnode) {
         console.error(
           "For TypeScript support, please install 'ts-node' module"
@@ -320,7 +323,7 @@ function readTsconfig(): void {
       }
 
       if (tsconfig && tsnode) {
-        tsnode.register(tsconfig);
+        register('ts-node/esm', pathToFileURL('./'));
         if (!MIGRATIONS_FILE_LANGUAGE) {
           MIGRATIONS_FILE_LANGUAGE = 'ts';
         }
@@ -449,7 +452,7 @@ function readJson(json: unknown): void {
 // Load config (and suppress the no-config-warning)
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
-const config = tryRequire<typeof import('config')>('config');
+const config = await tryImport<typeof import('config')>('config');
 if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
@@ -459,15 +462,17 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = crossRequire(resolve(configFileName));
+  const jsonConfig = await import(`file://${resolve(configFileName)}`, {
+    with: { type: 'json' },
+  });
   readJson(jsonConfig);
 }
 
-readTsconfig();
+await readTsconfig();
 
 if (useTsx) {
   const tsx =
-    tryRequire<typeof import('tsx/dist/cjs/api/index.cjs')>('tsx/cjs');
+    await tryImport<typeof import('tsx/dist/esm/api/index.mjs')>('tsx/esm');
   if (!tsx) {
     console.error("For TSX support, please install 'tsx' module");
   }

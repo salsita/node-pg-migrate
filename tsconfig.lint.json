@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2023",
     "moduleResolution": "Node",
-    "module": "CommonJS",
+    "module": "ESNext",
     "strict": true,
     "noEmit": true,
     "lib": ["ES2023"],

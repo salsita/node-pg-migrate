@@ -1,4 +1,4 @@
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   await Promise.all([
     pgm.db.query("INSERT INTO tp(user_name) VALUES ('admin');"),
     pgm.db.query("INSERT INTO tp(user_name) VALUES ('alice');"),
@@ -19,4 +19,4 @@ exports.up = async (pgm) => {
   await pgm.db.query('reset role;');
 };
 
-exports.down = () => null;
+export const down = () => null;

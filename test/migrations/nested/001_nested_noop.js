@@ -1,1 +1,1 @@
-exports.up = () => {};
+export const up = () => {};

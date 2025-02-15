@@ -1,10 +1,10 @@
-exports.constraint = 'chck_nmbr';
+export const constraint = 'chck_nmbr';
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  */
-exports.up = (pgm) => {
-  pgm.addConstraint('t1', exports.constraint, {
+export const up = (pgm) => {
+  pgm.addConstraint('t1', constraint, {
     check: 'nmbr < 30',
     comment: 'nmbr must be less than 30',
   });

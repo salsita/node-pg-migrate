@@ -39,13 +39,3 @@ body:
       placeholder: System, Binaries, Browsers
     validations:
       required: true
-  - type: dropdown
-    id: module-system
-    attributes:
-      label: Used Module System
-      description: Select the used module system
-      options:
-        - esm
-        - cjs
-    validations:
-      required: true

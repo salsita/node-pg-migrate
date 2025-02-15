@@ -16,7 +16,7 @@ type Options =
 export const run = async (options: Options): Promise<boolean> => {
   const opts: Omit<RunnerOption, 'direction'> & Options = {
     migrationsTable: 'migrations',
-    dir: resolve(__dirname, 'migrations'),
+    dir: resolve(import.meta.dirname, 'migrations'),
     expectedUpLength: 2,
     expectedDownLength: 2,
     ...options,

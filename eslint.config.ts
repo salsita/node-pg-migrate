@@ -8,10 +8,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
 
-const __filename = fileURLToPath(
-  // @ts-expect-error: tsconfig needs to be configured to support 'import.meta'
-  import.meta.url
-);
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const gitignorePath = resolve(__dirname, '.gitignore');
 
@@ -245,6 +242,7 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
     rules: {
       'no-undef': 'off',
       'unicorn/prefer-module': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-throw-literal': 'off',
       'unicorn/no-array-reduce': 'off',

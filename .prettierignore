@@ -1,6 +1,5 @@
 .pnpm-store/
 bin/*.js
-bin/*.mjs
 coverage/
 dist/
 CHANGELOG.md

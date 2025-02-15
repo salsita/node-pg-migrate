@@ -5,7 +5,7 @@ const role2 = 'test_grant_bob2';
 const tablePrivileges = ['SELECT', 'UPDATE'];
 const schemaPrivilege = 'USAGE';
 
-exports.constants = {
+export const constants = {
   schema,
   table,
   role1,
@@ -14,7 +14,7 @@ exports.constants = {
   schemaPrivilege,
 };
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable(table, {
     id: 'id',
   });
@@ -34,4 +34,4 @@ exports.up = (pgm) => {
   pgm.grantRoles(role1, role2);
 };
 
-exports.down = () => null;
+export const down = () => null;

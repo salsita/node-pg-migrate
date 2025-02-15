@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('tv', {
     id: 'id',
     string: { type: 'text', notNull: true },

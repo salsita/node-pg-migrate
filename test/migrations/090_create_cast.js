@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createCast('varchar', 'integer', {
     inout: true,
     as: 'IMPLICIT',

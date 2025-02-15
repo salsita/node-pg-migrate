@@ -1,8 +1,8 @@
-const table = require('./004_table');
+import * as table from './004_table.js';
 
 const schema = process.env.SCHEMA || 'public';
 
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const [{ comment }] = await pgm.db.select(
     `SELECT obj_description(c.oid) AS "comment"
           FROM pg_class c JOIN pg_namespace n ON (c.relnamespace = n.oid)
@@ -46,7 +46,7 @@ exports.up = async (pgm) => {
   await pgm.db.query(`INSERT INTO t2(id2) VALUES (${id});`);
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.sql('DELETE FROM t2');
   pgm.sql('DELETE FROM t1');
 };

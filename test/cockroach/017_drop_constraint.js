@@ -1,9 +1,9 @@
-const constraint = require('./014_add_constraint');
+import { constraint } from './014_add_constraint.js';
 
-exports.up = (pgm) => {
-  pgm.dropConstraint('t1', constraint.constraint);
+export const up = (pgm) => {
+  pgm.dropConstraint('t1', constraint);
 };
 
-exports.down = () => {
+export const down = () => {
   // do nothing
 };

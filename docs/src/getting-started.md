@@ -71,7 +71,7 @@ Run `npm run migrate create my-first-migration`. It will create file `xxx_my-fir
 Open it and change contents to:
 
 ```js
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('users', {
     id: 'id',
     name: { type: 'varchar(1000)', notNull: true },
@@ -112,7 +112,7 @@ If you want to change your schema later, you can e.g. add lead paragraph to post
 Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
 
 ```js
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.addColumns('posts', {
     lead: { type: 'text', notNull: true },
   });
