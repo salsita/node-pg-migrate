@@ -16,7 +16,7 @@ export const up = async (pgm) => {
       gen: {
         type: 'integer',
         notNull: true,
-        generated: {
+        sequenceGenerated: {
           precedence: 'BY DEFAULT',
           increment: 2,
         },
