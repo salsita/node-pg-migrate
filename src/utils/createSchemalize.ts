@@ -3,32 +3,15 @@ import { decamelize } from './decamelize';
 import { identity } from './identity';
 import { quote } from './quote';
 
-/** @deprecated Use createSchemalize(options) instead. */
-export function createSchemalize(
-  shouldDecamelize: boolean,
-  shouldQuote: boolean
-): (value: Name) => string;
-export function createSchemalize(options: {
-  shouldDecamelize: boolean;
-  shouldQuote: boolean;
-}): (value: Name) => string;
-export function createSchemalize(
-  options: boolean | { shouldDecamelize: boolean; shouldQuote: boolean },
-  _legacyShouldQuote?: boolean
-): (value: Name) => string {
-  const { shouldDecamelize, shouldQuote } =
-    typeof options === 'boolean'
-      ? {
-          shouldDecamelize: options,
-          shouldQuote: _legacyShouldQuote,
-        }
-      : options;
+export interface SchemalizeOptions {
+  readonly shouldDecamelize: boolean;
+  readonly shouldQuote: boolean;
+}
 
-  if (typeof options === 'boolean') {
-    console.warn(
-      'createSchemalize(shouldDecamelize, shouldQuote) is deprecated. Use createSchemalize({ shouldDecamelize, shouldQuote }) instead.'
-    );
-  }
+export function createSchemalize(
+  options: SchemalizeOptions
+): (value: Name) => string {
+  const { shouldDecamelize, shouldQuote } = options;
 
   const transform = [
     shouldDecamelize ? decamelize : identity,

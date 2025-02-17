@@ -50,11 +50,6 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
 
   comment?: string | null;
 
-  /**
-   * @deprecated use sequenceGenerated
-   */
-  generated?: SequenceGeneratedOptions;
-
   sequenceGenerated?: SequenceGeneratedOptions;
 
   expressionGenerated?: string;
@@ -236,10 +231,7 @@ export function parseColumns(
         expressionGenerated,
       }: ColumnDefinition = options;
 
-      const sequenceGenerated =
-        options.sequenceGenerated === undefined
-          ? options.generated
-          : options.sequenceGenerated;
+      const sequenceGenerated = options.sequenceGenerated;
       const constraints: string[] = [];
 
       if (collation) {

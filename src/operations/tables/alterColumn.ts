@@ -24,11 +24,6 @@ export interface AlterColumnOptions {
 
   comment?: string | null;
 
-  /**
-   * @deprecated use sequenceGenerated
-   */
-  generated?: null | false | SequenceGeneratedOptions;
-
   sequenceGenerated?: null | false | SequenceGeneratedOptions;
   expressionGenerated?: null | string;
 }
@@ -52,10 +47,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       expressionGenerated,
     } = options;
 
-    const sequenceGenerated =
-      options.sequenceGenerated === undefined
-        ? options.generated
-        : options.sequenceGenerated;
+    const sequenceGenerated = options.sequenceGenerated;
 
     const actions: string[] = [];
 
