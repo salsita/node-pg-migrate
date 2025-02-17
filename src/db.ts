@@ -37,12 +37,7 @@ export interface DBConnection extends DB {
   close(): Promise<void>;
 }
 
-enum ConnectionStatus {
-  DISCONNECTED = 'DISCONNECTED',
-  CONNECTED = 'CONNECTED',
-  ERROR = 'ERROR',
-  EXTERNAL = 'EXTERNAL',
-}
+type ConnectionStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR' | 'EXTERNAL';
 
 function db(
   connection: ClientBase | string | ClientConfig,
@@ -57,34 +52,33 @@ function db(
     ? (connection as Client)
     : new pg.Client(connection as string | ClientConfig);
 
-  let connectionStatus = isExternalClient
-    ? ConnectionStatus.EXTERNAL
-    : ConnectionStatus.DISCONNECTED;
+  let connectionStatus: ConnectionStatus = isExternalClient
+    ? 'EXTERNAL'
+    : 'DISCONNECTED';
 
   const beforeCloseListeners: any[] = [];
 
   const connected: DBConnection['connected'] = () =>
-    connectionStatus === ConnectionStatus.CONNECTED ||
-    connectionStatus === ConnectionStatus.EXTERNAL;
+    connectionStatus === 'CONNECTED' || connectionStatus === 'EXTERNAL';
 
   const createConnection: DBConnection['createConnection'] = () =>
     new Promise<void>((resolve, reject) => {
       if (connected()) {
         resolve();
-      } else if (connectionStatus === ConnectionStatus.ERROR) {
+      } else if (connectionStatus === 'ERROR') {
         reject(
           new Error('Connection already failed, do not try to connect again')
         );
       } else {
         client.connect((err) => {
           if (err) {
-            connectionStatus = ConnectionStatus.ERROR;
+            connectionStatus = 'ERROR';
             logger.error(`could not connect to postgres: ${inspect(err)}`);
             reject(err);
             return;
           }
 
-          connectionStatus = ConnectionStatus.CONNECTED;
+          connectionStatus = 'CONNECTED';
           resolve();
         });
       }
@@ -165,7 +159,7 @@ ${error}
         Promise.resolve()
       );
       if (!isExternalClient) {
-        connectionStatus = ConnectionStatus.DISCONNECTED;
+        connectionStatus = 'DISCONNECTED';
         client.end();
       }
     },
