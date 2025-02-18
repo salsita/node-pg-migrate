@@ -176,7 +176,6 @@ describe('migration', () => {
       );
     });
 
-
     it('should not call db.query on --dry-run', async () => {
       const migration = new Migration(
         dbMock,
