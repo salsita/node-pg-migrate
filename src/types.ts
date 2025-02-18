@@ -657,6 +657,12 @@ export interface MigrationBuilder {
   noTransaction: () => void;
 
   /**
+   * Run the reverse of the migration. Useful for creating a new migration that
+   * reverts a previous migration.
+   */
+  enableReverseMode: () => void;
+
+  /**
    * The `db` client instance.
    *
    * Can be used to run queries directly.

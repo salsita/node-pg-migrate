@@ -11,10 +11,12 @@ import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
+const reverseMigration = '1739900132875_names_reversed.js';
 const migrationsTable = 'pgmigrations';
 
 const actionsCallback = await import(`./${callbackMigration}`);
 const actionsPromise = await import(`./${promiseMigration}`);
+const reversePromise = await import(`./${reverseMigration}`);
 
 describe('migration', () => {
   const dbMock = {} as DBConnection;
@@ -153,6 +155,27 @@ describe('migration', () => {
 
       expect(queryMock).toHaveBeenCalled();
     });
+
+    it('should perform the inferred reverse operation when reverseMode is enabled', async () => {
+      const migration = new Migration(
+        dbMock,
+        reverseMigration,
+        reversePromise,
+        options,
+        {},
+        logger
+      );
+
+      await migration.apply('up');
+
+      expect(queryMock).toHaveBeenCalledTimes(4);
+      expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+      expect(queryMock).toHaveBeenNthCalledWith(
+        2,
+        expect.stringMatching('DROP TABLE')
+      );
+    });
+
 
     it('should not call db.query on --dry-run', async () => {
       const migration = new Migration(
