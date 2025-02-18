@@ -274,9 +274,9 @@ let MIGRATIONS_TABLE = argv[migrationsTableArg];
 let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
   migrationFileLanguageArg
 ] as 'js' | 'ts' | 'sql' | undefined;
-let MIGRATIONS_FILENAME_FORMAT: `${FilenameFormat}` | undefined = argv[
+let MIGRATIONS_FILENAME_FORMAT: FilenameFormat | undefined = argv[
   migrationFilenameFormatArg
-] as `${FilenameFormat}` | undefined;
+] as FilenameFormat | undefined;
 let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
@@ -409,7 +409,7 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILENAME_FORMAT,
       migrationFilenameFormatArg,
       json,
-      (val): val is `${FilenameFormat}` => val === 'timestamp' || val === 'utc'
+      (val): val is FilenameFormat => val === 'timestamp' || val === 'utc'
     );
     TEMPLATE_FILE_NAME = applyIf(
       TEMPLATE_FILE_NAME,
