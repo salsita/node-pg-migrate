@@ -38,9 +38,6 @@ jobs:
 
     name: 'Postgres Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
-      - name: Log version
-        run: postgres -V
-
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -63,6 +60,10 @@ jobs:
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
 
   config-1-test:
     runs-on: ubuntu-latest
