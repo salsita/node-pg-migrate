@@ -30,10 +30,13 @@ export interface RunMigration {
   readonly timestamp: number;
 }
 
-export enum FilenameFormat {
-  timestamp = 'timestamp',
-  utc = 'utc',
-}
+export const FilenameFormat = Object.freeze({
+  timestamp: 'timestamp',
+  utc: 'utc',
+});
+
+export type FilenameFormat =
+  (typeof FilenameFormat)[keyof typeof FilenameFormat];
 
 export interface CreateOptionsTemplate {
   templateFileName: string;
@@ -45,7 +48,7 @@ export interface CreateOptionsDefault {
 }
 
 export type CreateOptions = {
-  filenameFormat?: FilenameFormat | `${FilenameFormat}`;
+  filenameFormat?: FilenameFormat;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
