@@ -39,7 +39,7 @@ jobs:
     name: 'Postgres Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Log version
-        run: echo "PG_VERSION=$PG_VERSION"
+        run: echo "PG_VERSION=${{ env.PG_VERSION }}"
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
