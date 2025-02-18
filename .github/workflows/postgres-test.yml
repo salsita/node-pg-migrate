@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node_version: [20, 22]
-        postgres_version: [13.18, 14.15, 15.10, 16.6, 17.2]
+        postgres_version: [13, 14, 15, 16, 17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -61,12 +61,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   config-1-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -125,12 +129,16 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   config-2-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -187,12 +195,16 @@ jobs:
       - name: Integration Test for URL object config
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   dotenv-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -242,12 +254,16 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   dotenv-expand-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -300,12 +316,16 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   password-1-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -352,12 +372,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   password-2-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -416,12 +440,16 @@ jobs:
       - name: Integration Test
         run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   env-vars-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -469,12 +497,16 @@ jobs:
           PGPASSWORD: 123456abcdefghABCDEFGH~\`\!@#$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'?\|/\\
           PGDATABASE: integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   schema-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -521,12 +553,16 @@ jobs:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   schemas-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -573,12 +609,16 @@ jobs:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   typescript-migration-via-ts-node-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -624,12 +664,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   typescript-migration-via-tsx-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -675,12 +719,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   typescript-customrunner-url-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -726,12 +774,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   typescript-customrunner-client-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -777,12 +829,16 @@ jobs:
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
+
   typescript-customrunner-undef-count-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node_version: [20]
-        postgres_version: [17.2]
+        postgres_version: [17]
       fail-fast: false
     timeout-minutes: 10
 
@@ -827,3 +883,7 @@ jobs:
         run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerUndefCount.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+      - name: Postgres logs
+        if: always()
+        run: docker logs "${{ job.services.postgres.id }}"
