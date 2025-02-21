@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { formatParams } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { FunctionParam } from './shared';

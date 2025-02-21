@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { applyType } from '../../utils';
 import type { Name, Type } from '../generalTypes';
 

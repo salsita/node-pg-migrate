@@ -1,6 +1,3 @@
-/*
- This file just manages the database connection and provides a query method
- */
 import { inspect } from 'node:util';
 import type {
   Client,
@@ -12,7 +9,31 @@ import type {
   QueryResult,
 } from 'pg';
 import pg from 'pg';
-import type { DB, Logger } from './types';
+import type { Logger } from './logger';
+
+// This file just manages the database connection and provides a query method
+
+// see ClientBase in @types/pg
+export interface DB {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  query(
+    queryConfig: QueryArrayConfig,
+    values?: any[]
+  ): Promise<QueryArrayResult>;
+  query(queryConfig: QueryConfig): Promise<QueryResult>;
+  query(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<QueryResult>;
+
+  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>;
+  select(queryConfig: QueryConfig): Promise<any[]>;
+  select(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<any[]>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DBConnection extends DB {

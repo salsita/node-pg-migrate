@@ -1,13 +1,14 @@
 import { isAbsolute, resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
+import type { Logger } from '../src/logger';
 import {
   getMigrationFilePaths,
   getNumericPrefix,
   Migration,
 } from '../src/migration';
-import type { Logger, RunnerOption } from '../src/types';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';

@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { formatParams } from '../../utils';
 import type { FunctionParam } from '../functions';
 import type { Name } from '../generalTypes';

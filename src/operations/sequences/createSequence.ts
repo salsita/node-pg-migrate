@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import type { DropSequenceOptions } from './dropSequence';
 import { dropSequence } from './dropSequence';

@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue } from '../../utils';
 import type { Name, Value } from '../generalTypes';
 

@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { DropOptions, Name } from '../generalTypes';
 
 export interface DropOperatorOptions extends DropOptions {

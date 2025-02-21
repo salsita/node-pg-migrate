@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { formatLines } from '../../utils';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import type { DropColumnsOptions } from './dropColumns';

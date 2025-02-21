@@ -13,7 +13,8 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true
   },
   "exclude": ["node_modules", "templates", "dist", "migrations"]
 }

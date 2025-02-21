@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { Name, Nullable } from '../generalTypes';
 import type { ViewOptions } from './shared';
 import { viewOptionStr } from './shared';

@@ -1,19 +1,156 @@
 import { extname } from 'node:path';
+import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
 import Db from './db';
+import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
 import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
+import type { MigrationBuilderActions } from './sqlMigration';
 import migrateSqlFile from './sqlMigration';
-import type {
-  Logger,
-  MigrationBuilderActions,
-  MigrationDirection,
-  RunnerOption,
-  RunnerOptionClient,
-  RunnerOptionUrl,
-} from './types';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+
+export interface RunnerOptionConfig {
+  /**
+   * The table storing which migrations have been run.
+   */
+  migrationsTable: string;
+
+  /**
+   * The schema storing table which migrations have been run.
+   *
+   * (defaults to same value as `schema`)
+   */
+  migrationsSchema?: string;
+
+  /**
+   * The schema on which migration will be run.
+   *
+   * @default 'public'
+   */
+  schema?: string | string[];
+
+  /**
+   * The directory containing your migration files. This path is resolved from `cwd()`.
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `useGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  dir: string | string[];
+
+  /**
+   * Use [glob](https://www.npmjs.com/package/glob) to find migration files.
+   * This will use `dir` _and_ `ignorePattern` to glob-search for migration files.
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   *
+   * @default false
+   */
+  useGlob?: boolean;
+
+  /**
+   * Check order of migrations before running them.
+   */
+  checkOrder?: boolean;
+
+  /**
+   * Direction of migration-run.
+   */
+  direction: MigrationDirection;
+
+  /**
+   * Number of migration to run.
+   */
+  count?: number;
+
+  /**
+   * Treats `count` as timestamp.
+   */
+  timestamp?: boolean;
+
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `isGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  ignorePattern?: string | string[];
+
+  /**
+   * Run only migration with this name.
+   */
+  file?: string;
+
+  dryRun?: boolean;
+
+  /**
+   * Creates the configured schema if it doesn't exist.
+   */
+  createSchema?: boolean;
+
+  /**
+   * Creates the configured migration schema if it doesn't exist.
+   */
+  createMigrationsSchema?: boolean;
+
+  /**
+   * Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back.
+   *
+   * @default true
+   */
+  singleTransaction?: boolean;
+
+  /**
+   * Disables locking mechanism and checks.
+   */
+  noLock?: boolean;
+
+  /**
+   * Mark migrations as run without actually performing them (use with caution!).
+   */
+  fake?: boolean;
+
+  /**
+   * Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names.
+   */
+  decamelize?: boolean;
+
+  /**
+   * Redirect log messages to this function, rather than `console`.
+   */
+  log?: LogFn;
+
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
+  logger?: Logger;
+
+  /**
+   * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
+   */
+  verbose?: boolean;
+}
+
+export interface RunnerOptionUrl {
+  /**
+   * Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)
+   */
+  databaseUrl: string | ClientConfig;
+}
+
+export interface RunnerOptionClient {
+  /**
+   * Instance of [new pg.Client](https://node-postgres.com/api/client).
+   *
+   * Instance should be connected to DB and after finishing migration, user is responsible to close connection.
+   */
+  dbClient: ClientBase;
+}
+
+export type RunnerOption = RunnerOptionConfig &
+  (RunnerOptionClient | RunnerOptionUrl);
 
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
@@ -211,6 +348,8 @@ function checkOrder(runNames: string[], migrations: Migration[]): void {
     }
   }
 }
+
+export type MigrationDirection = 'up' | 'down';
 
 function runMigrations(
   toRun: Migration[],

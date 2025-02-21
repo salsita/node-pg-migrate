@@ -1,5 +1,6 @@
-import type { Literal, MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { applyType, escapeValue, makeComment, toArray } from '../../utils';
+import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
 import { parseSequenceOptions, type SequenceOptions } from '../sequences';

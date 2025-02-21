@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue, toArray } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
