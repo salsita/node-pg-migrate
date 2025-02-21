@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { Name } from '../generalTypes';
 import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';

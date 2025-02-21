@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FunctionParam } from '../../src';
 import { PgType } from '../../src';
-import type { MigrationOptions } from '../../src/types';
+import type { MigrationOptions } from '../../src/migrationOptions';
 import { formatParams } from '../../src/utils';
 import { options1 } from '../presetMigrationOptions';
 

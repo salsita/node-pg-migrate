@@ -11,6 +11,7 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
-    "allowJs": true
+    "allowJs": true,
+    "verbatimModuleSyntax": true
   }
 }

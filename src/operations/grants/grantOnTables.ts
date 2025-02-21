@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { toArray } from '../../utils';
 import type { Reversible } from '../generalTypes';
 import type { RevokeOnTablesOptions } from './revokeOnTables';

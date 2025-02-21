@@ -1,11 +1,3 @@
-/*
- A new Migration is instantiated for each migration file.
-
- It is responsible for storing the name of the file and knowing how to execute
- the up and down migrations defined in the file.
-
- */
-
 import { glob } from 'glob';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
@@ -13,16 +5,24 @@ import { basename, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
+import type { Logger } from './logger';
 import MigrationBuilder from './migrationBuilder';
 import type { ColumnDefinitions } from './operations/tables';
-import type {
-  Logger,
-  MigrationAction,
-  MigrationBuilderActions,
-  MigrationDirection,
-  RunnerOption,
-} from './types';
+import type { MigrationDirection, RunnerOption } from './runner';
+import type { MigrationBuilderActions } from './sqlMigration';
 import { getMigrationTableSchema } from './utils';
+
+/*
+ * A new Migration is instantiated for each migration file.
+ *
+ * It is responsible for storing the name of the file and knowing how to execute
+ * the up and down migrations defined in the file.
+ */
+
+export type MigrationAction = (
+  pgm: MigrationBuilder,
+  run?: () => void
+) => Promise<void> | void;
 
 export interface RunMigration {
   readonly path: string;

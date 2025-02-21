@@ -1,5 +1,5 @@
 import { getSchemas } from '.';
-import type { RunnerOption } from '../types';
+import type { RunnerOption } from '../runner';
 
 export function getMigrationTableSchema(options: RunnerOption): string {
   return options.migrationsSchema === undefined

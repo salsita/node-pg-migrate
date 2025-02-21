@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { formatLines } from '../../utils';
 import type { Name, Nullable } from '../generalTypes';
 import type { StorageParameters } from './shared';

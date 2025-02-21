@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue, formatParams } from '../../utils';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
 import type { DropFunctionOptions } from './dropFunction';

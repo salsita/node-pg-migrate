@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { IfExistsOption, Name } from '../generalTypes';
 
 export type DropTypeAttributeOptions = IfExistsOption;

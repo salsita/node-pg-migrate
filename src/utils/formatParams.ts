@@ -1,6 +1,6 @@
 import { applyType, escapeValue } from '.';
+import type { MigrationOptions } from '../migrationOptions';
 import type { FunctionParam } from '../operations/functions';
-import type { MigrationOptions } from '../types';
 
 function formatParam(
   mOptions: MigrationOptions
