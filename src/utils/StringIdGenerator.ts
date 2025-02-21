@@ -2,9 +2,13 @@
 
 // credits to https://stackoverflow.com/a/12504061/4790644
 export class StringIdGenerator {
+  private readonly chars: string;
+
   private ids: number[] = [0];
 
-  constructor(private readonly chars = 'abcdefghijklmnopqrstuvwxyz') {}
+  constructor(chars = 'abcdefghijklmnopqrstuvwxyz') {
+    this.chars = chars;
+  }
 
   next(): string {
     const idsChars = this.ids.map((id) => this.chars[id]);
