@@ -660,7 +660,7 @@ export interface MigrationBuilder {
    * Run the reverse of the migration. Useful for creating a new migration that
    * reverts a previous migration.
    */
-  enableReverseMode: () => void;
+  enableReverseMode(): this;
 
   /**
    * The `db` client instance.
