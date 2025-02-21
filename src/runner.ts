@@ -1,13 +1,13 @@
 import { extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
-import Db from './db';
+import { db as Db } from './db';
 import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
 import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationBuilderActions } from './sqlMigration';
-import migrateSqlFile from './sqlMigration';
+import { sqlMigration as migrateSqlFile } from './sqlMigration';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
 
 export interface RunnerOptionConfig {
@@ -487,5 +487,3 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
   }
 }
-
-export default runner;

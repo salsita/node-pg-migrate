@@ -60,7 +60,7 @@ export interface DBConnection extends DB {
 
 type ConnectionStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR' | 'EXTERNAL';
 
-function db(
+export function db(
   connection: ClientBase | string | ClientConfig,
   logger: Logger = console
 ): DBConnection {
@@ -186,5 +186,3 @@ ${error}
     },
   };
 }
-
-export default db;

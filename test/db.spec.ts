@@ -1,7 +1,7 @@
 import { Client } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
-import Db from '../src/db';
+import { db as Db } from '../src/db';
 import type { Logger } from '../src/logger';
 
 const hoisted = vi.hoisted(() => ({
