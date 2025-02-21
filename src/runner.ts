@@ -293,7 +293,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       getRunMigrations(db, options),
     ]);
 
-    if (options.checkOrder) {
+    if (options.checkOrder !== false) {
       checkOrder(runNames, migrations);
     }
 
