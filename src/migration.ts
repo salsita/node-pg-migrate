@@ -6,7 +6,7 @@ import { cwd } from 'node:process';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import type { Logger } from './logger';
-import MigrationBuilder from './migrationBuilder';
+import { MigrationBuilder } from './migrationBuilder';
 import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationDirection, RunnerOption } from './runner';
 import type { MigrationBuilderActions } from './sqlMigration';

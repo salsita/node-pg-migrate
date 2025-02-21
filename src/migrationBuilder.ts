@@ -33,7 +33,7 @@ import { createSchemalize, PgLiteral } from './utils';
  * and it makes inference of down migrations possible.
  */
 
-export default class MigrationBuilder {
+export class MigrationBuilder {
   /**
    * Install an extension.
    *

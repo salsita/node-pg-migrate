@@ -1,5 +1,5 @@
 export { Migration } from './migration';
-export type { default as MigrationBuilder } from './migrationBuilder';
+export type { MigrationBuilder } from './migrationBuilder';
 export type {
   CreateCast,
   CreateCastFn,
@@ -263,7 +263,7 @@ export type {
   ViewOptions,
 } from './operations/views';
 export { PgType } from './pgType';
-export { runner as default, runner } from './runner';
+export { runner } from './runner';
 export type { RunnerOption } from './runner';
 export { PgLiteral, isPgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';
