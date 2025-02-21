@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`createMigrationBuilder > should generate the proper sql 1`] = `
+"CREATE TABLE "users" (
+  "id" serial PRIMARY KEY,
+  "name" varchar(1000) NOT NULL,
+  "created_at" timestamp DEFAULT current_timestamp NOT NULL
+);
+CREATE TABLE "posts" (
+  "id" serial PRIMARY KEY,
+  "user_id" integer NOT NULL REFERENCES "users" ON DELETE CASCADE,
+  "body" text NOT NULL,
+  "created_at" timestamp DEFAULT current_timestamp NOT NULL
+);
+CREATE INDEX "posts_user_id_index" ON "posts" ("user_id");
+"
+`;
