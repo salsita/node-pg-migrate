@@ -14,7 +14,8 @@
     "noUnusedLocals": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
   },
   "exclude": ["node_modules", "templates", "dist", "migrations"]
 }

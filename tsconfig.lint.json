@@ -12,6 +12,7 @@
     "noUnusedLocals": true,
     "noImplicitOverride": true,
     "allowJs": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
   }
 }
