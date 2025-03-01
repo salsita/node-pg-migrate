@@ -390,11 +390,16 @@ function getLogger(options: RunnerOption): Logger {
 
 export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
-  const db = Db(
+
+  const connection =
     (options as RunnerOptionClient).dbClient ||
-      (options as RunnerOptionUrl).databaseUrl,
-    logger
-  );
+    (options as RunnerOptionUrl).databaseUrl;
+
+  if (connection == null) {
+    throw new Error('You must provide either a databaseUrl or a dbClient');
+  }
+
+  const db = Db(connection, logger);
 
   try {
     await db.createConnection();
