@@ -15,9 +15,11 @@ const promiseMigration = '1414549381268_names_promise.js';
 const reverseMigration = '1739900132875_names_reversed.js';
 const migrationsTable = 'pgmigrations';
 
-const actionsCallback = await import(`./${callbackMigration}`);
-const actionsPromise = await import(`./${promiseMigration}`);
-const reversePromise = await import(`./${reverseMigration}`);
+const actionsCallback = await import(
+  /* @vite-ignore */ `./${callbackMigration}`
+);
+const actionsPromise = await import(/* @vite-ignore */ `./${promiseMigration}`);
+const reversePromise = await import(/* @vite-ignore */ `./${reverseMigration}`);
 
 describe('migration', () => {
   const dbMock = {} as DBConnection;
