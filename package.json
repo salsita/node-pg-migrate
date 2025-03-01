@@ -93,7 +93,6 @@
     "@eslint/js": "9.21.0",
     "@stylistic/eslint-plugin": "3.1.0",
     "@types/config": "3.3.5",
-    "@types/eslint__js": "8.42.3",
     "@types/node": "20.17.19",
     "@types/pg": "8.11.11",
     "@types/yargs": "17.0.33",
