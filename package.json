@@ -114,7 +114,7 @@
     "node-pg-migrate": "file:.",
     "npm-run-all2": "7.0.2",
     "pg": "8.13.3",
-    "prettier": "3.5.1",
+    "prettier": "3.5.2",
     "prettier-plugin-organize-imports": "4.1.0",
     "prettier-plugin-packagejson": "2.5.9",
     "rimraf": "6.0.1",
