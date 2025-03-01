@@ -1,5 +1,5 @@
 export { Migration } from './migration';
-export type { MigrationBuilder } from './migrationBuilder';
+export { MigrationBuilder } from './migrationBuilder';
 export type {
   CreateCast,
   CreateCastFn,
