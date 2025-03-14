@@ -79,6 +79,7 @@ describe('utils', () => {
       // TODO @Shinigami92 2024-04-03: Should this be an error?
       expect(actual).toBe('INSERT INTO s (id) VALUES ();');
     });
+
     it('should correctly handle $ character in values', () => {
       const t = createTransformer(
         createSchemalize({
