@@ -108,7 +108,7 @@
     "eslint-define-config": "2.1.0",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-prettier": "5.2.5",
-    "eslint-plugin-unicorn": "57.0.0",
+    "eslint-plugin-unicorn": "58.0.0",
     "jiti": "2.4.2",
     "json5": "2.2.3",
     "node-pg-migrate": "file:.",
