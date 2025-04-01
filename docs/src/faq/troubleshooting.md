@@ -45,3 +45,18 @@ transaction.
 E.g., if it is created in previous migration.
 You need to run specific migration outside transaction
 (`pgm.noTransaction`).
+
+## Environment Variables
+
+`node-pg-migrate` relies on the `node-postgres` library for database connections. The following [PostgreSQL Environment Variables](https://www.postgresql.org/docs/9.1/libpq-envars.html) may be used:
+
+- `DATABASE_URL`: The URL of the database to connect to.
+- `PGHOST`: The host of the PostgreSQL server.
+- `PGUSER`: The username for the PostgreSQL server.
+- `PGPASSWORD`: The password for the PostgreSQL server.
+- `PGDATABASE`: The name of the database to connect to.
+
+For up-to-date default values from `node-postgres`, [see](https://github.com/brianc/node-postgres/blob/master/packages/pg/lib/defaults.js).
+
+Starting from version 8.0, `node-pg-migrate` will refuse to run migrations if `DATABASE_URL` is not set, or if the required environment variables (`PGHOST`, `PGUSER`, `PGDATABASE`) are missing. This check ensures that migrations do not run with default or unintended connection parameters.
+This behavior is based on the `node-postgres` library, which synthesizes some default connection parameters. For example, `pg` sets the `host` to `localhost` and the `port` to `5432` if they are missing.
