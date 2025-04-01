@@ -105,7 +105,6 @@
     "dotenv-expand": "12.0.1",
     "eslint": "9.23.0",
     "eslint-config-prettier": "10.1.1",
-    "eslint-define-config": "2.1.0",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-prettier": "5.2.5",
     "eslint-plugin-unicorn": "58.0.0",
