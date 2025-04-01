@@ -28,8 +28,8 @@ importers:
         specifier: 3.3.5
         version: 3.3.5
       '@types/node':
-        specifier: 20.17.24
-        version: 20.17.24
+        specifier: 20.17.29
+        version: 20.17.29
       '@types/pg':
         specifier: 8.11.11
         version: 8.11.11
@@ -104,7 +104,7 @@ importers:
         version: 6.0.1
       ts-node:
         specifier: 10.9.2
-        version: 10.9.2(@types/node@20.17.24)(typescript@5.8.2)
+        version: 10.9.2(@types/node@20.17.29)(typescript@5.8.2)
       tsup:
         specifier: 8.4.0
         version: 8.4.0(jiti@2.4.2)(postcss@8.5.3)(tsx@4.19.3)(typescript@5.8.2)
@@ -119,10 +119,10 @@ importers:
         version: 8.29.0(eslint@9.23.0(jiti@2.4.2))(typescript@5.8.2)
       vitepress:
         specifier: 1.6.3
-        version: 1.6.3(@algolia/client-search@5.21.0)(@types/node@20.17.24)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.2)
+        version: 1.6.3(@algolia/client-search@5.21.0)(@types/node@20.17.29)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.2)
       vitest:
         specifier: 3.0.9
-        version: 3.0.9(@types/node@20.17.24)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
+        version: 3.0.9(@types/node@20.17.29)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
 
 packages:
 
@@ -832,8 +832,8 @@ packages:
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
-  '@types/node@20.17.24':
-    resolution: {integrity: sha512-d7fGCyB96w9BnWQrOsJtpyiSaBcAYYr75bnK6ZRjDbql2cGLj/3GsL5OYmLPNq76l7Gf2q4Rv9J2o6h5CrD9sA==}
+  '@types/node@20.17.29':
+    resolution: {integrity: sha512-6rbekrnsa5WWCo5UnPYEKfNuoF2yqAmigUKXM8wBzfEbZc+E/CITqjCrHqiq+6QBifsw0ZDaA5VdTFONOtG7+A==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -3521,7 +3521,7 @@ snapshots:
 
   '@types/mdurl@2.0.0': {}
 
-  '@types/node@20.17.24':
+  '@types/node@20.17.29':
     dependencies:
       undici-types: 6.19.8
 
@@ -3529,7 +3529,7 @@ snapshots:
 
   '@types/pg@8.11.11':
     dependencies:
-      '@types/node': 20.17.24
+      '@types/node': 20.17.29
       pg-protocol: 1.8.0
       pg-types: 4.0.2
 
@@ -3659,9 +3659,9 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-vue@5.2.3(vite@5.4.14(@types/node@20.17.24))(vue@3.5.13(typescript@5.8.2))':
+  '@vitejs/plugin-vue@5.2.3(vite@5.4.14(@types/node@20.17.29))(vue@3.5.13(typescript@5.8.2))':
     dependencies:
-      vite: 5.4.14(@types/node@20.17.24)
+      vite: 5.4.14(@types/node@20.17.29)
       vue: 3.5.13(typescript@5.8.2)
 
   '@vitest/coverage-v8@3.0.9(vitest@3.0.9)':
@@ -3678,7 +3678,7 @@ snapshots:
       std-env: 3.8.1
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.0.9(@types/node@20.17.24)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
+      vitest: 3.0.9(@types/node@20.17.29)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -3688,7 +3688,7 @@ snapshots:
       eslint: 9.23.0(jiti@2.4.2)
     optionalDependencies:
       typescript: 5.8.2
-      vitest: 3.0.9(@types/node@20.17.24)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
+      vitest: 3.0.9(@types/node@20.17.29)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
 
   '@vitest/expect@3.0.9':
     dependencies:
@@ -3697,13 +3697,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.0.9(vite@6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3))':
+  '@vitest/mocker@3.0.9(vite@6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3))':
     dependencies:
       '@vitest/spy': 3.0.9
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3)
+      vite: 6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3)
 
   '@vitest/pretty-format@3.0.9':
     dependencies:
@@ -3733,7 +3733,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.12
       tinyrainbow: 2.0.0
-      vitest: 3.0.9(@types/node@20.17.24)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
+      vitest: 3.0.9(@types/node@20.17.29)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3)
 
   '@vitest/utils@3.0.9':
     dependencies:
@@ -5512,14 +5512,14 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-node@10.9.2(@types/node@20.17.24)(typescript@5.8.2):
+  ts-node@10.9.2(@types/node@20.17.29)(typescript@5.8.2):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.17.24
+      '@types/node': 20.17.29
       acorn: 8.14.1
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -5678,13 +5678,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vite-node@3.0.9(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3):
+  vite-node@3.0.9(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       es-module-lexer: 1.6.0
       pathe: 2.0.3
-      vite: 6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3)
+      vite: 6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -5699,27 +5699,27 @@ snapshots:
       - tsx
       - yaml
 
-  vite@5.4.14(@types/node@20.17.24):
+  vite@5.4.14(@types/node@20.17.29):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.3
       rollup: 4.36.0
     optionalDependencies:
-      '@types/node': 20.17.24
+      '@types/node': 20.17.29
       fsevents: 2.3.3
 
-  vite@6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3):
+  vite@6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3):
     dependencies:
       esbuild: 0.25.1
       postcss: 8.5.3
       rollup: 4.36.0
     optionalDependencies:
-      '@types/node': 20.17.24
+      '@types/node': 20.17.29
       fsevents: 2.3.3
       jiti: 2.4.2
       tsx: 4.19.3
 
-  vitepress@1.6.3(@algolia/client-search@5.21.0)(@types/node@20.17.24)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.2):
+  vitepress@1.6.3(@algolia/client-search@5.21.0)(@types/node@20.17.29)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.2):
     dependencies:
       '@docsearch/css': 3.8.2
       '@docsearch/js': 3.8.2(@algolia/client-search@5.21.0)(search-insights@2.17.3)
@@ -5728,7 +5728,7 @@ snapshots:
       '@shikijs/transformers': 2.5.0
       '@shikijs/types': 2.5.0
       '@types/markdown-it': 14.1.2
-      '@vitejs/plugin-vue': 5.2.3(vite@5.4.14(@types/node@20.17.24))(vue@3.5.13(typescript@5.8.2))
+      '@vitejs/plugin-vue': 5.2.3(vite@5.4.14(@types/node@20.17.29))(vue@3.5.13(typescript@5.8.2))
       '@vue/devtools-api': 7.7.2
       '@vue/shared': 3.5.13
       '@vueuse/core': 12.8.2(typescript@5.8.2)
@@ -5737,7 +5737,7 @@ snapshots:
       mark.js: 8.11.1
       minisearch: 7.1.2
       shiki: 2.5.0
-      vite: 5.4.14(@types/node@20.17.24)
+      vite: 5.4.14(@types/node@20.17.29)
       vue: 3.5.13(typescript@5.8.2)
     optionalDependencies:
       postcss: 8.5.3
@@ -5768,10 +5768,10 @@ snapshots:
       - typescript
       - universal-cookie
 
-  vitest@3.0.9(@types/node@20.17.24)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3):
+  vitest@3.0.9(@types/node@20.17.29)(@vitest/ui@3.0.9)(jiti@2.4.2)(tsx@4.19.3):
     dependencies:
       '@vitest/expect': 3.0.9
-      '@vitest/mocker': 3.0.9(vite@6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3))
+      '@vitest/mocker': 3.0.9(vite@6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3))
       '@vitest/pretty-format': 3.0.9
       '@vitest/runner': 3.0.9
       '@vitest/snapshot': 3.0.9
@@ -5787,11 +5787,11 @@ snapshots:
       tinyexec: 0.3.2
       tinypool: 1.0.2
       tinyrainbow: 2.0.0
-      vite: 6.2.2(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3)
-      vite-node: 3.0.9(@types/node@20.17.24)(jiti@2.4.2)(tsx@4.19.3)
+      vite: 6.2.2(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3)
+      vite-node: 3.0.9(@types/node@20.17.29)(jiti@2.4.2)(tsx@4.19.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.17.24
+      '@types/node': 20.17.29
       '@vitest/ui': 3.0.9(vitest@3.0.9)
     transitivePeerDependencies:
       - jiti
