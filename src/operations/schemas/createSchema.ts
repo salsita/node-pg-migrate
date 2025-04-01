@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { IfNotExistsOption, Reversible } from '../generalTypes';
 import type { DropSchemaOptions } from './dropSchema';
 import { dropSchema } from './dropSchema';

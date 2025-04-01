@@ -1,4 +1,5 @@
-import type { Literal, MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
+import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';

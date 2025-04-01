@@ -1,20 +1,156 @@
-import { createRequire } from 'node:module';
-import { extname, resolve } from 'node:path';
+import { extname } from 'node:path';
+import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
-import Db from './db';
+import { db as Db } from './db';
+import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
-import { loadMigrationFiles, Migration } from './migration';
+import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
-import migrateSqlFile from './sqlMigration';
-import type {
-  Logger,
-  MigrationBuilderActions,
-  MigrationDirection,
-  RunnerOption,
-  RunnerOptionClient,
-  RunnerOptionUrl,
-} from './types';
+import type { MigrationBuilderActions } from './sqlMigration';
+import { sqlMigration as migrateSqlFile } from './sqlMigration';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+
+export interface RunnerOptionConfig {
+  /**
+   * The table storing which migrations have been run.
+   */
+  migrationsTable: string;
+
+  /**
+   * The schema storing table which migrations have been run.
+   *
+   * (defaults to same value as `schema`)
+   */
+  migrationsSchema?: string;
+
+  /**
+   * The schema on which migration will be run.
+   *
+   * @default 'public'
+   */
+  schema?: string | string[];
+
+  /**
+   * The directory containing your migration files. This path is resolved from `cwd()`.
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `useGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  dir: string | string[];
+
+  /**
+   * Use [glob](https://www.npmjs.com/package/glob) to find migration files.
+   * This will use `dir` _and_ `ignorePattern` to glob-search for migration files.
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   *
+   * @default false
+   */
+  useGlob?: boolean;
+
+  /**
+   * Check order of migrations before running them.
+   */
+  checkOrder?: boolean;
+
+  /**
+   * Direction of migration-run.
+   */
+  direction: MigrationDirection;
+
+  /**
+   * Number of migration to run.
+   */
+  count?: number;
+
+  /**
+   * Treats `count` as timestamp.
+   */
+  timestamp?: boolean;
+
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `isGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  ignorePattern?: string | string[];
+
+  /**
+   * Run only migration with this name.
+   */
+  file?: string;
+
+  dryRun?: boolean;
+
+  /**
+   * Creates the configured schema if it doesn't exist.
+   */
+  createSchema?: boolean;
+
+  /**
+   * Creates the configured migration schema if it doesn't exist.
+   */
+  createMigrationsSchema?: boolean;
+
+  /**
+   * Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back.
+   *
+   * @default true
+   */
+  singleTransaction?: boolean;
+
+  /**
+   * Disables locking mechanism and checks.
+   */
+  noLock?: boolean;
+
+  /**
+   * Mark migrations as run without actually performing them (use with caution!).
+   */
+  fake?: boolean;
+
+  /**
+   * Runs [`decamelize`](https://github.com/sindresorhus/decamelize) on table/column/etc. names.
+   */
+  decamelize?: boolean;
+
+  /**
+   * Redirect log messages to this function, rather than `console`.
+   */
+  log?: LogFn;
+
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
+  logger?: Logger;
+
+  /**
+   * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
+   */
+  verbose?: boolean;
+}
+
+export interface RunnerOptionUrl {
+  /**
+   * Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)
+   */
+  databaseUrl: string | ClientConfig;
+}
+
+export interface RunnerOptionClient {
+  /**
+   * Instance of [new pg.Client](https://node-postgres.com/api/client).
+   *
+   * Instance should be connected to DB and after finishing migration, user is responsible to close connection.
+   */
+  dbClient: ClientBase;
+}
+
+export type RunnerOption = RunnerOptionConfig &
+  (RunnerOptionClient | RunnerOptionUrl);
 
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
@@ -32,15 +168,18 @@ async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const files = await loadMigrationFiles(options.dir, options.ignorePattern);
+    const absoluteFilePaths = await getMigrationFilePaths(options.dir, {
+      ignorePattern: options.ignorePattern,
+      useGlob: options.useGlob,
+      logger,
+    });
 
     const migrations = await Promise.all(
-      files.map(async (file) => {
-        const filePath = resolve(options.dir, file);
+      absoluteFilePaths.map(async (filePath) => {
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : createRequire(resolve('_'))(filePath);
+            : await import(`file://${filePath}`);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
@@ -56,15 +195,7 @@ async function loadMigrations(
       })
     );
 
-    return migrations.sort((m1, m2) => {
-      const compare = m1.timestamp - m2.timestamp;
-
-      if (compare !== 0) {
-        return compare;
-      }
-
-      return m1.name.localeCompare(m2.name);
-    });
+    return migrations;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Can't get migration files: ${error.stack}`);
@@ -218,6 +349,8 @@ function checkOrder(runNames: string[], migrations: Migration[]): void {
   }
 }
 
+export type MigrationDirection = 'up' | 'down';
+
 function runMigrations(
   toRun: Migration[],
   method: 'markAsRun' | 'apply',
@@ -257,11 +390,16 @@ function getLogger(options: RunnerOption): Logger {
 
 export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
-  const db = Db(
+
+  const connection =
     (options as RunnerOptionClient).dbClient ||
-      (options as RunnerOptionUrl).databaseUrl,
-    logger
-  );
+    (options as RunnerOptionUrl).databaseUrl;
+
+  if (connection == null) {
+    throw new Error('You must provide either a databaseUrl or a dbClient');
+  }
+
+  const db = Db(connection, logger);
 
   try {
     await db.createConnection();
@@ -299,7 +437,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       getRunMigrations(db, options),
     ]);
 
-    if (options.checkOrder) {
+    if (options.checkOrder !== false) {
       checkOrder(runNames, migrations);
     }
 
@@ -354,5 +492,3 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
   }
 }
-
-export default runner;

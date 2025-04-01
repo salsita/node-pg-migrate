@@ -1,4 +1,4 @@
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_smallint;');
   try {
     await pgm.db.query('INSERT INTO t1(nmbr) VALUES (2147483647);');
@@ -13,4 +13,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

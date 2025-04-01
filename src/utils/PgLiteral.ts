@@ -22,11 +22,18 @@ export class PgLiteral {
   public readonly literal = true;
 
   /**
+   * Value of the literal.
+   */
+  public readonly value: string;
+
+  /**
    * Creates a new `PgLiteral` instance.
    *
    * @param value The string value.
    */
-  constructor(public readonly value: string) {}
+  constructor(value: string) {
+    this.value = value;
+  }
 
   /**
    * Returns the string value.

@@ -1,4 +1,4 @@
-import type { Value } from '../generalTypes';
+import type { LiteralUnion, Value } from '../generalTypes';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
@@ -28,4 +28,9 @@ export interface FunctionOptions {
   onNull?: boolean;
 
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
+
+  set?: Array<{
+    configurationParameter: string;
+    value: LiteralUnion<'FROM CURRENT'>;
+  }>;
 }

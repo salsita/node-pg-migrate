@@ -1,15 +1,25 @@
+import { isAbsolute, resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
-import { getTimestamp, Migration } from '../src/migration';
-import type { Logger, RunnerOption } from '../src/types';
+import type { Logger } from '../src/logger';
+import {
+  getMigrationFilePaths,
+  getNumericPrefix,
+  Migration,
+} from '../src/migration';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
+const reverseMigration = '1739900132875_names_reversed.js';
 const migrationsTable = 'pgmigrations';
 
-const actionsCallback = require(`./${callbackMigration}`);
-const actionsPromise = require(`./${promiseMigration}`);
+const actionsCallback = await import(
+  /* @vite-ignore */ `./${callbackMigration}`
+);
+const actionsPromise = await import(/* @vite-ignore */ `./${promiseMigration}`);
+const reversePromise = await import(/* @vite-ignore */ `./${reverseMigration}`);
 
 describe('migration', () => {
   const dbMock = {} as DBConnection;
@@ -29,19 +39,92 @@ describe('migration', () => {
     dbMock.query = queryMock;
   });
 
-  describe('getTimestamp', () => {
+  describe('getNumericPrefix', () => {
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
 
-      expect(getTimestamp(logger, String(now))).toBe(now);
+      expect(getNumericPrefix(String(now), logger)).toBe(now);
     });
 
     it('should get timestamp for shortened iso format', () => {
       const now = new Date();
 
-      expect(getTimestamp(logger, now.toISOString().replace(/\D/g, ''))).toBe(
-        now.valueOf()
-      );
+      expect(
+        getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
+      ).toBe(now.valueOf());
+    });
+  });
+
+  describe('getMigrationFilePaths', () => {
+    it('should resolve files directly in `dir`', async () => {
+      const dir = 'test/migrations';
+      const resolvedDir = resolve(dir);
+      const filePaths = await getMigrationFilePaths(dir, { logger });
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(93);
+      expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(filePath).toMatch(resolvedDir);
+        expect(filePath).toMatch(/\.js$/);
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
+    });
+
+    it('should resolve files directly in `dir` and ignore matching ignorePattern', async () => {
+      const dir = 'test/migrations';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '.+test.+';
+
+      const filePaths = await getMigrationFilePaths(dir, {
+        ignorePattern,
+        logger,
+      });
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(68);
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
+    });
+
+    it('should resolve files matching `dir` glob (starting from cwd())', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+
+      const filePaths = await getMigrationFilePaths(dir, {
+        useGlob: true,
+        logger,
+      });
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(106);
+      expect(filePaths).toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
+    });
+
+    it('should resolve files matching `dir` glob (starting from cwd()) and ignore matching ignorePattern', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '*/cockroach/*test*';
+
+      const filePaths = await getMigrationFilePaths(dir, {
+        ignorePattern,
+        useGlob: true,
+        logger,
+      });
+
+      expect(Array.isArray(filePaths)).toBeTruthy();
+      expect(filePaths).toHaveLength(105);
+      expect(filePaths).toContainEqual(expect.stringContaining('nested'));
+
+      for (const filePath of filePaths) {
+        expect(isAbsolute(filePath)).toBeTruthy();
+      }
     });
   });
 
@@ -74,6 +157,26 @@ describe('migration', () => {
       await migration.apply('up');
 
       expect(queryMock).toHaveBeenCalled();
+    });
+
+    it('should perform the inferred reverse operation when reverseMode is enabled', async () => {
+      const migration = new Migration(
+        dbMock,
+        reverseMigration,
+        reversePromise,
+        options,
+        {},
+        logger
+      );
+
+      await migration.apply('up');
+
+      expect(queryMock).toHaveBeenCalledTimes(4);
+      expect(queryMock).toHaveBeenNthCalledWith(1, 'BEGIN;');
+      expect(queryMock).toHaveBeenNthCalledWith(
+        2,
+        expect.stringMatching('DROP TABLE')
+      );
     });
 
     it('should not call db.query on --dry-run', async () => {

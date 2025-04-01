@@ -11,11 +11,11 @@ next:
 When you run `node-pg-migrate create` a new migration file is created that looks like this:
 
 ```javascript
-exports.shorthands = undefined;
+export const shorthands = undefined;
 
-exports.up = function up(pgm) {};
+export const up = function up(pgm) {};
 
-exports.down = function down(pgm) {};
+export const down = function down(pgm) {};
 ```
 
 `pgm` is a helper object that provides migration operations and `run` is the callback to call when you are done.
@@ -26,7 +26,7 @@ definition.
 ### Example
 
 ```js
-exports.shorthands = {
+export const shorthands = {
   id: { type: 'uuid', primaryKey: true },
   createdAt: {
     type: 'timestamp',
@@ -52,10 +52,10 @@ if it is used in current and all following migrations (until changed again).
 
 ## Automatic Down Migrations
 
-If `exports.down` is not present in a migration, node-pg-migrate will try to automatically infer the operations that
+If `export const down` is not present in a migration, node-pg-migrate will try to automatically infer the operations that
 make up the down migration by reversing the operations of the up migration. Only some operations have automatically
 inferrable equivalents (the details below on each operation). Sometimes, migrations are destructive and cannot be rolled
-back. In this case, you can set `exports.down = false` to tell node-pg-migrate that the down migration is impossible.
+back. In this case, you can set `export const down = false` to tell node-pg-migrate that the down migration is impossible.
 
 ## Async Migrations
 
@@ -65,7 +65,7 @@ another callback argument to the function signature. However, be aware that NONE
 until `run()` is called. Here's an example:
 
 ```javascript
-exports.up = function up(pgm, run) {
+export const up = function up(pgm, run) {
   doSomethingAsync(function () {
     run();
   });
@@ -76,7 +76,7 @@ Another way how to perform some async operation is to return [Promise](https://p
 function. Example:
 
 ```javascript
-exports.up = function (pgm) {
+export const up = function (pgm) {
   return new Promise((resolve) => {
     // doSomethingAsync
     resolve();
@@ -87,7 +87,7 @@ exports.up = function (pgm) {
 or
 
 ```javascript
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   // doSomethingAsync
 };
 ```

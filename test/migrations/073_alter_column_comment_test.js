@@ -1,9 +1,8 @@
-const {
-  table: { schema, name },
-  comment,
-} = require('./072_alter_column_comment');
+import { comment, table } from './072_alter_column_comment.js';
 
-exports.up = async (pgm) => {
+const { schema, name } = table;
+
+export const up = async (pgm) => {
   const [{ description }] = await pgm.db.select(
     `SELECT d.description
       FROM pg_description d
@@ -17,4 +16,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

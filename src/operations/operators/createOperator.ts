@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropOperatorOptions } from './dropOperator';
 import { dropOperator } from './dropOperator';

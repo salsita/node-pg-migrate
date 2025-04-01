@@ -1,5 +1,6 @@
-import type { Literal, MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { applyType, escapeValue, makeComment, toArray } from '../../utils';
+import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
 import { parseSequenceOptions, type SequenceOptions } from '../sequences';
@@ -50,11 +51,6 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
 
   comment?: string | null;
 
-  /**
-   * @deprecated use sequenceGenerated
-   */
-  generated?: SequenceGeneratedOptions;
-
   sequenceGenerated?: SequenceGeneratedOptions;
 
   expressionGenerated?: string;
@@ -102,6 +98,22 @@ export interface ConstraintOptions {
   comment?: string;
 }
 
+export type PartitionStrategy = 'RANGE' | 'LIST' | 'HASH';
+
+export interface PartitionColumnOptions {
+  name: string;
+  collate?: string;
+  opclass?: string;
+}
+
+export interface PartitionOptions {
+  strategy: PartitionStrategy;
+  columns:
+    | Array<string | PartitionColumnOptions>
+    | string
+    | PartitionColumnOptions;
+}
+
 export interface TableOptions extends IfNotExistsOption {
   temporary?: boolean;
 
@@ -112,6 +124,8 @@ export interface TableOptions extends IfNotExistsOption {
   constraints?: ConstraintOptions;
 
   comment?: string | null;
+
+  partition?: PartitionOptions;
 }
 
 export function parseReferences(
@@ -218,10 +232,7 @@ export function parseColumns(
         expressionGenerated,
       }: ColumnDefinition = options;
 
-      const sequenceGenerated =
-        options.sequenceGenerated === undefined
-          ? options.generated
-          : options.sequenceGenerated;
+      const sequenceGenerated = options.sequenceGenerated;
       const constraints: string[] = [];
 
       if (collation) {

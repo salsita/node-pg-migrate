@@ -8,7 +8,7 @@ const getMajorVersion = async (pgm) => {
 
 const isSupportedVersion = (major) => major >= 10;
 
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const major = await getMajorVersion(pgm);
   if (isSupportedVersion(major)) {
     pgm.createTable('t_generated', {
@@ -16,7 +16,7 @@ exports.up = async (pgm) => {
       gen: {
         type: 'integer',
         notNull: true,
-        generated: {
+        sequenceGenerated: {
           precedence: 'BY DEFAULT',
           increment: 2,
         },
@@ -26,7 +26,7 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = async (pgm) => {
+export const down = async (pgm) => {
   const major = await getMajorVersion(pgm);
   if (isSupportedVersion(major)) {
     pgm.dropTable('t_generated');

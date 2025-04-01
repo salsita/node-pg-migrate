@@ -1,9 +1,9 @@
-const operator = require('./054_operator_create');
+import * as operator from './054_operator_create.js';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.dropOperator('+', { left: 'complex', right: 'complex' });
   pgm.dropFunction('complex_add', ['complex', 'complex']);
   pgm.dropType('complex');
 };
 
-exports.down = operator.up;
+export const down = operator.up;

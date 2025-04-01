@@ -8,7 +8,7 @@ const getMajorVersion = async (pgm) => {
 
 const isSupportedVersion = (major) => major >= 10;
 
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const major = await getMajorVersion(pgm);
   if (isSupportedVersion(major)) {
     pgm.createType('list2', ['a', 'd', 'c']);
@@ -16,7 +16,7 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = async (pgm) => {
+export const down = async (pgm) => {
   const major = await getMajorVersion(pgm);
   if (isSupportedVersion(major)) {
     pgm.dropType('list2');

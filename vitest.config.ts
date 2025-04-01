@@ -22,7 +22,7 @@ export default defineConfig({
       },
     },
     reporters: process.env.CI_PREFLIGHT
-      ? ['basic', 'github-actions']
-      : ['basic'],
+      ? ['default', 'github-actions']
+      : [['default', { summary: false }]],
   },
 });

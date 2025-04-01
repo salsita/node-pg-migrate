@@ -1,6 +1,3 @@
-/*
- This file just manages the database connection and provides a query method
- */
 import { inspect } from 'node:util';
 import type {
   Client,
@@ -12,7 +9,31 @@ import type {
   QueryResult,
 } from 'pg';
 import pg from 'pg';
-import type { DB, Logger } from './types';
+import type { Logger } from './logger';
+
+// This file just manages the database connection and provides a query method
+
+// see ClientBase in @types/pg
+export interface DB {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  query(
+    queryConfig: QueryArrayConfig,
+    values?: any[]
+  ): Promise<QueryArrayResult>;
+  query(queryConfig: QueryConfig): Promise<QueryResult>;
+  query(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<QueryResult>;
+
+  select(queryConfig: QueryArrayConfig, values?: any[]): Promise<any[]>;
+  select(queryConfig: QueryConfig): Promise<any[]>;
+  select(
+    queryTextOrConfig: string | QueryConfig,
+    values?: any[]
+  ): Promise<any[]>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DBConnection extends DB {
@@ -37,13 +58,9 @@ export interface DBConnection extends DB {
   close(): Promise<void>;
 }
 
-enum ConnectionStatus {
-  DISCONNECTED = 'DISCONNECTED',
-  CONNECTED = 'CONNECTED',
-  ERROR = 'ERROR',
-}
+type ConnectionStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR' | 'EXTERNAL';
 
-function db(
+export function db(
   connection: ClientBase | string | ClientConfig,
   logger: Logger = console
 ): DBConnection {
@@ -51,32 +68,38 @@ function db(
     typeof connection === 'object' &&
     'query' in connection &&
     typeof connection.query === 'function';
-  let connectionStatus = ConnectionStatus.DISCONNECTED;
 
   const client: Client = isExternalClient
     ? (connection as Client)
     : new pg.Client(connection as string | ClientConfig);
 
+  let connectionStatus: ConnectionStatus = isExternalClient
+    ? 'EXTERNAL'
+    : 'DISCONNECTED';
+
   const beforeCloseListeners: any[] = [];
 
+  const connected: DBConnection['connected'] = () =>
+    connectionStatus === 'CONNECTED' || connectionStatus === 'EXTERNAL';
+
   const createConnection: DBConnection['createConnection'] = () =>
-    new Promise((resolve, reject) => {
-      if (isExternalClient || connectionStatus === ConnectionStatus.CONNECTED) {
+    new Promise<void>((resolve, reject) => {
+      if (connected()) {
         resolve();
-      } else if (connectionStatus === ConnectionStatus.ERROR) {
+      } else if (connectionStatus === 'ERROR') {
         reject(
           new Error('Connection already failed, do not try to connect again')
         );
       } else {
         client.connect((err) => {
           if (err) {
-            connectionStatus = ConnectionStatus.ERROR;
+            connectionStatus = 'ERROR';
             logger.error(`could not connect to postgres: ${inspect(err)}`);
             reject(err);
             return;
           }
 
-          connectionStatus = ConnectionStatus.CONNECTED;
+          connectionStatus = 'CONNECTED';
           resolve();
         });
       }
@@ -146,7 +169,7 @@ ${error}
     select,
     column,
 
-    connected: () => connectionStatus === ConnectionStatus.CONNECTED,
+    connected,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
     close: async () => {
       await beforeCloseListeners.reduce(
@@ -157,11 +180,9 @@ ${error}
         Promise.resolve()
       );
       if (!isExternalClient) {
-        connectionStatus = ConnectionStatus.DISCONNECTED;
+        connectionStatus = 'DISCONNECTED';
         client.end();
       }
     },
   };
 }
-
-export default db;

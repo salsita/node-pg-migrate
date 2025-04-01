@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
+    "target": "ES2023",
+    "module": "ESNext",
     "moduleResolution": "Node",
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2023", "DOM"],
     "noEmit": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
@@ -13,7 +13,9 @@
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
   },
   "exclude": ["node_modules", "templates", "dist", "migrations"]
 }

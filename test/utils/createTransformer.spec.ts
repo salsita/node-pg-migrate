@@ -79,5 +79,23 @@ describe('utils', () => {
       // TODO @Shinigami92 2024-04-03: Should this be an error?
       expect(actual).toBe('INSERT INTO s (id) VALUES ();');
     });
+
+    it('should correctly handle $ character in values', () => {
+      const t = createTransformer(
+        createSchemalize({
+          shouldDecamelize: true,
+          shouldQuote: true,
+        })
+      );
+      const actual = t(
+        'ALTER DOMAIN "quote_unit_type" ADD CONSTRAINT "quote_unit_type_values" CHECK (VALUE = ANY({values}))',
+        {
+          values: ['cents/lb', '$/tonne'],
+        }
+      );
+      expect(actual).toBe(
+        'ALTER DOMAIN "quote_unit_type" ADD CONSTRAINT "quote_unit_type_values" CHECK (VALUE = ANY(ARRAY[$pga$cents/lb$pga$,$pga$$/tonne$pga$]))'
+      );
+    });
   });
 });

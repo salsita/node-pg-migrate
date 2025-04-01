@@ -1,5 +1,5 @@
-const { params } = require('./039_function_create');
+import { params } from './039_function_create.js';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.renameFunction('f', params, 'add');
 };

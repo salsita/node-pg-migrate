@@ -1,6 +1,6 @@
 const schema = process.env.SCHEMA || 'public';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('tp', {
     user_name: 'varchar(20)',
   });
@@ -28,7 +28,7 @@ exports.up = (pgm) => {
   pgm.sql('GRANT ALL ON "tp" TO PUBLIC');
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.dropPolicy('tp', 'admin_policy');
   pgm.dropPolicy('tp', 'user_select_policy');
   pgm.dropPolicy('tp', 'user_update_policy');

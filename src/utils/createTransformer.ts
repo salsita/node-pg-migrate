@@ -1,6 +1,7 @@
 import { escapeValue } from '.';
 import type { Name, Value } from '../operations/generalTypes';
-import type { Literal } from '../types';
+
+export type Literal = (v: Name) => string;
 
 export function createTransformer(
   literal: Literal
@@ -15,7 +16,7 @@ export function createTransformer(
           : typeof val === 'string' ||
               (typeof val === 'object' && val !== null && 'name' in val)
             ? literal(val)
-            : String(escapeValue(val))
+            : String(escapeValue(val)).replace(/\$/g, '$$$$')
       );
     }, statement);
 }

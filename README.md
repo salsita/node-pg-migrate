@@ -1,8 +1,5 @@
 # node-pg-migrate
 
-> The core maintainer of this project moved to [@Shinigami92](https://github.com/Shinigami92) (also core maintainer of FakerJS and core member of Vite).  
-> The project is and remains under the MIT license.
-
 [![npm version](https://badgen.net/npm/v/node-pg-migrate)](https://www.npmjs.com/package/node-pg-migrate)
 [![npm downloads](https://badgen.net/npm/dm/node-pg-migrate)](https://www.npmjs.com/package/node-pg-migrate)
 [![Continuous Integration](https://github.com/salsita/node-pg-migrate/actions/workflows/ci.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/ci.yml)
@@ -15,8 +12,8 @@ Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to 
 
 ## Preconditions
 
-- Node.js 18 or higher
-- PostgreSQL 12.8 or higher (lower versions may work but are not supported officially)
+- Node.js 20.11 or higher
+- PostgreSQL 13 or higher (lower versions may work but are not supported officially)
 
 If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a direct or dev dependency
 
@@ -40,7 +37,7 @@ Run `npm run migrate create my-first-migration`. It will create file `xxx_my-fir
 Open it and change contents to:
 
 ```js
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createTable('users', {
     id: 'id',
     name: { type: 'varchar(1000)', notNull: true },
@@ -81,7 +78,7 @@ If you want to change your schema later, you can e.g. add lead paragraph to post
 Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
 
 ```js
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.addColumns('posts', {
     lead: { type: 'text', notNull: true },
   });

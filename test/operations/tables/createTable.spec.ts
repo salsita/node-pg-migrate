@@ -530,6 +530,146 @@ COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pga$fk b comment$pga$;`,
 COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$fk a comment$pga$;
 COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
         ],
+        // Add to the existing it.each array:
+        [
+          'should support RANGE partitioning',
+          options1,
+          [
+            'events',
+            {
+              id: 'serial',
+              created_at: 'timestamp',
+              data: 'jsonb',
+            },
+            {
+              partition: {
+                strategy: 'RANGE',
+                columns: 'created_at',
+              },
+            },
+          ],
+          `CREATE TABLE "events" (
+  "id" serial,
+  "created_at" timestamp,
+  "data" jsonb
+) PARTITION BY RANGE ("created_at");`,
+        ],
+        [
+          'should support LIST partitioning with multiple columns',
+          options1,
+          [
+            'metrics',
+            {
+              id: 'serial',
+              region: 'text',
+              category: 'text',
+              value: 'numeric',
+            },
+            {
+              partition: {
+                strategy: 'LIST',
+                columns: ['region', 'category'],
+              },
+            },
+          ],
+          `CREATE TABLE "metrics" (
+  "id" serial,
+  "region" text,
+  "category" text,
+  "value" numeric
+) PARTITION BY LIST ("region", "category");`,
+        ],
+        [
+          'should support HASH partitioning with operator class',
+          options1,
+          [
+            'users',
+            {
+              id: 'uuid',
+              email: 'text',
+              name: 'text',
+            },
+            {
+              partition: {
+                strategy: 'HASH',
+                columns: { name: 'id', opclass: 'hash_extension.uuid_ops' },
+              },
+            },
+          ],
+          `CREATE TABLE "users" (
+  "id" uuid,
+  "email" text,
+  "name" text
+) PARTITION BY HASH ("id" hash_extension.uuid_ops);`,
+        ],
+        [
+          'should support partitioning with INHERITS',
+          options1,
+          [
+            'child_events',
+            {
+              id: 'serial',
+              created_at: 'timestamp',
+            },
+            {
+              inherits: 'parent_events',
+              partition: {
+                strategy: 'RANGE',
+                columns: 'created_at',
+              },
+            },
+          ],
+          `CREATE TABLE "child_events" (
+  "id" serial,
+  "created_at" timestamp
+) INHERITS ("parent_events") PARTITION BY RANGE ("created_at");`,
+        ],
+        [
+          'should handle snake case naming with partitioning',
+          options2,
+          [
+            'userMetrics',
+            {
+              userId: 'uuid',
+              eventType: 'text',
+              createdAt: 'timestamp',
+            },
+            {
+              partition: {
+                strategy: 'LIST',
+                columns: 'event_type',
+              },
+            },
+          ],
+          `CREATE TABLE "user_metrics" (
+  "user_id" uuid,
+  "event_type" text,
+  "created_at" timestamp
+) PARTITION BY LIST ("event_type");`,
+        ],
+        [
+          'should support partitioning with collation',
+          options1,
+          [
+            'posts',
+            {
+              id: 'serial',
+              title: 'text',
+              language: 'text',
+            },
+            {
+              partition: {
+                strategy: 'LIST',
+                columns: { name: 'language', collate: 'en_US' },
+              },
+            },
+          ],
+          `CREATE TABLE "posts" (
+  "id" serial,
+  "title" text,
+  "language" text
+) PARTITION BY LIST ("language" COLLATE en_US);`,
+        ],
       ] as const)(
         '%s',
         (_, optionPreset, [tableName, columns, options], expected) => {

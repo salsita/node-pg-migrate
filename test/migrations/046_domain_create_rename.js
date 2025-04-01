@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createDomain('d', 'integer', {
     check: 'VALUE BETWEEN 0 AND 10',
   });

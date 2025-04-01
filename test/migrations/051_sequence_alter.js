@@ -1,5 +1,5 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.alterSequence('seq', { restart: 20 });
 };
 
-exports.down = () => null;
+export const down = () => null;

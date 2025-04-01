@@ -1,27 +1,28 @@
-/*
- A new Migration is instantiated for each migration file.
-
- It is responsible for storing the name of the file and knowing how to execute
- the up and down migrations defined in the file.
-
- */
-
+import { glob } from 'glob';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
-import MigrationBuilder from './migrationBuilder';
+import type { Logger } from './logger';
+import { MigrationBuilder } from './migrationBuilder';
 import type { ColumnDefinitions } from './operations/tables';
-import type {
-  Logger,
-  MigrationAction,
-  MigrationBuilderActions,
-  MigrationDirection,
-  RunnerOption,
-} from './types';
+import type { MigrationDirection, RunnerOption } from './runner';
+import type { MigrationBuilderActions } from './sqlMigration';
 import { getMigrationTableSchema } from './utils';
+
+/*
+ * A new Migration is instantiated for each migration file.
+ *
+ * It is responsible for storing the name of the file and knowing how to execute
+ * the up and down migrations defined in the file.
+ */
+
+export type MigrationAction = (
+  pgm: MigrationBuilder,
+  run?: () => void
+) => Promise<void> | void;
 
 export interface RunMigration {
   readonly path: string;
@@ -29,10 +30,13 @@ export interface RunMigration {
   readonly timestamp: number;
 }
 
-export enum FilenameFormat {
-  timestamp = 'timestamp',
-  utc = 'utc',
-}
+export const FilenameFormat = Object.freeze({
+  timestamp: 'timestamp',
+  utc: 'utc',
+});
+
+export type FilenameFormat =
+  (typeof FilenameFormat)[keyof typeof FilenameFormat];
 
 export interface CreateOptionsTemplate {
   templateFileName: string;
@@ -44,24 +48,124 @@ export interface CreateOptionsDefault {
 }
 
 export type CreateOptions = {
-  filenameFormat?: FilenameFormat | `${FilenameFormat}`;
+  filenameFormat?: FilenameFormat;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
 
-export async function loadMigrationFiles(
-  dir: string,
-  ignorePattern?: string
+function localeCompareStringsNumerically(a: string, b: string): number {
+  return a.localeCompare(b, undefined, {
+    usage: 'sort',
+    numeric: true,
+    sensitivity: 'variant',
+    ignorePunctuation: true,
+  });
+}
+
+function compareFileNamesByTimestamp(
+  a: string,
+  b: string,
+  logger?: Logger
+): number {
+  const aTimestamp = getNumericPrefix(a, logger);
+  const bTimestamp = getNumericPrefix(b, logger);
+
+  return aTimestamp - bTimestamp;
+}
+
+interface LoadMigrationFilesOptions {
+  /**
+   * Regex pattern for file names to ignore (ignores files starting with `.` by default).
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `isGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns
+   */
+  ignorePattern?: string | string[];
+  /**
+   * Use [glob](https://www.npmjs.com/package/glob) to find migration files.
+   * This will use `dir` _and_ `options.ignorePattern` to glob-search for migration files.
+   *
+   * @default: false
+   */
+  useGlob?: boolean;
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
+  logger?: Logger;
+}
+
+/**
+ * Reads files from `dir`, sorts them and returns an array of their absolute paths.
+ * When not using globs, files are sorted by their numeric prefix values first. 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
+ * Glob matches are sorted via String.localeCompare with ignored punctuation.
+ *
+ * @param dir The directory containing your migration files. This path is resolved from `cwd()`.
+ * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+ * an array of glob patterns and set `options.useGlob = true`
+ *
+ * Note: enabling glob will read both, `dir` _and_ `options.ignorePattern` as glob patterns
+ * @param options
+ * @returns Array of absolute paths
+ */
+export async function getMigrationFilePaths(
+  /**
+   * The directory containing your migration files. This path is resolved from `cwd()`.
+   * Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or
+   * an array of glob patterns and set `options.useGlob = true`
+   *
+   * Note: enabling glob will read both, `dir` _and_ `options.ignorePattern` as glob patterns
+   */
+  dir: string | string[],
+  options: LoadMigrationFilesOptions = {}
 ): Promise<string[]> {
+  const { ignorePattern, useGlob = false, logger } = options;
+  if (useGlob) {
+    /**
+     * By default, a `**` in a pattern will follow 1 symbolic link if
+     * it is not the first item in the pattern, or none if it is the
+     * first item in the pattern, following the same behavior as Bash.
+     *
+     * Only want files, no dirs.
+     */
+    const globMatches = await glob(dir, {
+      ignore: ignorePattern,
+      nodir: true,
+      withFileTypes: true,
+    });
+
+    return globMatches
+      .sort(
+        (a, b) =>
+          compareFileNamesByTimestamp(a.name, b.name, logger) ||
+          localeCompareStringsNumerically(a.name, b.name)
+      )
+      .map((pathScurry) => pathScurry.fullpath());
+  }
+
+  if (Array.isArray(dir) || Array.isArray(ignorePattern)) {
+    throw new TypeError(
+      'Options "dir" and "ignorePattern" can only be arrays when "useGlob" is true'
+    );
+  }
+
+  const ignoreRegexp = new RegExp(
+    ignorePattern?.length ? `^${ignorePattern}$` : '^\\..*'
+  );
+
   const dirContent = await readdir(`${dir}/`, { withFileTypes: true });
-  const files = dirContent
-    .map((file) => (file.isFile() || file.isSymbolicLink() ? file.name : null))
-    .filter((file): file is string => Boolean(file))
-    .sort();
-  const filter = new RegExp(`^(${ignorePattern})$`);
-  return ignorePattern === undefined
-    ? files
-    : files.filter((i) => !filter.test(i));
+  return dirContent
+    .filter(
+      (dirent) =>
+        (dirent.isFile() || dirent.isSymbolicLink()) &&
+        !ignoreRegexp.test(dirent.name)
+    )
+    .sort(
+      (a, b) =>
+        compareFileNamesByTimestamp(a.name, b.name, logger) ||
+        localeCompareStringsNumerically(a.name, b.name)
+    )
+    .map((dirent) => resolve(dir, dirent.name));
 }
 
 function getSuffixFromFileName(fileName: string): string {
@@ -73,7 +177,7 @@ async function getLastSuffix(
   ignorePattern?: string
 ): Promise<string | undefined> {
   try {
-    const files = await loadMigrationFiles(dir, ignorePattern);
+    const files = await getMigrationFilePaths(dir, { ignorePattern });
     return files.length > 0
       ? getSuffixFromFileName(files[files.length - 1])
       : undefined;
@@ -82,7 +186,17 @@ async function getLastSuffix(
   }
 }
 
-export function getTimestamp(logger: Logger, filename: string): number {
+/**
+ * extracts numeric value from everything in `filename` before `SEPARATOR`.
+ * 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
+ * @param filename filename to extract the prefix from
+ * @param logger Redirect messages to this logger object, rather than `console`.
+ * @returns numeric value of the filename prefix (everything before `SEPARATOR`).
+ */
+export function getNumericPrefix(
+  filename: string,
+  logger: Logger = console
+): number {
   const prefix = filename.split(SEPARATOR)[0];
   if (prefix && /^\d+$/.test(prefix)) {
     if (prefix.length === 13) {
@@ -138,8 +252,10 @@ export class Migration implements RunMigration {
     const templateFileName =
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
-        : resolve(
-            join('node_modules', 'node-pg-migrate', 'templates'),
+        : join(
+            import.meta.dirname,
+            '..',
+            'templates',
             `migration-template.${await resolveSuffix(directory, options)}`
           );
     const suffix = getSuffixFromFileName(templateFileName);
@@ -148,7 +264,7 @@ export class Migration implements RunMigration {
     const newFile = join(directory, `${time}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       createReadStream(templateFileName)
         .pipe(createWriteStream(newFile))
         .on('close', resolve)
@@ -187,7 +303,7 @@ export class Migration implements RunMigration {
     this.db = db;
     this.path = migrationPath;
     this.name = basename(migrationPath, extname(migrationPath));
-    this.timestamp = getTimestamp(logger, this.name);
+    this.timestamp = getNumericPrefix(this.name, logger);
     this.up = up;
     this.down = down;
     this.options = options;

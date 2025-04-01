@@ -1,4 +1,4 @@
-exports.up = async (pgm) => {
+export const up = async (pgm) => {
   const [{ sum }] = await pgm.db.select(
     'SELECT ROW(1,2)::complex + ROW(3,4)::complex AS sum;'
   );
@@ -7,4 +7,4 @@ exports.up = async (pgm) => {
   }
 };
 
-exports.down = () => null;
+export const down = () => null;

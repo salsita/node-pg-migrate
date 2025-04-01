@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import {
   applyTypeAdapters,
   escapeValue,
@@ -24,12 +24,8 @@ export interface AlterColumnOptions {
 
   comment?: string | null;
 
-  /**
-   * @deprecated use sequenceGenerated
-   */
-  generated?: null | false | SequenceGeneratedOptions;
-
   sequenceGenerated?: null | false | SequenceGeneratedOptions;
+  expressionGenerated?: null | string;
 }
 
 export type AlterColumn = (
@@ -48,12 +44,10 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       notNull,
       allowNull,
       comment,
+      expressionGenerated,
     } = options;
 
-    const sequenceGenerated =
-      options.sequenceGenerated === undefined
-        ? options.generated
-        : options.sequenceGenerated;
+    const sequenceGenerated = options.sequenceGenerated;
 
     const actions: string[] = [];
 
@@ -89,6 +83,16 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
         );
       } else {
         actions.push('DROP IDENTITY');
+      }
+    }
+
+    if (expressionGenerated !== undefined) {
+      if (typeof expressionGenerated === 'string') {
+        actions.push(`SET EXPRESSION AS (${expressionGenerated})`);
+      }
+
+      if (expressionGenerated === null) {
+        actions.push('DROP EXPRESSION');
       }
     }
 

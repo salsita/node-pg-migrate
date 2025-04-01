@@ -7,28 +7,25 @@ describe('runner', () => {
     expect(runner).toBeTypeOf('function');
   });
 
-  it('should throw an error when not options passed', () => {
-    expect(
+  it('should throw an error when not options passed', async () => {
+    await expect(
       // @ts-expect-error: runner needs options
       runner()
     ).rejects.toThrow(
-      new Error(
+      new TypeError(
         "Cannot destructure property 'log' of 'options' as it is undefined."
       )
     );
   });
 
-  it.todo(
-    'should throw an error when no databaseUrl or dbClient passed',
-    () => {
-      expect(
-        // @ts-expect-error: runner needs options
-        runner({ log: console.log })
-      ).rejects.toThrow(
-        new Error('You must provide either a databaseUrl or a dbClient')
-      );
-    }
-  );
+  it('should throw an error when no databaseUrl or dbClient passed', async () => {
+    await expect(
+      // @ts-expect-error: runner needs options
+      runner({ log: console.log })
+    ).rejects.toThrow(
+      new Error('You must provide either a databaseUrl or a dbClient')
+    );
+  });
 
   it('should execute a basic up migration', async () => {
     const executedMigrations: Array<{

@@ -1,4 +1,4 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import { toArray } from '../../utils';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
@@ -14,11 +14,6 @@ export interface CreateIndexOptions extends IfNotExistsOption {
   where?: string;
 
   concurrently?: boolean;
-
-  /**
-   * @deprecated should be parameter of IndexColumn
-   */
-  opclass?: Name;
 
   method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
 
@@ -36,7 +31,6 @@ export type CreateIndex = Reversible<CreateIndexFn>;
 export function createIndex(mOptions: MigrationOptions): CreateIndex {
   const _create: CreateIndex = (tableName, rawColumns, options = {}) => {
     const {
-      opclass,
       unique = false,
       concurrently = false,
       ifNotExists = false,
@@ -57,23 +51,6 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     options.method -  [ btree | hash | gist | spgist | gin ]
     */
     const columns = toArray(rawColumns);
-    if (opclass) {
-      mOptions.logger.warn(
-        "Using opclass is deprecated. You should use it as part of column definition e.g. pgm.createIndex('table', [['column', 'opclass', 'ASC']])"
-      );
-      const lastIndex = columns.length - 1;
-      const lastColumn = columns[lastIndex];
-
-      if (typeof lastColumn === 'string') {
-        columns[lastIndex] = { name: lastColumn, opclass };
-      } else if (lastColumn.opclass) {
-        throw new Error(
-          "There is already defined opclass on column, can't override it with global one"
-        );
-      } else {
-        columns[lastIndex] = { ...lastColumn, opclass };
-      }
-    }
 
     const indexName = generateIndexName(
       typeof tableName === 'object' ? tableName.name : tableName,

@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.createType('complex', {
     r: 'integer',
     i: 'integer',

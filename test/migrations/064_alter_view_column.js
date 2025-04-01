@@ -1,7 +1,7 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.alterViewColumn('v', 'str', { default: 'some default value' });
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.alterViewColumn('v', 'str', { default: null });
 };

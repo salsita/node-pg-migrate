@@ -1,8 +1,9 @@
-import type { MigrationOptions } from '../../types';
+import type { MigrationOptions } from '../../migrationOptions';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropOperatorFamilyOptions } from './dropOperatorFamily';
 import { dropOperatorFamily } from './dropOperatorFamily';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CreateOperatorFamilyOptions {}
 
 export type CreateOperatorFamilyFn = (

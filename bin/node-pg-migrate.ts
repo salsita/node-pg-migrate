@@ -4,11 +4,12 @@ import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
-import { default as migrationRunner, Migration } from 'node-pg-migrate';
+import { Migration, runner as migrationRunner } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
+import { register } from 'node:module';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
+import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 // This needs to be imported with .js extension, otherwise it will fail in esm
@@ -22,20 +23,27 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const crossRequire = createRequire(resolve('_'));
-
-function tryRequire<TModule = unknown>(moduleName: string): TModule | null {
+/**
+ * Try to import a module and return null if it doesn't exist.
+ *
+ * @param moduleName The name of the module to import.
+ */
+async function tryImport<TModule = unknown>(
+  moduleName: string
+): Promise<TModule | null> {
   try {
-    return crossRequire(moduleName);
+    const module = await import(moduleName);
+    return module.default || module;
   } catch (error) {
     if (
-      // @ts-expect-error: TS doesn't know about code property
-      error?.code !== 'MODULE_NOT_FOUND'
+      error instanceof Error &&
+      'code' in error &&
+      error.code === 'ERR_MODULE_NOT_FOUND'
     ) {
-      throw error;
+      return null;
     }
 
-    return null;
+    throw error;
   }
 }
 
@@ -43,6 +51,7 @@ const schemaArg = 'schema';
 const createSchemaArg = 'create-schema';
 const databaseUrlVarArg = 'database-url-var';
 const migrationsDirArg = 'migrations-dir';
+const useGlobArg = 'use-glob';
 const migrationsTableArg = 'migrations-table';
 const migrationsSchemaArg = 'migrations-schema';
 const createMigrationsSchemaArg = 'create-migrations-schema';
@@ -60,6 +69,8 @@ const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
 const decamelizeArg = 'decamelize';
 const tsconfigArg = 'tsconfig';
+const tsNodeArg = 'ts-node';
+const tsxArg = 'tsx';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
@@ -77,8 +88,13 @@ const parser = yargs(process.argv.slice(2))
     [migrationsDirArg]: {
       alias: 'm',
       defaultDescription: '"migrations"',
-      describe: 'The directory containing your migration files',
+      describe: `The directory name or glob pattern containing your migration files (resolved from cwd()). When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
+    },
+    [useGlobArg]: {
+      defaultDescription: 'false',
+      describe: `Use glob to find migration files. This will use "${migrationsDirArg}" _and_ "${ignorePatternArg}" to glob-search for migration files.`,
+      type: 'boolean',
     },
     [migrationsTableArg]: {
       alias: 't',
@@ -121,7 +137,7 @@ const parser = yargs(process.argv.slice(2))
     },
     [ignorePatternArg]: {
       defaultDescription: '"\\..*"',
-      describe: 'Regex pattern for file names to ignore',
+      describe: `Regex or glob pattern for migration files to be ignored. When using glob pattern, "${useGlobArg}" must be used as well`,
       type: 'string',
     },
     [decamelizeArg]: {
@@ -161,6 +177,16 @@ const parser = yargs(process.argv.slice(2))
     [tsconfigArg]: {
       describe: 'Path to tsconfig.json file',
       type: 'string',
+    },
+    [tsNodeArg]: {
+      default: true,
+      describe: 'Use ts-node for typescript files',
+      type: 'boolean',
+    },
+    [tsxArg]: {
+      default: false,
+      describe: 'Use tsx for typescript files',
+      type: 'boolean',
     },
     [envPathArg]: {
       describe: 'Path to the .env file that should be used for configuration',
@@ -224,18 +250,19 @@ if (envPath) {
   dotenvConfig.path = envPath;
 }
 
-const dotenv = tryRequire<typeof import('dotenv')>('dotenv');
+const dotenv = await tryImport<typeof import('dotenv')>('dotenv');
 if (dotenv) {
   // Load config from ".env" file
   const myEnv = dotenv.config(dotenvConfig);
   const dotenvExpand =
-    tryRequire<typeof import('dotenv-expand')>('dotenv-expand');
+    await tryImport<typeof import('dotenv-expand')>('dotenv-expand');
   if (dotenvExpand && dotenvExpand.expand) {
     dotenvExpand.expand(myEnv);
   }
 }
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
+let USE_GLOB = argv[useGlobArg];
 let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
   process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
@@ -247,19 +274,21 @@ let MIGRATIONS_TABLE = argv[migrationsTableArg];
 let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
   migrationFileLanguageArg
 ] as 'js' | 'ts' | 'sql' | undefined;
-let MIGRATIONS_FILENAME_FORMAT: `${FilenameFormat}` | undefined = argv[
+let MIGRATIONS_FILENAME_FORMAT: FilenameFormat | undefined = argv[
   migrationFilenameFormatArg
-] as `${FilenameFormat}` | undefined;
+] as FilenameFormat | undefined;
 let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
 let tsconfigPath = argv[tsconfigArg];
+let useTsNode = argv[tsNodeArg];
+let useTsx = argv[tsxArg];
 
-function readTsconfig() {
+async function readTsconfig(): Promise<void> {
   if (tsconfigPath) {
     let tsconfig;
-    const json5 = tryRequire<typeof import('json5')>('json5');
+    const json5 = await tryImport<typeof import('json5')>('json5');
 
     try {
       const config = readFileSync(resolve(cwd(), tsconfigPath), {
@@ -283,18 +312,24 @@ function readTsconfig() {
       console.error("Can't load tsconfig.json:", error);
     }
 
-    const tsnode = tryRequire<typeof import('ts-node')>('ts-node');
-    if (!tsnode) {
-      console.error("For TypeScript support, please install 'ts-node' module");
-    }
-
-    if (tsconfig && tsnode) {
-      tsnode.register(tsconfig);
-      if (!MIGRATIONS_FILE_LANGUAGE) {
-        MIGRATIONS_FILE_LANGUAGE = 'ts';
+    if (useTsx) {
+      process.env.TSX_TSCONFIG_PATH = tsconfigPath;
+    } else if (useTsNode) {
+      const tsnode = await tryImport<typeof import('ts-node')>('ts-node');
+      if (!tsnode) {
+        console.error(
+          "For TypeScript support, please install 'ts-node' module"
+        );
       }
-    } else {
-      process.exit(1);
+
+      if (tsconfig && tsnode) {
+        register('ts-node/esm', pathToFileURL('./'));
+        if (!MIGRATIONS_FILE_LANGUAGE) {
+          MIGRATIONS_FILE_LANGUAGE = 'ts';
+        }
+      } else {
+        process.exit(1);
+      }
     }
   }
 }
@@ -326,18 +361,10 @@ function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
   return (
     typeof val === 'object' &&
     val !== null &&
-    (('host' in val &&
-      // @ts-expect-error: this is a TS 4.8 bug
-      !!val.host) ||
-      ('port' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.port) ||
-      ('name' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.name) ||
-      ('database' in val &&
-        // @ts-expect-error: this is a TS 4.8 bug
-        !!val.database))
+    (('host' in val && !!val.host) ||
+      ('port' in val && !!val.port) ||
+      ('name' in val && !!val.name) ||
+      ('database' in val && !!val.database))
   );
 }
 
@@ -351,6 +378,7 @@ function readJson(json: unknown): void {
         Array.isArray(val) || (isString(val) && val.length > 0)
     );
     CREATE_SCHEMA = applyIf(CREATE_SCHEMA, createSchemaArg, json, isBoolean);
+    USE_GLOB = applyIf(USE_GLOB, useGlobArg, json, isBoolean);
     MIGRATIONS_DIR = applyIf(MIGRATIONS_DIR, migrationsDirArg, json, isString);
     MIGRATIONS_SCHEMA = applyIf(
       MIGRATIONS_SCHEMA,
@@ -381,7 +409,7 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILENAME_FORMAT,
       migrationFilenameFormatArg,
       json,
-      (val): val is `${FilenameFormat}` => val === 'timestamp' || val === 'utc'
+      (val): val is FilenameFormat => val === 'timestamp' || val === 'utc'
     );
     TEMPLATE_FILE_NAME = applyIf(
       TEMPLATE_FILE_NAME,
@@ -401,10 +429,10 @@ function readJson(json: unknown): void {
         typeof val === 'string' || typeof val === 'object'
     );
     tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
+    useTsNode = applyIf(useTsNode, tsNodeArg, json, isBoolean);
+    useTsx = applyIf(useTsx, tsxArg, json, isBoolean);
 
-    // @ts-expect-error: this is a TS 4.8 bug
     if ('url' in json && json.url) {
-      // @ts-expect-error: this is a TS 4.8 bug
       DB_CONNECTION ??= json.url;
     } else if (isClientConfig(json)) {
       DB_CONNECTION ??= {
@@ -424,7 +452,7 @@ function readJson(json: unknown): void {
 // Load config (and suppress the no-config-warning)
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
-const config = tryRequire<typeof import('config')>('config');
+const config = await tryImport<typeof import('config')>('config');
 if (config && config.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
@@ -434,21 +462,31 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = crossRequire(resolve(configFileName));
+  const jsonConfig = await import(`file://${resolve(configFileName)}`, {
+    with: { type: 'json' },
+  });
   readJson(jsonConfig);
 }
 
-readTsconfig();
+await readTsconfig();
+
+if (useTsx) {
+  const tsx =
+    await tryImport<typeof import('tsx/dist/esm/api/index.mjs')>('tsx/esm');
+  if (!tsx) {
+    console.error("For TSX support, please install 'tsx' module");
+  }
+}
 
 const action = argv._.shift();
 
 // defaults
 MIGRATIONS_DIR ??= join(cwd(), 'migrations');
+USE_GLOB ??= false;
 MIGRATIONS_FILE_LANGUAGE ??= 'js';
 MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
 MIGRATIONS_TABLE ??= 'pgmigrations';
 SCHEMA ??= ['public'];
-IGNORE_PATTERN ??= '\\..*';
 CHECK_ORDER ??= true;
 VERBOSE ??= true;
 
@@ -547,6 +585,7 @@ if (action === 'create') {
     return {
       dryRun,
       databaseUrl: {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
           ? {
@@ -558,9 +597,10 @@ if (action === 'create') {
               },
             }
           : undefined),
-      },
+      } as ClientConfig,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
+      useGlob: USE_GLOB,
       ignorePattern: IGNORE_PATTERN,
       schema: SCHEMA,
       createSchema: CREATE_SCHEMA,

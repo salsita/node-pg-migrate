@@ -1,8 +1,17 @@
 import { readFile } from 'node:fs/promises';
-import type { MigrationBuilderActions } from './types';
+import type { MigrationAction } from './migration';
+import type { ColumnDefinitions } from './operations/tables';
 
 function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
   return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
+}
+
+export interface MigrationBuilderActions {
+  up?: MigrationAction | false;
+
+  down?: MigrationAction | false;
+
+  shorthands?: ColumnDefinitions;
 }
 
 export function getActions(content: string): MigrationBuilderActions {
@@ -42,10 +51,10 @@ export function getActions(content: string): MigrationBuilderActions {
   };
 }
 
-async function sqlMigration(sqlPath: string): Promise<MigrationBuilderActions> {
+export async function sqlMigration(
+  sqlPath: string
+): Promise<MigrationBuilderActions> {
   const content = await readFile(sqlPath, 'utf8');
 
   return getActions(content);
 }
-
-export default sqlMigration;

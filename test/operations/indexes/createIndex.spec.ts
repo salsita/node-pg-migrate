@@ -47,18 +47,6 @@ describe('operations', () => {
         );
       });
 
-      it('should throw when passing opclass as last column', () => {
-        expect(() =>
-          createIndexFn('films', [{ name: 'title', opclass: 'op' }], {
-            opclass: 'op',
-          })
-        ).toThrow(
-          new Error(
-            "There is already defined opclass on column, can't override it with global one"
-          )
-        );
-      });
-
       it.each([
         // should check schema not included in index name
         [
@@ -72,38 +60,6 @@ describe('operations', () => {
           options2,
           [{ schema: 'mySchema', name: 'myTable' }, ['colA', 'colB']],
           'CREATE INDEX "my_table_col_a_col_b_index" ON "my_schema"."my_table" ("col_a", "col_b");',
-        ],
-        // TODO @Shinigami92 2024-04-02: This is deprecated
-        // should add opclass option (deprecated)
-        [
-          'should add opclass option (deprecated) 1',
-          options1,
-          [
-            'xTable',
-            ['yName'],
-            {
-              method: 'gist',
-              name: 'zIndex',
-              opclass: 'someOpclass',
-              where: 'some condition',
-            },
-          ],
-          'CREATE INDEX "zIndex" ON "xTable" USING gist ("yName" "someOpclass") WHERE some condition;',
-        ],
-        [
-          'should add opclass option (deprecated) 2',
-          options2,
-          [
-            'xTable',
-            ['yName'],
-            {
-              method: 'gist',
-              name: 'zIndex',
-              opclass: 'someOpclass',
-              where: 'some condition',
-            },
-          ],
-          'CREATE INDEX "z_index" ON "x_table" USING gist ("y_name" "some_opclass") WHERE some condition;',
         ],
         // should add opclass option
         [

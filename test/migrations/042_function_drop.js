@@ -1,11 +1,11 @@
-const create = require('./039_function_create');
-const rename = require('./040_function_rename');
+import * as create from './039_function_create.js';
+import * as rename from './040_function_rename.js';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.dropFunction('add', create.params);
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   create.up(pgm);
   rename.up(pgm);
 };
