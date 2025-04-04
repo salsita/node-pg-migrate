@@ -1,0 +1,4 @@
+Error executing:
+DROP TABLE "tmp"
+error: table "tmp" does not exist
+

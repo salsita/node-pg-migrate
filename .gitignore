@@ -95,6 +95,9 @@ REVISION
 *DONOTVERSION*
 .history
 
+# Snapshot test files
+!test/__snapshots__/**/*.log
+
 # Unwanted package managers
 .yarn/
 package-lock.json
