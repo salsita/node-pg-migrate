@@ -1,0 +1,642 @@
+> Migrating files:
+> - 093_alter_column_expression
+> - 092_partition
+> - 091_function_set
+> - 090_create_cast
+> - 089_grant_reverse
+> - 088_revoke_test
+> - 087_revoke_tables_schemas_roles
+> - 086_grant_test
+> - 085_grant_tables_schemas_roles
+> - 084_drop_unique_index
+> - 083_alter_column_sequence
+> - 082_view_options
+> - 081_temporary_table
+> - 080_create_table_generated_column_take_2
+> - 079_drop_index_schema
+> - 078_add_column_if_not_exists
+> - 077_create_table_generated_column
+> - 076_create_table_like
+> - 075_drop_index_schema
+> - 074_rename_type_value
+> - 073_alter_column_comment_test
+> - 072_alter_column_comment
+> - 071_constraint_name_for_foreign_key
+> - 070_extension_schema
+> - 069_comments
+> - 068_extension
+> - 067_materialized_view_alter
+> - 066_materialized_view_test
+> - 065_materialized_view
+> - 064_alter_view_column
+> - 063_view_test
+> - 062_view
+> - 061_column_comment_test
+> - 060_column_comment
+> - 059_policy_drop
+> - 058_policy_test
+> - 057_policy_create
+> - 056_operator_drop
+> - 055_operator_test
+> - 054_operator_create
+> - 053_sequence_drop
+> - 052_sequence_alter_test
+> - 051_sequence_alter
+> - 050_sequence_test
+> - 049_sequence_create_rename
+> - 048_domain_drop
+> - 047_domain_check
+> - 046_domain_create_rename
+> - 045_trigger_drop
+> - 044_trigger_test
+> - 043_trigger_create_rename
+> - 042_function_drop
+> - 041_function_test
+> - 040_function_rename
+> - 039_function_create
+> - 038_role_drop
+> - 037_role_rename
+> - 036_role_alter
+> - 035_role_add
+> - 034_drop_type_test
+> - 033_drop_type
+> - 032_drop_type_attribute_test
+> - 031_drop_type_attribute
+> - 030_rename_type_attribute_test
+> - 029_rename_type_attribute
+> - 028_add_type_value_test
+> - 027_add_type_value
+> - 026_set_type_attribute_test
+> - 025_set_type_attribute
+> - 024_add_type_attribute_test
+> - 023_add_type_attribute
+> - 022_add_type_test
+> - 021_add_type
+> - 020_drop_index
+> - 019_add_index
+> - 018_drop_constraint_test
+> - 017_drop_constraint
+> - 016_rename_constraint
+> - 015_add_constraint_test
+> - 014_add_constraint
+> - 013_column_alter_test
+> - 012_column_alter
+> - 011_column_rename
+> - 010_column_test
+> - 009_column
+> - 008_column_drop
+> - 007_table_rename_test
+> - 006_table_rename
+> - 005_table_test
+> - 004_table
+> - 003_promise
+> - 002_callback
+> - 001_noop
+### MIGRATION 093_alter_column_expression (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='093_alter_column_expression';
+
+
+### MIGRATION 092_partition (DOWN) ###
+DROP TABLE "t_partition";
+DELETE FROM "public"."pgmigrations" WHERE name='092_partition';
+
+
+### MIGRATION 091_function_set (DOWN) ###
+DROP FUNCTION "check_password"("uname" text, "pass" text);
+DELETE FROM "public"."pgmigrations" WHERE name='091_function_set';
+
+
+### MIGRATION 090_create_cast (DOWN) ###
+DROP CAST (text AS integer);
+DROP FUNCTION "text_to_integer"(text);
+DROP CAST (varchar AS integer);
+DELETE FROM "public"."pgmigrations" WHERE name='090_create_cast';
+
+
+### MIGRATION 089_grant_reverse (DOWN) ###
+REVOKE "test_grant_reverse_bob1" FROM "test_grant_reverse_bob2";
+REVOKE USAGE ON SCHEMA "test_grant_reverse_schema" FROM "test_grant_reverse_bob1";
+DROP SCHEMA "test_grant_reverse_schema";
+REVOKE SELECT, UPDATE ON "test_grant_reverse_table" FROM "test_grant_reverse_bob1";
+DROP ROLE "test_grant_reverse_bob2";
+DROP ROLE "test_grant_reverse_bob1";
+DROP TABLE "test_grant_reverse_table";
+DELETE FROM "public"."pgmigrations" WHERE name='089_grant_reverse';
+
+
+### MIGRATION 088_revoke_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='088_revoke_test';
+
+
+### MIGRATION 087_revoke_tables_schemas_roles (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='087_revoke_tables_schemas_roles';
+
+
+### MIGRATION 086_grant_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='086_grant_test';
+
+
+### MIGRATION 085_grant_tables_schemas_roles (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='085_grant_tables_schemas_roles';
+
+
+### MIGRATION 084_drop_unique_index (DOWN) ###
+DROP INDEX "t_uniq_index_name_unique_index";
+DROP TABLE "t_uniq_index";
+DELETE FROM "public"."pgmigrations" WHERE name='084_drop_unique_index';
+
+
+### MIGRATION 083_alter_column_sequence (DOWN) ###
+DROP TABLE "t083";
+DELETE FROM "public"."pgmigrations" WHERE name='083_alter_column_sequence';
+
+
+### MIGRATION 082_view_options (DOWN) ###
+DROP VIEW "vo";
+DROP TABLE "tvo";
+DELETE FROM "public"."pgmigrations" WHERE name='082_view_options';
+
+
+### MIGRATION 081_temporary_table (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='081_temporary_table';
+
+
+### MIGRATION 080_create_table_generated_column_take_2 (DOWN) ###
+DROP TABLE "t_sequenceGenerated";
+DROP TABLE "t_expressionGenerated";
+DELETE FROM "public"."pgmigrations" WHERE name='080_create_table_generated_column_take_2';
+
+
+### MIGRATION 079_drop_index_schema (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='079_drop_index_schema';
+
+
+### MIGRATION 078_add_column_if_not_exists (DOWN) ###
+ALTER TABLE "t1"
+  DROP "string";
+DELETE FROM "public"."pgmigrations" WHERE name='078_add_column_if_not_exists';
+
+
+### MIGRATION 077_create_table_generated_column (DOWN) ###
+DROP TABLE "t_generated";
+DELETE FROM "public"."pgmigrations" WHERE name='077_create_table_generated_column';
+
+
+### MIGRATION 076_create_table_like (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='076_create_table_like';
+
+
+### MIGRATION 075_drop_index_schema (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='075_drop_index_schema';
+
+
+### MIGRATION 074_rename_type_value (DOWN) ###
+DROP TYPE "list2";
+DELETE FROM "public"."pgmigrations" WHERE name='074_rename_type_value';
+
+
+### MIGRATION 073_alter_column_comment_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='073_alter_column_comment_test';
+
+
+### MIGRATION 072_alter_column_comment (DOWN) ###
+DROP TABLE "comment_schema"."t";
+DROP SCHEMA "comment_schema";
+DELETE FROM "public"."pgmigrations" WHERE name='072_alter_column_comment';
+
+
+### MIGRATION 071_constraint_name_for_foreign_key (DOWN) ###
+ALTER TABLE "ft2" RENAME CONSTRAINT "better_constraint_name" TO "my_constraint_name";
+DROP TABLE "ft2";
+DROP TABLE "ft1";
+DELETE FROM "public"."pgmigrations" WHERE name='071_constraint_name_for_foreign_key';
+
+
+### MIGRATION 070_extension_schema (DOWN) ###
+DROP EXTENSION "ltree";
+DROP SCHEMA "extension-test";
+DELETE FROM "public"."pgmigrations" WHERE name='070_extension_schema';
+
+
+### MIGRATION 069_comments (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='069_comments';
+
+
+### MIGRATION 068_extension (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='068_extension';
+
+
+### MIGRATION 067_materialized_view_alter (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='067_materialized_view_alter';
+
+
+### MIGRATION 066_materialized_view_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='066_materialized_view_test';
+
+
+### MIGRATION 065_materialized_view (DOWN) ###
+REFRESH MATERIALIZED VIEW "mv";
+ALTER MATERIALIZED VIEW "mv" RENAME COLUMN "str" TO "strx";
+ALTER MATERIALIZED VIEW "mv" RENAME TO "mvx";
+DROP MATERIALIZED VIEW "mvx";
+DROP TABLE "tmv";
+DELETE FROM "public"."pgmigrations" WHERE name='065_materialized_view';
+
+
+### MIGRATION 064_alter_view_column (DOWN) ###
+ALTER VIEW "v" ALTER COLUMN "str" DROP DEFAULT;
+DELETE FROM "public"."pgmigrations" WHERE name='064_alter_view_column';
+
+
+### MIGRATION 063_view_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='063_view_test';
+
+
+### MIGRATION 062_view (DOWN) ###
+DROP VIEW "v";
+DROP TABLE "tv";
+DELETE FROM "public"."pgmigrations" WHERE name='062_view';
+
+
+### MIGRATION 061_column_comment_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='061_column_comment_test';
+
+
+### MIGRATION 060_column_comment (DOWN) ###
+DROP TABLE "test"."tcc";
+DROP SCHEMA "test";
+DELETE FROM "public"."pgmigrations" WHERE name='060_column_comment';
+
+
+### MIGRATION 059_policy_drop (DOWN) ###
+CREATE TABLE "tp" (
+  "user_name" varchar(20)
+);
+ALTER TABLE "tp"
+    enable ROW LEVEL SECURITY;
+CREATE ROLE "admin" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;
+CREATE ROLE "alice" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOREPLICATION;
+CREATE POLICY "p" ON "tp" FOR ALL TO admin USING (true) WITH CHECK (true);
+ALTER POLICY "p" ON "tp" RENAME TO "admin_policy";
+CREATE POLICY "user_select_policy" ON "tp" FOR SELECT TO PUBLIC USING (current_user = user_name);
+CREATE POLICY "user_update_policy" ON "tp" FOR UPDATE TO PUBLIC USING (current_user = user_name) WITH CHECK (current_user = user_name);
+GRANT USAGE ON SCHEMA "public" TO PUBLIC;
+GRANT ALL ON "tp" TO PUBLIC;
+DELETE FROM "public"."pgmigrations" WHERE name='059_policy_drop';
+
+
+### MIGRATION 058_policy_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='058_policy_test';
+
+
+### MIGRATION 057_policy_create (DOWN) ###
+DROP POLICY "admin_policy" ON "tp";
+DROP POLICY "user_select_policy" ON "tp";
+DROP POLICY "user_update_policy" ON "tp";
+DROP TABLE "tp";
+DROP ROLE "admin";
+DROP ROLE "alice";
+DELETE FROM "public"."pgmigrations" WHERE name='057_policy_create';
+
+
+### MIGRATION 056_operator_drop (DOWN) ###
+CREATE TYPE "complex" AS (
+"r" integer,
+"i" integer
+);
+CREATE FUNCTION "complex_add"(complex, complex)
+  RETURNS complex
+  AS $pga$
+BEGIN
+  return ROW($1.r + $2.r, $1.i + $2.i);
+END;
+  $pga$
+  VOLATILE
+  LANGUAGE plpgsql;
+CREATE OPERATOR + (PROCEDURE = "complex_add", LEFTARG = "complex", RIGHTARG = "complex", COMMUTATOR = +);
+DELETE FROM "public"."pgmigrations" WHERE name='056_operator_drop';
+
+
+### MIGRATION 055_operator_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='055_operator_test';
+
+
+### MIGRATION 054_operator_create (DOWN) ###
+DROP OPERATOR +("complex", "complex");
+DROP FUNCTION "complex_add"(complex, complex);
+DROP TYPE "complex";
+DELETE FROM "public"."pgmigrations" WHERE name='054_operator_create';
+
+
+### MIGRATION 053_sequence_drop (DOWN) ###
+CREATE SEQUENCE "s"
+  MINVALUE 10;
+ALTER SEQUENCE "s" RENAME TO "seq";
+CREATE TABLE "ts" (
+  "id" integer DEFAULT nextval('seq')
+);
+DELETE FROM "public"."pgmigrations" WHERE name='053_sequence_drop';
+
+
+### MIGRATION 052_sequence_alter_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='052_sequence_alter_test';
+
+
+### MIGRATION 051_sequence_alter (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='051_sequence_alter';
+
+
+### MIGRATION 050_sequence_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='050_sequence_test';
+
+
+### MIGRATION 049_sequence_create_rename (DOWN) ###
+DROP TABLE "ts";
+ALTER SEQUENCE "seq" RENAME TO "s";
+DROP SEQUENCE "s";
+DELETE FROM "public"."pgmigrations" WHERE name='049_sequence_create_rename';
+
+
+### MIGRATION 048_domain_drop (DOWN) ###
+CREATE DOMAIN "d" AS integer CHECK (VALUE BETWEEN 0 AND 10);
+ALTER DOMAIN "d" RENAME TO "dom";
+CREATE TABLE "td" (
+  "d" dom
+);
+DELETE FROM "public"."pgmigrations" WHERE name='048_domain_drop';
+
+
+### MIGRATION 047_domain_check (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='047_domain_check';
+
+
+### MIGRATION 046_domain_create_rename (DOWN) ###
+DROP TABLE "td";
+ALTER DOMAIN "dom" RENAME TO "d";
+DROP DOMAIN "d";
+DELETE FROM "public"."pgmigrations" WHERE name='046_domain_create_rename';
+
+
+### MIGRATION 045_trigger_drop (DOWN) ###
+CREATE TABLE "tt" (
+  "a" integer
+);
+CREATE FUNCTION "t"()
+  RETURNS trigger
+  AS $pga$
+BEGIN
+  NEW.a := NEW.a + 1;
+  return NEW;
+END;
+  $pga$
+  VOLATILE
+  LANGUAGE plpgsql;
+CREATE TRIGGER "t"
+  before insert ON "tt"
+  FOR EACH row
+  EXECUTE PROCEDURE "t"();
+ALTER TRIGGER "t" ON "tt" RENAME TO "trig";
+ALTER FUNCTION "t"() RENAME TO "trig";
+DELETE FROM "public"."pgmigrations" WHERE name='045_trigger_drop';
+
+
+### MIGRATION 044_trigger_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='044_trigger_test';
+
+
+### MIGRATION 043_trigger_create_rename (DOWN) ###
+ALTER FUNCTION "trig"() RENAME TO "t";
+ALTER TRIGGER "trig" ON "tt" RENAME TO "t";
+DROP TRIGGER "t" ON "tt";
+DROP FUNCTION "t"();
+DROP TABLE "tt";
+DELETE FROM "public"."pgmigrations" WHERE name='043_trigger_create_rename';
+
+
+### MIGRATION 042_function_drop (DOWN) ###
+CREATE FUNCTION "f"(integer, in "arg2" integer)
+  RETURNS integer
+  AS $pga$
+BEGIN
+  return $1 + arg2;
+END;
+  $pga$
+  VOLATILE
+  LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION "check_password"("uname" text, "pass" text)
+  RETURNS boolean
+  AS $pga$
+DECLARE passed BOOLEAN;
+BEGIN
+  SELECT (pwd = $2) INTO passed
+  FROM pwds
+  WHERE username = $1;
+  RETURN passed;
+END;
+$pga$
+  VOLATILE
+  LANGUAGE plpgsql
+  SECURITY DEFINER;
+ALTER FUNCTION "f"(integer, in "arg2" integer) RENAME TO "add";
+DELETE FROM "public"."pgmigrations" WHERE name='042_function_drop';
+
+
+### MIGRATION 041_function_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='041_function_test';
+
+
+### MIGRATION 040_function_rename (DOWN) ###
+ALTER FUNCTION "add"(integer, in "arg2" integer) RENAME TO "f";
+DELETE FROM "public"."pgmigrations" WHERE name='040_function_rename';
+
+
+### MIGRATION 039_function_create (DOWN) ###
+DROP FUNCTION "check_password"("uname" text, "pass" text);
+DROP FUNCTION "f"(integer, in "arg2" integer);
+DELETE FROM "public"."pgmigrations" WHERE name='039_function_create';
+
+
+### MIGRATION 038_role_drop (DOWN) ###
+CREATE ROLE "r" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD $pga$p$pga$;
+ALTER ROLE "r" RENAME TO "rx";
+DELETE FROM "public"."pgmigrations" WHERE name='038_role_drop';
+
+
+### MIGRATION 037_role_rename (DOWN) ###
+ALTER ROLE "rx" RENAME TO "r";
+DELETE FROM "public"."pgmigrations" WHERE name='037_role_rename';
+
+
+### MIGRATION 036_role_alter (DOWN) ###
+ALTER ROLE "r" WITH LOGIN;
+DELETE FROM "public"."pgmigrations" WHERE name='036_role_alter';
+
+
+### MIGRATION 035_role_add (DOWN) ###
+DROP ROLE "r";
+DELETE FROM "public"."pgmigrations" WHERE name='035_role_add';
+
+
+### MIGRATION 034_drop_type_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='034_drop_type_test';
+
+
+### MIGRATION 033_drop_type (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='033_drop_type';
+
+
+### MIGRATION 032_drop_type_attribute_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='032_drop_type_attribute_test';
+
+
+### MIGRATION 031_drop_type_attribute (DOWN) ###
+ALTER TYPE "obj" ADD ATTRIBUTE "str" text;
+DELETE FROM "public"."pgmigrations" WHERE name='031_drop_type_attribute';
+
+
+### MIGRATION 030_rename_type_attribute_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='030_rename_type_attribute_test';
+
+
+### MIGRATION 029_rename_type_attribute (DOWN) ###
+ALTER TYPE "obj" RENAME ATTRIBUTE "str" TO "string";
+DELETE FROM "public"."pgmigrations" WHERE name='029_rename_type_attribute';
+
+
+### MIGRATION 028_add_type_value_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='028_add_type_value_test';
+
+
+### MIGRATION 027_add_type_value (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='027_add_type_value';
+
+
+### MIGRATION 026_set_type_attribute_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='026_set_type_attribute_test';
+
+
+### MIGRATION 025_set_type_attribute (DOWN) ###
+ALTER TYPE "obj" ALTER ATTRIBUTE "id" SET DATA TYPE integer;
+DELETE FROM "public"."pgmigrations" WHERE name='025_set_type_attribute';
+
+
+### MIGRATION 024_add_type_attribute_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='024_add_type_attribute_test';
+
+
+### MIGRATION 023_add_type_attribute (DOWN) ###
+ALTER TYPE "obj" DROP ATTRIBUTE "string";
+DELETE FROM "public"."pgmigrations" WHERE name='023_add_type_attribute';
+
+
+### MIGRATION 022_add_type_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='022_add_type_test';
+
+
+### MIGRATION 021_add_type (DOWN) ###
+DROP TYPE "obj";
+DROP TYPE "list";
+DELETE FROM "public"."pgmigrations" WHERE name='021_add_type';
+
+
+### MIGRATION 020_drop_index (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='020_drop_index';
+
+
+### MIGRATION 019_add_index (DOWN) ###
+DROP INDEX "t1_nmbr_unique_index";
+DELETE FROM "public"."pgmigrations" WHERE name='019_add_index';
+
+
+### MIGRATION 018_drop_constraint_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='018_drop_constraint_test';
+
+
+### MIGRATION 017_drop_constraint (DOWN) ###
+ALTER TABLE "t1"
+  ADD CONSTRAINT "chck_nmbr_new" CHECK (true);
+DELETE FROM "public"."pgmigrations" WHERE name='017_drop_constraint';
+
+
+### MIGRATION 016_rename_constraint (DOWN) ###
+ALTER TABLE "t1" RENAME CONSTRAINT "chck_nmbr_new" TO "chck_nmbr";
+DELETE FROM "public"."pgmigrations" WHERE name='016_rename_constraint';
+
+
+### MIGRATION 015_add_constraint_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='015_add_constraint_test';
+
+
+### MIGRATION 014_add_constraint (DOWN) ###
+ALTER TABLE "payroll_reports"."upload_headers" DROP CONSTRAINT "chk_only_one_header_type";
+DROP TABLE "payroll_reports"."upload_headers";
+DROP SCHEMA "payroll_reports";
+ALTER TABLE "t1" DROP CONSTRAINT "chck_nmbr";
+DELETE FROM "public"."pgmigrations" WHERE name='014_add_constraint';
+
+
+### MIGRATION 013_column_alter_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='013_column_alter_test';
+
+
+### MIGRATION 012_column_alter (DOWN) ###
+ALTER TABLE "t1"
+  ALTER "nmbr" SET DATA TYPE integer;
+DELETE FROM "public"."pgmigrations" WHERE name='012_column_alter';
+
+
+### MIGRATION 011_column_rename (DOWN) ###
+ALTER TABLE "t1" RENAME "nmbr" TO "nr";
+DELETE FROM "public"."pgmigrations" WHERE name='011_column_rename';
+
+
+### MIGRATION 010_column_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='010_column_test';
+
+
+### MIGRATION 009_column (DOWN) ###
+ALTER TABLE "t1"
+  DROP "nr";
+DELETE FROM "public"."pgmigrations" WHERE name='009_column';
+
+
+### MIGRATION 008_column_drop (DOWN) ###
+ALTER TABLE "t1"
+  ADD "string" text;
+DELETE FROM "public"."pgmigrations" WHERE name='008_column_drop';
+
+
+### MIGRATION 007_table_rename_test (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='007_table_rename_test';
+
+
+### MIGRATION 006_table_rename (DOWN) ###
+ALTER TABLE "t2r" RENAME TO "t2";
+DELETE FROM "public"."pgmigrations" WHERE name='006_table_rename';
+
+
+### MIGRATION 005_table_test (DOWN) ###
+DELETE FROM t2;
+DELETE FROM t1;
+DELETE FROM "public"."pgmigrations" WHERE name='005_table_test';
+
+
+### MIGRATION 004_table (DOWN) ###
+DROP TABLE "t2";
+DROP TABLE "t1";
+DELETE FROM "public"."pgmigrations" WHERE name='004_table';
+
+
+### MIGRATION 003_promise (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='003_promise';
+
+
+### MIGRATION 002_callback (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='002_callback';
+
+
+### MIGRATION 001_noop (DOWN) ###
+DELETE FROM "public"."pgmigrations" WHERE name='001_noop';
+
+
+Migrations complete!
