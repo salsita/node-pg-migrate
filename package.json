@@ -90,6 +90,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "1.2.7",
+    "@eslint/config-helpers": "0.2.1",
     "@eslint/js": "9.23.0",
     "@stylistic/eslint-plugin": "4.2.0",
     "@types/config": "3.3.5",
