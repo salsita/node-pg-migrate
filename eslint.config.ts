@@ -1,4 +1,6 @@
 import { includeIgnoreFile } from '@eslint/compat';
+import type { ConfigWithExtendsArray } from '@eslint/config-helpers';
+import { defineConfig } from '@eslint/config-helpers';
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import eslintPluginVitest from '@vitest/eslint-plugin';
@@ -12,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const gitignorePath = resolve(__dirname, '.gitignore');
 
-const config: ReturnType<typeof tseslint.config> = tseslint.config(
+export default defineConfig(
   //#region global
   includeIgnoreFile(gitignorePath),
   {
@@ -47,7 +49,7 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
   //#endregion
 
   //#region typescript-eslint
-  ...tseslint.configs.strictTypeChecked,
+  ...(tseslint.configs.strictTypeChecked as ConfigWithExtendsArray),
   {
     name: 'typescript-eslint overrides',
     languageOptions: {
@@ -250,5 +252,3 @@ const config: ReturnType<typeof tseslint.config> = tseslint.config(
   }
   //#endregion
 );
-
-export default config;
