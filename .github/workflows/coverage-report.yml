@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Download Artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -27,7 +27,7 @@ jobs:
           path: coverage
 
       - name: Download main Artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -35,7 +35,7 @@ jobs:
           path: coverage-main
 
       - name: Report Coverage
-        uses: davelosert/vitest-coverage-report-action@5a78cb16e761204097ad8a39369ea5d0ff7c8a5d # v2.8.0
+        uses: davelosert/vitest-coverage-report-action@adec81c7327940e0578d70d0bbdd87b0ca21df55 # v2.8.2
         with:
           file-coverage-mode: all
           json-summary-compare-path: coverage-main/coverage-summary.json
