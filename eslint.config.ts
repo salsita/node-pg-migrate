@@ -6,13 +6,10 @@ import stylistic from '@stylistic/eslint-plugin';
 import eslintPluginVitest from '@vitest/eslint-plugin';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import tseslint from 'typescript-eslint';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const gitignorePath = resolve(__dirname, '.gitignore');
+const gitignorePath = resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
   //#region global
