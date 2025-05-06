@@ -116,7 +116,7 @@
     "pg": "8.15.6",
     "prettier": "3.5.3",
     "prettier-plugin-organize-imports": "4.1.0",
-    "prettier-plugin-packagejson": "2.5.11",
+    "prettier-plugin-packagejson": "2.5.10",
     "rimraf": "6.0.1",
     "ts-node": "10.9.2",
     "tsup": "8.4.0",
