@@ -108,6 +108,11 @@ export interface RunnerOptionConfig {
   noLock?: boolean;
 
   /**
+   * Value to use for the lock.
+   */
+  lockValue?: number;
+
+  /**
    * Mark migrations as run without actually performing them (use with caution!).
    */
   fake?: boolean;
@@ -155,7 +160,7 @@ export type RunnerOption = RunnerOptionConfig &
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
  */
-const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
+export const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
 
 const idColumn = 'id';
 const nameColumn = 'name';
@@ -202,9 +207,13 @@ async function loadMigrations(
   }
 }
 
-async function lock(db: DBConnection): Promise<void> {
+async function lock(
+  db: DBConnection,
+  lockValue: number | undefined
+): Promise<void> {
+  lockValue ??= PG_MIGRATE_LOCK_ID;
   const [result] = await db.select(
-    `SELECT pg_try_advisory_lock(${PG_MIGRATE_LOCK_ID}) AS "lockObtained"`
+    `SELECT pg_try_advisory_lock(${lockValue}) AS "lockObtained"`
   );
 
   if (!result.lockObtained) {
@@ -212,9 +221,13 @@ async function lock(db: DBConnection): Promise<void> {
   }
 }
 
-async function unlock(db: DBConnection): Promise<void> {
+async function unlock(
+  db: DBConnection,
+  lockValue: number | undefined
+): Promise<void> {
+  lockValue ??= PG_MIGRATE_LOCK_ID;
   const [result] = await db.select(
-    `SELECT pg_advisory_unlock(${PG_MIGRATE_LOCK_ID}) AS "lockReleased"`
+    `SELECT pg_advisory_unlock(${lockValue}) AS "lockReleased"`
   );
 
   if (!result.lockReleased) {
@@ -405,7 +418,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     await db.createConnection();
 
     if (!options.noLock) {
-      await lock(db);
+      await lock(db, options.lockValue);
     }
 
     if (options.schema) {
@@ -483,7 +496,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   } finally {
     if (db.connected()) {
       if (!options.noLock) {
-        await unlock(db).catch((error: unknown) => {
+        await unlock(db, options.lockValue).catch((error: unknown) => {
           logger.warn((error as Error).message);
         });
       }
