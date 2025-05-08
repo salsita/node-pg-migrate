@@ -263,7 +263,7 @@ export type {
   ViewOptions,
 } from './operations/views';
 export { PgType } from './pgType';
-export { runner, PG_MIGRATE_LOCK_ID } from './runner';
+export { PG_MIGRATE_LOCK_ID, runner } from './runner';
 export type { RunnerOption } from './runner';
 export { PgLiteral, isPgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';

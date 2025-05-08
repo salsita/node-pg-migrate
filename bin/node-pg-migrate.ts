@@ -4,7 +4,11 @@ import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
-import { Migration, runner as migrationRunner, PG_MIGRATE_LOCK_ID } from 'node-pg-migrate';
+import {
+  Migration,
+  runner as migrationRunner,
+  PG_MIGRATE_LOCK_ID,
+} from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { register } from 'node:module';
 import { join, resolve } from 'node:path';
