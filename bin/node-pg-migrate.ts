@@ -4,7 +4,11 @@ import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
-import { Migration, runner as migrationRunner } from 'node-pg-migrate';
+import {
+  Migration,
+  runner as migrationRunner,
+  PG_MIGRATE_LOCK_ID,
+} from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { register } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -64,6 +68,7 @@ const configFileArg = 'config-file';
 const ignorePatternArg = 'ignore-pattern';
 const singleTransactionArg = 'single-transaction';
 const lockArg = 'lock';
+const lockValueArg = 'lock-value';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
@@ -212,6 +217,11 @@ const parser = yargs(process.argv.slice(2))
       default: true,
       describe: 'When false, disables locking mechanism and checks',
       type: 'boolean',
+    },
+    [lockValueArg]: {
+      default: PG_MIGRATE_LOCK_ID,
+      describe: 'The value to use for the lock',
+      type: 'number',
     },
     [rejectUnauthorizedArg]: {
       defaultDescription: 'false',
@@ -551,6 +561,7 @@ if (action === 'create') {
   const TIMESTAMP = argv[timestampArg];
   const rejectUnauthorized = argv[rejectUnauthorizedArg];
   const noLock = !argv[lockArg];
+  const lockValue = argv[lockValueArg];
   if (noLock) {
     console.log('no lock');
   }
@@ -616,6 +627,7 @@ if (action === 'create') {
       direction,
       singleTransaction,
       noLock,
+      lockValue,
       fake,
       decamelize: DECAMELIZE,
     };
