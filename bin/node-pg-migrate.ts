@@ -17,6 +17,7 @@ import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
 import type { RunnerOption } from '../src';
 import type { FilenameFormat } from '../src/migration';
+import { PG_MIGRATE_LOCK_ID } from '../src/runner';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
@@ -64,6 +65,7 @@ const configFileArg = 'config-file';
 const ignorePatternArg = 'ignore-pattern';
 const singleTransactionArg = 'single-transaction';
 const lockArg = 'lock';
+const lockValueArg = 'lock-value';
 const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
@@ -212,6 +214,11 @@ const parser = yargs(process.argv.slice(2))
       default: true,
       describe: 'When false, disables locking mechanism and checks',
       type: 'boolean',
+    },
+    [lockValueArg]: {
+      default: PG_MIGRATE_LOCK_ID,
+      describe: 'The value to use for the lock',
+      type: 'number',
     },
     [rejectUnauthorizedArg]: {
       defaultDescription: 'false',
@@ -551,6 +558,7 @@ if (action === 'create') {
   const TIMESTAMP = argv[timestampArg];
   const rejectUnauthorized = argv[rejectUnauthorizedArg];
   const noLock = !argv[lockArg];
+  const lockValue = argv[lockValueArg];
   if (noLock) {
     console.log('no lock');
   }
@@ -616,6 +624,7 @@ if (action === 'create') {
       direction,
       singleTransaction,
       noLock,
+      lockValue,
       fake,
       decamelize: DECAMELIZE,
     };
