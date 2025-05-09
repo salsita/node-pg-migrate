@@ -126,6 +126,8 @@ export interface TableOptions extends IfNotExistsOption {
   comment?: string | null;
 
   partition?: PartitionOptions;
+
+  unlogged?: boolean;
 }
 
 export function parseReferences(

@@ -62,7 +62,7 @@ describe('migration', () => {
       const filePaths = await getMigrationFilePaths(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(93);
+      expect(filePaths).toHaveLength(94);
       expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -83,7 +83,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(68);
+      expect(filePaths).toHaveLength(69);
 
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
@@ -99,7 +99,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(106);
+      expect(filePaths).toHaveLength(107);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -119,7 +119,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(105);
+      expect(filePaths).toHaveLength(106);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {

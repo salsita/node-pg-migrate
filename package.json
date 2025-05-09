@@ -85,8 +85,8 @@
     "templates"
   ],
   "dependencies": {
-    "glob": "~11.0.0",
-    "yargs": "~17.7.0"
+    "glob": "11.0.2",
+    "yargs": "17.7.2"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.9",
@@ -111,7 +111,7 @@
     "eslint-plugin-unicorn": "59.0.1",
     "jiti": "2.4.2",
     "json5": "2.2.3",
-    "node-pg-migrate": "file:.",
+    "node-pg-migrate": "file:",
     "npm-run-all2": "8.0.1",
     "pg": "8.15.6",
     "prettier": "3.5.3",
