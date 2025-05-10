@@ -33,7 +33,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       constraints: optionsConstraints = {},
       comment,
       partition,
-      unlogged = false
+      unlogged = false,
     } = options;
 
     const {

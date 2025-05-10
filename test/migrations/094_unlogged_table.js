@@ -1,6 +1,6 @@
-exports.comment = 'comment on unlogged table t_unlogged';
+export const comment = 'comment on unlogged table t_unlogged';
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
   // Create an unlogged table
   pgm.createTable(
     't_unlogged',
