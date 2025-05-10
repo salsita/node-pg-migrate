@@ -15,7 +15,7 @@ export const up = (pgm) => {
     },
     {
       unlogged: true, // Specify the table as UNLOGGED
-      comment: exports.comment,
+      comment,
     }
   );
 
