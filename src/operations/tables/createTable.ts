@@ -66,7 +66,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ...(like ? [parseLike(like, mOptions.literal)] : []),
     ];
 
-    const unloggedStr = unlogged ? ' UNLOGGED' : '';
+    const unloggedStr = unlogged && !temporary ? ' UNLOGGED' : '';
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const inheritsStr = inherits
