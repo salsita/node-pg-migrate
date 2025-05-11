@@ -37,11 +37,16 @@ export const up = (pgm) => {
     't_temp_unlogged',
     {
       id: 'id',
-      description: { type: 'text', notNull: true },
+      name: { type: 'text', notNull: true },
+      created_at: {
+        type: 'timestamp',
+        notNull: true,
+        default: pgm.func('current_timestamp'),
+      },
     },
     {
       unlogged: true,
-      temporary: true,
+      temporary: true
     }
   );
 };

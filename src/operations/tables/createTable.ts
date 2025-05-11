@@ -66,7 +66,11 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ...(like ? [parseLike(like, mOptions.literal)] : []),
     ];
 
-    const unloggedStr = unlogged && !temporary ? ' UNLOGGED' : '';
+    if (unlogged && temporary) {
+      throw new Error('UNLOGGED and TEMPORARY cannot be used together.');
+    }
+
+    const unloggedStr = unlogged ? ' UNLOGGED' : '';
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const inheritsStr = inherits
