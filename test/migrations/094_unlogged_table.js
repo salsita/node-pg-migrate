@@ -30,4 +30,18 @@ export const up = (pgm) => {
       comment: 'comment on regular table t_regular',
     }
   );
+
+  // Create table with temporary = true to ensure order is correct
+
+  pgm.createTable(
+    't_temp_unlogged',
+    {
+      id: 'id',
+      description: { type: 'text', notNull: true },
+    },
+    {
+      unlogged: true,
+      temporary: true,
+    }
+  );
 };

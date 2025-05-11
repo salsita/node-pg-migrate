@@ -79,7 +79,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
 
     const tableNameStr = mOptions.literal(tableName);
 
-    const createTableQuery = `CREATE${unloggedStr}${temporaryStr} TABLE${ifNotExistsStr} ${tableNameStr} (
+    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (
 ${formatLines(tableDefinition)}
 )${inheritsStr}${partitionStr};`;
     const comments = [...columnComments, ...constraintComments];
