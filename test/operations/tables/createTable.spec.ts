@@ -716,7 +716,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
             { colA: { type: 'integer' } },
             { temporary: true, unlogged: true }, // Both options set to true
           ],
-          new Error('UNLOGGED and TEMPORARY cannot be used together.'),
+          new Error('TEMPORARY and UNLOGGED cannot be used together.'),
         ],
       ] as const)(
         '%s',
