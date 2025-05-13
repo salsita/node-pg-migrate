@@ -33,6 +33,28 @@ describe('operations', () => {
         expect(statement).toBe(`ALTER TABLE "distributors"
     ENABLE ROW LEVEL SECURITY;`);
       });
+
+      // New test: should generate SQL for SET LOGGED
+      it('should generate SQL for SET LOGGED', () => {
+        const statement = alterTableFn('my_table', {
+          setOptions: { logged: true },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "my_table"
+    SET LOGGED;`);
+      });
+
+      // New test: should generate SQL for SET UNLOGGED
+      it('should generate SQL for SET UNLOGGED', () => {
+        const statement = alterTableFn('my_table', {
+          setOptions: { logged: false },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "my_table"
+    SET UNLOGGED;`);
+      });
     });
   });
 });
