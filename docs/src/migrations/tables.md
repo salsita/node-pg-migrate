@@ -25,6 +25,7 @@
 | `constraints` | `object`                              | table constraints see `expression` of [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-) |
 | `like`        | [Name](/migrations/#type) or `object` | table(s) to inherit from or object with `table` and `options` keys                                                            |
 | `comment`     | `string`                              | adds comment on table                                                                                                         |
+| `unlogged`    | `boolean`                             | default `false`                                                                                                               |
 
 #### like options
 
