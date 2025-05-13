@@ -4,7 +4,7 @@ import type { Name } from '../generalTypes';
 
 export interface AlterTableOptions {
   levelSecurity?: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE';
-  setOptions?: { [key: string]: string | boolean };
+  unlogged?: boolean;
 }
 
 export type AlterTable = (
@@ -14,7 +14,7 @@ export type AlterTable = (
 
 export function alterTable(mOptions: MigrationOptions): AlterTable {
   const _alter: AlterTable = (tableName, options) => {
-    const { levelSecurity, setOptions } = options;
+    const { levelSecurity, unlogged } = options;
 
     const alterDefinition: string[] = [];
 
@@ -22,12 +22,10 @@ export function alterTable(mOptions: MigrationOptions): AlterTable {
       alterDefinition.push(`${levelSecurity} ROW LEVEL SECURITY`);
     }
 
-    if (setOptions) {
-      if (setOptions.logged === true) {
-        alterDefinition.push(`SET LOGGED`);
-      } else if (setOptions.logged === false) {
-        alterDefinition.push(`SET UNLOGGED`);
-      }
+    if (unlogged === true) {
+      alterDefinition.push(`SET UNLOGGED`);
+    } else if (unlogged === false) {
+      alterDefinition.push(`SET LOGGED`);
     }
 
     return `ALTER TABLE ${mOptions.literal(tableName)}

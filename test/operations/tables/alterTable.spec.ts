@@ -13,11 +13,7 @@ describe('operations', () => {
 
       // TODO @Shinigami92 2024-03-11: This should throw an error
       it('should return sql statement', () => {
-        const statement = alterTableFn(
-          'films',
-          // @ts-expect-error: add runtime error
-          {}
-        );
+        const statement = alterTableFn('films', {});
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(`ALTER TABLE "films"
@@ -34,10 +30,9 @@ describe('operations', () => {
     ENABLE ROW LEVEL SECURITY;`);
       });
 
-      // New test: should generate SQL for SET LOGGED
       it('should generate SQL for SET LOGGED', () => {
         const statement = alterTableFn('my_table', {
-          setOptions: { logged: true },
+          unlogged: false,
         });
 
         expect(statement).toBeTypeOf('string');
@@ -45,10 +40,9 @@ describe('operations', () => {
     SET LOGGED;`);
       });
 
-      // New test: should generate SQL for SET UNLOGGED
       it('should generate SQL for SET UNLOGGED', () => {
         const statement = alterTableFn('my_table', {
-          setOptions: { logged: false },
+          unlogged: true,
         });
 
         expect(statement).toBeTypeOf('string');

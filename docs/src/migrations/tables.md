@@ -86,6 +86,7 @@
 
 ### Options
 
-| Option          | Type     | Description                                 |
-| --------------- | -------- | ------------------------------------------- |
-| `levelSecurity` | `string` | `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE` |
+| Option          | Type      | Description                                 |
+| --------------- | --------- | ------------------------------------------- |
+| `levelSecurity` | `string`  | `DISABLE`, `ENABLE`, `FORCE`, or `NO FORCE` |
+| `unlogged`      | `boolean` | Sets UNLOGGED if true                       |
