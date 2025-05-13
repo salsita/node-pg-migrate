@@ -33,7 +33,7 @@ export const up = (pgm) => {
 
   // Alter the regular table to set it as LOGGED
   pgm.alterTable('t_regular', {
-    setOptions: { logged: true },
+    unlogged: false,
   });
 };
 
