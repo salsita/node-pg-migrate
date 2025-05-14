@@ -96,6 +96,10 @@ jobs:
       - name: Build types
         run: pnpm run build:types
 
+      # Needed to ensure that the types after build:types are referenceable
+      - name: Run a second install
+        run: pnpm install
+
       - name: Check scripts
         run: pnpm run ts-check
 
