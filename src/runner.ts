@@ -209,9 +209,8 @@ async function loadMigrations(
 
 async function lock(
   db: DBConnection,
-  lockValue: number | undefined
+  lockValue: number = PG_MIGRATE_LOCK_ID
 ): Promise<void> {
-  lockValue ??= PG_MIGRATE_LOCK_ID;
   const [result] = await db.select(
     `SELECT pg_try_advisory_lock(${lockValue}) AS "lockObtained"`
   );
@@ -223,9 +222,8 @@ async function lock(
 
 async function unlock(
   db: DBConnection,
-  lockValue: number | undefined
+  lockValue: number = PG_MIGRATE_LOCK_ID
 ): Promise<void> {
-  lockValue ??= PG_MIGRATE_LOCK_ID;
   const [result] = await db.select(
     `SELECT pg_advisory_unlock(${lockValue}) AS "lockReleased"`
   );
