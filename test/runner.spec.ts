@@ -190,4 +190,57 @@ describe('runner', () => {
     ).resolves.not.toThrow();
     expect(executedMigrations).toHaveLength(0);
   });
+
+  it('should use the provided lock value', async () => {
+    const customLockValue = 12345;
+    const dbClient = {
+      query: vi.fn((query) => {
+        switch (query) {
+          case `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`: {
+            return Promise.resolve({
+              rows: [{ lockObtained: true }], // lock obtained with custom value
+            });
+          }
+
+          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+            return Promise.resolve({
+              rows: [{}], // migration table exists
+            });
+          }
+
+          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+            return Promise.resolve({
+              rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
+            });
+          }
+
+          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+            return Promise.resolve({
+              rows: [], // no migrations executed
+            });
+          }
+
+          default: {
+            return Promise.resolve({ rows: [{}] }); // bypass other queries
+          }
+        }
+      }),
+    } as unknown as ClientBase;
+
+    await expect(
+      runner({
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        dir: 'test/cockroach',
+        direction: 'up',
+        lockValue: customLockValue,
+      })
+    ).resolves.not.toThrow();
+
+    // Verify that the query with custom lock value was called
+    expect(dbClient.query).toHaveBeenCalledWith(
+      `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`,
+      undefined
+    );
+  });
 });
