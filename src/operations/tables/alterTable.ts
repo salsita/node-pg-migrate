@@ -3,7 +3,8 @@ import { formatLines } from '../../utils';
 import type { Name } from '../generalTypes';
 
 export interface AlterTableOptions {
-  levelSecurity: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE';
+  levelSecurity?: 'DISABLE' | 'ENABLE' | 'FORCE' | 'NO FORCE';
+  unlogged?: boolean;
 }
 
 export type AlterTable = (
@@ -13,12 +14,18 @@ export type AlterTable = (
 
 export function alterTable(mOptions: MigrationOptions): AlterTable {
   const _alter: AlterTable = (tableName, options) => {
-    const { levelSecurity } = options;
+    const { levelSecurity, unlogged } = options;
 
     const alterDefinition: string[] = [];
 
     if (levelSecurity) {
       alterDefinition.push(`${levelSecurity} ROW LEVEL SECURITY`);
+    }
+
+    if (unlogged === true) {
+      alterDefinition.push(`SET UNLOGGED`);
+    } else if (unlogged === false) {
+      alterDefinition.push(`SET LOGGED`);
     }
 
     return `ALTER TABLE ${mOptions.literal(tableName)}

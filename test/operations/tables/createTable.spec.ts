@@ -708,6 +708,16 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
           ],
           new Error('cannot comment on unspecified constraints'),
         ],
+        [
+          'should throw on using both temporary and unlogged options',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' } },
+            { temporary: true, unlogged: true },
+          ],
+          new Error('TEMPORARY and UNLOGGED cannot be used together.'),
+        ],
       ] as const)(
         '%s',
         (_, optionPreset, [tableName, columns, options], expected) => {

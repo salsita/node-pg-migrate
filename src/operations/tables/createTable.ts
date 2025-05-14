@@ -33,6 +33,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       constraints: optionsConstraints = {},
       comment,
       partition,
+      unlogged = false,
     } = options;
 
     const {
@@ -65,7 +66,12 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ...(like ? [parseLike(like, mOptions.literal)] : []),
     ];
 
+    if (temporary && unlogged) {
+      throw new Error('TEMPORARY and UNLOGGED cannot be used together.');
+    }
+
     const temporaryStr = temporary ? ' TEMPORARY' : '';
+    const unloggedStr = unlogged ? ' UNLOGGED' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const inheritsStr = inherits
       ? ` INHERITS (${mOptions.literal(inherits)})`
@@ -77,7 +83,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
 
     const tableNameStr = mOptions.literal(tableName);
 
-    const createTableQuery = `CREATE${temporaryStr} TABLE${ifNotExistsStr} ${tableNameStr} (
+    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (
 ${formatLines(tableDefinition)}
 )${inheritsStr}${partitionStr};`;
     const comments = [...columnComments, ...constraintComments];
