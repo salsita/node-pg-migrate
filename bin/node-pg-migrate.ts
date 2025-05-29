@@ -444,8 +444,8 @@ function readJson(json: unknown): void {
 
     if ('url' in json && json.url) {
       DB_CONNECTION ??= json.url;
-    } else if (isClientConfig(json)) {
-      DB_CONNECTION ??= {
+    } else if (isClientConfig(json) && !DB_CONNECTION) {
+      DB_CONNECTION = {
         user: json.user,
         host: json.host || 'localhost',
         database: json.name || json.database,
@@ -475,7 +475,7 @@ if (configFileName) {
   const jsonConfig = await import(`file://${resolve(configFileName)}`, {
     with: { type: 'json' },
   });
-  readJson(jsonConfig);
+  readJson(jsonConfig.default || jsonConfig);
 }
 
 await readTsconfig();
