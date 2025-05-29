@@ -13,6 +13,9 @@ const CONFIG_JSON = {
   database: 'pgmigrations',
 };
 
+const ERROR_MESSAGE =
+  'environment variable is not set or incomplete connection parameters are provided';
+
 describe('node-pg-migrate config file and env fallback', () => {
   const configFile = resolve(__dirname, 'test-config.json');
 
@@ -26,6 +29,15 @@ describe('node-pg-migrate config file and env fallback', () => {
     vi.unstubAllEnvs();
   });
 
+  it('fails when no config file or env vars are provided', () => {
+    const result = spawnSync('node', [BIN_PATH, 'up', '--dry-run'], {
+      env: {},
+      encoding: 'utf8',
+    });
+    expect(result.stderr).toContain(ERROR_MESSAGE);
+    expect(result.status).toBe(1);
+  });
+
   it('fails with config file missing DB connection', () => {
     writeFileSync(configFile, JSON.stringify({}), 'utf8');
     const result = spawnSync(
@@ -36,9 +48,7 @@ describe('node-pg-migrate config file and env fallback', () => {
         encoding: 'utf8',
       }
     );
-    expect(result.stderr).toContain(
-      'environment variable is not set or incomplete connection parameters are provided'
-    );
+    expect(result.stderr).toContain(ERROR_MESSAGE);
     expect(result.status).toBe(1);
   });
 
@@ -52,9 +62,7 @@ describe('node-pg-migrate config file and env fallback', () => {
         encoding: 'utf8',
       }
     );
-    expect(result.stderr).not.toContain(
-      'environment variable is not set or incomplete connection parameters are provided'
-    );
+    expect(result.stderr).not.toContain(ERROR_MESSAGE);
   });
 
   it('succeeds with DATABASE_URL env var', () => {
@@ -65,9 +73,7 @@ describe('node-pg-migrate config file and env fallback', () => {
       },
       encoding: 'utf8',
     });
-    expect(result.stderr).not.toContain(
-      'environment variable is not set or incomplete connection parameters are provided'
-    );
+    expect(result.stderr).not.toContain(ERROR_MESSAGE);
   });
 
   it('succeeds with PGHOST, PGUSER, PGDATABASE env vars', () => {
@@ -83,8 +89,6 @@ describe('node-pg-migrate config file and env fallback', () => {
       },
       encoding: 'utf8',
     });
-    expect(result.stderr).not.toContain(
-      'environment variable is not set or incomplete connection parameters are provided'
-    );
+    expect(result.stderr).not.toContain(ERROR_MESSAGE);
   });
 });
