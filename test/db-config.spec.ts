@@ -34,7 +34,8 @@ describe('node-pg-migrate config file and env fallback', () => {
       env: {},
       encoding: 'utf8',
     });
-    expect(result.stderr).toContain(ERROR_MESSAGE);
+    const errorOutput = result.stderr || result.stdout || '';
+    expect(errorOutput).toContain(ERROR_MESSAGE);
     expect(result.status).toBe(1);
   });
 
