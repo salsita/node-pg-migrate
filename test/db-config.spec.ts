@@ -4,10 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const BIN_PATH = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  '../bin/node-pg-migrate.js'
-);
+const BIN_PATH = resolve(import.meta.dirname, '../bin/node-pg-migrate.js');
 
 const CONFIG_JSON = {
   user: 'postgres',
