@@ -1,7 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { unlinkSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const BIN_PATH = resolve(import.meta.dirname, '../bin/node-pg-migrate.js');
@@ -18,10 +17,7 @@ const ERROR_MESSAGE =
   'environment variable is not set or incomplete connection parameters are provided';
 
 describe('node-pg-migrate config file and env fallback', () => {
-  const configFile = resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    'test-config.json'
-  );
+  const configFile = resolve(import.meta.dirname, 'test-config.json');
 
   afterEach(() => {
     try {
