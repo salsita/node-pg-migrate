@@ -31,7 +31,7 @@ describe('node-pg-migrate config file and env fallback', () => {
 
   it('fails when no config file or env vars are provided', () => {
     const result = spawnSync('node', [BIN_PATH, 'up', '--dry-run'], {
-      env: {},
+      env: { ...process.env },
       encoding: 'utf8',
     });
     const errorOutput = result.stderr || result.stdout || '';
