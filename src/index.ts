@@ -1,3 +1,4 @@
+export { runCli } from './cliRunner';
 export { Migration } from './migration';
 export { MigrationBuilder } from './migrationBuilder';
 export type {
