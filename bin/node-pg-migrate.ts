@@ -6,8 +6,8 @@ import type { DotenvConfigOptions } from 'dotenv';
 // @ts-ignore: when a clean was made, the types are not present in the first run
 import {
   Migration,
-  runner as migrationRunner,
   PG_MIGRATE_LOCK_ID,
+  runner as migrationRunner,
 } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { register } from 'node:module';
@@ -463,7 +463,7 @@ function readJson(json: unknown): void {
 const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
 process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
 const config = await tryImport<typeof import('config')>('config');
-if (config && config.has(argv[configValueArg])) {
+if (config?.has(argv[configValueArg])) {
   const db = config.get(argv[configValueArg]);
   readJson(db);
 }
@@ -475,7 +475,9 @@ if (configFileName) {
   const jsonConfig = await import(`file://${resolve(configFileName)}`, {
     with: { type: 'json' },
   });
-  readJson(jsonConfig.default || jsonConfig);
+  const json = jsonConfig.default ?? jsonConfig;
+  const section = argv[configValueArg];
+  readJson(json?.[section] === undefined ? json : json[section]);
 }
 
 await readTsconfig();

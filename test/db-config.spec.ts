@@ -13,6 +13,23 @@ const CONFIG_JSON = {
   database: 'pgmigrations',
 };
 
+const CONFIG_MULTI_USER_JSON = {
+  dev: {
+    user: 'pgmigrations',
+    password: 'password',
+    host: 'localhost',
+    port: 5432,
+    database: 'pgmigrations',
+  },
+  test: {
+    user: 'pgmigrations2',
+    password: 'password',
+    host: 'localhost',
+    port: 5432,
+    database: 'pgmigrations2',
+  },
+};
+
 const ERROR_MESSAGE =
   'environment variable is not set or incomplete connection parameters are provided';
 
@@ -90,6 +107,62 @@ describe('node-pg-migrate config file and env fallback', () => {
       },
       encoding: 'utf8',
     });
+    expect(result.stderr).not.toContain(ERROR_MESSAGE);
+  });
+});
+
+describe('node-pg-migrate config file with config-value section', () => {
+  const configFile = resolve(import.meta.dirname, 'test-config-multi.json');
+
+  afterEach(() => {
+    try {
+      unlinkSync(configFile);
+    } catch {
+      // Ignore if the file does not exist
+    }
+
+    vi.unstubAllEnvs();
+  });
+
+  it('succeeds with config-value "dev"', () => {
+    writeFileSync(configFile, JSON.stringify(CONFIG_MULTI_USER_JSON), 'utf8');
+    const result = spawnSync(
+      'node',
+      [
+        BIN_PATH,
+        'up',
+        '--dry-run',
+        '--config-file',
+        configFile,
+        '--config-value',
+        'dev',
+      ],
+      {
+        env: { ...process.env, DATABASE_URL: '' },
+        encoding: 'utf8',
+      }
+    );
+    expect(result.stderr).not.toContain(ERROR_MESSAGE);
+  });
+
+  it('succeeds with config-value "test"', () => {
+    writeFileSync(configFile, JSON.stringify(CONFIG_MULTI_USER_JSON), 'utf8');
+    const result = spawnSync(
+      'node',
+      [
+        BIN_PATH,
+        'up',
+        '--dry-run',
+        '--config-file',
+        configFile,
+        '--config-value',
+        'test',
+      ],
+      {
+        env: { ...process.env, DATABASE_URL: '' },
+        encoding: 'utf8',
+      }
+    );
     expect(result.stderr).not.toContain(ERROR_MESSAGE);
   });
 });
