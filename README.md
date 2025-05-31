@@ -53,7 +53,7 @@ export const up = (pgm) => {
       type: 'integer',
       notNull: true,
       references: '"users"',
-      onDelete: 'cascade',
+      onDelete: 'CASCADE',
     },
     body: { type: 'text', notNull: true },
     createdAt: {
