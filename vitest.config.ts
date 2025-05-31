@@ -9,8 +9,6 @@ export default defineConfig({
       reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
       include: [
         'src',
-        // TODO @Shinigami92 2024-04-02: Add 'bin' folder in another PR
-        //'bin'
       ],
       exclude: ['src/operations/*Types.ts'],
       reportOnFailure: true,

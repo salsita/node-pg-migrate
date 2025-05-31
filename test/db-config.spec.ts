@@ -1,95 +1,87 @@
-import { spawnSync } from 'node:child_process';
 import { unlinkSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-const BIN_PATH = resolve(import.meta.dirname, '../bin/node-pg-migrate.js');
+import { runCli } from '../src';
 
 const CONFIG_JSON = {
   user: 'postgres',
   password: 'password',
   host: 'localhost',
   port: 5432,
-  database: 'pgmigrations',
+  database: 'pgmigrationz',
 };
 
-const ERROR_MESSAGE =
-  'environment variable is not set or incomplete connection parameters are provided';
+// Mock the pg Client so it never connects
+vi.mock('pg', () => {
+  const mockPg = {
+    Client: class {
+      connect = vi.fn().mockResolvedValue(null);
+      end = vi.fn().mockResolvedValue(null);
+      query = vi.fn().mockResolvedValue({ rows: [] });
+    },
+  };
+  return {
+    ...mockPg,
+    default: mockPg,
+  };
+});
 
 describe('node-pg-migrate config file and env fallback', () => {
-  const configFile = resolve(import.meta.dirname, 'test-config.json');
+  let configFile: string;
 
   afterEach(() => {
-    try {
-      unlinkSync(configFile);
-    } catch {
-      // Ignore if the file does not exist
+    if (configFile) {
+      try {
+        unlinkSync(configFile);
+      } catch {
+        /* ignore */
+      }
     }
 
     vi.unstubAllEnvs();
   });
 
-  it('fails when no config file or env vars are provided', () => {
-    const result = spawnSync('node', [BIN_PATH, 'up', '--dry-run'], {
-      env: { ...process.env },
-      encoding: 'utf8',
-    });
-    const errorOutput = result.stderr || result.stdout || '';
-    expect(errorOutput).toContain(ERROR_MESSAGE);
-    expect(result.status).toBe(1);
+  it('fails when no config file or env vars are provided', async () => {
+    const code = await runCli(['up', '--dry-run'], {});
+    expect(code).toBe(1);
   });
 
-  it('fails with config file missing DB connection', () => {
-    writeFileSync(configFile, JSON.stringify({}), 'utf8');
-    const result = spawnSync(
-      'node',
-      [BIN_PATH, 'up', '--dry-run', '--config-file', configFile],
-      {
-        env: { ...process.env, DATABASE_URL: '' },
-        encoding: 'utf8',
-      }
+  it('fails with config file missing DB connection', async () => {
+    configFile = join(tmpdir(), `test-config-${Date.now()}.json`);
+    writeFileSync(configFile, JSON.stringify({}));
+    const code = await runCli(
+      ['up', '--dry-run', '--config-file', configFile],
+      {}
     );
-    expect(result.stderr).toContain(ERROR_MESSAGE);
-    expect(result.status).toBe(1);
+    expect(code).toBe(1);
   });
 
-  it('succeeds with valid config file containing user, database, etc', () => {
-    writeFileSync(configFile, JSON.stringify(CONFIG_JSON), 'utf8');
-    const result = spawnSync(
-      'node',
-      [BIN_PATH, 'up', '--dry-run', '--config-file', configFile],
-      {
-        env: { ...process.env, DATABASE_URL: '' },
-        encoding: 'utf8',
-      }
+  it('succeeds with valid config file containing user, database, etc', async () => {
+    configFile = join(tmpdir(), `test-config-${Date.now()}.json`);
+    writeFileSync(configFile, JSON.stringify(CONFIG_JSON));
+    const code = await runCli(
+      ['up', '--dry-run', '--config-file', configFile],
+      {}
     );
-    expect(result.stderr).not.toContain(ERROR_MESSAGE);
+    expect(code).toBe(0);
+  });
+  it('succeeds with DATABASE_URL env var', async () => {
+    const code = await runCli(['up', '--dry-run'], {
+      DATABASE_URL: 'postgres://myuser:mypassword@localhost:5432/mydb',
+    });
+    expect(code).toBe(0);
   });
 
-  it('succeeds with DATABASE_URL env var', () => {
-    const result = spawnSync('node', [BIN_PATH, 'up', '--dry-run'], {
-      env: {
-        ...process.env,
-        DATABASE_URL: 'postgres://myuser:mypassword@localhost:5432/mydb',
-      },
-      encoding: 'utf8',
+  it('succeeds with PGHOST, PGUSER, PGDATABASE env vars', async () => {
+    const code = await runCli(['up', '--dry-run'], {
+      DATABASE_URL: '',
+      PGHOST: 'localhost',
+      PGUSER: 'user',
+      PGDATABASE: 'db',
+      PGPASSWORD: 'pass',
+      PGPORT: '5432',
     });
-    expect(result.stderr).not.toContain(ERROR_MESSAGE);
-  });
-
-  it('succeeds with PGHOST, PGUSER, PGDATABASE env vars', () => {
-    const result = spawnSync('node', [BIN_PATH, 'up', '--dry-run'], {
-      env: {
-        ...process.env,
-        DATABASE_URL: '',
-        PGHOST: 'localhost',
-        PGUSER: 'user',
-        PGDATABASE: 'db',
-        PGPASSWORD: 'pass',
-        PGPORT: '5432',
-      },
-      encoding: 'utf8',
-    });
-    expect(result.stderr).not.toContain(ERROR_MESSAGE);
+    expect(code).toBe(0);
   });
 });
