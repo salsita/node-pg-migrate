@@ -6,7 +6,12 @@ import { cwd } from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
-import { Migration, PG_MIGRATE_LOCK_ID, runner as migrationRunner, type RunnerOption } from './';
+import {
+  Migration,
+  PG_MIGRATE_LOCK_ID,
+  runner as migrationRunner,
+  type RunnerOption,
+} from './';
 // This needs to be imported with .js extension, otherwise it will fail in esm
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
@@ -665,11 +670,11 @@ export async function runCli(
     }
 
     return 0;
-  } else {
-    console.error('Invalid Action: Must be [up|down|create|redo].');
-    parser.showHelp();
-    return 1;
   }
+
+  console.error('Invalid Action: Must be [up|down|create|redo].');
+  parser.showHelp();
+  return 1;
 
   //if (parsedArgv['force-exit']) {
   //  console.log('Forcing exit');

@@ -65,7 +65,6 @@ describe('cliRunner', () => {
     expect(consoleError).toHaveBeenCalledWith("'migrationName' is required.");
   });
 
-
   it('prints "dry run" when --dry-run is passed', async () => {
     const code = await runCli(['up', '--dry-run'], {
       DATABASE_URL: 'postgres://user:pass@localhost/db',
