@@ -47,7 +47,7 @@ globally or as a dependency.
 {
   "scripts": {
     // ..
-    "migrate": "ts-node node_modules/.bin/node-pg-migrate.js -j ts", // [!code ++]
+    "migrate": "ts-node node_modules/node-pg-migrate/bin/node-pg-migrate.js -j ts", // [!code ++]
   },
 }
 ```
