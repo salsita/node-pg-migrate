@@ -12,7 +12,7 @@ Update `scripts` section in your `package.json` to contain babel-node command:
 {
   "scripts": {
     // ..
-    "migrate": "babel-node node_modules/node-pg-migrate/bin/node-pg-migrate.js", // [!code ++]
+    "migrate": "babel-node node_modules/.bin/node-pg-migrate", // [!code ++]
   },
 }
 ```
