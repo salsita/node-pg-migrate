@@ -42,7 +42,8 @@ async function tryImport<TModule = unknown>(
     if (
       error instanceof Error &&
       'code' in error &&
-      error.code === 'ERR_MODULE_NOT_FOUND'
+      (error.code === 'ERR_MODULE_NOT_FOUND' ||
+        error.code === 'MODULE_NOT_FOUND')
     ) {
       return null;
     }
