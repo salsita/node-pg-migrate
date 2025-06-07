@@ -4,7 +4,7 @@
  * @type {import('prettier').Config}
  */
 export default {
-  plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-packagejson'],
+  plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-pkg'],
   singleQuote: true,
   trailingComma: 'es5',
   overrides: [
@@ -27,7 +27,33 @@ export default {
     {
       files: 'package.json',
       options: {
-        packageSortOrder: ['name', 'version', 'description', 'scripts'],
+        packageSortOrder: [
+          'name',
+          'version',
+          'description',
+          'scripts',
+          'keywords',
+          'homepage',
+          'bugs',
+          'repository',
+          'license',
+          'author',
+          'contributors',
+          'type',
+          'exports',
+          'main',
+          'module',
+          'types',
+          'bin',
+          'files',
+          'dependencies',
+          'devDependencies',
+          'peerDependencies',
+          'peerDependenciesMeta',
+          'packageManager',
+          'engines',
+        ],
+        packageIgnoreSort: ['scripts'],
       },
     },
   ],
