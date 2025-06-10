@@ -6,7 +6,7 @@ export default defineConfig({
   clean: true,
   format: 'esm',
   target: ['es2023', 'node20'],
-  dts: false,
+  dts: true,
   minify: false,
   sourcemap: false,
   bundle: true,
