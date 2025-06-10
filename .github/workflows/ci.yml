@@ -93,12 +93,8 @@ jobs:
       - name: Install deps
         run: pnpm install
 
-      - name: Build types
-        run: pnpm run build:types
-
-      # Needed to ensure that the types after build:types are referenceable
-      - name: Run a second install
-        run: pnpm install
+      - name: Build code (that includes types)
+        run: pnpm run build:code
 
       - name: Check scripts
         run: pnpm run ts-check
