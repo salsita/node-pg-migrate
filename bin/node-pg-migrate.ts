@@ -17,7 +17,7 @@ import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 import type ConnectionParametersType from 'pg/lib/connection-parameters';
-// TODO causes tests to tail when `.js` is removed
+// TODO causes tests to fail when `.js` is removed
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
