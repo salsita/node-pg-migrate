@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import type { Client } from 'pg';
-import type { RunnerOption } from '../../dist';
-import { runner } from '../../dist';
+import type { RunnerOption } from '../../dist/bundle';
+import { runner } from '../../dist/bundle';
 
 type TestOptions = {
   count?: number;

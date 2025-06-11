@@ -16,7 +16,9 @@ import { cwd } from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
-// This needs to be imported with .js extension, otherwise it will fail in esm
+import type ConnectionParametersType from 'pg/lib/connection-parameters';
+// TODO causes tests to fail when `.js` is removed
+// @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
 import type { RunnerOption } from '../src';
@@ -274,8 +276,11 @@ if (dotenv) {
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
 let USE_GLOB = argv[useGlobArg];
-let DB_CONNECTION: string | ConnectionParameters | ClientConfig | undefined =
-  process.env[argv[databaseUrlVarArg]];
+let DB_CONNECTION:
+  | string
+  | ConnectionParametersType
+  | ClientConfig
+  | undefined = process.env[argv[databaseUrlVarArg]];
 let IGNORE_PATTERN = argv[ignorePatternArg];
 let SCHEMA: string | string[] | undefined = argv[schemaArg];
 let CREATE_SCHEMA = argv[createSchemaArg];
@@ -436,7 +441,7 @@ function readJson(json: unknown): void {
       DB_CONNECTION,
       databaseUrlVarArg,
       json,
-      (val): val is string | ConnectionParameters | ClientConfig =>
+      (val): val is string | ConnectionParametersType | ClientConfig =>
         typeof val === 'string' || typeof val === 'object'
     );
     tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
@@ -456,7 +461,7 @@ function readJson(json: unknown): void {
       };
     }
   } else {
-    DB_CONNECTION ??= json as string | ConnectionParameters | ClientConfig;
+    DB_CONNECTION ??= json as string | ConnectionParametersType | ClientConfig;
   }
 }
 
@@ -484,8 +489,7 @@ if (configFileName) {
 await readTsconfig();
 
 if (useTsx) {
-  const tsx =
-    await tryImport<typeof import('tsx/dist/esm/api/index.mjs')>('tsx/esm');
+  const tsx = await tryImport<typeof import('tsx/esm/api')>('tsx/esm');
   if (!tsx) {
     console.error("For TSX support, please install 'tsx' module");
   }

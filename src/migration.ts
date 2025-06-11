@@ -255,6 +255,7 @@ export class Migration implements RunMigration {
         : join(
             import.meta.dirname,
             '..',
+            '..',
             'templates',
             `migration-template.${await resolveSuffix(directory, options)}`
           );
