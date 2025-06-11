@@ -7,7 +7,8 @@
     "build:bin": "tsup-node --config tsup-bin.config.ts",
     "build:clean": "rimraf dist",
     "build:code": "tsup-node",
-    "build": "run-s build:clean build:code build:bin",
+    "build:legacy-types": "tsc --project tsconfig.legacy-types.json",
+    "build": "run-s build:clean build:code build:bin build:legacy-types",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content .",
     "ts-check": "tsc",
@@ -67,8 +68,7 @@
       "default": "./dist/index.js"
     },
     "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./dist/*.js"
+      "types": "./dist/legacy/*.d.ts"
     },
     "./package.json": "./package.json"
   },
