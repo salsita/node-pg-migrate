@@ -489,7 +489,7 @@ if (configFileName) {
 await readTsconfig();
 
 if (useTsx) {
-  const tsx = await tryImport('tsx/esm');
+  const tsx = await tryImport<typeof import('tsx/esm/api')>('tsx/esm');
   if (!tsx) {
     console.error("For TSX support, please install 'tsx' module");
   }
