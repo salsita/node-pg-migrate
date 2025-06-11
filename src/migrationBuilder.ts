@@ -20,7 +20,16 @@ import * as tables from './operations/tables';
 import * as triggers from './operations/triggers';
 import * as types from './operations/types';
 import * as views from './operations/views';
-import { createSchemalize, PgLiteral } from './utils';
+import { createSchemalize } from './utils';
+/**
+ * Export "PgLiteral" of module "src/utils/PgLiteral.ts" was reexported through module "src/utils/index.ts"
+ * while both modules are dependencies of each other and will end up in different chunks by current Rollup settings.
+ * This scenario is not well supported at the moment as it will produce a circular dependency between chunks
+ * and will likely lead to broken execution order.
+ * Either change the import in "src/migrationBuilder.ts" to point directly to the exporting module
+ * or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+ */
+import { PgLiteral } from './utils/PgLiteral';
 
 /*
  * The migration builder is used to actually create a migration from instructions

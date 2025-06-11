@@ -4,11 +4,7 @@
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
-    "build:bin": "tsup-node --config tsup-bin.config.ts",
-    "build:clean": "rimraf dist",
-    "build:code": "tsup-node",
-    "build:legacy-types": "tsc --project tsconfig.legacy-types.json",
-    "build": "run-s build:clean build:code build:bin build:legacy-types",
+    "build": "tsup-node",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content .",
     "ts-check": "tsc",
@@ -18,7 +14,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "premigrate": "run-s build:bin",
+    "premigrate": "pnpm run build",
     "migrate": "node bin/node-pg-migrate.js",
     "prepublishOnly": "pnpm run clean && pnpm install && pnpm run build",
     "preflight": "pnpm install && run-s format build lint test:update-snapshots ts-check"
@@ -64,11 +60,12 @@
       "default": "./bin/*.js"
     },
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/bundle/index.d.ts",
+      "default": "./dist/bundle/index.js"
     },
     "./*": {
-      "types": "./dist/legacy/*.d.ts"
+      "types": "./dist/legacy/*.d.ts",
+      "default": "./dist/legacy/*.js"
     },
     "./package.json": "./package.json"
   },
@@ -103,6 +100,7 @@
     "cross-env": "7.0.3",
     "dotenv": "16.5.0",
     "dotenv-expand": "12.0.2",
+    "esbuild-fix-imports-plugin": "1.0.21",
     "eslint": "9.28.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-gitignore": "0.1.0",

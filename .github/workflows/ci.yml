@@ -94,7 +94,7 @@ jobs:
         run: pnpm install
 
       - name: Build code (that includes types)
-        run: pnpm run build:code
+        run: pnpm run build
 
       - name: Check scripts
         run: pnpm run ts-check
