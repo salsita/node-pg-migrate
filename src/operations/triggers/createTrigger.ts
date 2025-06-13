@@ -26,12 +26,14 @@ export type CreateTrigger = Reversible<CreateTriggerFn>;
 
 export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
   const _create: CreateTrigger = (
+    /* eslint-disable custom/no-arrow-parameter-types */
     tableName: Name,
     triggerName: string,
     triggerOptions:
       | (TriggerOptions & DropOptions)
       | (TriggerOptions & FunctionOptions & DropOptions),
     definition?: Value
+    /* eslint-enable custom/no-arrow-parameter-types */
   ) => {
     const {
       constraint = false,

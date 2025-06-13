@@ -439,10 +439,10 @@ export function parseLike(
   like: Name | { table: Name; options?: LikeOptions },
   literal: Literal
 ): string {
-  const formatOptions = (
+  const formatOptions: (
     name: 'INCLUDING' | 'EXCLUDING',
     options?: Like | Like[]
-  ) =>
+  ) => string = (name, options) =>
     toArray(options)
       .filter((option): option is Like => option !== undefined)
       .map((option) => ` ${name} ${option}`)

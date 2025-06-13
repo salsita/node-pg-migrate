@@ -12,9 +12,9 @@ export type AddToOperatorFamilyFn = (
 
 export type AddToOperatorFamily = Reversible<AddToOperatorFamilyFn>;
 
-export const addToOperatorFamily = (
+export const addToOperatorFamily: (
   mOptions: MigrationOptions
-): AddToOperatorFamily => {
+) => AddToOperatorFamily = (mOptions) => {
   const method: AddToOperatorFamily = (
     operatorFamilyName,
     indexMethod,

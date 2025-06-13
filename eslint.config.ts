@@ -42,6 +42,7 @@ export default defineConfig(
   {
     name: 'eslint overrides',
     rules: {
+      curly: ['error', 'all'],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'logical-assignment-operators': 'error',
       'no-else-return': 'error',
@@ -265,6 +266,127 @@ export default defineConfig(
       '@typescript-eslint/no-throw-literal': 'off',
       'unicorn/no-array-reduce': 'off',
     },
-  }
+  },
   //#endregion
+
+  {
+    name: 'custom',
+    plugins: {
+      custom: {
+        rules: {
+          'no-arrow-parameter-types': {
+            meta: {
+              fixable: 'code',
+              hasSuggestions: true,
+              type: 'suggestion',
+              dialects: ['typescript'],
+              schema: [
+                {
+                  type: 'object',
+                  properties: {
+                    allowOptional: {
+                      type: 'boolean',
+                      default: false,
+                      description:
+                        'Allow type annotations when the parameter is optional. Sometimes useful for overloaded functions.',
+                    },
+                  },
+                },
+              ],
+              defaultOptions: [
+                {
+                  allowOptional: false,
+                },
+              ],
+            },
+            create(context) {
+              const options = context.options[0] as { allowOptional: boolean };
+
+              return {
+                ArrowFunctionExpression(node) {
+                  const paramsWithTypeAnnotation = node.params.filter(
+                    (
+                      // @ts-expect-error: will be inferred when moved into an official plugin
+                      param
+                    ) => param.typeAnnotation !== undefined
+                  );
+
+                  const isCatchClause =
+                    node.parent.callee?.property?.name === 'catch';
+
+                  if (paramsWithTypeAnnotation.length > 0 && !isCatchClause) {
+                    for (const param of paramsWithTypeAnnotation) {
+                      if (param.optional && options.allowOptional) {
+                        continue;
+                      }
+
+                      context.report({
+                        node: param,
+                        message:
+                          'Arrow function parameters should not have type annotations. Instead the Object where the operation is used should be typed correctly.',
+                        fix(fixer) {
+                          if (param.optional) {
+                            return null;
+                          }
+
+                          // TODO @Shinigami92 2025-06-16: Handle async arrow functions
+                          if (node.parent.type === 'VariableDeclarator') {
+                            const variableDeclaratorNode = node.parent;
+
+                            return [
+                              // Remove ` =>`
+                              fixer.replaceTextRange(
+                                [node.body.range[0] - 3, node.body.range[0]],
+                                ''
+                              ),
+                              // Remove ` = `
+                              fixer.replaceTextRange(
+                                [
+                                  variableDeclaratorNode.id.range[1],
+                                  variableDeclaratorNode.init.range[0],
+                                ],
+                                ''
+                              ),
+                              // Replace `const ` with `function `
+                              fixer.replaceTextRange(
+                                [
+                                  variableDeclaratorNode.parent.range[0],
+                                  variableDeclaratorNode.range[0],
+                                ],
+                                'function '
+                              ),
+                            ];
+                          }
+
+                          return fixer.removeRange(param.typeAnnotation.range);
+                        },
+                        suggest: [
+                          {
+                            desc: 'Remove type annotation',
+                            fix(fixer) {
+                              if (param.optional) {
+                                return fixer.removeRange([
+                                  param.typeAnnotation.range[0] - 1, // Remove the `?` before the type annotation
+                                  param.typeAnnotation.range[1],
+                                ]);
+                              }
+
+                              return null;
+                            },
+                          },
+                        ],
+                      });
+                    }
+                  }
+                },
+              };
+            },
+          },
+        },
+      },
+    },
+    rules: {
+      'custom/no-arrow-parameter-types': ['error', { allowOptional: true }],
+    },
+  }
 );
