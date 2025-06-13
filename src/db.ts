@@ -106,7 +106,7 @@ export function db(
     });
 
   const query: DBConnection['query'] = async (
-    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    queryTextOrConfig,
     values?: any[]
   ): Promise<QueryArrayResult | QueryResult> => {
     await createConnection();
@@ -147,7 +147,7 @@ ${error}
   };
 
   const select: DBConnection['select'] = async (
-    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    queryTextOrConfig,
     values?: any[]
   ) => {
     const { rows } = await query(queryTextOrConfig, values);
@@ -155,12 +155,15 @@ ${error}
   };
 
   const column: DBConnection['column'] = async (
-    columnName: string,
-    queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
+    columnName,
+    queryTextOrConfig,
     values?: any[]
   ) => {
-    const rows = await select(queryTextOrConfig, values);
-    return rows.map((r: { [key: string]: any }) => r[columnName]);
+    const rows: Array<{ [key: string]: any }> = await select(
+      queryTextOrConfig,
+      values
+    );
+    return rows.map((r) => r[columnName]);
   };
 
   return {
