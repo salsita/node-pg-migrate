@@ -1,18 +1,6 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "target": "ES2023",
-    "moduleResolution": "Node",
-    "module": "ESNext",
-    "strict": true,
-    "noEmit": true,
-    "lib": ["ES2023"],
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noImplicitOverride": true,
-    "allowJs": true,
-    "verbatimModuleSyntax": true,
-    "erasableSyntaxOnly": true
+    "allowJs": true
   }
 }
