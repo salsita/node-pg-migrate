@@ -5,6 +5,7 @@ import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
 import type { Logger } from '../src/logger';
 import {
+  FilenameFormat,
   getMigrationFilePaths,
   getNumericPrefix,
   Migration,
@@ -52,6 +53,11 @@ describe('migration', () => {
       expect(
         getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
       ).toBe(now.valueOf());
+    });
+
+    it('should get prefix for index strings', () => {
+      expect(getNumericPrefix('0001', logger)).toBe(1);
+      expect(getNumericPrefix('1234', logger)).toBe(1234);
     });
   });
 
@@ -125,6 +131,21 @@ describe('migration', () => {
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
       }
+    });
+
+    it('should resolve the next index for file paths', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '*/cockroach/*test*';
+
+      const nextPrefix = await Migration.getFilePrefix(
+        FilenameFormat.index,
+        dir,
+        ignorePattern
+      );
+
+      // There are 106 files matching the pattern
+      expect(nextPrefix).toEqual('0107');
     });
   });
 

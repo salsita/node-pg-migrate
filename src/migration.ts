@@ -33,6 +33,7 @@ export interface RunMigration {
 export const FilenameFormat = Object.freeze({
   timestamp: 'timestamp',
   utc: 'utc',
+  index: 'index',
 });
 
 export type FilenameFormat =
@@ -49,6 +50,7 @@ export interface CreateOptionsDefault {
 
 export type CreateOptions = {
   filenameFormat?: FilenameFormat;
+  ignorePattern?: string;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
@@ -187,8 +189,11 @@ async function getLastSuffix(
 }
 
 /**
- * extracts numeric value from everything in `filename` before `SEPARATOR`.
- * 17 digit numbers are interpreted as utc date and converted to the number representation of that date.
+ * Extracts numeric value from everything in `filename` before `SEPARATOR`.
+ * 17 digit numbers are interpreted as UTC date and converted to the number
+ * representation of that date. 1...4 digit numbers are interpreted as index
+ * based naming scheme.
+ *
  * @param filename filename to extract the prefix from
  * @param logger Redirect messages to this logger object, rather than `console`.
  * @returns numeric value of the filename prefix (everything before `SEPARATOR`).
@@ -219,7 +224,11 @@ export function getNumericPrefix(
     }
   }
 
-  logger.error(`Can't determine timestamp for ${prefix}`);
+  if (prefix && /^\d{1,4$/) {
+    return Number(prefix);
+  }
+
+  logger.error(`Cannot determine numeric prefix for ${prefix}`);
   return Number(prefix) || 0;
 }
 
@@ -232,22 +241,69 @@ async function resolveSuffix(
 }
 
 export class Migration implements RunMigration {
-  // class method that creates a new migration file by cloning the migration template
+  /**
+   * Get file prefix for a new migrations file
+   *
+   * @method Migration.getFilePrefix
+   * @param filenameFormat Filename format
+   * @param directory Migrations directory
+   * @param [ignorePattern] Glob ignore pattern
+   * @returns string New file prefix
+   */
+  static async getFilePrefix(
+    filenameFormat: string,
+    directory: string,
+    ignorePattern?: string
+  ): Promise<string> {
+    if (filenameFormat === FilenameFormat.index) {
+      const filePaths = await getMigrationFilePaths(directory, {
+        ignorePattern,
+        useGlob: /\*/.test(directory) || /\*/.test(ignorePattern || ''),
+      });
+
+      // Get the minimum last found prefix as the total number of matching files
+      let lastPrefix = filePaths.length;
+
+      // Index can be used only when there are no mismatching filenames, so all
+      // the filenames have to be verified first against "index" naming pattern
+      for (const filenamePath of filePaths) {
+        const filename = basename(filenamePath);
+        if (!/^\d{1,4}\D/.test(filename)) {
+          throw new Error(
+            `Cannot deduce index for previously created file "${filenamePath}"`
+          );
+        }
+
+        lastPrefix = Math.max(lastPrefix, getNumericPrefix(filename));
+      }
+
+      // Next prefix is one more than the last found prefix
+      return `${lastPrefix + 1}`.padStart(4, '0');
+    }
+
+    return filenameFormat === FilenameFormat.utc
+      ? new Date().toISOString().replace(/\D/g, '')
+      : Date.now().toString();
+  }
+
+  // Class method that creates a new migration file by cloning the migration template
   static async create(
     name: string,
     directory: string,
     options: CreateOptions = {}
   ): Promise<string> {
-    const { filenameFormat = FilenameFormat.timestamp } = options;
+    const { filenameFormat = FilenameFormat.timestamp, ignorePattern } =
+      options;
 
-    // ensure the migrations directory exists
+    // Ensure the migrations directory exists
     await mkdir(directory, { recursive: true });
 
-    const now = new Date();
-    const time =
-      filenameFormat === FilenameFormat.utc
-        ? now.toISOString().replace(/\D/g, '')
-        : now.valueOf();
+    // Get prefix based on the configured naming scheme
+    const prefix = await Migration.getFilePrefix(
+      filenameFormat,
+      directory,
+      ignorePattern
+    );
 
     const templateFileName =
       'templateFileName' in options
@@ -262,7 +318,7 @@ export class Migration implements RunMigration {
     const suffix = getSuffixFromFileName(templateFileName);
 
     // file name looks like migrations/1391877300255_migration-title.js
-    const newFile = join(directory, `${time}${SEPARATOR}${name}.${suffix}`);
+    const newFile = join(directory, `${prefix}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
     await new Promise<void>((resolve, reject) => {
