@@ -40,13 +40,13 @@ describe('migration', () => {
   });
 
   describe('getNumericPrefix', () => {
-    it('should get timestamp for normal timestamp', () => {
+    it('should get prefix for normal timestamp', () => {
       const now = Date.now();
 
       expect(getNumericPrefix(String(now), logger)).toBe(now);
     });
 
-    it('should get timestamp for shortened iso format', () => {
+    it('should get prefix for shortened iso format', () => {
       const now = new Date();
 
       expect(
@@ -54,7 +54,13 @@ describe('migration', () => {
       ).toBe(now.valueOf());
     });
 
-    it('should get timestamp for ISO 8601 datetime strings', () => {
+    it('should get prefix for ISO 8601 datetime strings', () => {
+      const now = '2025-06-20T12:11:00.000Z';
+
+      expect(getNumericPrefix(now, logger)).toBe(1750421460000);
+    });
+
+    it('should get prefix for index strings', () => {
       const now = '2025-06-20T12:11:00.000Z';
 
       expect(getNumericPrefix(now, logger)).toBe(1750421460000);
