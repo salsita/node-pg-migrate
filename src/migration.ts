@@ -34,6 +34,7 @@ export const FilenameFormat = Object.freeze({
   timestamp: 'timestamp',
   utc: 'utc',
   iso: 'iso',
+  index: 'index',
 });
 
 export type FilenameFormat =
@@ -50,6 +51,7 @@ export interface CreateOptionsDefault {
 
 export type CreateOptions = {
   filenameFormat?: FilenameFormat;
+  ignorePattern?: string;
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
@@ -230,7 +232,11 @@ export function getNumericPrefix(
     return new Date(prefix).valueOf();
   }
 
-  logger.error(`Can't determine timestamp for ${prefix}`);
+  if (prefix && /^\d{1,4$/) {
+    return Number(prefix);
+  }
+
+  logger.error(`Cannot determine numeric prefix for ${prefix}`);
   return Number(prefix) || 0;
 }
 
@@ -244,13 +250,47 @@ async function resolveSuffix(
 
 export class Migration implements RunMigration {
   /**
+   * Get file prefix for a new migrations file
    *
-   * @param filenameFormat
-   * @returns
+   * @method Migration.getFilePrefix
+   * @param filenameFormat Filename format
+   * @param directory Migrations directory
+   * @param [ignorePattern] Glob ignore pattern
+   * @returns string New file prefix
    */
-  static getFilePrefix(filenameFormat: string): string {
+  static async getFilePrefix(
+    filenameFormat: string,
+    directory: string,
+    ignorePattern?: string
+  ): Promise<string> {
     if (filenameFormat === FilenameFormat.iso) {
       return new Date().toISOString();
+    }
+
+    if (filenameFormat === FilenameFormat.index) {
+      const filePaths = await getMigrationFilePaths(directory, {
+        ignorePattern,
+        useGlob: /\*/.test(directory) || /\*/.test(ignorePattern || ''),
+      });
+
+      // Get the minimum last found prefix as the total number of matching files
+      let lastPrefix = filePaths.length;
+
+      // Index can be used only when there are no mismatching filenames, so all
+      // the filenames have to be verified first against "index" naming pattern
+      for (const filenamePath of filePaths) {
+        const filename = basename(filenamePath);
+        if (!/^\d{1,4}\D/.test(filename)) {
+          throw new Error(
+            `Cannot deduce index for previously created file "${filenamePath}"`
+          );
+        }
+
+        lastPrefix = Math.max(lastPrefix, getNumericPrefix(filename));
+      }
+
+      // Next prefix is one more than the last found prefix
+      return `${lastPrefix + 1}`.padStart(4, '0');
     }
 
     return filenameFormat === FilenameFormat.utc
@@ -264,12 +304,17 @@ export class Migration implements RunMigration {
     directory: string,
     options: CreateOptions = {}
   ): Promise<string> {
-    const { filenameFormat = FilenameFormat.timestamp } = options;
+    const { filenameFormat = FilenameFormat.timestamp, ignorePattern } =
+      options;
 
     // ensure the migrations directory exists
     await mkdir(directory, { recursive: true });
 
-    const prefix = Migration.getFilePrefix(filenameFormat);
+    const prefix = await Migration.getFilePrefix(
+      filenameFormat,
+      directory,
+      ignorePattern
+    );
 
     const templateFileName =
       'templateFileName' in options
