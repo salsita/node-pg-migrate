@@ -203,33 +203,29 @@ export function getNumericPrefix(
   logger: Logger = console
 ): number {
   const prefix = filename.split(SEPARATOR)[0];
-  if (prefix && /^\d+$/.test(prefix)) {
-    if (prefix.length === 13) {
-      // timestamp: 1391877300255
-      return Number(prefix);
-    }
+  const value = Number(prefix);
 
-    if (prefix && prefix.length === 17) {
-      // utc: 20200513070724505
-      const year = prefix.slice(0, 4);
-      const month = prefix.slice(4, 6);
-      const date = prefix.slice(6, 8);
-      const hours = prefix.slice(8, 10);
-      const minutes = prefix.slice(10, 12);
-      const seconds = prefix.slice(12, 14);
-      const ms = prefix.slice(14, 17);
-      return new Date(
-        `${year}-${month}-${date}T${hours}:${minutes}:${seconds}.${ms}Z`
-      ).valueOf();
-    }
+  if (!/^\d+$/.test(prefix) || Number.isNaN(value)) {
+    logger.error(`Cannot determine numeric prefix for "${prefix}"`);
+    throw new Error(`Cannot determine numeric prefix for "${prefix}"`);
   }
 
-  if (prefix && /^\d{1,4$/) {
-    return Number(prefix);
+  // Special case for UTC timestamp
+  if (prefix.startsWith('20') && prefix.length === 17) {
+    // utc: 20200513070724505
+    const year = prefix.slice(0, 4);
+    const month = prefix.slice(4, 6);
+    const date = prefix.slice(6, 8);
+    const hours = prefix.slice(8, 10);
+    const minutes = prefix.slice(10, 12);
+    const seconds = prefix.slice(12, 14);
+    const ms = prefix.slice(14, 17);
+    return new Date(
+      `${year}-${month}-${date}T${hours}:${minutes}:${seconds}.${ms}Z`
+    ).valueOf();
   }
 
-  logger.error(`Cannot determine numeric prefix for ${prefix}`);
-  return Number(prefix) || 0;
+  return value;
 }
 
 async function resolveSuffix(

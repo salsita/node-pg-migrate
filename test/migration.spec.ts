@@ -41,9 +41,15 @@ describe('migration', () => {
   });
 
   describe('getNumericPrefix', () => {
+    it('should fail with a non-numeric value', () => {
+      const prefix = 'invalid-prefix';
+      expect(() => getNumericPrefix(prefix, logger)).toThrow(
+        new Error(`Cannot determine numeric prefix for "${prefix}"`)
+      );
+    });
+
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
-
       expect(getNumericPrefix(String(now), logger)).toBe(now);
     });
 
@@ -147,6 +153,7 @@ describe('migration', () => {
       // There are 106 files matching the pattern
       expect(nextPrefix).toEqual('0107');
     });
+
   });
 
   describe('self.applyUp', () => {
