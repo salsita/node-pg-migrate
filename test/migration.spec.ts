@@ -163,6 +163,17 @@ describe('migration', () => {
       await expect(prefix).rejects.toThrow();
     });
 
+    it('should get a normalized UTC as an epoch timestamp', async () => {
+      const now = Number.parseInt(new Date().toISOString().replace(/\D/g, ''));
+
+      const dir = 'test/migrations/**';
+      const prefix = await Migration.getFilePrefix('utc', dir);
+
+      // Checking against asynchronous code: prefix should be within 1000 ms from now
+      expect(Number.parseInt(prefix) - now < 1000).toEqual(true);
+    });
+  });
+
   describe('self.applyUp', () => {
     it('should call db.query on normal operations', async () => {
       const migration = new Migration(
