@@ -154,7 +154,14 @@ describe('migration', () => {
       expect(nextPrefix).toEqual('0107');
     });
 
-  });
+    it('should fail to get the next index with invalid filenames', async () => {
+      const prefix = Migration.getFilePrefix(
+        FilenameFormat.index,
+        'test/invalid-migrations/invalid-prefix.*'
+      );
+
+      await expect(prefix).rejects.toThrow();
+    });
 
   describe('self.applyUp', () => {
     it('should call db.query on normal operations', async () => {
@@ -248,20 +255,21 @@ describe('migration', () => {
     });
 
     it('should fail with an error message if the migration is invalid', () => {
+      const direction = 'up';
       const invalidMigrationName = 'invalid-migration';
 
-      const migration = new Migration(
-        dbMock,
-        invalidMigrationName,
-        {},
-        options,
-        {},
-        logger
-      );
+      expect(() => {
+        const migration = new Migration(
+          dbMock,
+          invalidMigrationName,
+          {},
+          options,
+          {},
+          logger
+        );
 
-      const direction = 'up';
-
-      expect(() => migration.apply(direction)).toThrow(
+        migration.apply(direction);
+      }).toThrow(
         new Error(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
         )
