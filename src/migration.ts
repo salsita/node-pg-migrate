@@ -247,6 +247,17 @@ export class Migration implements RunMigration {
    * @returns string New file prefix
    */
   static async getFilePrefix(
+    filenameFormat: 'timestamp' | 'utc',
+    directory: string
+  ): Promise<string>;
+
+  static async getFilePrefix(
+    filenameFormat: 'index',
+    directory: string,
+    ignorePattern?: string
+  ): Promise<string>;
+
+  static async getFilePrefix(
     filenameFormat: string,
     directory: string,
     ignorePattern?: string
@@ -356,12 +367,20 @@ export class Migration implements RunMigration {
     this.db = db;
     this.path = migrationPath;
     this.name = basename(migrationPath, extname(migrationPath));
-    this.timestamp = getNumericPrefix(this.name, logger);
     this.up = up;
     this.down = down;
     this.options = options;
     this.typeShorthands = typeShorthands;
     this.logger = logger;
+
+    // Backwards compatibility patch: getNumericPrefix failed silently earlier
+    // so this try-catch block is to simulate it. The constructor should fail
+    // with invalid prefix rather than allow to continue.
+    try {
+      this.timestamp = getNumericPrefix(this.name, logger);
+    } catch {
+      this.timestamp = 0;
+    }
   }
 
   _getMarkAsRun(action: MigrationAction): string {
