@@ -169,8 +169,9 @@ describe('migration', () => {
       const dir = 'test/migrations/**';
       const prefix = await Migration.getFilePrefix('utc', dir);
 
-      // Checking against asynchronous code: prefix should be within 1000 ms from now
-      expect(Number.parseInt(prefix) - now < 1000).toEqual(true);
+      // Checking against asynchronous code: prefix should be very close as now
+      // but is not exactly the same millisecond
+      expect(Number.parseInt(prefix) - now < 100).toEqual(true);
     });
   });
 
