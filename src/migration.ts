@@ -247,17 +247,6 @@ export class Migration implements RunMigration {
    * @returns string New file prefix
    */
   static async getFilePrefix(
-    filenameFormat: 'timestamp' | 'utc',
-    directory: string
-  ): Promise<string>;
-
-  static async getFilePrefix(
-    filenameFormat: 'index',
-    directory: string,
-    ignorePattern?: string
-  ): Promise<string>;
-
-  static async getFilePrefix(
     filenameFormat: string,
     directory: string,
     ignorePattern?: string
