@@ -211,7 +211,7 @@ export function getNumericPrefix(
   }
 
   // Special case for UTC timestamp
-  if (prefix.startsWith('20') && prefix.length === 17) {
+  if (prefix.length === 17) {
     // utc: 20200513070724505
     const year = prefix.slice(0, 4);
     const month = prefix.slice(4, 6);
