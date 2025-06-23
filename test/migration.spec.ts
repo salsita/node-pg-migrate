@@ -5,6 +5,7 @@ import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
 import type { Logger } from '../src/logger';
 import {
+  FilenameFormat,
   getMigrationFilePaths,
   getNumericPrefix,
   Migration,
@@ -40,9 +41,15 @@ describe('migration', () => {
   });
 
   describe('getNumericPrefix', () => {
+    it('should fail with a non-numeric value', () => {
+      const prefix = 'invalid-prefix';
+      expect(() => getNumericPrefix(prefix, logger)).toThrow(
+        new Error(`Cannot determine numeric prefix for "${prefix}"`)
+      );
+    });
+
     it('should get timestamp for normal timestamp', () => {
       const now = Date.now();
-
       expect(getNumericPrefix(String(now), logger)).toBe(now);
     });
 
@@ -52,6 +59,11 @@ describe('migration', () => {
       expect(
         getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
       ).toBe(now.valueOf());
+    });
+
+    it('should get prefix for index strings', () => {
+      expect(getNumericPrefix('0001', logger)).toBe(1);
+      expect(getNumericPrefix('1234', logger)).toBe(1234);
     });
   });
 
@@ -125,6 +137,41 @@ describe('migration', () => {
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
       }
+    });
+
+    it('should resolve the next index for file paths', async () => {
+      const dir = 'test/{cockroach,migrations}/**';
+      // ignores those files that have `test` in their name (not in the path, just filename)
+      const ignorePattern = '*/cockroach/*test*';
+
+      const nextPrefix = await Migration.getFilePrefix(
+        FilenameFormat.index,
+        dir,
+        ignorePattern
+      );
+
+      // There are 106 files matching the pattern
+      expect(nextPrefix).toEqual('0107');
+    });
+
+    it('should fail to get the next index with invalid filenames', async () => {
+      const prefix = Migration.getFilePrefix(
+        FilenameFormat.index,
+        'test/invalid-migrations/invalid-prefix.*'
+      );
+
+      await expect(prefix).rejects.toThrow();
+    });
+
+    it('should get a normalized UTC as an epoch timestamp', async () => {
+      const now = Number.parseInt(new Date().toISOString().replace(/\D/g, ''));
+
+      const dir = 'test/migrations/**';
+      const prefix = await Migration.getFilePrefix('utc', dir);
+
+      // Checking against asynchronous code: prefix should be very close as now
+      // but is not exactly the same millisecond
+      expect(Number.parseInt(prefix) - now < 100).toEqual(true);
     });
   });
 
@@ -220,20 +267,21 @@ describe('migration', () => {
     });
 
     it('should fail with an error message if the migration is invalid', () => {
+      const direction = 'up';
       const invalidMigrationName = 'invalid-migration';
 
-      const migration = new Migration(
-        dbMock,
-        invalidMigrationName,
-        {},
-        options,
-        {},
-        logger
-      );
+      expect(() => {
+        const migration = new Migration(
+          dbMock,
+          invalidMigrationName,
+          {},
+          options,
+          {},
+          logger
+        );
 
-      const direction = 'up';
-
-      expect(() => migration.apply(direction)).toThrow(
+        migration.apply(direction);
+      }).toThrow(
         new Error(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
         )
