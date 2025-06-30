@@ -111,7 +111,7 @@
     "node-pg-migrate": "file:.",
     "npm-run-all2": "8.0.4",
     "pg": "8.16.3",
-    "prettier": "3.5.3",
+    "prettier": "3.6.2",
     "prettier-plugin-organize-imports": "4.1.0",
     "prettier-plugin-pkg": "0.21.1",
     "ts-node": "10.9.2",
