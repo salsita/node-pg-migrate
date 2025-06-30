@@ -3,7 +3,7 @@
   "version": "8.0.3",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
-    "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
+    "clean": "git clean -fdx",
     "build": "tsup-node",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content .",
@@ -114,7 +114,6 @@
     "prettier": "3.5.3",
     "prettier-plugin-organize-imports": "4.1.0",
     "prettier-plugin-pkg": "0.21.1",
-    "rimraf": "6.0.1",
     "ts-node": "10.9.2",
     "tsup": "8.5.0",
     "tsx": "4.20.3",
