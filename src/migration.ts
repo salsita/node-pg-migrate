@@ -258,23 +258,32 @@ export class Migration implements RunMigration {
       });
 
       // Get the minimum last found prefix as the total number of matching files
-      let lastPrefix = filePaths.length;
+      let lastPrefix = 0;
+      let prefixLength = 0;
 
-      // Index can be used only when there are no mismatching filenames, so all
+      // Increment can be used only when there are no mismatching filenames, so all
       // the filenames have to be verified first against "index" naming pattern
       for (const filenamePath of filePaths) {
         const filename = basename(filenamePath);
-        if (!/^\d{1,4}\D/.test(filename)) {
+
+        if (!/^\d+\D/.test(filename)) {
           throw new Error(
             `Cannot deduce index for previously created file "${filenamePath}"`
           );
         }
 
+        const prefix = filename.split(/\D/)[0] ?? '';
+        prefixLength = Math.max(prefixLength, prefix.length);
         lastPrefix = Math.max(lastPrefix, getNumericPrefix(filename));
       }
 
       // Next prefix is one more than the last found prefix
-      return `${lastPrefix + 1}`.padStart(4, '0');
+      return `${lastPrefix + 1}`.padStart(
+        // Use default padding of 4 characters, but continue the previous
+        // naming scheme when applicable
+        prefixLength || 4,
+        '0'
+      );
     }
 
     return filenameFormat === FilenameFormat.utc

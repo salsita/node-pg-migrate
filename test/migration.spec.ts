@@ -139,6 +139,17 @@ describe('migration', () => {
       }
     });
 
+    it('should resolve a sane starting point when migration files do not exist', async () => {
+      const dir = 'test/directory-does-not-exist/**';
+
+      const nextPrefix = await Migration.getFilePrefix(
+        FilenameFormat.index,
+        dir
+      );
+
+      expect(nextPrefix).toEqual('0001');
+    });
+
     it('should resolve the next index for file paths', async () => {
       const dir = 'test/{cockroach,migrations}/**';
       // ignores those files that have `test` in their name (not in the path, just filename)
@@ -150,8 +161,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      // There are 106 files matching the pattern
-      expect(nextPrefix).toEqual('0107');
+      expect(nextPrefix).toEqual('095');
     });
 
     it('should fail to get the next index with invalid filenames', async () => {
@@ -163,7 +173,16 @@ describe('migration', () => {
       await expect(prefix).rejects.toThrow();
     });
 
-    it('should get a normalized UTC as an epoch timestamp', async () => {
+    it('should get an epoch timestamp as a prefix', async () => {
+      const dir = 'test/migrations/**';
+      const prefix = await Migration.getFilePrefix('timestamp', dir);
+
+      // Checking against asynchronous code: prefix should be very close as now
+      // but is not exactly the same millisecond
+      expect(Number.parseInt(prefix) - Date.now() < 100).toEqual(true);
+    });
+
+    it('should get a normalized UTC as a prefix', async () => {
       const now = Number.parseInt(new Date().toISOString().replace(/\D/g, ''));
 
       const dir = 'test/migrations/**';
