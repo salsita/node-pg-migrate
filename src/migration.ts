@@ -202,12 +202,12 @@ export function getNumericPrefix(
   filename: string,
   logger: Logger = console
 ): number {
-  const prefix = filename.split(SEPARATOR)[0];
+  const prefix = (/^(\d+)/.exec(filename) || '')[0];
   const value = Number(prefix);
 
   if (!/^\d+$/.test(prefix) || Number.isNaN(value)) {
-    logger.error(`Cannot determine numeric prefix for "${prefix}"`);
-    throw new Error(`Cannot determine numeric prefix for "${prefix}"`);
+    logger.error(`Cannot determine numeric prefix for "${filename}"`);
+    throw new Error(`Cannot determine numeric prefix for "${filename}"`);
   }
 
   // Special case for UTC timestamp

@@ -41,6 +41,12 @@ describe('migration', () => {
   });
 
   describe('getNumericPrefix', () => {
+    it('should allow any non-numeric character as a separator', () => {
+      expect(getNumericPrefix('1-line-as-separator.js')).toBe(1);
+      expect(getNumericPrefix('2_underscore-as-separator.ts')).toBe(2);
+      expect(getNumericPrefix('3 space-as-separator.sql')).toBe(3);
+    });
+
     it('should fail with a non-numeric value', () => {
       const prefix = 'invalid-prefix';
       expect(() => getNumericPrefix(prefix, logger)).toThrow(
