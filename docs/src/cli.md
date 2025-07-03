@@ -106,6 +106,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
 | `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| `ssl-ca`                    |         | `undefined`                     | Path to SSL CA certificate file                                                                                                                                                                                                                                                         |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
 from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other
@@ -138,5 +139,6 @@ Other available options are:
   "verbose": true,
   "decamelize": false,
   "tsconfig": "tsconfig.json",
+  "sslCa": "/path/to/ca.pem"
 }
 ```
