@@ -294,17 +294,16 @@ describe('migration', () => {
     it('should fail with an error message if the migration is invalid', () => {
       const direction = 'up';
       const invalidMigrationName = 'invalid-migration';
+      const migration = new Migration(
+        dbMock,
+        invalidMigrationName,
+        {},
+        options,
+        {},
+        logger
+      );
 
       expect(() => {
-        const migration = new Migration(
-          dbMock,
-          invalidMigrationName,
-          {},
-          options,
-          {},
-          logger
-        );
-
         migration.apply(direction);
       }).toThrow(
         new Error(
