@@ -609,10 +609,16 @@ if (action === 'create') {
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
 
     const sslCaConfig = loadSslCaCertificate(sslCa);
+
+    let existingSslConfig;
+    if (typeof databaseUrl?.ssl === 'object' && databaseUrl.ssl !== null) {
+      existingSslConfig = databaseUrl.ssl;
+    } else if (databaseUrl?.ssl === true) {
+      existingSslConfig = {};
+    }
+
     const sslConfig = {
-      // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
-      // @ts-expect-error: ignore possible boolean for now
-      ...databaseUrl.ssl,
+      ...existingSslConfig,
       ...(typeof rejectUnauthorized === 'boolean' && { rejectUnauthorized }),
       ...sslCaConfig,
     };
