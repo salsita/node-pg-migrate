@@ -139,6 +139,6 @@ Other available options are:
   "verbose": true,
   "decamelize": false,
   "tsconfig": "tsconfig.json",
-  "sslCa": "/path/to/ca.pem"
+  "sslCa": "/path/to/ca.pem",
 }
 ```
