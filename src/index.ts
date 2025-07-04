@@ -265,5 +265,10 @@ export type {
 export { PgType } from './pgType';
 export { PG_MIGRATE_LOCK_ID, runner } from './runner';
 export type { RunnerOption } from './runner';
-export { PgLiteral, escapeValue, isPgLiteral } from './utils';
+export {
+  PgLiteral,
+  escapeValue,
+  isPgLiteral,
+  loadSslCaCertificate,
+} from './utils';
 export type { PgLiteralValue } from './utils';

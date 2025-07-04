@@ -8,6 +8,7 @@ import {
   Migration,
   PG_MIGRATE_LOCK_ID,
   runner as migrationRunner,
+  loadSslCaCertificate,
 } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { register } from 'node:module';
@@ -23,7 +24,6 @@ import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
 import type { RunnerOption } from '../src';
 import type { FilenameFormat } from '../src/migration';
-import { loadSslCaCertificate } from '../src/utils';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
