@@ -7,8 +7,8 @@ import type { DotenvConfigOptions } from 'dotenv';
 import {
   Migration,
   PG_MIGRATE_LOCK_ID,
-  runner as migrationRunner,
   loadSslCaCertificate,
+  runner as migrationRunner,
 } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
 import { register } from 'node:module';
