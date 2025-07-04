@@ -9,6 +9,7 @@ export { getMigrationTableSchema } from './getMigrationTableSchema';
 export { getSchemas } from './getSchemas';
 export { identity } from './identity';
 export { intersection } from './intersection';
+export { loadSslCaCertificate } from './loadSslCertificate';
 export { makeComment } from './makeComment';
 export { PgLiteral, isPgLiteral } from './PgLiteral';
 export type { PgLiteralValue } from './PgLiteral';

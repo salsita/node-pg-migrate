@@ -7,6 +7,7 @@ import type { DotenvConfigOptions } from 'dotenv';
 import {
   Migration,
   PG_MIGRATE_LOCK_ID,
+  loadSslCaCertificate,
   runner as migrationRunner,
 } from 'node-pg-migrate';
 import { readFileSync } from 'node:fs';
@@ -81,6 +82,7 @@ const tsNodeArg = 'ts-node';
 const tsxArg = 'tsx';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
+const sslCaArg = 'ssl-ca';
 const envPathArg = 'envPath';
 
 const parser = yargs(process.argv.slice(2))
@@ -235,6 +237,10 @@ const parser = yargs(process.argv.slice(2))
       default: false,
       describe: 'Treats number argument to up/down migration as timestamp',
       type: 'boolean',
+    },
+    [sslCaArg]: {
+      describe: 'Path to SSL CA certificate',
+      type: 'string',
     },
   })
 
@@ -568,6 +574,7 @@ if (action === 'create') {
   const fake = argv[fakeArg];
   const TIMESTAMP = argv[timestampArg];
   const rejectUnauthorized = argv[rejectUnauthorizedArg];
+  const sslCa = argv[sslCaArg];
   const noLock = !argv[lockArg];
   const lockValue = argv[lockValueArg];
   if (noLock) {
@@ -601,21 +608,31 @@ if (action === 'create') {
     const count = _count === undefined ? numMigrations : _count;
     const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
 
+    const sslCaConfig = loadSslCaCertificate(sslCa);
+
+    type SslConfig = { rejectUnauthorized?: boolean; ca?: string };
+
+    let existingSslConfig: SslConfig | undefined;
+    if (typeof databaseUrl?.ssl === 'object' && databaseUrl.ssl !== null) {
+      existingSslConfig = databaseUrl.ssl as SslConfig;
+    } else if (databaseUrl?.ssl === true) {
+      existingSslConfig = {};
+    }
+
+    const sslConfig = {
+      ...existingSslConfig,
+      ...(typeof rejectUnauthorized === 'boolean' && { rejectUnauthorized }),
+      ...sslCaConfig,
+    };
+
+    const hasSslOptions = Object.keys(sslConfig).length > 0;
+
     return {
       dryRun,
       databaseUrl: {
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...databaseUrl,
-        ...(typeof rejectUnauthorized === 'boolean'
-          ? {
-              ssl: {
-                // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
-                // @ts-expect-error: ignore possible boolean for now
-                ...databaseUrl.ssl,
-                rejectUnauthorized,
-              },
-            }
-          : undefined),
+        ...(hasSslOptions ? { ssl: sslConfig } : undefined),
       } as ClientConfig,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
