@@ -610,9 +610,11 @@ if (action === 'create') {
 
     const sslCaConfig = loadSslCaCertificate(sslCa);
 
-    let existingSslConfig;
+    type SslConfig = { rejectUnauthorized?: boolean; ca?: string };
+
+    let existingSslConfig: SslConfig | undefined;
     if (typeof databaseUrl?.ssl === 'object' && databaseUrl.ssl !== null) {
-      existingSslConfig = databaseUrl.ssl;
+      existingSslConfig = databaseUrl.ssl as SslConfig;
     } else if (databaseUrl?.ssl === true) {
       existingSslConfig = {};
     }
