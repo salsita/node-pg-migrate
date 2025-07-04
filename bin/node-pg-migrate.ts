@@ -623,14 +623,12 @@ if (action === 'create') {
       ...sslCaConfig,
     };
 
-    const hasSslOptions = typeof rejectUnauthorized === 'boolean' || sslCa;
-
     return {
       dryRun,
       databaseUrl: {
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...databaseUrl,
-        ...(hasSslOptions && { ssl: sslConfig }),
+        ssl: sslConfig,
       } as ClientConfig,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
