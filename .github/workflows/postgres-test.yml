@@ -945,7 +945,11 @@ jobs:
             -v /tmp/ssl:/ssl \
             -p 5432:5432 \
             postgres:${{ matrix.postgres_version }}-alpine \
-            postgres -c ssl=on -c ssl_cert_file=/ssl/server.crt -c ssl_key_file=/ssl/server.key
+            /bin/sh -c "chown postgres:postgres /ssl/server.key && \
+                        chmod 600 /ssl/server.key && \
+                        chmod 644 /ssl/server.crt && \
+                        chmod 644 /ssl/ca.crt && \
+                        postgres -c ssl=on -c ssl_cert_file=/ssl/server.crt -c ssl_key_file=/ssl/server.key -c ssl_ca_file=/ssl/ca.crt"
 
           sleep 10
 
