@@ -623,12 +623,14 @@ if (action === 'create') {
       ...sslCaConfig,
     };
 
+    const hasSslOptions = Object.keys(sslConfig).length > 0;
+
     return {
       dryRun,
       databaseUrl: {
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         ...databaseUrl,
-        ssl: sslConfig,
+        ...(hasSslOptions && { ssl: sslConfig }),
       } as ClientConfig,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
