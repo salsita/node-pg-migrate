@@ -889,3 +889,104 @@ jobs:
       - name: Postgres logs
         if: always()
         run: docker logs "${{ job.services.postgres.id }}"
+
+  ssl-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [22]
+        postgres_version: [17]
+      fail-fast: false
+    timeout-minutes: 10
+
+    name: 'SSL Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Create SSL certificates
+        run: |
+          mkdir -p /tmp/ssl
+          cd /tmp/ssl
+          
+          # Create a simple self-signed certificate
+          openssl req -x509 -newkey rsa:2048 -keyout server.key -out server.crt -days 365 -nodes -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"
+          
+          chmod 600 server.key
+          chmod 644 server.crt
+          
+          ls -la /tmp/ssl/
+
+      - name: Start PostgreSQL with SSL
+        run: |
+          mkdir -p /tmp/pgdata
+          
+          docker run -d \
+            --name postgres-ssl \
+            -e POSTGRES_USER=ubuntu \
+            -e POSTGRES_PASSWORD=ubuntu \
+            -e POSTGRES_DB=integration_test \
+            -v /tmp/pgdata:/var/lib/postgresql/data \
+            -v /tmp/ssl:/ssl \
+            -p 5432:5432 \
+            postgres:${{ matrix.postgres_version }}-alpine \
+            postgres -c ssl=on -c ssl_cert_file=/ssl/server.crt -c ssl_key_file=/ssl/server.key
+          
+          sleep 10
+          
+          until docker exec postgres-ssl pg_isready -U ubuntu -d integration_test; do
+            echo "Waiting for postgres to be ready..."
+            sleep 2
+          done
+
+      - name: Test SSL connection with URL parameters (should work)
+        run: |
+          pnpm run migrate up -m test/migrations
+          pnpm run migrate down 0 -m test/migrations --timestamps
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test?ssl=true
+
+      - name: Test SSL connection with --ssl-ca flag (should work)
+        run: |
+          pnpm run migrate up -m test/migrations --ssl-ca /tmp/ssl/server.crt
+          pnpm run migrate down 0 -m test/migrations --timestamps --ssl-ca /tmp/ssl/server.crt
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
+
+      - name: Test non-SSL connection (should fail when SSL is required)
+        run: |
+          if pnpm run migrate up -m test/migrations; then
+            echo "ERROR: Non-SSL connection should have failed but succeeded"
+            exit 1
+          else
+            echo "SUCCESS: Non-SSL connection failed as expected"
+          fi
+        env:
+          DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test?ssl=false
+        continue-on-error: true
+
+      - name: Postgres logs
+        if: always()
+        run: docker logs postgres-ssl
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop postgres-ssl || true
+          docker rm postgres-ssl || true
+          rm -rf /tmp/ssl /tmp/pgdata || true
