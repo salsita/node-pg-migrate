@@ -42,29 +42,22 @@ jobs:
 
       - name: Create SSL certificates
         run: |
+          rm -rf /tmp/ssl /tmp/pgdata
           mkdir -p /tmp/ssl
           cd /tmp/ssl
-
-          # Generate CA key and certificate
           openssl genrsa -out ca.key 2048
           openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out ca.crt -subj "/C=US/ST=Test/L=Test/O=Test CA/CN=Test CA"
-
-          # Generate server key and CSR
           openssl genrsa -out server.key 2048
           openssl req -new -key server.key -out server.csr -subj "/C=US/ST=Test/L=Test/O=Test/CN=localhost"
-
-          # Sign server certificate with CA
           openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
-
           chmod 600 server.key
           chmod 644 server.crt ca.crt
+          ls -l /tmp/ssl/
 
-          ls -la /tmp/ssl/
-          
       - name: Start PostgreSQL with SSL
         run: |
           mkdir -p /tmp/pgdata
-
+          chmod 777 /tmp/pgdata
           docker run -d \
             --name postgres-ssl \
             -e POSTGRES_USER=ubuntu \
@@ -74,13 +67,7 @@ jobs:
             -v /tmp/ssl:/ssl \
             -p 5435:5432 \
             postgres:${{ matrix.postgres_version }}-alpine \
-            /bin/sh -c "chown postgres:postgres /ssl/server.key && \
-                        chmod 600 /ssl/server.key && \
-                        chmod 644 /ssl/server.crt && \
-                        chmod 644 /ssl/ca.crt && \
-                        postgres -c ssl=on -c ssl_cert_file=/ssl/server.crt -c ssl_key_file=/ssl/server.key -c ssl_ca_file=/ssl/ca.crt"
-
-          # Set permissions after container is running
+            -c ssl=on -c ssl_cert_file=/ssl/server.crt -c ssl_key_file=/ssl/server.key -c ssl_ca_file=/ssl/ca.crt
           docker exec postgres-ssl chown postgres:postgres /ssl/server.key
           docker exec postgres-ssl chmod 600 /ssl/server.key
           docker exec postgres-ssl chmod 644 /ssl/server.crt /ssl/ca.crt
