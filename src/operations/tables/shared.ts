@@ -145,7 +145,7 @@ export function parseReferences(
 
   // Optional column references
   const columns: string[] = (
-    references?.columns == null ? [] : toArray<string>(references.columns)
+    references.columns == null ? [] : [...toArray<string>(references.columns)]
   )
     .filter((column: string) => column && literal)
     .map((column: string) => literal(column));
