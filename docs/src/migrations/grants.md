@@ -9,11 +9,11 @@
 
 ### Arguments
 
-| Name                  | Type                                       | Description                       |
-| --------------------- | ------------------------------------------ | --------------------------------- |
-| `roles_from`          | [Name](/migrations/#type) or `array[Name]` | Names of roles                    |
-| `roles_to`            | [Name](/migrations/#type) or `array[Name]` | Names of roles                    |
-| `grant_roles_options` | `object`                                   | Check below for available options |
+| Name                  | Type                                        | Description                       |
+| --------------------- | ------------------------------------------- | --------------------------------- |
+| `roles_from`          | [Name](/migrations/#types) or `array[Name]` | Names of roles                    |
+| `roles_to`            | [Name](/migrations/#types) or `array[Name]` | Names of roles                    |
+| `grant_roles_options` | `object`                                    | Check below for available options |
 
 #### grant_roles_options
 
@@ -32,11 +32,11 @@
 
 ### Arguments
 
-| Name           | Type                                       | Description                       |
-| -------------- | ------------------------------------------ | --------------------------------- |
-| `roles`        | [Name](/migrations/#type) or `array[Name]` | Names of roles                    |
-| `roles_from`   | [Name](/migrations/#type) or `array[Name]` | Names of roles                    |
-| `drop_options` | `object`                                   | Check below for available options |
+| Name           | Type                                        | Description                       |
+| -------------- | ------------------------------------------- | --------------------------------- |
+| `roles`        | [Name](/migrations/#types) or `array[Name]` | Names of roles                    |
+| `roles_from`   | [Name](/migrations/#types) or `array[Name]` | Names of roles                    |
+| `drop_options` | `object`                                    | Check below for available options |
 
 #### drop_options
 
@@ -60,14 +60,14 @@
 
 #### grant_options
 
-| Option            | Type                                       | Description                                 |
-| ----------------- | ------------------------------------------ | ------------------------------------------- |
-| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                             |
-| `schema`          | `string`                                   | if tables ALL, then schema name is required |
-| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                          |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                              |
-| `withGrantOption` | `boolean`                                  | default `false`                             |
-| `cascade`         | `boolean`                                  | default `false`                             |
+| Option            | Type                                        | Description                                 |
+| ----------------- | ------------------------------------------- | ------------------------------------------- |
+| `tables`          | [Name](/migrations/#types) or `array[Name]` | Names of tables                             |
+| `schema`          | `string`                                    | if tables ALL, then schema name is required |
+| `privileges`      | `array[TablePrivileges]` or `ALL`           | list of privileges                          |
+| `roles`           | [Name](/migrations/#types) or `array[Name]` | names of roles                              |
+| `withGrantOption` | `boolean`                                   | default `false`                             |
+| `cascade`         | `boolean`                                   | default `false`                             |
 
 ## Reverse Operation: `revokeOnTables`
 
@@ -84,14 +84,14 @@
 
 #### revoke_options
 
-| Option            | Type                                       | Description                                 |
-| ----------------- | ------------------------------------------ | ------------------------------------------- |
-| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                             |
-| `schema`          | `string`                                   | if tables ALL, then schema name is required |
-| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                          |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                              |
-| `withGrantOption` | `boolean`                                  | default `false`                             |
-| `cascade`         | `boolean`                                  | drops also dependent objects                |
+| Option            | Type                                        | Description                                 |
+| ----------------- | ------------------------------------------- | ------------------------------------------- |
+| `tables`          | [Name](/migrations/#types) or `array[Name]` | Names of tables                             |
+| `schema`          | `string`                                    | if tables ALL, then schema name is required |
+| `privileges`      | `array[TablePrivileges]` or `ALL`           | list of privileges                          |
+| `roles`           | [Name](/migrations/#types) or `array[Name]` | names of roles                              |
+| `withGrantOption` | `boolean`                                   | default `false`                             |
+| `cascade`         | `boolean`                                   | drops also dependent objects                |
 
 ## Operation: `grantOnSchemas`
 
@@ -108,14 +108,14 @@
 
 #### grant_options
 
-| Option            | Type                                       | Description        |
-| ----------------- | ------------------------------------------ | ------------------ |
-| `schemas`         | [Name](/migrations/#type) or `array[Name]` | Names of schemas   |
-| `privileges`      | `array[SchemaPrivileges]` or `ALL`         | list of privileges |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles     |
-| `withGrantOption` | `boolean`                                  | default `false`    |
-| `onlyGrantOption` | `boolean`                                  | default `false`    |
-| `cascade`         | `boolean`                                  | default `false`    |
+| Option            | Type                                        | Description        |
+| ----------------- | ------------------------------------------- | ------------------ |
+| `schemas`         | [Name](/migrations/#types) or `array[Name]` | Names of schemas   |
+| `privileges`      | `array[SchemaPrivileges]` or `ALL`          | list of privileges |
+| `roles`           | [Name](/migrations/#types) or `array[Name]` | names of roles     |
+| `withGrantOption` | `boolean`                                   | default `false`    |
+| `onlyGrantOption` | `boolean`                                   | default `false`    |
+| `cascade`         | `boolean`                                   | default `false`    |
 
 ## Reverse Operation: `revokeOnSchemas`
 
@@ -132,11 +132,11 @@
 
 #### revoke_options
 
-| Option            | Type                                       | Description                  |
-| ----------------- | ------------------------------------------ | ---------------------------- |
-| `schemas`         | [Name](/migrations/#type) or `array[Name]` | Names of schemas             |
-| `privileges`      | `array[SchemaPrivileges]` or `ALL`         | list of privileges           |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles               |
-| `withGrantOption` | `boolean`                                  | default `false`              |
-| `onlyGrantOption` | `boolean`                                  | default `false`              |
-| `cascade`         | `boolean`                                  | drops also dependent objects |
+| Option            | Type                                        | Description                  |
+| ----------------- | ------------------------------------------- | ---------------------------- |
+| `schemas`         | [Name](/migrations/#types) or `array[Name]` | Names of schemas             |
+| `privileges`      | `array[SchemaPrivileges]` or `ALL`          | list of privileges           |
+| `roles`           | [Name](/migrations/#types) or `array[Name]` | names of roles               |
+| `withGrantOption` | `boolean`                                   | default `false`              |
+| `onlyGrantOption` | `boolean`                                   | default `false`              |
+| `cascade`         | `boolean`                                   | drops also dependent objects |

@@ -9,24 +9,24 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                       |
-| --------------- | ------------------------- | --------------------------------- |
-| `operator_name` | [Name](/migrations/#type) | name of the new operator          |
-| `options`       | `object`                  | Check below for available options |
+| Name            | Type                       | Description                       |
+| --------------- | -------------------------- | --------------------------------- |
+| `operator_name` | [Name](/migrations/#types) | name of the new operator          |
+| `options`       | `object`                   | Check below for available options |
 
 ### Options
 
-| Option       | Type                      | Description                            |
-| ------------ | ------------------------- | -------------------------------------- |
-| `procedure`  | [Name](/migrations/#type) | name of procedure performing operation |
-| `left`       | [Name](/migrations/#type) | type of left argument                  |
-| `right`      | [Name](/migrations/#type) | type of right argument                 |
-| `commutator` | [Name](/migrations/#type) | name of commutative operator           |
-| `negator`    | [Name](/migrations/#type) | name of negating operator              |
-| `restrict`   | [Name](/migrations/#type) | name of restriction procedure          |
-| `join`       | [Name](/migrations/#type) | name of join procedure                 |
-| `hashes`     | `boolean`                 | adds `HASHES` clause                   |
-| `merges`     | `boolean`                 | adds `MERGES` clause                   |
+| Option       | Type                       | Description                            |
+| ------------ | -------------------------- | -------------------------------------- |
+| `procedure`  | [Name](/migrations/#types) | name of procedure performing operation |
+| `left`       | [Name](/migrations/#types) | type of left argument                  |
+| `right`      | [Name](/migrations/#types) | type of right argument                 |
+| `commutator` | [Name](/migrations/#types) | name of commutative operator           |
+| `negator`    | [Name](/migrations/#types) | name of negating operator              |
+| `restrict`   | [Name](/migrations/#types) | name of restriction procedure          |
+| `join`       | [Name](/migrations/#types) | name of join procedure                 |
+| `hashes`     | `boolean`                  | adds `HASHES` clause                   |
+| `merges`     | `boolean`                  | adds `MERGES` clause                   |
 
 ## Reverse Operation: `dropOperator`
 
@@ -37,19 +37,19 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                       |
-| --------------- | ------------------------- | --------------------------------- |
-| `operator_name` | [Name](/migrations/#type) | name of the operator to drop      |
-| `drop_options`  | `object`                  | Check below for available options |
+| Name            | Type                       | Description                       |
+| --------------- | -------------------------- | --------------------------------- |
+| `operator_name` | [Name](/migrations/#types) | name of the operator to drop      |
+| `drop_options`  | `object`                   | Check below for available options |
 
 ### Options
 
-| Option     | Type                      | Description                    |
-| ---------- | ------------------------- | ------------------------------ |
-| `ifExists` | `boolean`                 | drops schema only if it exists |
-| `cascade`  | `boolean`                 | drops also dependent objects   |
-| `left`     | [Name](/migrations/#type) | type of left argument          |
-| `right`    | [Name](/migrations/#type) | type of right argument         |
+| Option     | Type                       | Description                    |
+| ---------- | -------------------------- | ------------------------------ |
+| `ifExists` | `boolean`                  | drops schema only if it exists |
+| `cascade`  | `boolean`                  | drops also dependent objects   |
+| `left`     | [Name](/migrations/#types) | type of left argument          |
+| `right`    | [Name](/migrations/#types) | type of right argument         |
 
 ## Operation: `renameOperator`
 
@@ -60,13 +60,13 @@
 
 ### Arguments
 
-| Name                  | Type                      | Description                                       |
-| --------------------- | ------------------------- | ------------------------------------------------- |
-| `operator_class_name` | [Name](/migrations/#type) | name of the new operator class                    |
-| `type`                | `string`                  | data type of the new operator class               |
-| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class        |
-| `operator_list`       | `array`                   | of [operator objects](#operator-list-definitions) |
-| `options`             | `object`                  | Check below for available options                 |
+| Name                  | Type                       | Description                                       |
+| --------------------- | -------------------------- | ------------------------------------------------- |
+| `operator_class_name` | [Name](/migrations/#types) | name of the new operator class                    |
+| `type`                | `string`                   | data type of the new operator class               |
+| `index_method`        | [Name](/migrations/#types) | name of the index method of operator class        |
+| `operator_list`       | `array`                    | of [operator objects](#operator-list-definitions) |
+| `options`             | `object`                   | Check below for available options                 |
 
 ### Options
 
@@ -84,11 +84,11 @@
 
 ### Arguments
 
-| Name                  | Type                      | Description                                |
-| --------------------- | ------------------------- | ------------------------------------------ |
-| `operator_class_name` | [Name](/migrations/#type) | name of the operator class to drop         |
-| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class |
-| `drop_options`        | `object`                  | Check below for available options          |
+| Name                  | Type                       | Description                                |
+| --------------------- | -------------------------- | ------------------------------------------ |
+| `operator_class_name` | [Name](/migrations/#types) | name of the operator class to drop         |
+| `index_method`        | [Name](/migrations/#types) | name of the index method of operator class |
+| `drop_options`        | `object`                   | Check below for available options          |
 
 ### Options
 
@@ -106,11 +106,11 @@
 
 ### Arguments
 
-| Name                      | Type                      | Description                                |
-| ------------------------- | ------------------------- | ------------------------------------------ |
-| `old_operator_class_name` | [Name](/migrations/#type) | old name of the operator class             |
-| `index_method`            | [Name](/migrations/#type) | name of the index method of operator class |
-| `new_operator_class_name` | [Name](/migrations/#type) | new name of the operator class             |
+| Name                      | Type                       | Description                                |
+| ------------------------- | -------------------------- | ------------------------------------------ |
+| `old_operator_class_name` | [Name](/migrations/#types) | old name of the operator class             |
+| `index_method`            | [Name](/migrations/#types) | name of the index method of operator class |
+| `new_operator_class_name` | [Name](/migrations/#types) | new name of the operator class             |
 
 ## Operation: `alterOperatorClass`
 
@@ -121,10 +121,10 @@
 
 ### Arguments
 
-| Name                   | Type                      | Description                                 |
-| ---------------------- | ------------------------- | ------------------------------------------- |
-| `operator_family_name` | [Name](/migrations/#type) | name of the new operator family             |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
+| Name                   | Type                       | Description                                 |
+| ---------------------- | -------------------------- | ------------------------------------------- |
+| `operator_family_name` | [Name](/migrations/#types) | name of the new operator family             |
+| `index_method`         | [Name](/migrations/#types) | name of the index method of operator family |
 
 ## Reverse Operation: `dropOperatorFamily`
 
@@ -135,11 +135,11 @@
 
 ### Arguments
 
-| Name                   | Type                      | Description                                 |
-| ---------------------- | ------------------------- | ------------------------------------------- |
-| `operator_family_name` | [Name](/migrations/#type) | name of the operator family to drop         |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
-| `drop_options`         | `object`                  | Check below for available options           |
+| Name                   | Type                       | Description                                 |
+| ---------------------- | -------------------------- | ------------------------------------------- |
+| `operator_family_name` | [Name](/migrations/#types) | name of the operator family to drop         |
+| `index_method`         | [Name](/migrations/#types) | name of the index method of operator family |
+| `drop_options`         | `object`                   | Check below for available options           |
 
 ### Options
 
@@ -157,11 +157,11 @@
 
 ### Arguments
 
-| Name                       | Type                      | Description                                 |
-| -------------------------- | ------------------------- | ------------------------------------------- |
-| `old_operator_family_name` | [Name](/migrations/#type) | old name of the operator family             |
-| `index_method`             | [Name](/migrations/#type) | name of the index method of operator family |
-| `new_operator_family_name` | [Name](/migrations/#type) | new name of the operator family             |
+| Name                       | Type                       | Description                                 |
+| -------------------------- | -------------------------- | ------------------------------------------- |
+| `old_operator_family_name` | [Name](/migrations/#types) | old name of the operator family             |
+| `index_method`             | [Name](/migrations/#types) | name of the index method of operator family |
+| `new_operator_family_name` | [Name](/migrations/#types) | new name of the operator family             |
 
 ## Operation: `alterOperatorFamily`
 
@@ -172,11 +172,11 @@
 
 ### Arguments
 
-| Name                   | Type                      | Description                                       |
-| ---------------------- | ------------------------- | ------------------------------------------------- |
-| `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
-| `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
+| Name                   | Type                       | Description                                       |
+| ---------------------- | -------------------------- | ------------------------------------------------- |
+| `operator_family_name` | [Name](/migrations/#types) | name of the operator family                       |
+| `index_method`         | [Name](/migrations/#types) | name of the index method of operator family       |
+| `operator_list`        | `array`                    | of [operator objects](#operator-list-definitions) |
 
 ## Reverse Operation: `dropFromOperatorFamily`
 
@@ -187,20 +187,20 @@
 
 ### Arguments
 
-| Name                   | Type                      | Description                                       |
-| ---------------------- | ------------------------- | ------------------------------------------------- |
-| `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
-| `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
+| Name                   | Type                       | Description                                       |
+| ---------------------- | -------------------------- | ------------------------------------------------- |
+| `operator_family_name` | [Name](/migrations/#types) | name of the operator family                       |
+| `index_method`         | [Name](/migrations/#types) | name of the index method of operator family       |
+| `operator_list`        | `array`                    | of [operator objects](#operator-list-definitions) |
 
 ## Operator List Definitions
 
 Some functions for defining operators take as parameter `operator_list` which is array of objects with the following
 structure:
 
-| Name     | Type                      | Description                                     |
-| -------- | ------------------------- | ----------------------------------------------- |
-| `type`   | `string`                  | `function` or `operator`                        |
-| `number` | `number`                  | index                                           |
-| `name`   | [Name](/migrations/#type) | name of operator or procedure                   |
-| `params` | `array`                   | list of argument types of operator or procedure |
+| Name     | Type                       | Description                                     |
+| -------- | -------------------------- | ----------------------------------------------- |
+| `type`   | `string`                   | `function` or `operator`                        |
+| `number` | `number`                   | index                                           |
+| `name`   | [Name](/migrations/#types) | name of operator or procedure                   |
+| `params` | `array`                    | list of argument types of operator or procedure |

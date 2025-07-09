@@ -9,10 +9,10 @@
 
 ### Arguments
 
-| Name           | Type                      | Description                       |
-| -------------- | ------------------------- | --------------------------------- |
-| `role_name`    | [Name](/migrations/#type) | name of the new role              |
-| `role_options` | `object`                  | Check below for available options |
+| Name           | Type                       | Description                       |
+| -------------- | -------------------------- | --------------------------------- |
+| `role_name`    | [Name](/migrations/#types) | name of the new role              |
+| `role_options` | `object`                   | Check below for available options |
 
 ### role_options
 
@@ -42,9 +42,9 @@
 
 ### Arguments
 
-| Name        | Type                      | Description              |
-| ----------- | ------------------------- | ------------------------ |
-| `role_name` | [Name](/migrations/#type) | name of the role to drop |
+| Name        | Type                       | Description              |
+| ----------- | -------------------------- | ------------------------ |
+| `role_name` | [Name](/migrations/#types) | name of the role to drop |
 
 ## Operation: `alterRole`
 
@@ -55,10 +55,10 @@
 
 ### Arguments
 
-| Name           | Type                      | Description          |
-| -------------- | ------------------------- | -------------------- |
-| `role_name`    | [Name](/migrations/#type) | name of the role     |
-| `role_options` | `object`                  | [see](#role_options) |
+| Name           | Type                       | Description          |
+| -------------- | -------------------------- | -------------------- |
+| `role_name`    | [Name](/migrations/#types) | name of the role     |
+| `role_options` | `object`                   | [see](#role_options) |
 
 ## Operation: `renameRole`
 
@@ -69,7 +69,7 @@
 
 ### Arguments
 
-| Name            | Type                      | Description          |
-| --------------- | ------------------------- | -------------------- |
-| `old_role_name` | [Name](/migrations/#type) | old name of the role |
-| `new_role_name` | [Name](/migrations/#type) | new name of the role |
+| Name            | Type                       | Description          |
+| --------------- | -------------------------- | -------------------- |
+| `old_role_name` | [Name](/migrations/#types) | old name of the role |
+| `new_role_name` | [Name](/migrations/#types) | new name of the role |

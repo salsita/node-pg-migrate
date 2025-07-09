@@ -89,7 +89,7 @@ sequence.
 
 ### Arguments
 
-| Name                | Type     | Description                                   |
-| ------------------- | -------- | --------------------------------------------- |
-| `old_sequence_name` | `string` | old [Name](/migrations/#type) of the sequence |
-| `new_sequence_name` | `string` | new [Name](/migrations/#type) of the sequence |
+| Name                | Type     | Description                                    |
+| ------------------- | -------- | ---------------------------------------------- |
+| `old_sequence_name` | `string` | old [Name](/migrations/#types) of the sequence |
+| `new_sequence_name` | `string` | new [Name](/migrations/#types) of the sequence |
