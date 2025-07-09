@@ -2,7 +2,12 @@ import type { MigrationOptions } from '../../migrationOptions';
 import { applyType, escapeValue, makeComment, toArray } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
-import type { IfNotExistsOption, Name, Value } from '../generalTypes';
+import type {
+  IfNotExistsOption,
+  Name,
+  Reference,
+  Value,
+} from '../generalTypes';
 import { parseSequenceOptions, type SequenceOptions } from '../sequences';
 
 export type Action =
@@ -17,7 +22,7 @@ export interface ReferencesOptions {
 
   referencesConstraintComment?: string;
 
-  references: Name;
+  references: Reference;
 
   onDelete?: Action;
 
@@ -138,11 +143,20 @@ export function parseReferences(
 
   const clauses: string[] = [];
 
+  // Optional column references
+  const columns: string[] = (
+    references?.columns == null ? [] : toArray<string>(references.columns)
+  )
+    .filter((column: string) => column && literal)
+    .map((column: string) => literal(column));
+
+  const col = columns.length > 0 ? `(${columns.join(', ')})` : '';
+
   clauses.push(
     typeof references === 'string' &&
       (references.startsWith('"') || references.endsWith(')'))
       ? `REFERENCES ${references}`
-      : `REFERENCES ${literal(references)}`
+      : `REFERENCES ${literal(references)}${col}`
   );
 
   if (match) {
