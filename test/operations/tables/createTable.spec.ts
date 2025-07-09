@@ -470,13 +470,13 @@ describe('operations', () => {
   CONSTRAINT "my_table_name_uniq_col_c" UNIQUE ("col_c")
 );`,
         ],
-        // should create foreign key references
+        // should create foreign key references with explicit target column names
         [
-          'should create comments on foreign keys 1',
+          'should explicitly define referred target column names on foreign keys 1',
           options1,
           [
             'myTableName',
-            { colA: { type: 'integer' } },
+            { colA: { type: 'integer' }, colB: { type: 'integer' } },
             {
               constraints: {
                 foreignKeys: {
@@ -486,16 +486,15 @@ describe('operations', () => {
                     name: 'otherTable',
                     columns: ['colC', 'colD'],
                   },
-                  referencesConstraintComment: 'example comment',
                 },
               },
             },
           ],
           `CREATE TABLE "myTableName" (
   "colA" integer,
+  "colB" integer,
   CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES "otherSchema"."otherTable"("colC", "colD")
-);
-COMMENT ON CONSTRAINT "myTableName_fk_colA_colB" ON "myTableName" IS $pga$example comment$pga$;`,
+);`,
         ],
         // should create comments on foreign keys
         [
