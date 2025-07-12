@@ -11,6 +11,9 @@ importers:
       glob:
         specifier: ~11.0.0
         version: 11.0.3
+      jiti:
+        specifier: 2.4.2
+        version: 2.4.2
       yargs:
         specifier: ~17.7.0
         version: 17.7.2
@@ -78,9 +81,6 @@ importers:
       eslint-plugin-unicorn:
         specifier: 59.0.1
         version: 59.0.1(eslint@9.30.0(jiti@2.4.2))
-      jiti:
-        specifier: 2.4.2
-        version: 2.4.2
       json5:
         specifier: 2.2.3
         version: 2.2.3
@@ -4930,6 +4930,7 @@ snapshots:
   node-pg-migrate@file:(@types/pg@8.15.4)(pg@8.16.3):
     dependencies:
       glob: 11.0.3
+      jiti: 2.4.2
       pg: 8.16.3
       yargs: 17.7.2
     optionalDependencies:
