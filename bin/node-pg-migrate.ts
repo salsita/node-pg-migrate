@@ -9,11 +9,8 @@ import {
   PG_MIGRATE_LOCK_ID,
   runner as migrationRunner,
 } from 'node-pg-migrate';
-import { readFileSync } from 'node:fs';
-import { register } from 'node:module';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
-import { pathToFileURL } from 'node:url';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 import type ConnectionParametersType from 'pg/lib/connection-parameters';
@@ -76,8 +73,6 @@ const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
 const decamelizeArg = 'decamelize';
-const tsconfigArg = 'tsconfig';
-const tsNodeArg = 'ts-node';
 const tsxArg = 'tsx';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
@@ -182,15 +177,6 @@ const parser = yargs(process.argv.slice(2))
       describe: 'Path to template for creating migrations',
       type: 'string',
     },
-    [tsconfigArg]: {
-      describe: 'Path to tsconfig.json file',
-      type: 'string',
-    },
-    [tsNodeArg]: {
-      default: true,
-      describe: 'Use ts-node for typescript files',
-      type: 'boolean',
-    },
     [tsxArg]: {
       default: false,
       describe: 'Use tsx for typescript files',
@@ -294,58 +280,8 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
-let tsconfigPath = argv[tsconfigArg];
-let useTsNode = argv[tsNodeArg];
+// TODO @brenoepics 2025-07-12: Does the tsx option even still exists and do anything?
 let useTsx = argv[tsxArg];
-
-async function readTsconfig(): Promise<void> {
-  if (tsconfigPath) {
-    let tsconfig;
-    const json5 = await tryImport<typeof import('json5')>('json5');
-
-    try {
-      const config = readFileSync(resolve(cwd(), tsconfigPath), {
-        encoding: 'utf8',
-      });
-      tsconfig = json5 ? json5.parse(config) : JSON.parse(config);
-
-      if (tsconfig['ts-node']) {
-        tsconfig = {
-          ...tsconfig,
-          ...tsconfig['ts-node'],
-          compilerOptions: {
-            // eslint-disable-next-line unicorn/no-useless-fallback-in-spread
-            ...(tsconfig.compilerOptions ?? {}),
-            // eslint-disable-next-line unicorn/no-useless-fallback-in-spread
-            ...(tsconfig['ts-node'].compilerOptions ?? {}),
-          },
-        };
-      }
-    } catch (error) {
-      console.error("Can't load tsconfig.json:", error);
-    }
-
-    if (useTsx) {
-      process.env.TSX_TSCONFIG_PATH = tsconfigPath;
-    } else if (useTsNode) {
-      const tsnode = await tryImport<typeof import('ts-node')>('ts-node');
-      if (!tsnode) {
-        console.error(
-          "For TypeScript support, please install 'ts-node' module"
-        );
-      }
-
-      if (tsconfig && tsnode) {
-        register('ts-node/esm', pathToFileURL('./'));
-        if (!MIGRATIONS_FILE_LANGUAGE) {
-          MIGRATIONS_FILE_LANGUAGE = 'ts';
-        }
-      } else {
-        process.exit(1);
-      }
-    }
-  }
-}
 
 function applyIf<TArg, TKey extends string = string>(
   arg: TArg,
@@ -442,8 +378,6 @@ function readJson(json: unknown): void {
       (val): val is string | ConnectionParametersType | ClientConfig =>
         typeof val === 'string' || typeof val === 'object'
     );
-    tsconfigPath = applyIf(tsconfigPath, tsconfigArg, json, isString);
-    useTsNode = applyIf(useTsNode, tsNodeArg, json, isBoolean);
     useTsx = applyIf(useTsx, tsxArg, json, isBoolean);
 
     if ('url' in json && json.url) {
@@ -483,8 +417,6 @@ if (configFileName) {
   const section = argv[configValueArg];
   readJson(json?.[section] === undefined ? json : json[section]);
 }
-
-await readTsconfig();
 
 if (useTsx) {
   const tsx = await tryImport<typeof import('tsx/esm/api')>('tsx/esm');
