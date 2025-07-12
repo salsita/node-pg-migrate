@@ -9,6 +9,7 @@ import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationBuilderActions } from './sqlMigration';
 import { sqlMigration as migrateSqlFile } from './sqlMigration';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+import { jiti } from './utils/jiti';
 
 export interface RunnerOptionConfig {
   /**
@@ -166,7 +167,7 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-async function loadMigrations(
+export async function loadMigrations(
   db: DBConnection,
   options: RunnerOption,
   logger: Logger
@@ -184,7 +185,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : await import(`file://${filePath}`);
+            : await jiti.import(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
@@ -201,9 +202,16 @@ async function loadMigrations(
     );
 
     return migrations;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw new Error(`Can't get migration files: ${error.stack}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Error loading migration files: ${error.message}`, {
+        cause: error,
+      });
+    }
+
+    throw new Error('Error loading migration files: Unknown error', {
+      cause: error,
+    });
   }
 }
 

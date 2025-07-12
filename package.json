@@ -82,6 +82,7 @@
   ],
   "dependencies": {
     "glob": "~11.0.0",
+    "jiti": "2.4.2",
     "yargs": "~17.7.0"
   },
   "devDependencies": {
@@ -106,7 +107,6 @@
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-prettier": "5.5.1",
     "eslint-plugin-unicorn": "59.0.1",
-    "jiti": "2.4.2",
     "json5": "2.2.3",
     "node-pg-migrate": "file:.",
     "npm-run-all2": "8.0.4",
