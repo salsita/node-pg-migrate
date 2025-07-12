@@ -21,6 +21,8 @@ export default defineConfig(
       'docs/.vitepress/theme/index.ts',
       'templates',
       '.prettierrc.js',
+      'test/jiti/migrations/**/*.js',
+      'test/jiti/migrations/**/*.mjs',
     ],
   },
   {
