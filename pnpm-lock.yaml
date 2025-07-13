@@ -81,9 +81,6 @@ importers:
       eslint-plugin-unicorn:
         specifier: 59.0.1
         version: 59.0.1(eslint@9.30.0(jiti@2.4.2))
-      json5:
-        specifier: 2.2.3
-        version: 2.2.3
       node-pg-migrate:
         specifier: file:.
         version: file:(@types/pg@8.15.4)(pg@8.16.3)
