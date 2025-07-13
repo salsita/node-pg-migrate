@@ -73,7 +73,6 @@ const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
 const decamelizeArg = 'decamelize';
-const tsxArg = 'tsx';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
@@ -177,11 +176,6 @@ const parser = yargs(process.argv.slice(2))
       describe: 'Path to template for creating migrations',
       type: 'string',
     },
-    [tsxArg]: {
-      default: false,
-      describe: 'Use tsx for typescript files',
-      type: 'boolean',
-    },
     [envPathArg]: {
       describe: 'Path to the .env file that should be used for configuration',
       type: 'string',
@@ -280,8 +274,6 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
-// TODO @brenoepics 2025-07-12: Does the tsx option even still exists and do anything?
-let useTsx = argv[tsxArg];
 
 function applyIf<TArg, TKey extends string = string>(
   arg: TArg,
@@ -378,7 +370,6 @@ function readJson(json: unknown): void {
       (val): val is string | ConnectionParametersType | ClientConfig =>
         typeof val === 'string' || typeof val === 'object'
     );
-    useTsx = applyIf(useTsx, tsxArg, json, isBoolean);
 
     if ('url' in json && json.url) {
       DB_CONNECTION ??= json.url;
@@ -416,13 +407,6 @@ if (configFileName) {
   const json = jsonConfig.default ?? jsonConfig;
   const section = argv[configValueArg];
   readJson(json?.[section] === undefined ? json : json[section]);
-}
-
-if (useTsx) {
-  const tsx = await tryImport<typeof import('tsx/esm/api')>('tsx/esm');
-  if (!tsx) {
-    console.error("For TSX support, please install 'tsx' module");
-  }
 }
 
 const action = argv._.shift();

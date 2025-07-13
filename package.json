@@ -114,7 +114,6 @@
     "prettier-plugin-organize-imports": "4.1.0",
     "prettier-plugin-pkg": "0.21.1",
     "tsup": "8.5.0",
-    "tsx": "4.20.3",
     "typescript": "5.8.3",
     "typescript-eslint": "8.35.0",
     "vitepress": "1.6.3",
