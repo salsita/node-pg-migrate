@@ -11,13 +11,10 @@ describe('operations', () => {
         expect(alterTableFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-11: This should throw an error
-      it('should return sql statement', () => {
-        const statement = alterTableFn('films', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "films"
-    ;`);
+      it('should throw error when no table options are provided', () => {
+        expect(() => alterTableFn('films', {})).toThrow(
+          new Error('No table options provided for alterTable')
+        );
       });
 
       it('should return sql statement with tableOptions', () => {
