@@ -26,6 +26,10 @@ export function alterSequence(mOptions: MigrationOptions): AlterSequence {
       }
     }
 
+    if (clauses.length === 0) {
+      throw new Error('No sequence options provided for alterSequence');
+    }
+
     return `ALTER SEQUENCE ${mOptions.literal(sequenceName)}
   ${clauses.join('\n  ')};`;
   };
