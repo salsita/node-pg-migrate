@@ -66,6 +66,12 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ...(like ? [parseLike(like, mOptions.literal)] : []),
     ];
 
+    if (tableDefinition.length === 0) {
+      throw new Error(
+        'No columns, constraints, or LIKE clause provided for createTable'
+      );
+    }
+
     if (temporary && unlogged) {
       throw new Error('TEMPORARY and UNLOGGED cannot be used together.');
     }
