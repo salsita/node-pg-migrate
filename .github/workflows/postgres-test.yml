@@ -615,7 +615,7 @@ jobs:
         if: always()
         run: docker logs "${{ job.services.postgres.id }}"
 
-  typescript-migration-via-ts-node-test:
+  typescript-migration-via-jiti-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -641,7 +641,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-    name: 'TypeScript Migration Test with ts-node: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
+    name: 'TypeScript Migration Test with jiti: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -662,7 +662,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up --tsconfig tsconfig.json --ts-node -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json --ts-node -m test/ts/migrations --timestamps
+        run: pnpm run migrate up -m test/ts/migrations && pnpm run migrate down 0 -m test/ts/migrations --timestamps
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -717,7 +717,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up --tsconfig tsconfig.json --tsx -m test/ts/migrations && pnpm run migrate down 0 --tsconfig tsconfig.json --tsx -m test/ts/migrations --timestamps
+        run: pnpm run migrate up --tsx -m test/ts/migrations && pnpm run migrate down 0 --tsx -m test/ts/migrations --timestamps
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -772,7 +772,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerDBUrl.ts
+        run: node --experimental-specifier-resolution=node --import jiti/register test/ts/customRunnerDBUrl.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -827,7 +827,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerDBClient.ts
+        run: node --experimental-specifier-resolution=node --import jiti/register test/ts/customRunnerDBClient.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -882,7 +882,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: node --experimental-specifier-resolution=node --loader ts-node/esm test/ts/customRunnerUndefCount.ts
+        run: node --experimental-specifier-resolution=node --import jiti/register test/ts/customRunnerUndefCount.ts
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
