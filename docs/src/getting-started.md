@@ -57,7 +57,7 @@ option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.
 
 > [!IMPORTANT]
 > This example assumes you are using `npm` as your package manager. If you are using another package manager, replace
-`npm` with the appropriate command.
+> `npm` with the appropriate command.
 
 Add `node-pg-migrate` to `scripts` section of your `package.json` so you are able to quickly run commands.
 
@@ -68,7 +68,7 @@ Add `node-pg-migrate` to `scripts` section of your `package.json` so you are abl
   "scripts": {
     // ..
     "migrate": "node-pg-migrate", // [!code ++]
-  }
+  },
 }
 ```
 
@@ -77,7 +77,7 @@ Add `node-pg-migrate` to `scripts` section of your `package.json` so you are abl
   "scripts": {
     // ..
     "migrate": "node-pg-migrate -j ts", // [!code ++]
-  }
+  },
 }
 ```
 
@@ -123,8 +123,7 @@ exports.up = (pgm) => {
   pgm.createIndex('posts', 'userId');
 };
 
-exports.down = (pgm) => {
-};
+exports.down = (pgm) => {};
 ```
 
 ```ts [TypeScript]
@@ -158,8 +157,7 @@ export const up = (pgm: MigrationBuilder) => {
   pgm.createIndex('posts', 'userId');
 };
 
-export async function down(pgm: MigrationBuilder): Promise<void> {
-}
+export async function down(pgm: MigrationBuilder): Promise<void> {}
 ```
 
 :::
