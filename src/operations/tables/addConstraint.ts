@@ -37,6 +37,10 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
             mOptions.literal
           );
 
+    if (!constraints || constraints.length === 0) {
+      throw new Error('No constraint options provided for addConstraint');
+    }
+
     const constraintStr = formatLines(constraints, '  ADD ');
 
     return [
