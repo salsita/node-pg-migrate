@@ -90,7 +90,7 @@ npm run migrate create my-first-migration
 # creates migrations/xxx_my-first-migration.js or ts
 ```
 
-Open it and change contents to:
+Open it and change the contents to:
 
 ::: code-group
 
@@ -171,7 +171,7 @@ Now you should put your DB connection string to `DATABASE_URL` environment varia
 
 You should now have two tables in your DB :tada:
 
-If you want to change your schema later, you can e.g. add lead paragraph to posts:
+If you want to change your schema later, you can e.g., add a lead paragraph to posts:
 
 Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
 
