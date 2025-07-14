@@ -233,10 +233,7 @@ if (argv.help || argv._.length === 0) {
 const envPath = argv[envPathArg];
 
 // Create default dotenv config
-const dotenvConfig: DotenvConfigOptions & { silent: boolean } = {
-  // TODO @Shinigami92 2024-04-05: Does the silent option even still exists and do anything?
-  silent: true,
-};
+const dotenvConfig: DotenvConfigOptions = {};
 
 // If the path has been configured, add it to the config, otherwise don't change the default dotenv path
 if (envPath) {
