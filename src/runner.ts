@@ -8,7 +8,12 @@ import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationBuilderActions } from './sqlMigration';
 import { sqlMigration as migrateSqlFile } from './sqlMigration';
-import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+import {
+  createSchemalize,
+  getMigrationTableSchema,
+  getSchemas,
+  loadSslCaCertificate,
+} from './utils';
 
 export interface RunnerOptionConfig {
   /**
@@ -136,6 +141,11 @@ export interface RunnerOptionConfig {
    * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
    */
   verbose?: boolean;
+
+  /**
+   * Path to SSL CA certificate file.
+   */
+  sslCa?: string;
 }
 
 export interface RunnerOptionUrl {
@@ -402,12 +412,38 @@ function getLogger(options: RunnerOption): Logger {
 export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
 
-  const connection =
+  const originalConnection =
     (options as RunnerOptionClient).dbClient ||
     (options as RunnerOptionUrl).databaseUrl;
 
-  if (connection == null) {
+  if (originalConnection == null) {
     throw new Error('You must provide either a databaseUrl or a dbClient');
+  }
+
+  let connection: ClientBase | string | ClientConfig = originalConnection;
+
+  if (options.sslCa && typeof originalConnection === 'string') {
+    const sslCaConfig = loadSslCaCertificate(options.sslCa);
+
+    connection = {
+      connectionString: originalConnection,
+      ssl: sslCaConfig,
+    };
+  } else if (
+    options.sslCa &&
+    typeof originalConnection === 'object' &&
+    !('query' in originalConnection)
+  ) {
+    const sslCaConfig = loadSslCaCertificate(options.sslCa);
+    const clientConfig = originalConnection as ClientConfig;
+
+    connection = {
+      ...clientConfig,
+      ssl: {
+        ...(typeof clientConfig.ssl === 'object' ? clientConfig.ssl : {}),
+        ...sslCaConfig,
+      },
+    };
   }
 
   const db = Db(connection, logger);
