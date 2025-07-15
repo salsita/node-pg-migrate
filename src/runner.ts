@@ -1,3 +1,4 @@
+import { createJiti } from 'jiti';
 import { extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
@@ -9,7 +10,6 @@ import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationBuilderActions } from './sqlMigration';
 import { sqlMigration as migrateSqlFile } from './sqlMigration';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
-import { jiti } from './utils/jiti';
 
 export interface RunnerOptionConfig {
   /**
@@ -166,6 +166,8 @@ export const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
 const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
+
+export const jiti = createJiti(process.cwd());
 
 export async function loadMigrations(
   db: DBConnection,
