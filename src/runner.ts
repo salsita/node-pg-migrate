@@ -1,3 +1,4 @@
+import { createJiti } from 'jiti';
 import { extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
@@ -166,7 +167,9 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
-async function loadMigrations(
+export const jiti = createJiti(process.cwd());
+
+export async function loadMigrations(
   db: DBConnection,
   options: RunnerOption,
   logger: Logger
@@ -184,7 +187,7 @@ async function loadMigrations(
         const actions: MigrationBuilderActions =
           extname(filePath) === '.sql'
             ? await migrateSqlFile(filePath)
-            : await import(`file://${filePath}`);
+            : await jiti.import(filePath);
         shorthands = { ...shorthands, ...actions.shorthands };
 
         return new Migration(
@@ -201,9 +204,16 @@ async function loadMigrations(
     );
 
     return migrations;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw new Error(`Can't get migration files: ${error.stack}`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Error loading migration files: ${error.message}`, {
+        cause: error,
+      });
+    }
+
+    throw new Error('Error loading migration files: Unknown error', {
+      cause: error,
+    });
   }
 }
 

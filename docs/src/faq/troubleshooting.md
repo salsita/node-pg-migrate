@@ -32,11 +32,11 @@ Or always use lower case identifiers to prevent confusion (unquoted identifiers 
 ## Refused connection issues
 
 - Password to your database may not contain some characters (which have special meaning in url schema) when used in `DATABASE_URL`.
-  Use other means to provide password or change the password. [see](https://github.com/salsita/node-pg-migrate/issues/439)
+  Use other means to provide a password or change the password. [see](https://github.com/salsita/node-pg-migrate/issues/439)
 - Make sure connection is not stopped by firewalls, security rules, etc.
   Try `telnet url port` to try to connect (e.g. `telnet 127.0.0.1 5432`) to postgres server.
-  If command will not end with error, but will wait for further input from you, server (or some other service running on that port :man_shrugging:) is accessible and waits for the correct user/password.
-  Otherwise, the server does not run or listen on specified port, or there is some other connection problem. You have to investigate...
+  If the command does not end with an error but will wait for further input from you, the server (or some other service running on that port :man_shrugging:) is accessible and waits for the correct user/password.
+  Otherwise, the server does not run or listen on the specified port, or there is some other connection problem. You have to investigate...
 
 ## Running in transaction
 

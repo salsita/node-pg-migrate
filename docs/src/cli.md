@@ -34,7 +34,7 @@ You could also specify your database url by setting the environment variable `DA
 DATABASE_URL=postgres://postgres@localhost/database node-pg-migrate
 ```
 
-You can specify custom JSON file with config (the format is same as for `db` entry
+You can specify a custom JSON file with config (the format is same as for `db` entry
 of [config](https://www.npmjs.com/package/config) file), for example:
 
 ```jsonc
@@ -76,7 +76,7 @@ More on that below.
 > [!TIP]
 > See all by running `node-pg-migrate --help`.
 >
-> Most of the configuration options can be also specified in [config](https://www.npmjs.com/package/config) file.
+> Most of the configuration options can be also specified in the [config](https://www.npmjs.com/package/config) file.
 
 You can adjust defaults by passing arguments to `node-pg-migrate`:
 
@@ -96,7 +96,6 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 | `migration-filename-format` |         | `timestamp`                     | Choose prefix of file, `utc` (`20200605075829074`), `timestamp` (`1591343909074`), or `index` (`0012`)                                                                                                                                                                                  |
 | `migration-file-language`   | `j`     | `js`                            | Language of the migration file to create (`js`, `ts` or `sql`)                                                                                                                                                                                                                          |
 | `template-file-name`        |         | `undefined`                     | Utilize a custom migration template file with language inferred from its extension. The file should export the up method, accepting a MigrationBuilder instance.                                                                                                                        |
-| `tsconfig`                  |         | `undefined`                     | Path to tsconfig.json. Used to setup transpiling of TS migration files. (Also sets `migration-file-language` to typescript, if not overridden)                                                                                                                                          |
 | `envPath`                   |         | `same level where it's invoked` | Retrieve the path to a .env file. This feature proves handy when dealing with nested projects or when referencing a global .env file.                                                                                                                                                   |
 | `timestamp`                 |         | `false`                         | Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)                                                                                                                            |
 | `check-order`               |         | `true`                          | Check order of migrations before running them, to switch it off supply `--no-check-order`                                                                                                                                                                                               |
@@ -137,6 +136,5 @@ Other available options are:
   "checkOrder": true,
   "verbose": true,
   "decamelize": false,
-  "tsconfig": "tsconfig.json",
 }
 ```

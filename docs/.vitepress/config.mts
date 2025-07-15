@@ -100,8 +100,8 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
 function sidebarFAQ(): DefaultTheme.SidebarItem[] {
   return [
     {
-      text: 'Transpiling Migrations',
-      link: 'transpiling',
+      text: 'Typescript Migrations',
+      link: 'typescript',
     },
     {
       text: 'Troubleshooting',
