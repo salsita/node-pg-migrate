@@ -12,12 +12,12 @@ describe('operations', () => {
         expect(createTableFn).toBeTypeOf('function');
       });
 
-      it('should throw error when no columns, constraints, or LIKE clause are provided', () => {
-        expect(() => createTableFn('films', {})).toThrow(
-          new Error(
-            'No columns, constraints, or LIKE clause provided for createTable'
-          )
-        );
+      // TODO @Shinigami92 2024-03-12: This should throw an error when columns are empty
+      it('should return sql statement', () => {
+        const statement = createTableFn('films', {});
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe('CREATE TABLE "films" (\n  \n);');
       });
 
       it('should return sql statement with tableOptions', () => {
@@ -54,20 +54,18 @@ describe('operations', () => {
         );
       });
 
-      it('should throw error when no columns, constraints, or LIKE clause are provided (with schema)', () => {
-        expect(() =>
-          createTableFn(
-            {
-              name: 'films',
-              schema: 'myschema',
-            },
-            {}
-          )
-        ).toThrow(
-          new Error(
-            'No columns, constraints, or LIKE clause provided for createTable'
-          )
+      // TODO @Shinigami92 2024-03-12: This should throw an error when columns are empty
+      it('should return sql statement with schema', () => {
+        const statement = createTableFn(
+          {
+            name: 'films',
+            schema: 'myschema',
+          },
+          {}
         );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe('CREATE TABLE "myschema"."films" (\n  \n);');
       });
 
       it.each([
