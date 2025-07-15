@@ -28,6 +28,10 @@ export function alterTable(mOptions: MigrationOptions): AlterTable {
       alterDefinition.push(`SET LOGGED`);
     }
 
+    if (alterDefinition.length === 0) {
+      throw new Error('No table options provided for alterTable');
+    }
+
     return `ALTER TABLE ${mOptions.literal(tableName)}
   ${formatLines(alterDefinition)};`;
   };
