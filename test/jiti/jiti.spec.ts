@@ -38,9 +38,9 @@ describe('loadMigrations', () => {
 
     expect(migrations).toHaveLength(migrationFiles.length);
     for (const migration of migrations) {
-      expect(typeof migration.up).toBe('function');
-      expect(typeof migration.down).toBe('function');
-      expect(typeof migration.typeShorthands).toBe('object');
+      expect(migration.up).toBeTypeOf('function');
+      expect(migration.down).toBeTypeOf('function');
+      expect(migration.typeShorthands).toBeTypeOf('object');
     }
 
     importSpy.mockRestore();
