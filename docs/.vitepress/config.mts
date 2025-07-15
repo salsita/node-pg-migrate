@@ -1,5 +1,4 @@
-import { type DefaultTheme, defineConfig } from 'vitepress';
-import pkg from '../../package.json';
+import { DefaultTheme, defineConfig } from 'vitepress';
 
 const repository = 'https://github.com/salsita/node-pg-migrate';
 export default defineConfig({
@@ -41,7 +40,7 @@ function navBarItems(): DefaultTheme.NavItem[] {
       activeMatch: `^/migrations/`,
     },
     {
-      text: pkg.version,
+      text: process.env.npm_package_version,
       items: [
         { text: 'Changelog', link: repository + '/blob/main/CHANGELOG.md' },
         { text: 'Releases', link: repository + '/releases' },
