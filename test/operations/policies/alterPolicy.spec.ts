@@ -11,12 +11,10 @@ describe('operations', () => {
         expect(alterPolicyFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-09: This should throw an error
-      it('should return sql statement', () => {
-        const statement = alterPolicyFn('my_table', 'p1', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('ALTER POLICY "p1" ON "my_table" ;');
+      it('should throw error when no policy options are provided', () => {
+        expect(() => alterPolicyFn('my_table', 'p1', {})).toThrow(
+          new Error('No policy options provided for alterPolicy')
+        );
       });
 
       it('should return sql statement with policyOptions', () => {
