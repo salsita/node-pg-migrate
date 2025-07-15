@@ -17,3 +17,7 @@ export function up(pgm) {
     },
   });
 }
+
+export function down(pgm) {
+  pgm.dropTable('t1');
+}

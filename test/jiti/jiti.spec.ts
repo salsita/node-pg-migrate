@@ -3,8 +3,7 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import type { Migration, RunnerOption } from '../../src';
 import type { DBConnection } from '../../src/db';
-import { loadMigrations } from '../../src/runner';
-import { jiti } from '../../src/utils/jiti';
+import { jiti, loadMigrations } from '../../src/runner';
 
 describe('loadMigrations', () => {
   it('should load migration files using jiti', async () => {
@@ -13,11 +12,7 @@ describe('loadMigrations', () => {
       join(migrationsDir, f)
     );
 
-    const importSpy = vi.spyOn(jiti, 'import').mockResolvedValue({
-      up: () => {},
-      down: () => {},
-      shorthands: {},
-    });
+    const importSpy = vi.spyOn(jiti, 'import');
 
     const db: DBConnection = {} as never;
     const options: RunnerOption = {
