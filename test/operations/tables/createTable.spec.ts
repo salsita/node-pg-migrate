@@ -12,7 +12,6 @@ describe('operations', () => {
         expect(createTableFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-12: This should throw an error when columns are empty
       it('should return sql statement', () => {
         const statement = createTableFn('films', {});
 
