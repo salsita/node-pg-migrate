@@ -1,4 +1,5 @@
-import { type JitiOptions, createJiti } from 'jiti';
+import type { JitiOptions } from 'jiti';
+import { createJiti } from 'jiti';
 
 const options: JitiOptions = {};
 
