@@ -13,3 +13,7 @@ export function up(pgm: MigrationBuilder): void {
     },
   });
 }
+
+export function down(pgm: MigrationBuilder): void {
+  pgm.dropTable('t1');
+}
