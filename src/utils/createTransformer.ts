@@ -1,7 +1,7 @@
 import { escapeValue } from '.';
-import type { Name, Value } from '../operations/generalTypes';
+import type { Name, Reference, Value } from '../operations/generalTypes';
 
-export type Literal = (v: Name) => string;
+export type Literal = (v: Name | Reference) => string;
 
 export function createTransformer(
   literal: Literal

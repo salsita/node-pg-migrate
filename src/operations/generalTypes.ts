@@ -26,6 +26,10 @@ export type Type = string | { type: string };
 
 export type Name = string | { schema?: string; name: string };
 
+export type Reference = Name & {
+  columns?: string | string[];
+};
+
 export interface IfNotExistsOption {
   ifNotExists?: boolean;
 }

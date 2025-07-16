@@ -9,11 +9,11 @@
 
 ### Arguments
 
-| Name          | Type                      | Description                       |
-| ------------- | ------------------------- | --------------------------------- |
-| `domain_name` | [Name](/migrations/#type) | Name of the new domain            |
-| `type`        | `string`                  | Type of the new domain            |
-| `options`     | `object`                  | Check below for available options |
+| Name          | Type                       | Description                       |
+| ------------- | -------------------------- | --------------------------------- |
+| `domain_name` | [Name](/migrations/#types) | Name of the new domain            |
+| `type`        | `string`                   | Type of the new domain            |
+| `options`     | `object`                   | Check below for available options |
 
 #### Options
 
@@ -34,10 +34,10 @@
 
 ### Arguments
 
-| Name           | Type                      | Description                       |
-| -------------- | ------------------------- | --------------------------------- |
-| `domain_name`  | [Name](/migrations/#type) | Name of the domain to drop        |
-| `drop_options` | `object`                  | Check below for available options |
+| Name           | Type                       | Description                       |
+| -------------- | -------------------------- | --------------------------------- |
+| `domain_name`  | [Name](/migrations/#types) | Name of the domain to drop        |
+| `drop_options` | `object`                   | Check below for available options |
 
 #### Options
 
@@ -55,10 +55,10 @@
 
 ### Arguments
 
-| Name          | Type                      | Description                       |
-| ------------- | ------------------------- | --------------------------------- |
-| `domain_name` | [Name](/migrations/#type) | Name of the new domain            |
-| `options`     | `object`                  | Check below for available options |
+| Name          | Type                       | Description                       |
+| ------------- | -------------------------- | --------------------------------- |
+| `domain_name` | [Name](/migrations/#types) | Name of the new domain            |
+| `options`     | `object`                   | Check below for available options |
 
 #### Options
 
@@ -80,7 +80,7 @@
 
 ### Arguments
 
-| Name              | Type                      | Description            |
-| ----------------- | ------------------------- | ---------------------- |
-| `old_domain_name` | [Name](/migrations/#type) | Old name of the domain |
-| `new_domain_name` | [Name](/migrations/#type) | New name of the domain |
+| Name              | Type                       | Description            |
+| ----------------- | -------------------------- | ---------------------- |
+| `old_domain_name` | [Name](/migrations/#types) | Old name of the domain |
+| `new_domain_name` | [Name](/migrations/#types) | New name of the domain |

@@ -12,7 +12,7 @@
 
 | Name        | Type                        | Description                                                              |
 | ----------- | --------------------------- | ------------------------------------------------------------------------ |
-| `type_name` | [Name](/migrations/#type)   | name of the new type                                                     |
+| `type_name` | [Name](/migrations/#types)  | name of the new type                                                     |
 | `values`    | `array[string]` or `object` | possible values for an enum type or names and types for a composite type |
 
 ## Reverse Operation: `dropType`
@@ -24,9 +24,9 @@
 
 ### Arguments
 
-| Name        | Type                      | Description              |
-| ----------- | ------------------------- | ------------------------ |
-| `type_name` | [Name](/migrations/#type) | name of the type to drop |
+| Name        | Type                       | Description              |
+| ----------- | -------------------------- | ------------------------ |
+| `type_name` | [Name](/migrations/#types) | name of the type to drop |
 
 ## Operation: `alterType`
 
@@ -37,10 +37,10 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                |
-| --------------- | ------------------------- | -------------------------- |
-| `type_name`     | [Name](/migrations/#type) | name of the type to rename |
-| `new_type_name` | [Name](/migrations/#type) | name of the new type       |
+| Name            | Type                       | Description                |
+| --------------- | -------------------------- | -------------------------- |
+| `type_name`     | [Name](/migrations/#types) | name of the type to rename |
+| `new_type_name` | [Name](/migrations/#types) | name of the new type       |
 
 ## Operation: `alterType`
 
@@ -52,11 +52,11 @@
 
 ### Arguments
 
-| Name             | Type                      | Description                  |
-| ---------------- | ------------------------- | ---------------------------- |
-| `type_name`      | [Name](/migrations/#type) | name of the type             |
-| `attribute_name` | `string`                  | name of the attribute to add |
-| `attribute_type` | `string`                  | type of the attribute to add |
+| Name             | Type                       | Description                  |
+| ---------------- | -------------------------- | ---------------------------- |
+| `type_name`      | [Name](/migrations/#types) | name of the type             |
+| `attribute_name` | `string`                   | name of the attribute to add |
+| `attribute_type` | `string`                   | type of the attribute to add |
 
 ## Reverse Operation: `dropTypeAttribute`
 
@@ -67,11 +67,11 @@
 
 ### Arguments
 
-| Name             | Type                      | Description                       |
-| ---------------- | ------------------------- | --------------------------------- |
-| `type_name`      | [Name](/migrations/#type) | name of the type                  |
-| `attribute_name` | `string`                  | name of the attribute to drop     |
-| `options`        | `object`                  | Check below for available options |
+| Name             | Type                       | Description                       |
+| ---------------- | -------------------------- | --------------------------------- |
+| `type_name`      | [Name](/migrations/#types) | name of the type                  |
+| `attribute_name` | `string`                   | name of the attribute to drop     |
+| `options`        | `object`                   | Check below for available options |
 
 ### Options
 
@@ -89,11 +89,11 @@
 
 ### Arguments
 
-| Name             | Type                      | Description                  |
-| ---------------- | ------------------------- | ---------------------------- |
-| `type_name`      | [Name](/migrations/#type) | name of the type             |
-| `attribute_name` | `string`                  | name of the attribute to set |
-| `attribute_type` | `string`                  | new type of the attribute    |
+| Name             | Type                       | Description                  |
+| ---------------- | -------------------------- | ---------------------------- |
+| `type_name`      | [Name](/migrations/#types) | name of the type             |
+| `attribute_name` | `string`                   | name of the attribute to set |
+| `attribute_type` | `string`                   | new type of the attribute    |
 
 ## Operation: `alterType`
 
@@ -105,11 +105,11 @@
 
 ### Arguments
 
-| Name        | Type                      | Description                       |
-| ----------- | ------------------------- | --------------------------------- |
-| `type_name` | [Name](/migrations/#type) | name of the type                  |
-| `value`     | `string`                  | value to add to list              |
-| `options`   | `object`                  | Check below for available options |
+| Name        | Type                       | Description                       |
+| ----------- | -------------------------- | --------------------------------- |
+| `type_name` | [Name](/migrations/#types) | name of the type                  |
+| `value`     | `string`                   | value to add to list              |
+| `options`   | `object`                   | Check below for available options |
 
 ### Options
 
@@ -128,11 +128,11 @@
 
 ### Arguments
 
-| Name                 | Type                      | Description                     |
-| -------------------- | ------------------------- | ------------------------------- |
-| `type_name`          | [Name](/migrations/#type) | name of the type                |
-| `attribute_name`     | `string`                  | name of the attribute to rename |
-| `new_attribute_name` | `string`                  | new name of the attribute       |
+| Name                 | Type                       | Description                     |
+| -------------------- | -------------------------- | ------------------------------- |
+| `type_name`          | [Name](/migrations/#types) | name of the type                |
+| `attribute_name`     | `string`                   | name of the attribute to rename |
+| `new_attribute_name` | `string`                   | new name of the attribute       |
 
 ## Operation: `alterType`
 
@@ -143,8 +143,8 @@
 
 ### Arguments
 
-| Name        | Type                      | Description      |
-| ----------- | ------------------------- | ---------------- |
-| `type_name` | [Name](/migrations/#type) | name of the type |
-| `value`     | `string`                  | value to rename  |
-| `new_value` | `string`                  | new value        |
+| Name        | Type                       | Description      |
+| ----------- | -------------------------- | ---------------- |
+| `type_name` | [Name](/migrations/#types) | name of the type |
+| `value`     | `string`                   | value to rename  |
+| `new_value` | `string`                   | new value        |

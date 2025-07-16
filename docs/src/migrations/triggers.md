@@ -9,26 +9,26 @@
 
 ### Arguments
 
-| Name              | Type                      | Description                                                                     |
-| ----------------- | ------------------------- | ------------------------------------------------------------------------------- |
-| `table_name`      | [Name](/migrations/#type) | Name of the table where the new trigger will live                               |
-| `trigger_name`    | `string`                  | Name of the new trigger                                                         |
-| `trigger_options` | `object`                  | Check below for available options                                               |
-| `definition`      | `string`                  | Optional definition of function which will be created with same name as trigger |
+| Name              | Type                       | Description                                                                     |
+| ----------------- | -------------------------- | ------------------------------------------------------------------------------- |
+| `table_name`      | [Name](/migrations/#types) | Name of the table where the new trigger will live                               |
+| `trigger_name`    | `string`                   | Name of the new trigger                                                         |
+| `trigger_options` | `object`                   | Check below for available options                                               |
+| `definition`      | `string`                   | Optional definition of function which will be created with same name as trigger |
 
 #### Trigger Options:
 
-| Option           | Type                      | Description                                               |
-| ---------------- | ------------------------- | --------------------------------------------------------- |
-| `when`           | `string`                  | `BEFORE`, `AFTER`, or `INSTEAD OF`                        |
-| `operation`      | `string or array[string]` | `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`       |
-| `constraint`     | `boolean`                 | Creates constraint trigger                                |
-| `function`       | [Name](/migrations/#type) | The name of procedure to execute                          |
-| `functionParams` | `array`                   | Parameters of the procedure                               |
-| `level`          | `string`                  | `STATEMENT`, or `ROW`                                     |
-| `condition`      | `string`                  | Condition to met to execute trigger                       |
-| `deferrable`     | `boolean`                 | Flag for deferrable constraint trigger                    |
-| `deferred`       | `boolean`                 | Flag for initially deferred deferrable constraint trigger |
+| Option           | Type                       | Description                                               |
+| ---------------- | -------------------------- | --------------------------------------------------------- |
+| `when`           | `string`                   | `BEFORE`, `AFTER`, or `INSTEAD OF`                        |
+| `operation`      | `string or array[string]`  | `INSERT`, `UPDATE[ OF ...]`, `DELETE` or `TRUNCATE`       |
+| `constraint`     | `boolean`                  | Creates constraint trigger                                |
+| `function`       | [Name](/migrations/#types) | The name of procedure to execute                          |
+| `functionParams` | `array`                    | Parameters of the procedure                               |
+| `level`          | `string`                   | `STATEMENT`, or `ROW`                                     |
+| `condition`      | `string`                   | Condition to met to execute trigger                       |
+| `deferrable`     | `boolean`                  | Flag for deferrable constraint trigger                    |
+| `deferred`       | `boolean`                  | Flag for initially deferred deferrable constraint trigger |
 
 ## Reverse Operation: `dropTrigger`
 
@@ -39,11 +39,11 @@
 
 ### Arguments
 
-| Name           | Type                      | Description                               |
-| -------------- | ------------------------- | ----------------------------------------- |
-| `table_name`   | [Name](/migrations/#type) | Name of the table where the trigger lives |
-| `trigger_name` | `string`                  | Name of the trigger to drop               |
-| `drop_options` | `object`                  | Check below for available options         |
+| Name           | Type                       | Description                               |
+| -------------- | -------------------------- | ----------------------------------------- |
+| `table_name`   | [Name](/migrations/#types) | Name of the table where the trigger lives |
+| `trigger_name` | `string`                   | Name of the trigger to drop               |
+| `drop_options` | `object`                   | Check below for available options         |
 
 #### Drop Options:
 
@@ -61,8 +61,8 @@
 
 ### Arguments
 
-| Name               | Type                      | Description                               |
-| ------------------ | ------------------------- | ----------------------------------------- |
-| `table_name`       | [Name](/migrations/#type) | Name of the table where the trigger lives |
-| `old_trigger_name` | `string`                  | Old name of the trigger                   |
-| `new_trigger_name` | `string`                  | New name of the trigger                   |
+| Name               | Type                       | Description                               |
+| ------------------ | -------------------------- | ----------------------------------------- |
+| `table_name`       | [Name](/migrations/#types) | Name of the table where the trigger lives |
+| `old_trigger_name` | `string`                   | Old name of the trigger                   |
+| `new_trigger_name` | `string`                   | New name of the trigger                   |

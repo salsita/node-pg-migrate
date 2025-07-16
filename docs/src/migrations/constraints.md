@@ -11,11 +11,11 @@
 
 ### Arguments
 
-| Name              | Type                      | Description                                                                                                  |
-| ----------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `tablename`       | [Name](/migrations/#type) | Name of the table to alter                                                                                   |
-| `constraint_name` | `string`                  | Name for the constraint                                                                                      |
-| `expression`      | `string` or `object`      | Constraint expression (raw sql) or definition -- see [constraint definition section](#constraint-definition) |
+| Name              | Type                       | Description                                                                                                  |
+| ----------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `tablename`       | [Name](/migrations/#types) | Name of the table to alter                                                                                   |
+| `constraint_name` | `string`                   | Name for the constraint                                                                                      |
+| `expression`      | `string` or `object`       | Constraint expression (raw sql) or definition -- see [constraint definition section](#constraint-definition) |
 
 #### Constraint Definition
 
@@ -32,15 +32,15 @@
 
 #### Foreign Keys
 
-| Option                        | Type                       | Description                                                                        |
-| ----------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
-| `columns`                     | `Name` or `array of Names` | Names of columns                                                                   |
-| `references`                  | `Name`                     | Names of foreign table and column names                                            |
-| `referencesConstraintName`    | `string`                   | Name of the created constraint (only necessary when creating multiple constraints) |
-| `referencesConstraintComment` | `string`                   | Comment on the individual foreign key constraint                                   |
-| `onDelete`                    | `string`                   | Action to perform on delete                                                        |
-| `onUpdate`                    | `string`                   | Action to perform on update                                                        |
-| `match`                       | `string`                   | `FULL` or `SIMPLE`                                                                 |
+| Option                        | Type                              | Description                                                                        |
+| ----------------------------- | --------------------------------- | ---------------------------------------------------------------------------------- |
+| `columns`                     | `Name` or `array of Names`        | Names of columns                                                                   |
+| `references`                  | [`Reference`](/migrations/#types) | Names of foreign table and column names                                            |
+| `referencesConstraintName`    | `string`                          | Name of the created constraint (only necessary when creating multiple constraints) |
+| `referencesConstraintComment` | `string`                          | Comment on the individual foreign key constraint                                   |
+| `onDelete`                    | `string`                          | Action to perform on delete                                                        |
+| `onUpdate`                    | `string`                          | Action to perform on update                                                        |
+| `match`                       | `string`                          | `FULL` or `SIMPLE`                                                                 |
 
 ## Reverse Operation: `dropConstraint`
 
@@ -51,11 +51,11 @@
 
 ### Arguments
 
-| Name              | Type                      | Description                       |
-| ----------------- | ------------------------- | --------------------------------- |
-| `tablename`       | [Name](/migrations/#type) | Name of the table to alter        |
-| `constraint_name` | `string`                  | Name of the constraint            |
-| `options`         | `object`                  | Check below for available options |
+| Name              | Type                       | Description                       |
+| ----------------- | -------------------------- | --------------------------------- |
+| `tablename`       | [Name](/migrations/#types) | Name of the table to alter        |
+| `constraint_name` | `string`                   | Name of the constraint            |
+| `options`         | `object`                   | Check below for available options |
 
 #### Options
 
@@ -75,8 +75,8 @@
 
 ### Arguments
 
-| Name                  | Type                      | Description                |
-| --------------------- | ------------------------- | -------------------------- |
-| `tablename`           | [Name](/migrations/#type) | Name of the table to alter |
-| `old_constraint_name` | `string`                  | Current constraint name    |
-| `new_constraint_name` | `string`                  | New constraint name        |
+| Name                  | Type                       | Description                |
+| --------------------- | -------------------------- | -------------------------- |
+| `tablename`           | [Name](/migrations/#types) | Name of the table to alter |
+| `old_constraint_name` | `string`                   | Current constraint name    |
+| `new_constraint_name` | `string`                   | New constraint name        |

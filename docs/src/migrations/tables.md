@@ -9,23 +9,23 @@
 
 ### Arguments
 
-| Name        | Type                      | Description                                                                               |
-| ----------- | ------------------------- | ----------------------------------------------------------------------------------------- |
-| `tablename` | [Name](/migrations/#type) | name for the new table                                                                    |
-| `columns`   | `object`                  | column names / options -- see [column definitions section](columns.md#column-definitions) |
-| `options`   | `object`                  | table options (optional)                                                                  |
+| Name        | Type                       | Description                                                                               |
+| ----------- | -------------------------- | ----------------------------------------------------------------------------------------- |
+| `tablename` | [Name](/migrations/#types) | name for the new table                                                                    |
+| `columns`   | `object`                   | column names / options -- see [column definitions section](columns.md#column-definitions) |
+| `options`   | `object`                   | table options (optional)                                                                  |
 
 ### Options
 
-| Option        | Type                                  | Description                                                                                                                   |
-| ------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `temporary`   | `boolean`                             | default `false`                                                                                                               |
-| `ifNotExists` | `boolean`                             | default `false`                                                                                                               |
-| `inherits`    | [Name](/migrations/#type)             | table(s) to inherit from                                                                                                      |
-| `constraints` | `object`                              | table constraints see `expression` of [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-) |
-| `like`        | [Name](/migrations/#type) or `object` | table(s) to inherit from or object with `table` and `options` keys                                                            |
-| `comment`     | `string`                              | adds comment on table                                                                                                         |
-| `unlogged`    | `boolean`                             | default `false`                                                                                                               |
+| Option        | Type                                   | Description                                                                                                                   |
+| ------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `temporary`   | `boolean`                              | default `false`                                                                                                               |
+| `ifNotExists` | `boolean`                              | default `false`                                                                                                               |
+| `inherits`    | [Name](/migrations/#types)             | table(s) to inherit from                                                                                                      |
+| `constraints` | `object`                               | table constraints see `expression` of [add constraint](constraints.md#pgmaddconstraint-tablename-constraint_name-expression-) |
+| `like`        | [Name](/migrations/#types) or `object` | table(s) to inherit from or object with `table` and `options` keys                                                            |
+| `comment`     | `string`                               | adds comment on table                                                                                                         |
+| `unlogged`    | `boolean`                              | default `false`                                                                                                               |
 
 #### like options
 
@@ -43,10 +43,10 @@
 
 ### Arguments
 
-| Name        | Type                      | Description                       |
-| ----------- | ------------------------- | --------------------------------- |
-| `tablename` | [Name](/migrations/#type) | name of the table to drop         |
-| `options`   | `object`                  | Check below for available options |
+| Name        | Type                       | Description                       |
+| ----------- | -------------------------- | --------------------------------- |
+| `tablename` | [Name](/migrations/#types) | name of the table to drop         |
+| `options`   | `object`                   | Check below for available options |
 
 ### Options
 
@@ -66,10 +66,10 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                 |
-| --------------- | ------------------------- | --------------------------- |
-| `tablename`     | [Name](/migrations/#type) | name of the table to rename |
-| `new_tablename` | [Name](/migrations/#type) | new name of the table       |
+| Name            | Type                       | Description                 |
+| --------------- | -------------------------- | --------------------------- |
+| `tablename`     | [Name](/migrations/#types) | name of the table to rename |
+| `new_tablename` | [Name](/migrations/#types) | new name of the table       |
 
 ## Operation: `alterTable`
 
@@ -80,10 +80,10 @@
 
 ### Arguments
 
-| Name        | Type                      | Description                       |
-| ----------- | ------------------------- | --------------------------------- |
-| `tablename` | [Name](/migrations/#type) | name of the table to alter        |
-| `options`   | `object`                  | Check below for available options |
+| Name        | Type                       | Description                       |
+| ----------- | -------------------------- | --------------------------------- |
+| `tablename` | [Name](/migrations/#types) | name of the table to alter        |
+| `options`   | `object`                   | Check below for available options |
 
 ### Options
 

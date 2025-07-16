@@ -112,10 +112,10 @@
 
 ### Arguments
 
-| Name       | Type     | Description                                      |
-| ---------- | -------- | ------------------------------------------------ |
-| `viewName` | `string` | [Name](/migrations/#type) of the view to refresh |
-| `options`  | `object` | Check below for available options                |
+| Name       | Type     | Description                                       |
+| ---------- | -------- | ------------------------------------------------- |
+| `viewName` | `string` | [Name](/migrations/#types) of the view to refresh |
+| `options`  | `object` | Check below for available options                 |
 
 ### Options
 

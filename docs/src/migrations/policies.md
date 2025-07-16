@@ -9,11 +9,11 @@
 
 ### Arguments
 
-| Name         | Type                      | Description                       |
-| ------------ | ------------------------- | --------------------------------- |
-| `tableName`  | [Name](/migrations/#type) | name of the table to alter        |
-| `policyName` | `string`                  | name of the new policy            |
-| `options`    | `object`                  | Check below for available options |
+| Name         | Type                       | Description                       |
+| ------------ | -------------------------- | --------------------------------- |
+| `tableName`  | [Name](/migrations/#types) | name of the table to alter        |
+| `policyName` | `string`                   | name of the new policy            |
+| `options`    | `object`                   | Check below for available options |
 
 #### Options
 
@@ -33,11 +33,11 @@
 
 ### Arguments
 
-| Name         | Type                      | Description                           |
-| ------------ | ------------------------- | ------------------------------------- |
-| `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
-| `policyName` | `string`                  | name of the policy to delete          |
-| `options`    | `object`                  | Check below for available options     |
+| Name         | Type                       | Description                           |
+| ------------ | -------------------------- | ------------------------------------- |
+| `tableName`  | [Name](/migrations/#types) | name of the table where the policy is |
+| `policyName` | `string`                   | name of the policy to delete          |
+| `options`    | `object`                   | Check below for available options     |
 
 #### Options
 
@@ -54,11 +54,11 @@
 
 ### Arguments
 
-| Name         | Type                      | Description                           |
-| ------------ | ------------------------- | ------------------------------------- |
-| `tableName`  | [Name](/migrations/#type) | name of the table where the policy is |
-| `policyName` | `string`                  | name of the policy to alter           |
-| `options`    | `object`                  | Check below for available options     |
+| Name         | Type                       | Description                           |
+| ------------ | -------------------------- | ------------------------------------- |
+| `tableName`  | [Name](/migrations/#types) | name of the table where the policy is |
+| `policyName` | `string`                   | name of the policy to alter           |
+| `options`    | `object`                   | Check below for available options     |
 
 #### Options
 
@@ -77,8 +77,8 @@
 
 ### Arguments
 
-| Name            | Type                      | Description                           |
-| --------------- | ------------------------- | ------------------------------------- |
-| `tableName`     | [Name](/migrations/#type) | name of the table where the policy is |
-| `policyName`    | `string`                  | old name of the policy                |
-| `newPolicyName` | `string`                  | new name of the policy                |
+| Name            | Type                       | Description                           |
+| --------------- | -------------------------- | ------------------------------------- |
+| `tableName`     | [Name](/migrations/#types) | name of the table where the policy is |
+| `policyName`    | `string`                   | old name of the policy                |
+| `newPolicyName` | `string`                   | new name of the policy                |
