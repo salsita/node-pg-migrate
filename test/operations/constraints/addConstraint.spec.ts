@@ -11,13 +11,10 @@ describe('operations', () => {
         expect(addConstraintFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-13: This should throw an error
-      it('should return sql statement', () => {
-        const statement = addConstraintFn('distributors', 'zipchk', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "distributors"
-  ADD ;`);
+      it('should throw error when no constraint options are provided', () => {
+        expect(() => addConstraintFn('distributors', 'zipchk', {})).toThrow(
+          new Error('No constraint options provided for addConstraint')
+        );
       });
 
       it('should return sql statement with constraintOptions', () => {

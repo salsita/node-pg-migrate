@@ -11,13 +11,10 @@ describe('operations', () => {
         expect(alterSequenceFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-11: This should throw an error
-      it('should return sql statement', () => {
-        const statement = alterSequenceFn('serial', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER SEQUENCE "serial"
-  ;`);
+      it('should throw error when no sequence options are provided', () => {
+        expect(() => alterSequenceFn('serial', {})).toThrow(
+          new Error('No sequence options provided for alterSequence')
+        );
       });
 
       it('should return sql statement with sequenceOptions', () => {

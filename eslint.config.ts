@@ -21,6 +21,8 @@ export default defineConfig(
       'docs/.vitepress/theme/index.ts',
       'templates',
       '.prettierrc.js',
+      'test/jiti/migrations/**/*.js',
+      'test/jiti/migrations/**/*.mjs',
     ],
   },
   {
@@ -29,6 +31,10 @@ export default defineConfig(
       reportUnusedDisableDirectives: 'error',
     },
   },
+  //#endregion
+
+  //#region prettier
+  eslintPluginPrettierRecommended,
   //#endregion
 
   //#region eslint (js)
@@ -167,7 +173,7 @@ export default defineConfig(
   //#endregion
 
   //#region unicorn
-  eslintPluginUnicorn.configs['flat/recommended'],
+  eslintPluginUnicorn.configs.recommended,
   {
     name: 'unicorn overrides',
     rules: {
@@ -199,19 +205,16 @@ export default defineConfig(
   },
   //#endregion
 
-  //#region prettier
-  eslintPluginPrettierRecommended,
-  //#endregion
-
   //#region overrides
   {
-    name: 'test/**/*.ts overrides',
+    name: 'test/**/*.spec.ts overrides',
     files: ['test/**/*.spec.ts', 'test/**/*.spec.d.ts'],
     plugins: {
+      // @ts-expect-error: weird type error
       vitest: eslintPluginVitest,
     },
     rules: {
-      'deprecation/deprecation': 'off',
+      '@typescript-eslint/no-deprecated': 'off',
 
       '@typescript-eslint/restrict-template-expressions': [
         'error',
@@ -229,6 +232,7 @@ export default defineConfig(
       'vitest/prefer-each': 'error',
       'vitest/prefer-to-have-length': 'error',
       'vitest/valid-expect': ['error', { maxArgs: 2 }],
+      'vitest/warn-todo': 'warn',
     },
     settings: {
       vitest: {

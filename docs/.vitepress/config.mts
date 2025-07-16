@@ -1,5 +1,5 @@
-import { DefaultTheme, defineConfig } from 'vitepress';
-
+import type { DefaultTheme } from 'vitepress';
+import { defineConfig } from 'vitepress';
 import pkg from '../../package.json';
 
 const repository = 'https://github.com/salsita/node-pg-migrate';
@@ -100,8 +100,8 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
 function sidebarFAQ(): DefaultTheme.SidebarItem[] {
   return [
     {
-      text: 'Transpiling Migrations',
-      link: 'transpiling',
+      text: 'Typescript Migrations',
+      link: 'typescript',
     },
     {
       text: 'Troubleshooting',

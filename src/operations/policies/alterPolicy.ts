@@ -11,7 +11,12 @@ export type AlterPolicy = (
 
 export function alterPolicy(mOptions: MigrationOptions): AlterPolicy {
   const _alter: AlterPolicy = (tableName, policyName, options = {}) => {
-    const clausesStr = makeClauses(options).join(' ');
+    const clauses = makeClauses(options);
+    if (clauses.length === 0) {
+      throw new Error('No policy options provided for alterPolicy');
+    }
+
+    const clausesStr = clauses.join(' ');
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
 
