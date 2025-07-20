@@ -11,6 +11,24 @@ describe('operations', () => {
         expect(createFunctionFn).toBeTypeOf('function');
       });
 
+      it('should throw if no language provided and functionName is object (object bug)', () => {
+        expect(() =>
+          createFunctionFn(
+            { name: 'add', schema: 'myschema' },
+            ['integer', 'integer'],
+            // @ts-expect-error: testing invalid input
+            {
+              returns: 'integer',
+            },
+            'SELECT $1 + $2;'
+          )
+        ).toThrow(
+          new Error(
+            'Language for function "myschema"."add" have to be specified'
+          )
+        );
+      });
+
       it('should return sql statement', () => {
         const statement = createFunctionFn(
           'add',
