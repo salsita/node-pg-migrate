@@ -30,8 +30,13 @@ describe('operations', () => {
         );
       });
       it('should return sql statement with schema in index method (object bug)', () => {
-        const statement = dropOperatorClassFn('widget_ops', { name: 'btree', schema: 'myschema' });
-        expect(statement).toBe('DROP OPERATOR CLASS "widget_ops" USING "myschema"."btree";');
+        const statement = dropOperatorClassFn('widget_ops', {
+          name: 'btree',
+          schema: 'myschema',
+        });
+        expect(statement).toBe(
+          'DROP OPERATOR CLASS "widget_ops" USING "myschema"."btree";'
+        );
       });
     });
   });
