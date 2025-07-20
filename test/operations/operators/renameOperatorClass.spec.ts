@@ -24,6 +24,17 @@ describe('operations', () => {
         );
       });
 
+      it('should return sql statement with schema in index method (object bug)', () => {
+        const statement = renameOperatorClassFn(
+          'gist__int_ops',
+          { name: 'gist', schema: 'myschema' },
+          'gist__int_ops_new'
+        );
+        expect(statement).toBe(
+          'ALTER OPERATOR CLASS "gist__int_ops" USING "myschema"."gist" RENAME TO "gist__int_ops_new";'
+        );
+      });
+
       it('should return sql statement with schema', () => {
         const statement = renameOperatorClassFn(
           { name: 'gist__int_ops', schema: 'myschema' },
