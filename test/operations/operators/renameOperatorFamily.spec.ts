@@ -23,7 +23,16 @@ describe('operations', () => {
           'ALTER OPERATOR FAMILY "integer_ops" USING btree RENAME TO "integer_ops_new";'
         );
       });
-
+      it('should return sql statement with schema in index method (object bug)', () => {
+        const statement = renameOperatorFamilyFn(
+          'integer_ops',
+          { name: 'btree', schema: 'myschema' },
+          'integer_ops_new'
+        );
+        expect(statement).toBe(
+          'ALTER OPERATOR FAMILY "integer_ops" USING "myschema"."btree" RENAME TO "integer_ops_new";'
+        );
+      });
       it('should return sql statement with schema', () => {
         const statement = renameOperatorFamilyFn(
           { name: 'integer_ops', schema: 'myschema' },
