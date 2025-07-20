@@ -29,6 +29,15 @@ describe('operations', () => {
           'DROP OPERATOR FAMILY IF EXISTS "float_ops" USING btree CASCADE;'
         );
       });
+      it('should return sql statement with schema in index method (object bug)', () => {
+        const statement = dropOperatorFamilyFn('float_ops', {
+          name: 'btree',
+          schema: 'myschema',
+        });
+        expect(statement).toBe(
+          'DROP OPERATOR FAMILY "float_ops" USING "myschema"."btree";'
+        );
+      });
     });
   });
 });
