@@ -76,6 +76,23 @@ describe('operations', () => {
   FUNCTION 1 ""(int4, int2);`
         );
       });
+      it('should return sql statement with schema in index method (object bug)', () => {
+        const statement = removeFromOperatorFamilyFn(
+          'integer_ops',
+          { name: 'btree', schema: 'myschema' },
+          [
+            {
+              type: 'operator',
+              number: 1,
+              name: '',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+          ]
+        );
+        expect(statement).toBe(
+          'ALTER OPERATOR FAMILY "integer_ops" USING "myschema"."btree" DROP\n  OPERATOR 1 ""(int4, int2);'
+        );
+      });
     });
   });
 });
