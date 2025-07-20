@@ -19,6 +19,26 @@ describe('operations', () => {
         expect(statement).toBe('CREATE TABLE "films" (\n  \n);');
       });
 
+      it('should use correct tableName in constraint name when tableName is object (object bug)', () => {
+        const createTableFn = createTable(options1);
+        const statement = createTableFn(
+          { schema: 'myschema', name: 'distributors' },
+          {
+            user_id: {
+              type: 'integer',
+              references: 'users',
+              referencesConstraintComment: 'user reference',
+            },
+          }
+        );
+        expect(statement).toContain(
+          'CONSTRAINT "distributors_fk_user_id" REFERENCES "users"'
+        );
+        expect(statement).toContain(
+          'COMMENT ON CONSTRAINT "distributors_fk_user_id" ON "myschema"."distributors" IS $pga$user reference$pga$;'
+        );
+      });
+
       it('should return sql statement with tableOptions', () => {
         const statement = createTableFn('films', {
           code: {
