@@ -20,6 +20,16 @@ describe('operations', () => {
         );
       });
 
+      it('should return sql statement with schema in index method (object bug)', () => {
+        const statement = createOperatorFamilyFn('integer_ops', {
+          name: 'btree',
+          schema: 'myschema',
+        });
+        expect(statement).toBe(
+          'CREATE OPERATOR FAMILY "integer_ops" USING "myschema"."btree";'
+        );
+      });
+
       it('should return sql statement with operatorFamilyOptions', () => {
         // TODO @Shinigami92 2024-03-08: originally there are no options: https://www.postgresql.org/docs/current/sql-createopfamily.html
         const statement = createOperatorFamilyFn('integer_ops', 'btree', {
