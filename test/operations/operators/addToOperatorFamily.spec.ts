@@ -62,6 +62,61 @@ describe('operations', () => {
   FUNCTION 1 "btint42cmp"(int4, int2);`
         );
       });
+      it('should return sql statement with schema in operator family and index method (object bug)', () => {
+        const statement = addToOperatorFamilyFn(
+          { name: 'integer_ops', schema: 'myschema' },
+          { name: 'btree', schema: 'other_schema' },
+          [
+            {
+              type: 'operator',
+              number: 1,
+              name: '<',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'operator',
+              number: 2,
+              name: '<=',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'operator',
+              number: 3,
+              name: '=',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'operator',
+              number: 4,
+              name: '>=',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'operator',
+              number: 5,
+              name: '>',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'function',
+              number: 1,
+              name: 'btint42cmp',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+          ]
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER OPERATOR FAMILY "myschema"."integer_ops" USING "other_schema"."btree" ADD
+  OPERATOR 1 "<"(int4, int2),
+  OPERATOR 2 "<="(int4, int2),
+  OPERATOR 3 "="(int4, int2),
+  OPERATOR 4 ">="(int4, int2),
+  OPERATOR 5 ">"(int4, int2),
+  FUNCTION 1 "btint42cmp"(int4, int2);`
+        );
+      });
 
       it('should return sql statement with schema', () => {
         const statement = addToOperatorFamilyFn(
