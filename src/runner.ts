@@ -327,7 +327,7 @@ function getMigrationsToRun(
               typeof migration === 'object' && migration.timestamp >= count
           )
         : downMigrations.slice(-Math.abs(count))
-    ).reverse();
+    ).toReversed();
 
     const deletedMigrations = toRun.filter(
       (migration): migration is string => typeof migration === 'string'
