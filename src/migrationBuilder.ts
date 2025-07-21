@@ -1020,6 +1020,6 @@ export class MigrationBuilder {
 
   getSqlSteps(): string[] {
     // In reverse mode, we flip the order of the statements
-    return this._REVERSE_MODE ? [...this._steps].reverse() : this._steps;
+    return this._REVERSE_MODE ? this._steps.toReversed() : this._steps;
   }
 }
