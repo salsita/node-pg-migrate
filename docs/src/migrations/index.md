@@ -111,10 +111,11 @@ CREATE TABLE "my_schema"."my_table_name" (
 );
 ```
 
-### Type
+### Types
 
 ```ts
 type Name = string | { schema: string; name: string };
+type Reference = Name & { columns?: string | string[] };
 ```
 
 ## Locking

@@ -11,7 +11,7 @@
 
 | Name               | Type                            | Description                       |
 | ------------------ | ------------------------------- | --------------------------------- |
-| `function_name`    | [Name](/migrations/#type)       | name of the new function          |
+| `function_name`    | [Name](/migrations/#types)      | name of the new function          |
 | `function_params`  | `array[string]` `array[object]` | parameters of the new function    |
 | `function_options` | `object`                        | Check below for available options |
 | `definition`       | `string`                        | definition of function            |
@@ -52,7 +52,7 @@ If array of strings, it is interpreted as is, if array of objects:
 
 | Name              | Type                            | Description                       |
 | ----------------- | ------------------------------- | --------------------------------- |
-| `function_name`   | [Name](/migrations/#type)       | name of the function to drop      |
+| `function_name`   | [Name](/migrations/#types)      | name of the function to drop      |
 | `function_params` | `array[string]` `array[object]` | parameters of the function        |
 | `drop_options`    | `object`                        | Check below for available options |
 
@@ -74,6 +74,6 @@ If array of strings, it is interpreted as is, if array of objects:
 
 | Name                | Type                            | Description                |
 | ------------------- | ------------------------------- | -------------------------- |
-| `old_function_name` | [Name](/migrations/#type)       | old name of the function   |
+| `old_function_name` | [Name](/migrations/#types)      | old name of the function   |
 | `function_params`   | `array[string]` `array[object]` | parameters of the function |
-| `new_function_name` | [Name](/migrations/#type)       | new name of the function   |
+| `new_function_name` | [Name](/migrations/#types)      | new name of the function   |

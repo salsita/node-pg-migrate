@@ -174,6 +174,44 @@ describe('operations', () => {
   "parent_id" integer REFERENCES "schema_a"."table_b"
 );`,
         ],
+        [
+          'should use columns with foreign keys 1',
+          options1,
+          [
+            'myTableName',
+            {
+              parentId: {
+                type: 'integer',
+                references: { name: 'tableB', columns: 'columnC' },
+              },
+            },
+            undefined,
+          ],
+          `CREATE TABLE "myTableName" (
+  "parentId" integer REFERENCES "tableB"("columnC")
+);`,
+        ],
+        [
+          'should use columns with foreign keys 2',
+          options2,
+          [
+            'myTableName',
+            {
+              parentId: {
+                type: 'integer',
+                references: {
+                  schema: 'schemaA',
+                  name: 'tableB',
+                  columns: ['columnC'],
+                },
+              },
+            },
+            undefined,
+          ],
+          `CREATE TABLE "my_table_name" (
+  "parent_id" integer REFERENCES "schema_a"."table_b"("column_c")
+);`,
+        ],
         // should match clause can be used for foreign keys
         [
           'should match clause can be used for foreign keys 1',
@@ -429,6 +467,32 @@ describe('operations', () => {
   "col_c" varchar,
   CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"),
   CONSTRAINT "my_table_name_uniq_col_c" UNIQUE ("col_c")
+);`,
+        ],
+        // should create foreign key references with explicit target column names
+        [
+          'should explicitly define referred target column names on foreign keys 1',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'integer' } },
+            {
+              constraints: {
+                foreignKeys: {
+                  columns: ['colA', 'colB'],
+                  references: {
+                    schema: 'otherSchema',
+                    name: 'otherTable',
+                    columns: ['colC', 'colD'],
+                  },
+                },
+              },
+            },
+          ],
+          `CREATE TABLE "myTableName" (
+  "colA" integer,
+  "colB" integer,
+  CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES "otherSchema"."otherTable"("colC", "colD")
 );`,
         ],
         // should create comments on foreign keys

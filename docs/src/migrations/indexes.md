@@ -12,7 +12,7 @@
 
 | Name        | Type                        | Description                                                       |
 | ----------- | --------------------------- | ----------------------------------------------------------------- |
-| `tablename` | [Name](/migrations/#type)   | name of the table to alter                                        |
+| `tablename` | [Name](/migrations/#types)  | name of the table to alter                                        |
 | `columns`   | `string` or `array[string]` | columns to add to the index with optional operator class and sort |
 | `options`   | `object`                    | Check below for available options                                 |
 
@@ -70,7 +70,7 @@ pgm.createIndex('table', [
 
 | Name        | Type                        | Description                                    |
 | ----------- | --------------------------- | ---------------------------------------------- |
-| `tablename` | [Name](/migrations/#type)   | name of the table to alter                     |
+| `tablename` | [Name](/migrations/#types)  | name of the table to alter                     |
 | `columns`   | `string` or `array[string]` | column names, used only to infer an index name |
 | `options`   | `object`                    | Check below for available options              |
 
