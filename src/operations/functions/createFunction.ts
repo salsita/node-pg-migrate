@@ -45,7 +45,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       options.push(`LANGUAGE ${language}`);
     } else {
       throw new Error(
-        `Language for function ${functionName} have to be specified`
+        `Language for function ${mOptions.literal(functionName)} have to be specified`
       );
     }
 

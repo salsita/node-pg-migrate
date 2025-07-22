@@ -5,7 +5,7 @@ import { operatorMap } from './shared';
 
 export type RemoveFromOperatorFamily = (
   operatorFamilyName: Name,
-  indexMethod: Name,
+  indexMethod: string,
   operatorList: OperatorListDefinition[]
 ) => string;
 

@@ -3,7 +3,7 @@ import type { Name, Reversible } from '../generalTypes';
 
 export type RenameOperatorClassFn = (
   oldOperatorClassName: Name,
-  indexMethod: Name,
+  indexMethod: string,
   newOperatorClassName: Name
 ) => string;
 
