@@ -15,7 +15,7 @@ export interface CreateOperatorClassOptions {
 export type CreateOperatorClassFn = (
   operatorClassName: Name,
   type: Type,
-  indexMethod: Name,
+  indexMethod: string,
   operatorList: OperatorListDefinition[],
   operatorClassOptions: CreateOperatorClassOptions & DropOperatorClassOptions
 ) => string;

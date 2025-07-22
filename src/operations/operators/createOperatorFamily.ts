@@ -8,7 +8,7 @@ export interface CreateOperatorFamilyOptions {}
 
 export type CreateOperatorFamilyFn = (
   operatorFamilyName: Name,
-  indexMethod: Name,
+  indexMethod: string,
   operatorFamilyOptions?: CreateOperatorFamilyOptions &
     DropOperatorFamilyOptions
 ) => string;
