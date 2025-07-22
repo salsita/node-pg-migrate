@@ -1,4 +1,4 @@
-import { isPgLiteral, StringIdGenerator } from '.';
+import { isPgLiteral, stringIdGenerator } from '.';
 import type { Value } from '../operations/generalTypes';
 
 export function escapeValue(val: Value): string | number {
@@ -12,11 +12,11 @@ export function escapeValue(val: Value): string | number {
 
   if (typeof val === 'string') {
     let dollars: string;
-    const ids = new StringIdGenerator();
+    const ids = stringIdGenerator();
     let index: string;
 
     do {
-      index = ids.next();
+      index = ids.next().value;
       dollars = `$pg${index}$`;
     } while (val.includes(dollars));
 
