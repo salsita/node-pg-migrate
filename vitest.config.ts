@@ -3,6 +3,26 @@ import { defineConfig } from 'vitest/config';
 // https://vitejs.dev/config/
 export default defineConfig({
   test: {
+    projects: [
+      {
+        test: {
+          name: 'integration',
+          include: [
+            'test/integration/**/*.test.{ts,js}',
+            'test/integration/**/*.spec.{ts,js}',
+          ],
+          environment: 'node',
+        },
+      },
+      {
+        test: {
+          name: 'unit',
+          include: ['test/**/*.test.{ts,js}', 'test/**/*.spec.{ts,js}'],
+          exclude: ['test/integration/**/*'],
+          environment: 'node',
+        },
+      },
+    ],
     coverage: {
       all: true,
       provider: 'v8',
