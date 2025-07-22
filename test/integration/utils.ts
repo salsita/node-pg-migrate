@@ -15,6 +15,9 @@ export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '17')
   .map((v) => v.trim())
   .filter(Boolean);
 
+export const INTEGRATION_TIMEOUT = Number(
+  process.env.INTEGRATION_TIMEOUT ?? 30_000
+);
 /**
  * Promisified version of Node.js `child_process.exec` for running shell commands asynchronously.
  */
@@ -29,7 +32,7 @@ export const exec = promisify(processExec);
 export const IGNORE_LOG_PATTERNS = [
   /WARN.*Issue while reading .*\. Failed to replace env in config: /,
   /^Can't determine timestamp for \d{3}$/,
-  /^\s*\[dotenv@[\d.]+] injecting env.*from \.env.*$/i,
+  /^\s*\[dotenv@[\d.]+] injecting .* from .+$/i,
 ] as const;
 
 /**
@@ -78,6 +81,18 @@ export async function setupPostgresDatabase(
 export async function cleanupDatabase(connectionString: string): Promise<void> {
   const client = new Client({ connectionString });
   await client.connect();
+
+  // Add this before cleaning the public schema
+  const schemasToDrop = await client.query(`
+    SELECT schema_name
+    FROM information_schema.schemata
+    WHERE schema_name NOT IN ('public', 'information_schema')
+      AND schema_name NOT LIKE 'pg_%'
+  `);
+
+  for (const row of schemasToDrop.rows) {
+    await client.query(`DROP SCHEMA IF EXISTS "${row.schema_name}" CASCADE`);
+  }
 
   // Drop all objects in the public schema
   await client.query(`
