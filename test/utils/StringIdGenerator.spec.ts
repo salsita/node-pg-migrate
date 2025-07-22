@@ -22,7 +22,7 @@ describe('utils', () => {
 
     it('should transition from z to aa with default chars', () => {
       const ids = stringIdGenerator();
-      let last;
+      let last!: string;
       for (let i = 0; i < 27; i++) {
         last = ids.next().value;
       }
@@ -32,7 +32,7 @@ describe('utils', () => {
 
     it('should transition from Z to AA with uppercase chars', () => {
       const ids = stringIdGenerator('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-      let last;
+      let last!: string;
       for (let i = 0; i < 27; i++) {
         last = ids.next().value;
       }
