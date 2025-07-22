@@ -6,7 +6,7 @@ import { operatorMap } from './shared';
 
 export type AddToOperatorFamilyFn = (
   operatorFamilyName: Name,
-  indexMethod: Name,
+  indexMethod: string,
   operatorList: OperatorListDefinition[]
 ) => string;
 

@@ -5,7 +5,7 @@ export type DropOperatorFamilyOptions = DropOptions;
 
 export type DropOperatorFamily = (
   operatorFamilyName: Name,
-  newSchemaName: Name,
+  indexMethod: string,
   dropOptions?: DropOperatorFamilyOptions
 ) => string;
 

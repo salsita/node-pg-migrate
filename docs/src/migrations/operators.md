@@ -33,7 +33,7 @@
 #### `pgm.dropOperator( operator_name, drop_options )`
 
 > [!IMPORTANT]
-> Drop a operator - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropoperator.html)
+> Drop an operator - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropoperator.html)
 
 ### Arguments
 
@@ -64,7 +64,7 @@
 | --------------------- | ------------------------- | ------------------------------------------------- |
 | `operator_class_name` | [Name](/migrations/#type) | name of the new operator class                    |
 | `type`                | `string`                  | data type of the new operator class               |
-| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class        |
+| `index_method`        | `string`                  | name of the index method of operator class        |
 | `operator_list`       | `array`                   | of [operator objects](#operator-list-definitions) |
 | `options`             | `object`                  | Check below for available options                 |
 
@@ -87,7 +87,7 @@
 | Name                  | Type                      | Description                                |
 | --------------------- | ------------------------- | ------------------------------------------ |
 | `operator_class_name` | [Name](/migrations/#type) | name of the operator class to drop         |
-| `index_method`        | [Name](/migrations/#type) | name of the index method of operator class |
+| `index_method`        | `string`                  | name of the index method of operator class |
 | `drop_options`        | `object`                  | Check below for available options          |
 
 ### Options
@@ -109,7 +109,7 @@
 | Name                      | Type                      | Description                                |
 | ------------------------- | ------------------------- | ------------------------------------------ |
 | `old_operator_class_name` | [Name](/migrations/#type) | old name of the operator class             |
-| `index_method`            | [Name](/migrations/#type) | name of the index method of operator class |
+| `index_method`            | `string`                  | name of the index method of operator class |
 | `new_operator_class_name` | [Name](/migrations/#type) | new name of the operator class             |
 
 ## Operation: `alterOperatorClass`
@@ -124,21 +124,21 @@
 | Name                   | Type                      | Description                                 |
 | ---------------------- | ------------------------- | ------------------------------------------- |
 | `operator_family_name` | [Name](/migrations/#type) | name of the new operator family             |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
+| `index_method`         | `string`                  | name of the index method of operator family |
 
 ## Reverse Operation: `dropOperatorFamily`
 
 #### `pgm.dropOperatorFamily( operator_family_name, index_methoddrop_options )`
 
 > [!IMPORTANT]
-> Drop a operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopfamily.html)
+> Drop an operator family - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopfamily.html)
 
 ### Arguments
 
 | Name                   | Type                      | Description                                 |
 | ---------------------- | ------------------------- | ------------------------------------------- |
 | `operator_family_name` | [Name](/migrations/#type) | name of the operator family to drop         |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family |
+| `index_method`         | `string`                  | name of the index method of operator family |
 | `drop_options`         | `object`                  | Check below for available options           |
 
 ### Options
@@ -160,7 +160,7 @@
 | Name                       | Type                      | Description                                 |
 | -------------------------- | ------------------------- | ------------------------------------------- |
 | `old_operator_family_name` | [Name](/migrations/#type) | old name of the operator family             |
-| `index_method`             | [Name](/migrations/#type) | name of the index method of operator family |
+| `index_method`             | `string`                  | name of the index method of operator family |
 | `new_operator_family_name` | [Name](/migrations/#type) | new name of the operator family             |
 
 ## Operation: `alterOperatorFamily`
@@ -175,7 +175,7 @@
 | Name                   | Type                      | Description                                       |
 | ---------------------- | ------------------------- | ------------------------------------------------- |
 | `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
+| `index_method`         | `string`                  | name of the index method of operator family       |
 | `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
 
 ## Reverse Operation: `dropFromOperatorFamily`
@@ -190,12 +190,12 @@
 | Name                   | Type                      | Description                                       |
 | ---------------------- | ------------------------- | ------------------------------------------------- |
 | `operator_family_name` | [Name](/migrations/#type) | name of the operator family                       |
-| `index_method`         | [Name](/migrations/#type) | name of the index method of operator family       |
+| `index_method`         | `string`                  | name of the index method of operator family       |
 | `operator_list`        | `array`                   | of [operator objects](#operator-list-definitions) |
 
 ## Operator List Definitions
 
-Some functions for defining operators take as parameter `operator_list` which is array of objects with the following
+Some functions for defining operators take as parameter `operator_list` which is an array of objects with the following
 structure:
 
 | Name     | Type                      | Description                                     |
