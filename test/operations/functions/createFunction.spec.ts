@@ -144,7 +144,9 @@ $pga$
             },
             'SELECT $1 + $2;'
           )
-        ).toThrow(new Error('Language for function add have to be specified'));
+        ).toThrow(
+          new Error('Language for function "add" have to be specified')
+        );
       });
 
       describe('reverse', () => {

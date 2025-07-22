@@ -5,7 +5,7 @@ export type DropOperatorClassOptions = DropOptions;
 
 export type DropOperatorClass = (
   operatorClassName: Name,
-  indexMethod: Name,
+  indexMethod: string,
   dropOptions?: DropOperatorClassOptions
 ) => string;
 
