@@ -16,7 +16,7 @@ export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '17')
   .filter(Boolean);
 
 export const INTEGRATION_TIMEOUT = Number(
-  process.env.INTEGRATION_TIMEOUT ?? 30_000
+  process.env.INTEGRATION_TIMEOUT ?? 20_000
 );
 /**
  * Promisified version of Node.js `child_process.exec` for running shell commands asynchronously.
