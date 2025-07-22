@@ -7,19 +7,16 @@ export default defineConfig({
       {
         test: {
           name: 'integration',
-          include: [
-            'test/integration/**/*.test.{ts,js}',
-            'test/integration/**/*.spec.{ts,js}',
-          ],
           environment: 'node',
+          include: ['test/integration/**/*.spec.{ts,js}'],
         },
       },
       {
         test: {
           name: 'unit',
-          include: ['test/**/*.test.{ts,js}', 'test/**/*.spec.{ts,js}'],
-          exclude: ['test/integration/**/*'],
           environment: 'node',
+          include: ['test/**/*.spec.{ts,js}'],
+          exclude: ['test/integration/**/*'],
         },
       },
     ],
