@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PgLiteralValue } from '../../src';
-import { PgLiteral } from '../../src';
-import { escapeValue } from '../../src/utils';
+import { escapeValue, PgLiteral } from '../../src';
 
 describe('utils', () => {
   describe('escapeValue', () => {

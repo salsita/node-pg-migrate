@@ -1,22 +1,54 @@
 import { describe, expect, it } from 'vitest';
-import { StringIdGenerator } from '../../src/utils';
+import { stringIdGenerator } from '../../src/utils';
 
 describe('utils', () => {
-  describe('StringIdGenerator', () => {
+  describe('stringIdGenerator', () => {
     it('should generate correct sequence with default chars', () => {
-      const ids = new StringIdGenerator();
+      const ids = stringIdGenerator();
       // eslint-disable-next-line @typescript-eslint/no-misused-spread
       const results = [...'abcdefghijklmnopqrstuvwxyz', 'aa', 'ab'];
 
       for (const res of results) {
-        expect(ids.next()).toBe(res);
+        expect(ids.next().value).toBe(res);
       }
+    });
+
+    it('should generate repeated single char', () => {
+      const ids = stringIdGenerator('x');
+      expect(ids.next().value).toBe('x');
+      expect(ids.next().value).toBe('xx');
+      expect(ids.next().value).toBe('xxx');
+    });
+
+    it('should transition from z to aa with default chars', () => {
+      const ids = stringIdGenerator();
+      let last;
+      for (let i = 0; i < 27; i++) {
+        last = ids.next().value;
+      }
+
+      expect(last).toBe('aa');
+    });
+
+    it('should transition from Z to AA with uppercase chars', () => {
+      const ids = stringIdGenerator('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+      let last;
+      for (let i = 0; i < 27; i++) {
+        last = ids.next().value;
+      }
+
+      expect(last).toBe('AA');
+    });
+
+    it('should throw if chars is empty', () => {
+      const gen = stringIdGenerator('');
+      expect(() => gen.next()).toThrow('chars must be a non-empty string');
     });
 
     it('should generate correct sequence with custom chars', () => {
       const chars = 'abcd';
 
-      const ids = new StringIdGenerator(chars);
+      const ids = stringIdGenerator(chars);
       const results = [
         'a',
         'b',
@@ -45,7 +77,7 @@ describe('utils', () => {
       ];
 
       for (const res of results) {
-        expect(ids.next()).toBe(res);
+        expect(ids.next().value).toBe(res);
       }
     });
   });
