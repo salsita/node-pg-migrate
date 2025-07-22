@@ -1,11 +1,13 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, it, vi } from 'vitest';
 import {
   cleanupDatabase,
   exec,
   filterIgnoredLines,
+  INTEGRATION_TIMEOUT,
   PG_VERSIONS,
   setupPostgresDatabase,
 } from './utils';
@@ -17,28 +19,33 @@ const SNAPSHOT_FOLDER = '__snapshots__/db-config-it.spec.ts.snap.d/';
 
 describe.each(PG_VERSIONS)(
   'node-pg-migrate config file and env fallback (PG %s)',
+  { timeout: INTEGRATION_TIMEOUT },
   (postgresVersion) => {
     let pgContainer: StartedPostgreSqlContainer;
+    //TODO @brenoepics 2025-07-22: Replace with https://vitest.dev/guide/mocking.html#file-system
     const configFile = (taskName: string) =>
       resolve(
-        import.meta.dirname,
+        tmpdir(),
         `${postgresVersion}-${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.json`
       );
 
     beforeAll(async () => {
       const containerImage = `postgres:${postgresVersion}-alpine`;
-      pgContainer = await setupPostgresDatabase(containerImage, 'test_config');
-      await pgContainer.snapshot('clean_state');
-    });
+      pgContainer = await setupPostgresDatabase(
+        containerImage,
+        `test_migrations_pg_${postgresVersion}`
+      );
+    }, INTEGRATION_TIMEOUT);
 
     afterAll(async () => {
-      await pgContainer.stop();
+      if (pgContainer) {
+        await pgContainer.stop();
+      }
     });
 
     afterEach(async (context) => {
       try {
         await cleanupDatabase(pgContainer.getConnectionUri());
-        await pgContainer.restoreSnapshot('clean_state');
         unlinkSync(configFile(context.task.name));
       } catch {
         // Ignore if the file does not exist

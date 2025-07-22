@@ -101,4 +101,4 @@ package-lock.json
 yarn.lock
 
 # Snapshot test files
-!test/__snapshots__/**/*.log
+!test/integration/__snapshots__/**/*.log

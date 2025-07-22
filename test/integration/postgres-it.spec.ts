@@ -1,5 +1,6 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import {
   afterAll,
@@ -15,6 +16,7 @@ import {
   cleanupDatabase,
   exec,
   filterIgnoredLines,
+  INTEGRATION_TIMEOUT,
   PG_VERSIONS,
   setupPostgresDatabase,
 } from './utils';
@@ -23,31 +25,38 @@ const SNAPSHOT_FOLDER = '__snapshots__/postgres-it.spec.ts.snap.d/';
 
 describe.each(PG_VERSIONS)(
   'Postgres Integration Test (PG %s)',
+  { timeout: INTEGRATION_TIMEOUT },
   (postgresVersion) => {
     let pgContainer: StartedPostgreSqlContainer;
+    //TODO @brenoepics 2025-07-22: Replace with https://vitest.dev/guide/mocking.html#file-system
     const configFile = (taskName: string) =>
       resolve(
-        import.meta.dirname,
+        tmpdir(),
         `${postgresVersion}-${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.json`
+      );
+    const envFile = (taskName: string) =>
+      resolve(
+        tmpdir(),
+        `${postgresVersion}-${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}.env`
       );
 
     beforeAll(async () => {
       const containerImage = `postgres:${postgresVersion}-alpine`;
       pgContainer = await setupPostgresDatabase(
         containerImage,
-        'test_migrations'
+        `test_migrations_pg_${postgresVersion}`
       );
-      await pgContainer.snapshot('clean_state');
-    });
+    }, INTEGRATION_TIMEOUT);
 
     afterAll(async () => {
-      await pgContainer.stop();
+      if (pgContainer) {
+        await pgContainer.stop();
+      }
     });
 
     afterEach(async (context) => {
       try {
         await cleanupDatabase(pgContainer.getConnectionUri());
-        await pgContainer.restoreSnapshot('clean_state');
         unlinkSync(configFile(context.task.name));
       } catch {
         // Ignore if the file does not exist
@@ -56,7 +65,11 @@ describe.each(PG_VERSIONS)(
       vi.unstubAllEnvs();
     });
 
-    function getCommand(direction: 'up' | 'down', configFile?: string): string {
+    function getCommand(
+      direction: 'up' | 'down',
+      configFile?: string,
+      envPath?: string
+    ): string {
       let command = 'node bin/node-pg-migrate.js';
       if (direction === 'up') {
         command += ' up -m test/migrations';
@@ -68,6 +81,10 @@ describe.each(PG_VERSIONS)(
         command += ` --config-file ${configFile}`;
       }
 
+      if (envPath) {
+        command += ` --envPath ${envPath}`;
+      }
+
       return command;
     }
 
@@ -77,9 +94,14 @@ describe.each(PG_VERSIONS)(
       direction: 'up' | 'down';
       env?: NodeJS.ProcessEnv;
       configFile?: string;
+      envPath?: string;
     }): Promise<void> {
       const { expect, task, direction, env = {} } = options;
-      const command = getCommand(direction, options.configFile);
+      const command = getCommand(
+        direction,
+        options.configFile,
+        options.envPath
+      );
 
       const execUp = await exec(command, { env });
 
@@ -151,20 +173,22 @@ describe.each(PG_VERSIONS)(
 
     test('Dotenv', async ({ expect, task, onTestFinished }) => {
       // TODO @Shinigami92 2025-04-04: Replace with https://vitest.dev/guide/mocking.html#file-system
-      writeFileSync('.env', `DATABASE_URL=${pgContainer.getConnectionUri()}`);
+      const file = envFile(task.name);
+      writeFileSync(file, `DATABASE_URL=${pgContainer.getConnectionUri()}`);
 
       onTestFinished(() => {
-        rmSync('.env', { force: true });
+        rmSync(file, { force: true });
       });
 
-      await execMigrate({ expect, task, direction: 'up' });
-      await execMigrate({ expect, task, direction: 'down' });
+      await execMigrate({ expect, task, direction: 'up', envPath: file });
+      await execMigrate({ expect, task, direction: 'down', envPath: file });
     });
 
     test('Dotenv-Expand', async ({ expect, task, onTestFinished }) => {
       // TODO @Shinigami92 2025-04-04: Replace with https://vitest.dev/guide/mocking.html#file-system
+      const file = envFile(task.name);
       writeFileSync(
-        '.env',
+        file,
         `POSTGRES_USER=${pgContainer.getUsername()}
 POSTGRES_PASSWORD=${pgContainer.getPassword()}
 POSTGRES_DB=${pgContainer.getDatabase()}
@@ -173,11 +197,24 @@ DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@${pgContainer.getHost(
       );
 
       onTestFinished(() => {
-        rmSync('.env', { force: true });
+        rmSync(file, { force: true });
       });
 
-      await execMigrate({ expect, task, direction: 'up' });
-      await execMigrate({ expect, task, direction: 'down' });
+      const env = { DOTENV_CONFIG_PATH: file };
+      await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        env,
+        envPath: file,
+      });
+      await execMigrate({
+        expect,
+        task,
+        direction: 'down',
+        env,
+        envPath: file,
+      });
     });
   }
 );
