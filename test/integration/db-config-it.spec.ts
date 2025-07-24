@@ -69,57 +69,57 @@ describe.each(PG_VERSIONS)(
       return command;
     }
 
-    it('fails when no config file or env vars are provided', async ({
-      expect,
-      task,
-    }) => {
-      const direction = 'up';
-      let execUp: { stdout?: string; stderr?: string } = {};
+    it.concurrent(
+      'fails when no config file or env vars are provided',
+      async ({ expect, task }) => {
+        const direction = 'up';
+        let execUp: { stdout?: string; stderr?: string } = {};
 
-      try {
-        await exec(getCommand(direction));
-      } catch (error: unknown) {
-        if (typeof error === 'object' && error !== null) {
-          execUp = error as { stdout?: string; stderr?: string };
+        try {
+          await exec(getCommand(direction));
+        } catch (error: unknown) {
+          if (typeof error === 'object' && error !== null) {
+            execUp = error as { stdout?: string; stderr?: string };
+          }
         }
+
+        const errorOutput = execUp.stderr || '';
+        expect(errorOutput).toContain(ERROR_MESSAGE);
+
+        const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
+        await expect(
+          filterIgnoredLines(execUp.stderr || '')
+        ).toMatchFileSnapshot(snapshot);
       }
+    );
 
-      const errorOutput = execUp.stderr || '';
-      expect(errorOutput).toContain(ERROR_MESSAGE);
+    it.concurrent(
+      'fails with config file missing DB connection',
+      async ({ expect, task }) => {
+        const file = configFile(task.name);
+        writeFileSync(file, JSON.stringify({}), 'utf8');
+        const direction = 'up';
+        let execUp: { stdout?: string; stderr?: string } = {};
 
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
-      await expect(filterIgnoredLines(execUp.stderr || '')).toMatchFileSnapshot(
-        snapshot
-      );
-    });
-
-    it('fails with config file missing DB connection', async ({
-      expect,
-      task,
-    }) => {
-      const file = configFile(task.name);
-      writeFileSync(file, JSON.stringify({}), 'utf8');
-      const direction = 'up';
-      let execUp: { stdout?: string; stderr?: string } = {};
-
-      try {
-        await exec(getCommand(direction, file), {
-          env: { ...process.env, DATABASE_URL: '' },
-        });
-      } catch (error: unknown) {
-        if (typeof error === 'object' && error !== null) {
-          execUp = error as { stdout?: string; stderr?: string };
+        try {
+          await exec(getCommand(direction, file), {
+            env: { ...process.env, DATABASE_URL: '' },
+          });
+        } catch (error: unknown) {
+          if (typeof error === 'object' && error !== null) {
+            execUp = error as { stdout?: string; stderr?: string };
+          }
         }
+
+        const errorOutput = execUp.stderr || '';
+        expect(errorOutput).toContain(ERROR_MESSAGE);
+
+        const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
+        await expect(
+          filterIgnoredLines(execUp.stderr || '')
+        ).toMatchFileSnapshot(snapshot);
       }
-
-      const errorOutput = execUp.stderr || '';
-      expect(errorOutput).toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
-      await expect(filterIgnoredLines(execUp.stderr || '')).toMatchFileSnapshot(
-        snapshot
-      );
-    });
+    );
 
     it('succeeds with valid config file containing user, database, etc', async ({
       expect,
