@@ -82,19 +82,18 @@ export async function cleanupDatabase(connectionString: string): Promise<void> {
   const client = new Client({ connectionString });
   await client.connect();
 
-  // Add this before cleaning the public schema
-  const schemasToDrop = await client.query(`
+  // 1. Drop all non-system schemas except 'public'
+  const { rows: schemas } = await client.query(`
     SELECT schema_name
     FROM information_schema.schemata
     WHERE schema_name NOT IN ('public', 'information_schema')
       AND schema_name NOT LIKE 'pg_%'
   `);
-
-  for (const row of schemasToDrop.rows) {
-    await client.query(`DROP SCHEMA IF EXISTS "${row.schema_name}" CASCADE`);
+  for (const { schema_name } of schemas) {
+    await client.query(`DROP SCHEMA IF EXISTS "${schema_name}" CASCADE;`);
   }
 
-  // Drop all objects in the public schema
+  // 2. Drop all objects in the public schema
   await client.query(`
     DO $$
     DECLARE obj RECORD;
@@ -123,86 +122,32 @@ export async function cleanupDatabase(connectionString: string): Promise<void> {
     END $$;
   `);
 
-  // Drop all materialized views
-  await client.query(`
-    DO $$
-    DECLARE obj RECORD;
-    BEGIN
-      FOR obj IN SELECT matviewname FROM pg_matviews WHERE schemaname = 'public' LOOP
-        EXECUTE 'DROP MATERIALIZED VIEW IF EXISTS public.' || quote_ident(obj.matviewname) || ' CASCADE';
-      END LOOP;
-    END $$;
-  `);
-
-  // Drop all views
-  await client.query(`
-    DO $$
-    DECLARE obj RECORD;
-    BEGIN
-      FOR obj IN SELECT table_name FROM information_schema.views WHERE table_schema = 'public' LOOP
-        EXECUTE 'DROP VIEW IF EXISTS public.' || quote_ident(obj.table_name) || ' CASCADE';
-      END LOOP;
-    END $$;
-  `);
-
-  // Drop all foreign tables
-  await client.query(`
-    DO $$
-    DECLARE obj RECORD;
-    BEGIN
-      FOR obj IN SELECT foreign_table_name FROM information_schema.foreign_tables WHERE foreign_table_schema = 'public' LOOP
-        EXECUTE 'DROP FOREIGN TABLE IF EXISTS public.' || quote_ident(obj.foreign_table_name) || ' CASCADE';
-      END LOOP;
-    END $$;
-  `);
-
-  // Drop all tables
-  await client.query(`
-    DO $$
-    DECLARE obj RECORD;
-    BEGIN
-      FOR obj IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
-        EXECUTE 'DROP TABLE IF EXISTS public.' || quote_ident(obj.tablename) || ' CASCADE';
-      END LOOP;
-    END $$;
-  `);
-
-  // Drop all sequences
-  await client.query(`
-    DO $$
-    DECLARE obj RECORD;
-    BEGIN
-      FOR obj IN SELECT sequencename FROM pg_sequences WHERE schemaname = 'public' LOOP
-        EXECUTE 'DROP SEQUENCE IF EXISTS public.' || quote_ident(obj.sequencename) || ' CASCADE';
-      END LOOP;
-    END $$;
-  `);
-
-  // Drop all custom roles except system/default and those in keepRoles
-  const rolesToDrop = await client.query(`
+  // Drop all custom roles except system/default
+  const { rows: roles } = await client.query(`
     SELECT rolname
     FROM pg_roles
-    WHERE rolname NOT IN ('postgres', 'pg_signal_backend', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor',
+    WHERE rolname NOT IN (
+                          'postgres', 'pg_signal_backend', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor',
                           'pg_read_all_settings', 'pg_read_all_stats', 'pg_stat_scan_tables', 'pg_database_owner',
-                          'pg_read_server_files', 'pg_write_server_files', 'pg_execute_server_program')
+                          'pg_read_server_files', 'pg_write_server_files', 'pg_execute_server_program'
+      )
       AND rolname NOT LIKE 'pg\\_%'
-      AND rolname <> current_user`);
-
-  for (const row of rolesToDrop.rows) {
-    await client.query(`DROP ROLE IF EXISTS "${row.rolname}"`);
+      AND rolname <> current_user
+  `);
+  for (const { rolname } of roles) {
+    await client.query(`DROP ROLE IF EXISTS "${rolname}";`);
   }
 
-  // Drop all custom types and domains in the public schema
-  const typesToDrop = await client.query(`
+  // Drop all custom types in the public schema
+  const { rows: types } = await client.query(`
     SELECT typname
     FROM pg_type
     WHERE typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
-      AND typtype IN ('c', 'e', 'd') -- composite, enum, domain
+      AND typtype IN ('c', 'e', 'd')
       AND typname NOT LIKE 'pg\\_%'
   `);
-
-  for (const row of typesToDrop.rows) {
-    await client.query(`DROP TYPE IF EXISTS public."${row.typname}" CASCADE`);
+  for (const { typname } of types) {
+    await client.query(`DROP TYPE IF EXISTS public."${typname}" CASCADE;`);
   }
 
   await client.end();
