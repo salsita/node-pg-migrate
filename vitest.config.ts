@@ -8,17 +8,14 @@ export default defineConfig({
         test: {
           name: 'integration',
           environment: 'node',
-          include: [
-            'test/integration/**/*.test.{ts,js}',
-            'test/integration/**/*.spec.{ts,js}',
-          ],
+          include: ['test/integration/**/*.spec.ts'],
         },
       },
       {
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['test/**/*.test.{ts,js}', 'test/**/*.spec.{ts,js}'],
+          include: ['test/**/*.spec.ts'],
           exclude: ['test/integration/**/*'],
         },
       },
