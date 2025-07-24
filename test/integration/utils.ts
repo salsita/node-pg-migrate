@@ -82,7 +82,7 @@ export async function cleanupDatabase(connectionString: string): Promise<void> {
   const client = new Client({ connectionString });
   await client.connect();
 
-  // 1. Drop all non-system schemas except 'public'
+  // Drop all non-system schemas except 'public'
   const { rows: schemas } = await client.query(`
     SELECT schema_name
     FROM information_schema.schemata
@@ -93,7 +93,7 @@ export async function cleanupDatabase(connectionString: string): Promise<void> {
     await client.query(`DROP SCHEMA IF EXISTS "${schema_name}" CASCADE;`);
   }
 
-  // 2. Drop all objects in the public schema
+  // Drop all objects in the public schema
   await client.query(`
     DO $$
     DECLARE obj RECORD;
