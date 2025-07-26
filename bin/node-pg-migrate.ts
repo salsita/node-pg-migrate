@@ -233,7 +233,9 @@ if (argv.help || argv._.length === 0) {
 const envPath = argv[envPathArg];
 
 // Create default dotenv config
-const dotenvConfig: DotenvConfigOptions = {};
+const dotenvConfig: DotenvConfigOptions = {
+  quiet: true,
+};
 
 // If the path has been configured, add it to the config, otherwise don't change the default dotenv path
 if (envPath) {
