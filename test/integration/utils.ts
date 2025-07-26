@@ -153,7 +153,7 @@ export async function cleanupDatabase(
       FOR obj IN SELECT table_name FROM information_schema.views WHERE table_schema = 'public' LOOP
         EXECUTE 'DROP VIEW IF EXISTS public.' || quote_ident(obj.table_name) || ' CASCADE';
       END LOOP;
-      FOR obj IN SELECT typname FROM pg_type WHERE typnamespace = '2200' AND typtype = 'c' LOOP
+      FOR obj IN SELECT typname FROM pg_type WHERE typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public') AND typtype = 'c' LOOP
         EXECUTE 'DROP TYPE IF EXISTS public.' || quote_ident(obj.typname) || ' CASCADE';
       END LOOP;
       FOR obj IN SELECT routine_name, specific_name
