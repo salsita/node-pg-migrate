@@ -2,7 +2,16 @@ import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import { afterAll, afterEach, beforeAll, describe, it, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  type ExpectStatic,
+  it,
+  type TestContext,
+  vi,
+} from 'vitest';
 import {
   cleanupDatabase,
   exec,
@@ -45,7 +54,7 @@ describe.each(PG_VERSIONS)(
 
     afterEach(async (context) => {
       try {
-        await cleanupDatabase(pgContainer.getConnectionUri());
+        await cleanupDatabase(pgContainer);
         unlinkSync(configFile(context.task.name));
       } catch {
         // Ignore if the file does not exist
@@ -54,42 +63,96 @@ describe.each(PG_VERSIONS)(
       vi.unstubAllEnvs();
     });
 
-    function getCommand(direction: 'up' | 'down', configFile?: string): string {
+    function getCommand({
+      direction,
+      configFile,
+      configValue,
+      envPath,
+    }: {
+      direction: 'up' | 'down';
+      configFile?: string;
+      configValue?: string;
+      envPath?: string;
+    }): string {
       let command = 'node bin/node-pg-migrate.js';
       if (direction === 'up') {
-        command += ' up -m test/ts/migrations';
+        command += ' up -m test/migrations';
       } else {
-        command += ' down -m test/ts/migrations 0 --timestamps';
+        command += ' down 0 -m test/migrations --timestamps';
       }
 
       if (configFile) {
         command += ` --config-file ${configFile}`;
       }
 
+      if (configValue) {
+        command += ` --config-value ${configValue}`;
+      }
+
+      if (envPath) {
+        command += ` --envPath ${envPath}`;
+      }
+
       return command;
+    }
+
+    async function execMigrate(options: {
+      expect: ExpectStatic;
+      task: TestContext['task'];
+      direction: 'up' | 'down';
+      env?: NodeJS.ProcessEnv;
+      configFile?: string;
+      envPath?: string;
+      configValue?: string;
+    }): Promise<{ stdout: string; stderr: string }> {
+      const { expect, task, direction, env = {} } = options;
+      const command = getCommand({
+        direction: direction,
+        configFile: options.configFile,
+        configValue: options.configValue,
+        envPath: options.envPath,
+      });
+
+      const execUp = await exec(command, { env });
+
+      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
+      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
+        snapshot
+      );
+
+      return execUp;
     }
 
     it.concurrent(
       'fails when no config file or env vars are provided',
       async ({ expect, task }) => {
-        const direction = 'up';
-        let execUp: { stdout?: string; stderr?: string } = {};
+        let execUp: { stdout?: string; stderr?: string };
+        let execDown: { stdout?: string; stderr?: string };
 
         try {
-          await exec(getCommand(direction));
-        } catch (error: unknown) {
-          if (typeof error === 'object' && error !== null) {
-            execUp = error as { stdout?: string; stderr?: string };
-          }
+          execUp = await execMigrate({
+            expect,
+            task,
+            direction: 'up',
+            env: { ...process.env, DATABASE_URL: '' },
+          });
+        } catch (error) {
+          execUp = error as { stdout?: string; stderr?: string };
         }
 
-        const errorOutput = execUp.stderr || '';
-        expect(errorOutput).toContain(ERROR_MESSAGE);
+        try {
+          execDown = await execMigrate({
+            expect,
+            task,
+            direction: 'down',
+            env: { ...process.env, DATABASE_URL: '' },
+          });
+        } catch (error) {
+          execDown = error as { stdout?: string; stderr?: string };
+        }
 
-        const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
-        await expect(
-          filterIgnoredLines(execUp.stderr || '')
-        ).toMatchFileSnapshot(snapshot);
+        expect(execUp.stderr).toContain(ERROR_MESSAGE);
+        expect(execDown.stderr).toContain(ERROR_MESSAGE);
       }
     );
 
@@ -98,26 +161,36 @@ describe.each(PG_VERSIONS)(
       async ({ expect, task }) => {
         const file = configFile(task.name);
         writeFileSync(file, JSON.stringify({}), 'utf8');
-        const direction = 'up';
-        let execUp: { stdout?: string; stderr?: string } = {};
+
+        let execUp: { stdout?: string; stderr?: string };
+        let execDown: { stdout?: string; stderr?: string };
 
         try {
-          await exec(getCommand(direction, file), {
+          execUp = await execMigrate({
+            expect,
+            task,
+            direction: 'up',
+            configFile: file,
             env: { ...process.env, DATABASE_URL: '' },
           });
-        } catch (error: unknown) {
-          if (typeof error === 'object' && error !== null) {
-            execUp = error as { stdout?: string; stderr?: string };
-          }
+        } catch (error) {
+          execUp = error as { stdout?: string; stderr?: string };
         }
 
-        const errorOutput = execUp.stderr || '';
-        expect(errorOutput).toContain(ERROR_MESSAGE);
+        try {
+          execDown = await execMigrate({
+            expect,
+            task,
+            direction: 'down',
+            configFile: file,
+            env: { ...process.env, DATABASE_URL: '' },
+          });
+        } catch (error) {
+          execDown = error as { stdout?: string; stderr?: string };
+        }
 
-        const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
-        await expect(
-          filterIgnoredLines(execUp.stderr || '')
-        ).toMatchFileSnapshot(snapshot);
+        expect(execUp.stderr).toContain(ERROR_MESSAGE);
+        expect(execDown.stderr).toContain(ERROR_MESSAGE);
       }
     );
 
@@ -138,59 +211,71 @@ describe.each(PG_VERSIONS)(
         'utf8'
       );
 
-      const direction = 'up';
-      const execUp = await exec(getCommand(direction, file), {
+      const execUp = await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        task,
+        direction: 'down',
+        configFile: file,
         env: { ...process.env, DATABASE_URL: '' },
       });
 
-      const output = execUp.stdout || '';
-      expect(output).not.toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
-        snapshot
-      );
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
 
     it('succeeds with DATABASE_URL env var', async ({ expect, task }) => {
-      const direction = 'up';
-      const execUp = await exec(getCommand(direction), {
+      const execUp = await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        env: { ...process.env, DATABASE_URL: pgContainer.getConnectionUri() },
+      });
+      const execDown = await execMigrate({
+        expect,
+        task,
+        direction: 'down',
         env: { ...process.env, DATABASE_URL: pgContainer.getConnectionUri() },
       });
 
-      const output = execUp.stdout || '';
-      expect(output).not.toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
-        snapshot
-      );
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
 
     it('succeeds with PGHOST, PGUSER, PGDATABASE env vars', async ({
       expect,
       task,
     }) => {
-      const direction = 'up';
-      const execUp = await exec(getCommand(direction), {
-        env: {
-          ...process.env,
-          DATABASE_URL: '',
-          PGHOST: pgContainer.getHost(),
-          PGUSER: pgContainer.getUsername(),
-          PGDATABASE: pgContainer.getDatabase(),
-          PGPASSWORD: pgContainer.getPassword(),
-          PGPORT: pgContainer.getPort().toString(),
-        },
+      const env = {
+        ...process.env,
+        DATABASE_URL: '',
+        PGHOST: pgContainer.getHost(),
+        PGUSER: pgContainer.getUsername(),
+        PGDATABASE: pgContainer.getDatabase(),
+        PGPASSWORD: pgContainer.getPassword(),
+        PGPORT: pgContainer.getPort().toString(),
+      };
+      const execUp = await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        env: env,
+      });
+      const execDown = await execMigrate({
+        expect,
+        task,
+        direction: 'down',
+        env: env,
       });
 
-      const output = execUp.stdout || '';
-      expect(output).not.toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
-        snapshot
-      );
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
 
     it('succeeds with config-value "dev"', async ({ expect, task }) => {
@@ -212,19 +297,26 @@ describe.each(PG_VERSIONS)(
       };
       const file = configFile(task.name);
       writeFileSync(file, JSON.stringify(CONFIG_MULTI_USER_JSON), 'utf8');
-      const direction = 'up';
-      const command = `${getCommand(direction, file)} --config-value dev`;
-      const execUp = await exec(command, {
+
+      const execUp = await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        configFile: file,
+        configValue: 'dev',
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        task,
+        direction: 'down',
+        configFile: file,
+        configValue: 'dev',
         env: { ...process.env, DATABASE_URL: '' },
       });
 
-      const output = execUp.stdout || '';
-      expect(output).not.toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
-        snapshot
-      );
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
 
     it('succeeds with config-value "test"', async ({ expect, task }) => {
@@ -246,19 +338,26 @@ describe.each(PG_VERSIONS)(
       };
       const file = configFile(task.name);
       writeFileSync(file, JSON.stringify(CONFIG_MULTI_USER_JSON), 'utf8');
-      const direction = 'up';
-      const command = `${getCommand(direction, file)} --config-value test`;
-      const execUp = await exec(command, {
+
+      const execUp = await execMigrate({
+        expect,
+        task,
+        direction: 'up',
+        configFile: file,
+        configValue: 'test',
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        task,
+        direction: 'down',
+        configFile: file,
+        configValue: 'test',
         env: { ...process.env, DATABASE_URL: '' },
       });
 
-      const output = execUp.stdout || '';
-      expect(output).not.toContain(ERROR_MESSAGE);
-
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
-        snapshot
-      );
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
   }
 );
