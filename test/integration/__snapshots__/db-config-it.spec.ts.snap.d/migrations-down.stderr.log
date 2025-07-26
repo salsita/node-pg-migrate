@@ -1,6 +1,0 @@
-WARNING: NODE_ENV value of 'test' did not match any deployment config file names.
-WARNING: See https://github.com/node-config/node-config/wiki/Strict-Mode
-Error executing:
-DROP TABLE "tmp"
-error: table "tmp" does not exist
-
