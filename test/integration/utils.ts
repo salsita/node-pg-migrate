@@ -1,12 +1,11 @@
-import {
-  PostgreSqlContainer,
-  type StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
+import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { exec as processExec } from 'node:child_process';
 import { promisify } from 'node:util';
 
 /**
  * List of PostgreSQL versions to be used in integration tests.
+ *
  * Reads from the `PGM_VERSIONS` environment variable or defaults to ['17'].
  */
 export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '17')
@@ -17,6 +16,7 @@ export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '17')
 export const INTEGRATION_TIMEOUT = Number(
   process.env.INTEGRATION_TIMEOUT ?? 20_000
 );
+
 /**
  * Promisified version of Node.js `child_process.exec` for running shell commands asynchronously.
  */
@@ -39,9 +39,10 @@ export const IGNORE_LOG_PATTERNS = [
 /**
  * Filters out lines from the given output that match any pattern from the predefined ignored log patterns.
  *
- * @param {string} output - The multiline string output to filter.
- * @param ignorePatterns - An array of regular expressions to match lines that should be ignored. Defaults to `IGNORE_LOG_PATTERNS`.
- * @return {string} - A string containing only the lines that do not match the ignored log patterns.
+ * @param output The multiline string output to filter.
+ * @param ignorePatterns An array of regular expressions to match lines that should be ignored. Defaults to `IGNORE_LOG_PATTERNS`.
+ *
+ * @return A string containing only the lines that do not match the ignored log patterns.
  */
 export function filterIgnoredLines(
   output: string,
@@ -57,8 +58,10 @@ export function filterIgnoredLines(
 
 /**
  * Starts a PostgresSQL container for integration testing.
+ *
  * @param containerImage The Docker image to use for the PostgresSQL container.
  * @param databaseName The name of the database to create in the container. Defaults to 'node_pg_migrate'.
+ *
  * @returns A started PostgresSqlContainer instance.
  */
 export async function setupPostgresDatabase(
@@ -75,15 +78,17 @@ export async function setupPostgresDatabase(
 /**
  * Executes a SQL command on the provided PostgreSQL container.
  *
- * @param {StartedPostgreSqlContainer} pgContainer - The PostgreSQL container instance to execute the command on.
- * @param {string} sql - The SQL command to be executed.
- * @throws {Error} Throws an error if the SQL command execution fails. The error includes the failed SQL command and any output indicating the failure.
- * @returns {Promise<void>} A promise that resolves when the SQL command is successfully executed.
+ * @param pgContainer The PostgreSQL container instance to execute the command on.
+ * @param sql The SQL command to be executed.
+ *
+ * @returns A promise that resolves when the SQL command is successfully executed.
+ *
+ * @throws Throws an error if the SQL command execution fails. The error includes the failed SQL command and any output indicating the failure.
  */
-const execSql = async (
+async function execSql(
   pgContainer: StartedPostgreSqlContainer,
   sql: string
-): Promise<void> => {
+): Promise<void> {
   const res = await pgContainer.exec([
     'psql',
     '-U',
@@ -99,14 +104,16 @@ const execSql = async (
       cause: res.stderr || res.stdout,
     });
   }
-};
+}
 
 /**
  * Cleans and removes all unnecessary or redundant objects and data from the public schema in the database.
+ *
  * It ensures that the public schema is entirely reset to a clean state, except for system or default roles and objects.
  *
- * @return {Promise<void>} A promise that resolves when the database garbage cleanup is completed successfully.
  * @param pgContainer
+ *
+ * @return A promise that resolves when the database garbage cleanup is completed successfully.
  */
 export async function cleanupDatabase(
   pgContainer: StartedPostgreSqlContainer
