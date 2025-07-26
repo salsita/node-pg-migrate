@@ -4,7 +4,6 @@ import {
 } from '@testcontainers/postgresql';
 import { exec as processExec } from 'node:child_process';
 import { promisify } from 'node:util';
-import { Client } from 'pg';
 
 /**
  * List of PostgreSQL versions to be used in integration tests.
@@ -72,29 +71,67 @@ export async function setupPostgresDatabase(
 }
 
 /**
+ * Executes a SQL command on the provided PostgreSQL container.
+ *
+ * @param {StartedPostgreSqlContainer} pgContainer - The PostgreSQL container instance to execute the command on.
+ * @param {string} sql - The SQL command to be executed.
+ * @throws {Error} Throws an error if the SQL command execution fails. The error includes the failed SQL command and any output indicating the failure.
+ * @returns {Promise<void>} A promise that resolves when the SQL command is successfully executed.
+ */
+const execSql = async (
+  pgContainer: StartedPostgreSqlContainer,
+  sql: string
+): Promise<void> => {
+  const res = await pgContainer.exec([
+    'psql',
+    '-U',
+    'ubuntu',
+    '-d',
+    pgContainer.getDatabase(),
+    '-c',
+    sql,
+  ]);
+
+  if (res.exitCode !== 0) {
+    throw new Error(`Failed to execute SQL command: ${sql}`, {
+      cause: res.stderr || res.stdout,
+    });
+  }
+};
+
+/**
  * Cleans and removes all unnecessary or redundant objects and data from the public schema in the database.
  * It ensures that the public schema is entirely reset to a clean state, except for system or default roles and objects.
  *
- * @param {string} connectionString - The connection string used to connect to the database.
  * @return {Promise<void>} A promise that resolves when the database garbage cleanup is completed successfully.
+ * @param pgContainer
  */
-export async function cleanupDatabase(connectionString: string): Promise<void> {
-  const client = new Client({ connectionString });
-  await client.connect();
-
+export async function cleanupDatabase(
+  pgContainer: StartedPostgreSqlContainer
+): Promise<void> {
   // Drop all non-system schemas except 'public'
-  const { rows: schemas } = await client.query(`
-    SELECT schema_name
-    FROM information_schema.schemata
-    WHERE schema_name NOT IN ('public', 'information_schema')
-      AND schema_name NOT LIKE 'pg_%'
-  `);
-  for (const { schema_name } of schemas) {
-    await client.query(`DROP SCHEMA IF EXISTS "${schema_name}" CASCADE;`);
-  }
+  await execSql(
+    pgContainer,
+    `
+    DO $$
+    DECLARE schema_rec RECORD;
+    BEGIN
+      FOR schema_rec IN
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name NOT IN ('public', 'information_schema')
+          AND schema_name NOT LIKE 'pg_%'
+      LOOP
+        EXECUTE 'DROP SCHEMA IF EXISTS "' || schema_rec.schema_name || '" CASCADE;';
+      END LOOP;
+    END $$;
+  `
+  );
 
   // Drop all objects in the public schema
-  await client.query(`
+  await execSql(
+    pgContainer,
+    `
     DO $$
     DECLARE obj RECORD;
     BEGIN
@@ -120,35 +157,50 @@ export async function cleanupDatabase(connectionString: string): Promise<void> {
         EXECUTE 'DROP DOMAIN IF EXISTS public.' || quote_ident(obj.domain_name) || ' CASCADE';
       END LOOP;
     END $$;
-  `);
+  `
+  );
 
   // Drop all custom roles except system/default
-  const { rows: roles } = await client.query(`
-    SELECT rolname
-    FROM pg_roles
-    WHERE rolname NOT IN (
-                          'postgres', 'pg_signal_backend', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor',
-                          'pg_read_all_settings', 'pg_read_all_stats', 'pg_stat_scan_tables', 'pg_database_owner',
-                          'pg_read_server_files', 'pg_write_server_files', 'pg_execute_server_program'
-      )
-      AND rolname NOT LIKE 'pg\\_%'
-      AND rolname <> current_user
-  `);
-  for (const { rolname } of roles) {
-    await client.query(`DROP ROLE IF EXISTS "${rolname}";`);
-  }
+  await execSql(
+    pgContainer,
+    `
+    DO $$
+    DECLARE role_rec RECORD;
+    BEGIN
+      FOR role_rec IN
+        SELECT rolname
+        FROM pg_roles
+        WHERE rolname NOT IN (
+                              'postgres', 'pg_signal_backend', 'pg_read_all_data', 'pg_write_all_data', 'pg_monitor',
+                              'pg_read_all_settings', 'pg_read_all_stats', 'pg_stat_scan_tables', 'pg_database_owner',
+                              'pg_read_server_files', 'pg_write_server_files', 'pg_execute_server_program'
+          )
+          AND rolname NOT LIKE 'pg\\_%'
+          AND rolname <> current_user
+      LOOP
+        EXECUTE 'DROP ROLE IF EXISTS "' || role_rec.rolname || '";';
+      END LOOP;
+    END $$;
+  `
+  );
 
   // Drop all custom types in the public schema
-  const { rows: types } = await client.query(`
-    SELECT typname
-    FROM pg_type
-    WHERE typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
-      AND typtype IN ('c', 'e', 'd')
-      AND typname NOT LIKE 'pg\\_%'
-  `);
-  for (const { typname } of types) {
-    await client.query(`DROP TYPE IF EXISTS public."${typname}" CASCADE;`);
-  }
-
-  await client.end();
+  await execSql(
+    pgContainer,
+    `
+    DO $$
+    DECLARE type_rec RECORD;
+    BEGIN
+      FOR type_rec IN
+        SELECT typname
+        FROM pg_type
+        WHERE typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+          AND typtype IN ('c', 'e', 'd')
+          AND typname NOT LIKE 'pg\\_%'
+      LOOP
+        EXECUTE 'DROP TYPE IF EXISTS public."' || type_rec.typname || '" CASCADE;';
+      END LOOP;
+    END $$;
+  `
+  );
 }
