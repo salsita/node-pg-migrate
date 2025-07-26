@@ -62,7 +62,7 @@ export function filterIgnoredLines(
  * @param containerImage The Docker image to use for the PostgreSQL container.
  * @param databaseName The name of the database to create in the container. Defaults to 'node_pg_migrate'.
  *
- * @returns A started PostgresSqlContainer instance.
+ * @returns A started PostgreSqlContainer instance.
  */
 export async function setupPostgresDatabase(
   containerImage: string,
