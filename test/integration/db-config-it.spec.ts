@@ -9,7 +9,6 @@ import {
   describe,
   type ExpectStatic,
   it,
-  type TestContext,
   vi,
 } from 'vitest';
 import {
@@ -98,14 +97,13 @@ describe.each(PG_VERSIONS)(
 
     async function execMigrate(options: {
       expect: ExpectStatic;
-      task: TestContext['task'];
       direction: 'up' | 'down';
       env?: NodeJS.ProcessEnv;
       configFile?: string;
       envPath?: string;
       configValue?: string;
     }): Promise<{ stdout: string; stderr: string }> {
-      const { expect, task, direction, env = {} } = options;
+      const { expect, direction, env = {} } = options;
       const command = getCommand({
         direction: direction,
         configFile: options.configFile,
@@ -115,8 +113,8 @@ describe.each(PG_VERSIONS)(
 
       const execUp = await exec(command, { env });
 
-      const snapshot = `${SNAPSHOT_FOLDER}${task.name}/${postgresVersion}-migrations-${direction}.error.log`;
-      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
+      const snapshot = `${SNAPSHOT_FOLDER}/migrations-${direction}.error.log`;
+      await expect(filterIgnoredLines(execUp.stderr)).toMatchFileSnapshot(
         snapshot
       );
 
@@ -125,14 +123,13 @@ describe.each(PG_VERSIONS)(
 
     it.concurrent(
       'fails when no config file or env vars are provided',
-      async ({ expect, task }) => {
+      async ({ expect }) => {
         let execUp: { stdout?: string; stderr?: string };
         let execDown: { stdout?: string; stderr?: string };
 
         try {
           execUp = await execMigrate({
             expect,
-            task,
             direction: 'up',
             env: { ...process.env, DATABASE_URL: '' },
           });
@@ -143,7 +140,6 @@ describe.each(PG_VERSIONS)(
         try {
           execDown = await execMigrate({
             expect,
-            task,
             direction: 'down',
             env: { ...process.env, DATABASE_URL: '' },
           });
@@ -168,7 +164,6 @@ describe.each(PG_VERSIONS)(
         try {
           execUp = await execMigrate({
             expect,
-            task,
             direction: 'up',
             configFile: file,
             env: { ...process.env, DATABASE_URL: '' },
@@ -180,7 +175,6 @@ describe.each(PG_VERSIONS)(
         try {
           execDown = await execMigrate({
             expect,
-            task,
             direction: 'down',
             configFile: file,
             env: { ...process.env, DATABASE_URL: '' },
@@ -213,14 +207,12 @@ describe.each(PG_VERSIONS)(
 
       const execUp = await execMigrate({
         expect,
-        task,
         direction: 'up',
         configFile: file,
         env: { ...process.env, DATABASE_URL: '' },
       });
       const execDown = await execMigrate({
         expect,
-        task,
         direction: 'down',
         configFile: file,
         env: { ...process.env, DATABASE_URL: '' },
@@ -230,16 +222,14 @@ describe.each(PG_VERSIONS)(
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
 
-    it('succeeds with DATABASE_URL env var', async ({ expect, task }) => {
+    it('succeeds with DATABASE_URL env var', async ({ expect }) => {
       const execUp = await execMigrate({
         expect,
-        task,
         direction: 'up',
         env: { ...process.env, DATABASE_URL: pgContainer.getConnectionUri() },
       });
       const execDown = await execMigrate({
         expect,
-        task,
         direction: 'down',
         env: { ...process.env, DATABASE_URL: pgContainer.getConnectionUri() },
       });
@@ -250,7 +240,6 @@ describe.each(PG_VERSIONS)(
 
     it('succeeds with PGHOST, PGUSER, PGDATABASE env vars', async ({
       expect,
-      task,
     }) => {
       const env = {
         ...process.env,
@@ -263,13 +252,11 @@ describe.each(PG_VERSIONS)(
       };
       const execUp = await execMigrate({
         expect,
-        task,
         direction: 'up',
         env: env,
       });
       const execDown = await execMigrate({
         expect,
-        task,
         direction: 'down',
         env: env,
       });
@@ -300,7 +287,6 @@ describe.each(PG_VERSIONS)(
 
       const execUp = await execMigrate({
         expect,
-        task,
         direction: 'up',
         configFile: file,
         configValue: 'dev',
@@ -308,7 +294,6 @@ describe.each(PG_VERSIONS)(
       });
       const execDown = await execMigrate({
         expect,
-        task,
         direction: 'down',
         configFile: file,
         configValue: 'dev',
@@ -341,7 +326,6 @@ describe.each(PG_VERSIONS)(
 
       const execUp = await execMigrate({
         expect,
-        task,
         direction: 'up',
         configFile: file,
         configValue: 'test',
@@ -349,7 +333,6 @@ describe.each(PG_VERSIONS)(
       });
       const execDown = await execMigrate({
         expect,
-        task,
         direction: 'down',
         configFile: file,
         configValue: 'test',

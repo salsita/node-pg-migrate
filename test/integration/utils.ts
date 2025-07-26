@@ -32,6 +32,8 @@ export const IGNORE_LOG_PATTERNS = [
   /WARN.*Issue while reading .*\. Failed to replace env in config: /,
   /^Can't determine timestamp for \d{3}$/,
   /^\s*\[dotenv@[\d.]+] injecting .* from .+$/i,
+  /^\(node:\d+\) ExperimentalWarning: Importing JSON modules is an experimental feature and might change at any time$/,
+  /^\(Use `node --trace-warnings \.\.\.` to show where the warning was created\)$/,
 ] as const;
 
 /**
