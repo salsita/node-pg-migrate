@@ -57,7 +57,7 @@ export function filterIgnoredLines(
 }
 
 /**
- * Starts a PostgresSQL container for integration testing.
+ * Starts a PostgreSQL container for integration testing.
  *
  * @param containerImage The Docker image to use for the PostgreSQL container.
  * @param databaseName The name of the database to create in the container. Defaults to 'node_pg_migrate'.
