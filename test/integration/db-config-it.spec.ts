@@ -2,15 +2,8 @@ import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  type ExpectStatic,
-  it,
-  vi,
-} from 'vitest';
+import type { ExpectStatic } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, it, vi } from 'vitest';
 import {
   cleanupDatabase,
   exec,
@@ -31,11 +24,12 @@ describe.each(PG_VERSIONS)(
   (postgresVersion) => {
     let pgContainer: StartedPostgreSqlContainer;
     //TODO @brenoepics 2025-07-22: Replace with https://vitest.dev/guide/mocking.html#file-system
-    const configFile = (taskName: string) =>
-      resolve(
+    function configFile(taskName: string): string {
+      return resolve(
         tmpdir(),
         `${postgresVersion}-${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.json`
       );
+    }
 
     beforeAll(async () => {
       const containerImage = `postgres:${postgresVersion}-alpine`;
