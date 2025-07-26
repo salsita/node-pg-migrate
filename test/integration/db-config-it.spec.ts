@@ -113,9 +113,15 @@ describe.each(PG_VERSIONS)(
 
       const execUp = await exec(command, { env });
 
-      const snapshot = `${SNAPSHOT_FOLDER}/migrations-${direction}.error.log`;
+      const stderrSnapshot = `${SNAPSHOT_FOLDER}/migrations-${direction}.stderr.log`;
       await expect(filterIgnoredLines(execUp.stderr)).toMatchFileSnapshot(
-        snapshot
+        stderrSnapshot
+      );
+
+      const prefix = direction === 'up' ? `up.pg-${postgresVersion}` : `down`;
+      const stdoutSnapshot = `${SNAPSHOT_FOLDER}/migrations-${prefix}.stdout.log`;
+      await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
+        stdoutSnapshot
       );
 
       return execUp;
