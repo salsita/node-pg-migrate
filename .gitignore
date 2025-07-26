@@ -99,3 +99,6 @@ REVISION
 .yarn/
 package-lock.json
 yarn.lock
+
+# Snapshot test files
+!test/integration/__snapshots__/**/*.log
