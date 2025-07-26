@@ -112,8 +112,7 @@ describe.each(PG_VERSIONS)(
         stderrSnapshot
       );
 
-      const prefix = direction === 'up' ? `up.pg-${postgresVersion}` : `down`;
-      const stdoutSnapshot = `${SNAPSHOT_FOLDER}/migrations-${prefix}.stdout.log`;
+      const stdoutSnapshot = `${SNAPSHOT_FOLDER}/migrations-${direction}.pg-${postgresVersion}.stdout.log`;
       await expect(filterIgnoredLines(execUp.stdout)).toMatchFileSnapshot(
         stdoutSnapshot
       );
