@@ -18,6 +18,8 @@ export interface CreateIndexOptions extends IfNotExistsOption {
   method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
 
   include?: string | string[];
+
+  nulls?: 'distinct' | 'not distinct';
 }
 
 export type CreateIndexFn = (
@@ -37,6 +39,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       method,
       where,
       include,
+      nulls,
     } = options;
 
     /*
@@ -67,10 +70,11 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     const includeStr = include
       ? ` INCLUDE (${toArray(include).map(mOptions.literal).join(', ')})`
       : '';
+    const nullsStr = nulls ? ` NULLS ${nulls.toUpperCase()}` : '';
     const indexNameStr = mOptions.literal(indexName);
     const tableNameStr = mOptions.literal(tableName);
 
-    return `CREATE${uniqueStr} INDEX${concurrentlyStr}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${methodStr} (${columnsString})${includeStr}${whereStr};`;
+    return `CREATE${uniqueStr} INDEX${concurrentlyStr}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${methodStr} (${columnsString})${includeStr}${nullsStr}${whereStr};`;
   };
 
   _create.reverse = dropIndex(mOptions);

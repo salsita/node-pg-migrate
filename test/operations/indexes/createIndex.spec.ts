@@ -28,11 +28,12 @@ describe('operations', () => {
           concurrently: true,
           ifNotExists: true,
           include: ['director', 'rating'],
+          nulls: 'not distinct',
         });
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating");'
+          'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating") NULLS NOT DISTINCT;'
         );
       });
 
@@ -141,6 +142,19 @@ describe('operations', () => {
           options2,
           ['xTable', ['yName'], { name: 'zIndex', include: 'someOtherColumn' }],
           'CREATE INDEX "z_index" ON "x_table" ("y_name") INCLUDE ("some_other_column");',
+        ],
+        // should add nulls option
+        [
+          'should add nulls option 1',
+          options1,
+          ['xTable', ['yName'], { name: 'zIndex', nulls: 'distinct' }],
+          'CREATE INDEX "zIndex" ON "xTable" ("yName") NULLS DISTINCT;',
+        ],
+        [
+          'should add nulls option 2',
+          options2,
+          ['xTable', ['yName'], { name: 'zIndex', nulls: 'not distinct' }],
+          'CREATE INDEX "z_index" ON "x_table" ("y_name") NULLS NOT DISTINCT;',
         ],
       ] as const)(
         '%s',
