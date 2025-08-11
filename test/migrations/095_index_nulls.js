@@ -1,5 +1,5 @@
 export const up = (pgm) => {
-  pgm.createTable('t095', { id: { type: 'integer', notNull: true } });
+  pgm.createTable('t095', { id: { type: 'integer' } });
   pgm.createIndex('t095', 'id', { unique: true, nulls: 'not distinct' });
 };
 
