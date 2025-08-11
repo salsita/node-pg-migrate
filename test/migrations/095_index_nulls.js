@@ -1,6 +1,6 @@
 export const up = (pgm) => {
   pgm.createTable('t095', { id: { type: 'integer', notNull: true } });
-  pgm.createIndex('t095', 'id', { unique: true, nulls: 'distinct' });
+  pgm.createIndex('t095', 'id', { unique: true, nulls: 'not distinct' });
 };
 
 export const down = (pgm) => {
