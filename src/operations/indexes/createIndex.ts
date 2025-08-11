@@ -42,6 +42,12 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       nulls,
     } = options;
 
+    if (nulls && !unique) {
+      throw new Error(
+        'The "nulls" option can only be used with unique indexes.'
+      );
+    }
+
     /*
     columns - the column, columns, or expression to create the index on
 
@@ -52,6 +58,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     concurrently -
     ifNotExists - optionally create index
     options.method -  [ btree | hash | gist | spgist | gin ]
+    nulls - nulls distinct or not distinct (for unique indexes only)
     */
     const columns = toArray(rawColumns);
 

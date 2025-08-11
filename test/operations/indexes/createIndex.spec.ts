@@ -147,14 +147,14 @@ describe('operations', () => {
         [
           'should add nulls option 1',
           options1,
-          ['xTable', ['yName'], { name: 'zIndex', nulls: 'distinct' }],
-          'CREATE INDEX "zIndex" ON "xTable" ("yName") NULLS DISTINCT;',
+          ['xTable', ['yName'], { name: 'zIndex', unique: true, nulls: 'distinct' }],
+          'CREATE UNIQUE INDEX "zIndex" ON "xTable" ("yName") NULLS DISTINCT;',
         ],
         [
           'should add nulls option 2',
           options2,
-          ['xTable', ['yName'], { name: 'zIndex', nulls: 'not distinct' }],
-          'CREATE INDEX "z_index" ON "x_table" ("y_name") NULLS NOT DISTINCT;',
+          ['xTable', ['yName'], { name: 'zIndex', unique: true, nulls: 'not distinct' }],
+          'CREATE UNIQUE INDEX "z_index" ON "x_table" ("y_name") NULLS NOT DISTINCT;',
         ],
       ] as const)(
         '%s',
@@ -171,6 +171,12 @@ describe('operations', () => {
           expect(statement).toBe(expected);
         }
       );
+
+      it('should throw an error if nulls option is used without unique index', () => {
+        expect(() =>
+          createIndexFn('films', ['title'], { nulls: 'distinct' })
+        ).toThrow('The "nulls" option can only be used with unique indexes.');
+      });
 
       describe('reverse', () => {
         it('should contain a reverse function', () => {
