@@ -27,6 +27,7 @@
 | `ifNotExists`  | `boolean`                   | default false                                                             |
 | `method`       | `string`                    | btree \| hash \| gist \| spgist \| gin                                    |
 | `include`      | `string` or `array[string]` | columns to add to the include clause                                      |
+| `nulls`        | `string`                    | distinct \| not distinct (for unique indexes only)                        |
 
 ### Examples
 
