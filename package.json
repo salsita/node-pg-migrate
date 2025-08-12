@@ -118,7 +118,7 @@
     "prettier-plugin-pkg": "0.21.2",
     "testcontainers": "11.3.1",
     "tsup": "8.5.0",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "typescript-eslint": "8.37.0",
     "vitepress": "1.6.3",
     "vitest": "3.2.4"
