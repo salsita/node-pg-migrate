@@ -147,13 +147,21 @@ describe('operations', () => {
         [
           'should add nulls option 1',
           options1,
-          ['xTable', ['yName'], { name: 'zIndex', unique: true, nulls: 'distinct' }],
+          [
+            'xTable',
+            ['yName'],
+            { name: 'zIndex', unique: true, nulls: 'distinct' },
+          ],
           'CREATE UNIQUE INDEX "zIndex" ON "xTable" ("yName") NULLS DISTINCT;',
         ],
         [
           'should add nulls option 2',
           options2,
-          ['xTable', ['yName'], { name: 'zIndex', unique: true, nulls: 'not distinct' }],
+          [
+            'xTable',
+            ['yName'],
+            { name: 'zIndex', unique: true, nulls: 'not distinct' },
+          ],
           'CREATE UNIQUE INDEX "z_index" ON "x_table" ("y_name") NULLS NOT DISTINCT;',
         ],
       ] as const)(
