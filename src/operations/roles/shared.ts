@@ -63,7 +63,7 @@ export function formatRoleOptions(roleOptions: RoleOptions = {}): string {
   }
 
   if (roleOptions.limit) {
-    options.push(`CONNECTION LIMIT ${Number(roleOptions.limit)}`);
+    options.push(`CONNECTION LIMIT ${roleOptions.limit}`);
   }
 
   if (roleOptions.password !== undefined) {

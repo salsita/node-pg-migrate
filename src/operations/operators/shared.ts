@@ -19,7 +19,7 @@ export function operatorMap(
   return ({ type, number, name, params = [] }) => {
     const nameStr = mOptions.literal(name);
 
-    if (String(type).toLowerCase() === 'operator') {
+    if (type.toLowerCase() === 'operator') {
       if (params.length > 2) {
         throw new Error("Operator can't have more than 2 parameters");
       }
@@ -29,7 +29,7 @@ export function operatorMap(
       return `OPERATOR ${number} ${nameStr}${paramsStr}`;
     }
 
-    if (String(type).toLowerCase() === 'function') {
+    if (type.toLowerCase() === 'function') {
       const paramsStr = formatParams(params, mOptions);
 
       return `FUNCTION ${number} ${nameStr}${paramsStr}`;
