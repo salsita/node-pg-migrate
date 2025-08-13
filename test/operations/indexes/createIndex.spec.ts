@@ -28,11 +28,12 @@ describe('operations', () => {
           concurrently: true,
           ifNotExists: true,
           include: ['director', 'rating'],
+          nulls: 'not distinct',
         });
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating");'
+          'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "films_title_unique_index" ON "films" ("title") INCLUDE ("director", "rating") NULLS NOT DISTINCT;'
         );
       });
 
@@ -142,6 +143,27 @@ describe('operations', () => {
           ['xTable', ['yName'], { name: 'zIndex', include: 'someOtherColumn' }],
           'CREATE INDEX "z_index" ON "x_table" ("y_name") INCLUDE ("some_other_column");',
         ],
+        // should add nulls option
+        [
+          'should add nulls option 1',
+          options1,
+          [
+            'xTable',
+            ['yName'],
+            { name: 'zIndex', unique: true, nulls: 'distinct' },
+          ],
+          'CREATE UNIQUE INDEX "zIndex" ON "xTable" ("yName") NULLS DISTINCT;',
+        ],
+        [
+          'should add nulls option 2',
+          options2,
+          [
+            'xTable',
+            ['yName'],
+            { name: 'zIndex', unique: true, nulls: 'not distinct' },
+          ],
+          'CREATE UNIQUE INDEX "z_index" ON "x_table" ("y_name") NULLS NOT DISTINCT;',
+        ],
       ] as const)(
         '%s',
         (_, optionPreset, [tableName, columns, options], expected) => {
@@ -157,6 +179,12 @@ describe('operations', () => {
           expect(statement).toBe(expected);
         }
       );
+
+      it('should throw an error if nulls option is used without unique index', () => {
+        expect(() =>
+          createIndexFn('films', ['title'], { nulls: 'distinct' })
+        ).toThrow('The "nulls" option can only be used with unique indexes.');
+      });
 
       describe('reverse', () => {
         it('should contain a reverse function', () => {

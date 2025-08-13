@@ -93,6 +93,7 @@
 > - 092_partition
 > - 093_alter_column_expression
 > - 094_unlogged_table
+> - 095_index_nulls
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
@@ -810,6 +811,14 @@ COMMENT ON TABLE "t_regular" IS $pga$comment on regular table t_regular$pga$;
 ALTER TABLE "t_regular"
     SET LOGGED;
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('094_unlogged_table', NOW());
+
+
+### MIGRATION 095_index_nulls (UP) ###
+CREATE TABLE "t095" (
+  "id" integer
+);
+CREATE UNIQUE INDEX "t095_id_unique_index" ON "t095" ("id") NULLS NOT DISTINCT;
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('095_index_nulls', NOW());
 
 
 Migrations complete!
