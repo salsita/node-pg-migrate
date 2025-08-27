@@ -67,8 +67,8 @@ importers:
         specifier: 12.0.2
         version: 12.0.2
       esbuild-fix-imports-plugin:
-        specifier: 1.0.21
-        version: 1.0.21
+        specifier: 1.0.22
+        version: 1.0.22
       eslint:
         specifier: 9.33.0
         version: 9.33.0(jiti@2.5.1)
@@ -1605,8 +1605,8 @@ packages:
     resolution: {integrity: sha512-w+5mJ3GuFL+NjVtJlvydShqE1eN3h3PbI7/5LAsYJP/2qtuMXjfL2LpHSRqo4b4eSF5K/DH1JXKUAHSB2UW50g==}
     engines: {node: '>= 0.4'}
 
-  esbuild-fix-imports-plugin@1.0.21:
-    resolution: {integrity: sha512-Ee4W4fU5nPL2klGqtPciRm8Ke553EIa6By1jsw/aG7lvHtlrtuqxBEFD7BttsCVb0eUWW5bag3KA2BVwxMAZxQ==}
+  esbuild-fix-imports-plugin@1.0.22:
+    resolution: {integrity: sha512-8Q8FDsnZgDwa+dHu0/bpU6gOmNrxmqgsIG1s7p1xtv6CQccRKc3Ja8o09pLNwjFgkOWtmwjS0bZmSWN7ATgdJQ==}
 
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -4760,7 +4760,7 @@ snapshots:
       is-date-object: 1.1.0
       is-symbol: 1.1.1
 
-  esbuild-fix-imports-plugin@1.0.21: {}
+  esbuild-fix-imports-plugin@1.0.22: {}
 
   esbuild@0.21.5:
     optionalDependencies:
