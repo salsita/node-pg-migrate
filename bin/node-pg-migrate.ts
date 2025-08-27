@@ -4,6 +4,7 @@ import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
+import { createJiti } from 'jiti';
 import {
   Migration,
   PG_MIGRATE_LOCK_ID,
@@ -403,12 +404,26 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jsonConfig = await import(`file://${resolve(configFileName)}`, {
-    with: { type: 'json' },
-  });
-  const json = jsonConfig.default ?? jsonConfig;
+  const jiti = createJiti(process.cwd());
+  const configModule: unknown = await jiti.import(resolve(configFileName));
+
+  let json: unknown;
+  if (
+    configModule &&
+    typeof configModule === 'object' &&
+    'default' in configModule
+  ) {
+    json = (configModule as { default: unknown }).default;
+  } else {
+    json = configModule;
+  }
+
   const section = argv[configValueArg];
-  readJson(json?.[section] === undefined ? json : json[section]);
+  if (json && typeof json === 'object' && section in json) {
+    readJson((json as Record<string, unknown>)[section]);
+  } else {
+    readJson(json);
+  }
 }
 
 const action = argv._.shift();
