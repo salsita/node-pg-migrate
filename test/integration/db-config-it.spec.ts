@@ -375,7 +375,6 @@ describe.each(PG_VERSIONS)(
       expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
 
-      // Cleanup
       try {
         unlinkSync(file);
       } catch {
@@ -423,7 +422,6 @@ export default config;`;
       expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
 
-      // Cleanup
       try {
         unlinkSync(file);
       } catch {
@@ -464,7 +462,6 @@ export default config;`;
       expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
 
-      // Cleanup
       try {
         unlinkSync(file);
       } catch {
@@ -510,7 +507,7 @@ const config: EnvironmentConfig = {
     password: '${pgContainer.getPassword()}'
   },
   production: {
-    host: 'prod.example.com',
+    host: 'localhost',
     port: 5432,
     database: 'prod_db',
     user: 'prod_user',
@@ -539,7 +536,6 @@ export default config;`;
       expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
 
-      // Cleanup
       try {
         unlinkSync(file);
       } catch {
