@@ -341,5 +341,206 @@ describe.each(PG_VERSIONS)(
       expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
       expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
     });
+
+    it('succeeds with JavaScript config file using ES6 exports', async ({
+      expect,
+      task,
+    }) => {
+      const file = resolve(
+        tmpdir(),
+        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
+      );
+      const configContent = `export default {
+  host: '${pgContainer.getHost()}',
+  port: ${pgContainer.getPort()},
+  database: '${pgContainer.getDatabase()}',
+  user: '${pgContainer.getUsername()}',
+  password: '${pgContainer.getPassword()}'
+};`;
+      writeFileSync(file, configContent, 'utf8');
+
+      const execUp = await execMigrate({
+        expect,
+        direction: 'up',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        direction: 'down',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
+
+      try {
+        unlinkSync(file);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    });
+
+    it('succeeds with TypeScript config file', async ({ expect, task }) => {
+      const file = resolve(
+        tmpdir(),
+        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
+      );
+      const configContent = `interface DatabaseConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+}
+
+const config: DatabaseConfig = {
+  host: '${pgContainer.getHost()}',
+  port: ${pgContainer.getPort()},
+  database: '${pgContainer.getDatabase()}',
+  user: '${pgContainer.getUsername()}',
+  password: '${pgContainer.getPassword()}'
+};
+
+export default config;`;
+      writeFileSync(file, configContent, 'utf8');
+
+      const execUp = await execMigrate({
+        expect,
+        direction: 'up',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        direction: 'down',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
+
+      try {
+        unlinkSync(file);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    });
+
+    it('succeeds with JavaScript config file using module.exports', async ({
+      expect,
+      task,
+    }) => {
+      const file = resolve(
+        tmpdir(),
+        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
+      );
+      const configContent = `module.exports = {
+  host: '${pgContainer.getHost()}',
+  port: ${pgContainer.getPort()},
+  database: '${pgContainer.getDatabase()}',
+  user: '${pgContainer.getUsername()}',
+  password: '${pgContainer.getPassword()}'
+};`;
+      writeFileSync(file, configContent, 'utf8');
+
+      const execUp = await execMigrate({
+        expect,
+        direction: 'up',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        direction: 'down',
+        configFile: file,
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
+
+      try {
+        unlinkSync(file);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    });
+
+    it('succeeds with TypeScript config file with nested environments and config-value', async ({
+      expect,
+      task,
+    }) => {
+      const file = resolve(
+        tmpdir(),
+        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
+      );
+      const configContent = `interface DatabaseConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+}
+
+interface EnvironmentConfig {
+  development: DatabaseConfig;
+  test: DatabaseConfig;
+  production: DatabaseConfig;
+}
+
+const config: EnvironmentConfig = {
+  development: {
+    host: '${pgContainer.getHost()}',
+    port: ${pgContainer.getPort()},
+    database: '${pgContainer.getDatabase()}',
+    user: '${pgContainer.getUsername()}',
+    password: '${pgContainer.getPassword()}'
+  },
+  test: {
+    host: '${pgContainer.getHost()}',
+    port: ${pgContainer.getPort()},
+    database: '${pgContainer.getDatabase()}',
+    user: '${pgContainer.getUsername()}',
+    password: '${pgContainer.getPassword()}'
+  },
+  production: {
+    host: 'localhost',
+    port: 5432,
+    database: 'prod_db',
+    user: 'prod_user',
+    password: 'prod_pass'
+  }
+};
+
+export default config;`;
+      writeFileSync(file, configContent, 'utf8');
+
+      const execUp = await execMigrate({
+        expect,
+        direction: 'up',
+        configFile: file,
+        configValue: 'development',
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+      const execDown = await execMigrate({
+        expect,
+        direction: 'down',
+        configFile: file,
+        configValue: 'development',
+        env: { ...process.env, DATABASE_URL: '' },
+      });
+
+      expect(execUp.stdout).not.toContain(ERROR_MESSAGE);
+      expect(execDown.stdout).not.toContain(ERROR_MESSAGE);
+
+      try {
+        unlinkSync(file);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+    });
   }
 );
