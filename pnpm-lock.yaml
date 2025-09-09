@@ -1216,8 +1216,8 @@ packages:
   bare-events@2.6.1:
     resolution: {integrity: sha512-AuTJkq9XmE6Vk0FJVNq5QxETrSA/vKHarWVBG5l/JbdCL1prJemiyJqUS0jrlXO0MftuPq4m3YVYhoNc5+aE/g==}
 
-  bare-fs@4.3.1:
-    resolution: {integrity: sha512-UX6lTDlUxjfrwDpr3eShAlpOF3PRHwNSPU7gY6FZU0bY3XivPmbndKCU6P3V0wS3o4xdDKalXqZsyEhYP2l+DQ==}
+  bare-fs@4.3.2:
+    resolution: {integrity: sha512-FAJ00JF69O6/oKAP+oiJYgdem1biZoGAR0NbRkBRQZ26shA87DmdHWbpeY3EVKPrAzHByLoLo+hAzTT6NTJWCg==}
     engines: {bare: '>=1.16.0'}
     peerDependencies:
       bare-buffer: '*'
@@ -4264,7 +4264,7 @@ snapshots:
   bare-events@2.6.1:
     optional: true
 
-  bare-fs@4.3.1:
+  bare-fs@4.3.2:
     dependencies:
       bare-events: 2.6.1
       bare-path: 3.0.0
@@ -6009,7 +6009,7 @@ snapshots:
       pump: 3.0.3
       tar-stream: 3.1.7
     optionalDependencies:
-      bare-fs: 4.3.1
+      bare-fs: 4.3.2
       bare-path: 3.0.0
     transitivePeerDependencies:
       - bare-buffer
