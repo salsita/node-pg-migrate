@@ -182,15 +182,16 @@ export async function loadMigrations(
       logger,
     });
 
-    const migrations = await Promise.all(
-      absoluteFilePaths.map(async (filePath) => {
-        const actions: MigrationBuilderActions =
-          extname(filePath) === '.sql'
-            ? await migrateSqlFile(filePath)
-            : await jiti.import(filePath);
-        shorthands = { ...shorthands, ...actions.shorthands };
+    const migrations: Migration[] = [];
+    for (const filePath of absoluteFilePaths) {
+      const actions: MigrationBuilderActions =
+        extname(filePath) === '.sql'
+          ? await migrateSqlFile(filePath)
+          : await jiti.import(filePath);
+      shorthands = { ...shorthands, ...actions.shorthands };
 
-        return new Migration(
+      migrations.push(
+        new Migration(
           db,
           filePath,
           actions,
@@ -199,9 +200,9 @@ export async function loadMigrations(
             ...shorthands,
           },
           logger
-        );
-      })
-    );
+        )
+      );
+    }
 
     return migrations;
   } catch (error: unknown) {
