@@ -1,6 +1,6 @@
 {
   "name": "node-pg-migrate",
-  "version": "9.0.0-alpha.2",
+  "version": "9.0.0-alpha.3",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "git clean -fdx",
