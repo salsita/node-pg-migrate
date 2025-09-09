@@ -137,7 +137,7 @@ export async function getMigrationFilePaths(
     });
 
     return globMatches
-      .sort(
+      .toSorted(
         (a, b) =>
           compareFileNamesByTimestamp(a.name, b.name, logger) ||
           localeCompareStringsNumerically(a.name, b.name)
@@ -162,7 +162,7 @@ export async function getMigrationFilePaths(
         (dirent.isFile() || dirent.isSymbolicLink()) &&
         !ignoreRegexp.test(dirent.name)
     )
-    .sort(
+    .toSorted(
       (a, b) =>
         compareFileNamesByTimestamp(a.name, b.name, logger) ||
         localeCompareStringsNumerically(a.name, b.name)
