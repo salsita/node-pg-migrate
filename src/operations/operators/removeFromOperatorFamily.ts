@@ -9,9 +9,9 @@ export type RemoveFromOperatorFamily = (
   operatorList: OperatorListDefinition[]
 ) => string;
 
-export const removeFromOperatorFamily = (
+export const removeFromOperatorFamily: (
   mOptions: MigrationOptions
-): RemoveFromOperatorFamily => {
+) => RemoveFromOperatorFamily = (mOptions) => {
   const method: RemoveFromOperatorFamily = (
     operatorFamilyName,
     indexMethod,
