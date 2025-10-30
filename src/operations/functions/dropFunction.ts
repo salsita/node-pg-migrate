@@ -22,11 +22,11 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
 
-    const paramsForDrop = functionParams.map((param: FunctionParam) => {
+    const paramsForDrop = functionParams.map((param) => {
       if (typeof param === 'object' && param !== null) {
-        const copy = { ...param } as Record<string, unknown>;
+        const copy = { ...param };
         delete copy.default;
-        return copy as unknown as FunctionParam;
+        return copy as FunctionParam;
       }
 
       return param;
