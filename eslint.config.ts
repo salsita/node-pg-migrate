@@ -225,6 +225,8 @@ export default defineConfig(
         },
       ],
 
+      'unicorn/no-useless-undefined': ['error', { checkArguments: false }],
+
       ...eslintPluginVitest.configs.recommended.rules,
 
       'vitest/expect-expect': 'off',
