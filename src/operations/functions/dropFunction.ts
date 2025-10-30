@@ -21,7 +21,18 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
 
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
-    const paramsStr = formatParams(functionParams, mOptions);
+
+    const paramsForDrop = functionParams.map((param) => {
+      if (typeof param === 'object' && param !== null) {
+        const copy = { ...param };
+        delete copy.default;
+        return copy as FunctionParam;
+      }
+
+      return param;
+    });
+
+    const paramsStr = formatParams(paramsForDrop, mOptions);
     const functionNameStr = mOptions.literal(functionName);
 
     return `DROP FUNCTION${ifExistsStr} ${functionNameStr}${paramsStr}${cascadeStr};`;

@@ -29,6 +29,23 @@ describe('operations', () => {
           'DROP FUNCTION IF EXISTS "sqrt"(integer) CASCADE;'
         );
       });
+
+      it('should ignore default values in function parameters when dropping function', () => {
+        const params = [
+          {
+            name: 'x',
+            type: 'integer',
+            default: 10,
+          },
+        ];
+
+        const statement = dropFunctionFn('func_with_default', params);
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'DROP FUNCTION "func_with_default"("x" integer);'
+        );
+      });
     });
   });
 });
