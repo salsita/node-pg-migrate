@@ -34,6 +34,7 @@ export default defineConfig(
   //#endregion
 
   //#region prettier
+  // @ts-expect-error: weird type error
   eslintPluginPrettierRecommended,
   //#endregion
 
@@ -210,7 +211,6 @@ export default defineConfig(
     name: 'test/**/*.spec.ts overrides',
     files: ['test/**/*.spec.ts', 'test/**/*.spec.d.ts'],
     plugins: {
-      // @ts-expect-error: weird type error
       vitest: eslintPluginVitest,
     },
     rules: {
