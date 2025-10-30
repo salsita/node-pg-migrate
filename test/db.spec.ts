@@ -53,8 +53,7 @@ describe('db', () => {
 
       await db.query('query');
 
-      expect(mocked).toHaveBeenCalledOnce();
-      expect(mocked).toHaveBeenCalledWith('query', undefined);
+      expect(mocked).toHaveBeenCalledExactlyOnceWith('query', undefined);
     });
   });
 
@@ -90,8 +89,10 @@ describe('db', () => {
     it('should call client.query with query', async () => {
       await db.query('query');
 
-      expect(hoisted.client.query).toHaveBeenCalledOnce();
-      expect(hoisted.client.query).toHaveBeenCalledWith('query', undefined);
+      expect(hoisted.client.query).toHaveBeenCalledExactlyOnceWith(
+        'query',
+        undefined
+      );
     });
 
     it('should not call client.query if client.connect fails', async () => {
