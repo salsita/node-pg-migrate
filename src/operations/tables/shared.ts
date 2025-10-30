@@ -136,14 +136,12 @@ export function parseReferences(
 ): string {
   const { references, match, onDelete, onUpdate } = options;
 
-  const clauses: string[] = [];
-
-  clauses.push(
+  const clauses: string[] = [
     typeof references === 'string' &&
-      (references.startsWith('"') || references.endsWith(')'))
+    (references.startsWith('"') || references.endsWith(')'))
       ? `REFERENCES ${references}`
-      : `REFERENCES ${literal(references)}`
-  );
+      : `REFERENCES ${literal(references)}`,
+  ];
 
   if (match) {
     clauses.push(`MATCH ${match}`);

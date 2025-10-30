@@ -44,8 +44,7 @@ export function createOperator(mOptions: MigrationOptions): CreateOperator {
       merges = false,
     } = options;
 
-    const defs: string[] = [];
-    defs.push(`PROCEDURE = ${mOptions.literal(procedure)}`);
+    const defs: string[] = [`PROCEDURE = ${mOptions.literal(procedure)}`];
 
     if (left) {
       defs.push(`LEFTARG = ${mOptions.literal(left)}`);
