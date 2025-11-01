@@ -105,7 +105,7 @@ describe('utils', () => {
           {
             mode: 'OUT',
             name: 'test',
-            type: PgType.BIGINT
+            type: PgType.BIGINT,
           },
           {
             mode: 'OUT',
