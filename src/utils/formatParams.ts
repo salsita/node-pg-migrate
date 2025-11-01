@@ -27,7 +27,7 @@ function formatParam(
       options.push(type);
     }
 
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       options.push(`DEFAULT ${escapeValue(defaultValue)}`);
     }
 

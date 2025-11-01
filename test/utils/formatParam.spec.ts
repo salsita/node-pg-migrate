@@ -69,7 +69,7 @@ describe('utils', () => {
 
       expect(actual).toBeTypeOf('string');
       expect(actual).toBe(
-        '(OUT "test" bigint DEFAULT true, INOUT "test2" box)'
+        '(OUT "test" bigint DEFAULT true, INOUT "test2" box DEFAULT false)'
       );
     });
 
@@ -95,7 +95,55 @@ describe('utils', () => {
 
       expect(actual).toBeTypeOf('string');
       expect(actual).toBe(
-        '(integer, bigint, OUT "test" bigint DEFAULT true, VARIADIC "test2" box)'
+        '(integer, bigint, OUT "test" bigint DEFAULT true, VARIADIC "test2" box DEFAULT false)'
+      );
+    });
+
+    it('should allow falsy default values', () => {
+      const actual = formatParams(
+        [
+          {
+            mode: 'OUT',
+            name: 'test',
+            type: PgType.BIGINT,
+          },
+          {
+            mode: 'OUT',
+            name: 'test2',
+            type: PgType.BOX,
+            default: undefined,
+          },
+          {
+            mode: 'OUT',
+            name: 'test3',
+            type: PgType.BOOL,
+            default: false,
+          },
+          {
+            mode: 'INOUT',
+            name: 'test4',
+            type: PgType.DATE,
+            default: null,
+          },
+          {
+            mode: 'INOUT',
+            name: 'test5',
+            type: PgType.NUMERIC,
+            default: 0,
+          },
+          {
+            mode: 'INOUT',
+            name: 'test6',
+            type: PgType.TEXT,
+            default: '',
+          },
+        ],
+        options1
+      );
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe(
+        '(OUT "test" bigint, OUT "test2" box, OUT "test3" boolean DEFAULT false, INOUT "test4" date DEFAULT NULL, INOUT "test5" numeric DEFAULT 0, INOUT "test6" text DEFAULT $pga$$pga$)'
       );
     });
   });
