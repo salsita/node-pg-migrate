@@ -3,7 +3,7 @@
   "version": "8.0.3",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
-    "clean": "rimraf .eslintcache dist pnpm-lock.yaml node_modules",
+    "clean": "git clean -fdx",
     "build": "tsup-node",
     "format": "prettier --cache --write .",
     "lint": "eslint --cache --cache-strategy content .",
@@ -81,7 +81,7 @@
     "templates"
   ],
   "dependencies": {
-    "glob": "~11.0.0",
+    "glob": "~11.1.0",
     "yargs": "~17.7.0"
   },
   "devDependencies": {
@@ -132,7 +132,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.25.0",
   "engines": {
     "node": ">=20.11.0"
   }
