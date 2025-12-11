@@ -83,7 +83,7 @@
     "templates"
   ],
   "dependencies": {
-    "glob": "~11.1.0",
+    "glob": "~13.0.0",
     "jiti": "~2.6.0",
     "yargs": "~18.0.0"
   },
