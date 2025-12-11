@@ -75,7 +75,7 @@ jobs:
       - name: Test
         run: pnpm run test:integration
         env:
-          PGM_VERSIONS: '13,14,15,16,17' # Postgres versions to test against
+          PGM_VERSIONS: '13,14,15,16,17,18' # Postgres versions to test against
 
   lint:
     runs-on: ubuntu-latest
