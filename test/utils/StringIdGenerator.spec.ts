@@ -42,7 +42,7 @@ describe('utils', () => {
 
     it('should throw if chars is empty', () => {
       const gen = stringIdGenerator('');
-      expect(() => gen.next()).toThrow('chars must be a non-empty string');
+      expect(() => gen.next()).toThrowError('chars must be a non-empty string');
     });
 
     it('should generate correct sequence with custom chars', () => {

@@ -144,7 +144,7 @@ $pga$
             },
             'SELECT $1 + $2;'
           )
-        ).toThrow(
+        ).toThrowError(
           new Error('Language for function "add" have to be specified')
         );
       });

@@ -118,7 +118,7 @@ describe('db', () => {
         fn(new Error(error))
       );
 
-      await expect(() => db.query('query')).rejects.toThrow(error);
+      await expect(() => db.query('query')).rejects.toThrowError(error);
       expect(hoisted.client.query).not.toHaveBeenCalled();
     });
 
@@ -136,7 +136,7 @@ describe('db', () => {
 
       vi.spyOn(hoisted.client, 'query').mockRejectedValue(new Error(error));
 
-      await expect(() => db.query('query')).rejects.toThrow(error);
+      await expect(() => db.query('query')).rejects.toThrowError(error);
       expect(hoisted.client.connect).toHaveBeenCalledOnce();
     });
   });

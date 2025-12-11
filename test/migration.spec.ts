@@ -49,7 +49,7 @@ describe('migration', () => {
 
     it('should fail with a non-numeric value', () => {
       const prefix = 'invalid-prefix';
-      expect(() => getNumericPrefix(prefix, logger)).toThrow(
+      expect(() => getNumericPrefix(prefix, logger)).toThrowError(
         new Error(`Cannot determine numeric prefix for "${prefix}"`)
       );
     });
@@ -176,7 +176,7 @@ describe('migration', () => {
         'test/invalid-migrations/invalid-prefix.*'
       );
 
-      await expect(prefix).rejects.toThrow();
+      await expect(prefix).rejects.toThrowError();
     });
 
     it('should get an epoch timestamp as a prefix', async () => {
@@ -305,7 +305,7 @@ describe('migration', () => {
 
       expect(() => {
         migration.apply(direction);
-      }).toThrow(
+      }).toThrowError(
         new Error(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
         )
