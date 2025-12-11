@@ -21,9 +21,6 @@ importers:
       '@eslint/compat':
         specifier: 2.0.0
         version: 2.0.0(eslint@9.39.1(jiti@2.6.1))
-      '@eslint/config-helpers':
-        specifier: 0.5.0
-        version: 0.5.0
       '@eslint/js':
         specifier: 9.39.1
         version: 9.39.1
@@ -727,10 +724,6 @@ packages:
   '@eslint/config-helpers@0.4.2':
     resolution: {integrity: sha512-gBrxN88gOIf3R7ja5K9slwNayVcZgK6SOUORm2uBzTeIEfeVaIhOpCtTox3P6R7o2jLFwLFTLnC7kU/RGcYEgw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/config-helpers@0.5.0':
-    resolution: {integrity: sha512-OCt2pY98qw68AXjNDGn+9q3vnqvBh4OFTZWmzaWH2thEpAugBZCBDRMHZa7oGsX+/ZybKOiKjJ6XX1E8hxcxGg==}
-    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/core@0.17.0':
     resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
@@ -3827,10 +3820,6 @@ snapshots:
   '@eslint/config-helpers@0.4.2':
     dependencies:
       '@eslint/core': 0.17.0
-
-  '@eslint/config-helpers@0.5.0':
-    dependencies:
-      '@eslint/core': 1.0.0
 
   '@eslint/core@0.17.0':
     dependencies:
