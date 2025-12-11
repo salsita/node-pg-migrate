@@ -6,8 +6,7 @@ import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';
 
 export interface CreateSequenceOptions
-  extends SequenceOptions,
-    IfNotExistsOption {
+  extends SequenceOptions, IfNotExistsOption {
   temporary?: boolean;
 }
 
