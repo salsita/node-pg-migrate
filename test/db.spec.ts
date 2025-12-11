@@ -1,19 +1,35 @@
+import type { QueryArrayConfig, QueryConfig } from 'pg';
 import { Client } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
 import { db as Db } from '../src/db';
 import type { Logger } from '../src/logger';
 
-const hoisted = vi.hoisted(() => ({
+type MockClient = {
+  connect: (cb: (err?: Error | null) => void) => void;
+  end: () => void;
+  query: (
+    q: string | QueryConfig | QueryArrayConfig,
+    values?: unknown[]
+  ) => Promise<unknown>;
+};
+
+const hoisted: { client: MockClient } = vi.hoisted(() => ({
   client: {
-    connect: vi.fn(),
-    end: vi.fn(),
-    query: vi.fn(),
+    connect: vi.fn<MockClient['connect']>(),
+    end: vi.fn<MockClient['end']>(),
+    query: vi.fn<MockClient['query']>(),
   },
 }));
 
 vi.mock('pg', () => {
-  const client = vi.fn().mockImplementation(() => hoisted.client);
+  const client = vi.fn().mockImplementation(
+    // this needs to be a function instead of an arrow function
+    // see https://vitest.dev/api/vi.html#vi-spyon for more details
+    function () {
+      return hoisted.client;
+    }
+  );
   return {
     default: {
       Client: client,
