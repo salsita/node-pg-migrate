@@ -6,15 +6,15 @@ import { promisify } from 'node:util';
 /**
  * List of PostgreSQL versions to be used in integration tests.
  *
- * Reads from the `PGM_VERSIONS` environment variable or defaults to ['17'].
+ * Reads from the `PGM_VERSIONS` environment variable or defaults to ['18'].
  */
-export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '17')
+export const PG_VERSIONS = (process.env.PGM_VERSIONS ?? '18')
   .split(',')
   .map((v) => v.trim())
   .filter(Boolean);
 
 export const INTEGRATION_TIMEOUT = Number(
-  process.env.INTEGRATION_TIMEOUT ?? 20_000
+  process.env.INTEGRATION_TIMEOUT ?? 30_000
 );
 
 /**

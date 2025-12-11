@@ -17,7 +17,8 @@
     {
       "groupName": "devDependencies",
       "matchDepTypes": ["devDependencies"],
-      "rangeStrategy": "bump"
+      "rangeStrategy": "bump",
+      "minimumReleaseAge": null
     },
     {
       "groupName": "dependencies",
@@ -32,7 +33,8 @@
     {
       "groupName": "engines",
       "matchDepTypes": ["engines"],
-      "rangeStrategy": "replace"
+      "rangeStrategy": "replace",
+      "minimumReleaseAge": null
     },
     {
       "groupName": "eslint",
@@ -42,15 +44,18 @@
         "eslint",
         "eslint-**",
         "typescript-eslint"
-      ]
+      ],
+      "minimumReleaseAge": null
     },
     {
       "groupName": "vitest",
-      "matchPackageNames": ["@vitest/**", "vitest"]
+      "matchPackageNames": ["@vitest/**", "vitest"],
+      "minimumReleaseAge": null
     },
     {
       "groupName": "prettier",
-      "matchPackageNames": ["prettier"]
+      "matchPackageNames": ["prettier"],
+      "minimumReleaseAge": null
     },
     {
       "groupName": "typescript",
