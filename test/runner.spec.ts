@@ -11,7 +11,7 @@ describe('runner', () => {
     await expect(
       // @ts-expect-error: runner needs options
       runner()
-    ).rejects.toThrow(
+    ).rejects.toThrowError(
       new TypeError(
         "Cannot destructure property 'log' of 'options' as it is undefined."
       )
@@ -22,7 +22,7 @@ describe('runner', () => {
     await expect(
       // @ts-expect-error: runner needs options
       runner({ log: console.log })
-    ).rejects.toThrow(
+    ).rejects.toThrowError(
       new Error('You must provide either a databaseUrl or a dbClient')
     );
   });
@@ -105,7 +105,7 @@ describe('runner', () => {
         dir: 'test/cockroach',
         direction: 'up',
       })
-    ).resolves.not.toThrow();
+    ).resolves.not.toThrowError();
     expect(executedMigrations).toHaveLength(12);
   });
 
@@ -187,7 +187,7 @@ describe('runner', () => {
         direction: 'down',
         count: 2,
       })
-    ).resolves.not.toThrow();
+    ).resolves.not.toThrowError();
     expect(executedMigrations).toHaveLength(0);
   });
 
@@ -235,7 +235,7 @@ describe('runner', () => {
         direction: 'up',
         lockValue: customLockValue,
       })
-    ).resolves.not.toThrow();
+    ).resolves.not.toThrowError();
 
     // Verify that the query with custom lock value was called
     expect(dbClient.query).toHaveBeenCalledWith(

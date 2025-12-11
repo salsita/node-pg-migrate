@@ -722,7 +722,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
         (_, optionPreset, [tableName, columns, options], expected) => {
           const createTableFn = createTable(optionPreset);
 
-          expect(() => createTableFn(tableName, columns, options)).toThrow(
+          expect(() => createTableFn(tableName, columns, options)).toThrowError(
             expected
           );
         }

@@ -12,7 +12,9 @@ describe('operations', () => {
       });
 
       it('should throw error when no constraint options are provided', () => {
-        expect(() => addConstraintFn('distributors', 'zipchk', {})).toThrow(
+        expect(() =>
+          addConstraintFn('distributors', 'zipchk', {})
+        ).toThrowError(
           new Error('No constraint options provided for addConstraint')
         );
       });
@@ -151,7 +153,7 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
         it('should throw error when constraintName is null', () => {
           expect(() =>
             addConstraintFn.reverse('distributors', null, {})
-          ).toThrow(
+          ).toThrowError(
             new Error(
               'Impossible to automatically infer down migration for addConstraint without naming constraint'
             )
@@ -165,7 +167,7 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
               'zipchk',
               'CHECK (char_length(zipcode) = 5)'
             )
-          ).toThrow(
+          ).toThrowError(
             new Error(
               'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
             )

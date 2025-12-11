@@ -79,7 +79,7 @@ describe('operations', () => {
             check: "VALUE ~ '^d{5}$'",
             notNull: true,
           })
-        ).toThrow(
+        ).toThrowError(
           new Error('"notNull" and "check" can\'t be specified together')
         );
       });

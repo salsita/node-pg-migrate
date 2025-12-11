@@ -12,7 +12,7 @@ describe('operations', () => {
       });
 
       it('should throw error when no policy options are provided', () => {
-        expect(() => alterPolicyFn('my_table', 'p1', {})).toThrow(
+        expect(() => alterPolicyFn('my_table', 'p1', {})).toThrowError(
           new Error('No policy options provided for alterPolicy')
         );
       });

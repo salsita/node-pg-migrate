@@ -183,7 +183,9 @@ describe('operations', () => {
       it('should throw an error if nulls option is used without unique index', () => {
         expect(() =>
           createIndexFn('films', ['title'], { nulls: 'distinct' })
-        ).toThrow('The "nulls" option can only be used with unique indexes.');
+        ).toThrowError(
+          'The "nulls" option can only be used with unique indexes.'
+        );
       });
 
       describe('reverse', () => {
