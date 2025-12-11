@@ -88,7 +88,7 @@
     "yargs": "~18.0.0"
   },
   "devDependencies": {
-    "@eslint/compat": "1.4.1",
+    "@eslint/compat": "2.0.0",
     "@eslint/config-helpers": "0.4.2",
     "@eslint/js": "9.38.0",
     "@stylistic/eslint-plugin": "5.5.0",
