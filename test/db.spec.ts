@@ -23,9 +23,13 @@ const hoisted: { client: MockClient } = vi.hoisted(() => ({
 }));
 
 vi.mock('pg', () => {
-  const client = vi.fn().mockImplementation(function () {
-    return hoisted.client;
-  });
+  const client = vi.fn().mockImplementation(
+    // this needs to be a function instead of an arrow function
+    // see https://vitest.dev/api/vi.html#vi-spyon for more details
+    function () {
+      return hoisted.client;
+    }
+  );
   return {
     default: {
       Client: client,
