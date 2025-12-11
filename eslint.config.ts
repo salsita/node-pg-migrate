@@ -1,11 +1,10 @@
 import { includeIgnoreFile } from '@eslint/compat';
-import type { ConfigWithExtendsArray } from '@eslint/config-helpers';
-import { defineConfig } from '@eslint/config-helpers';
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import eslintPluginVitest from '@vitest/eslint-plugin';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
 import { resolve } from 'node:path';
 import tseslint from 'typescript-eslint';
 
@@ -34,7 +33,6 @@ export default defineConfig(
   //#endregion
 
   //#region prettier
-  // @ts-expect-error: weird type error
   eslintPluginPrettierRecommended,
   //#endregion
 
@@ -53,7 +51,7 @@ export default defineConfig(
   //#endregion
 
   //#region typescript-eslint
-  ...(tseslint.configs.strictTypeChecked as ConfigWithExtendsArray),
+  ...tseslint.configs.strictTypeChecked,
   {
     name: 'typescript-eslint overrides',
     languageOptions: {
