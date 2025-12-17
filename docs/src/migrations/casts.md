@@ -2,7 +2,7 @@
 
 ## Operation: `createCast`
 
-#### `pgm.createCast( source_type, target_type, opttions )`
+#### `pgm.createCast( source_type, target_type, options )`
 
 > [!IMPORTANT]
 > Create a new cast - [postgres docs](https://www.postgresql.org/docs/current/sql-createcast.html)
