@@ -1,2 +1,47 @@
 WARNING: NODE_ENV value of 'test' did not match any deployment config file names.
 WARNING: See https://github.com/node-config/node-config/wiki/Strict-Mode
+Error executing:
+INSERT INTO t2(id2) VALUES (1);
+error: insert or update on table "t2" violates foreign key constraint "t2_id2_fkey"
+
+Error executing:
+INSERT INTO t1(created) VALUES (current_timestamp);
+error: null value in column "string" of relation "t1" violates not-null constraint
+
+Error executing:
+INSERT INTO t1(nr) VALUES (1);
+error: new row for relation "t1" violates check constraint "t1_nr_check"
+
+Error executing:
+INSERT INTO t1(nr) VALUES (20);
+error: duplicate key value violates unique constraint "t1_nr_key"
+
+Error executing:
+INSERT INTO t1(nmbr) VALUES (2147483647);
+error: smallint out of range
+
+Error executing:
+INSERT INTO t1(nmbr) VALUES (30);
+error: new row for relation "t1" violates check constraint "chck_nmbr"
+
+Error executing:
+SELECT (ROW(2147483647, 'x')::obj).id;
+error: smallint out of range
+
+#> WARNING: Need to break single transaction! <
+Error executing:
+SELECT (ROW(1, 'x')::obj).str;
+                   ^^^^
+
+cannot cast type record to obj
+
+Error executing:
+CREATE TEMPORARY TABLE t_list_3 (l list_for_drop);
+                                   ^^^^
+
+type "list_for_drop" does not exist
+
+Error executing:
+INSERT INTO td (d) VALUES (11);
+error: value for domain dom violates check constraint "d_check"
+
