@@ -1,5 +1,6 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { isPgLiteral, type PgLiteralValue } from '../../utils';
+import type { PgLiteralValue } from '../../utils';
+import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
