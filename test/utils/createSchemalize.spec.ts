@@ -184,6 +184,28 @@ describe('utils', () => {
       expect(actual).toBe('(value * 100)');
     });
 
+    it('should detect and wrap arithmetic expression without spaces', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const actual = schemalize('value*100');
+
+      expect(actual).toBe('(value*100)');
+    });
+
+    it('should detect and wrap schema qualified function call', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const actual = schemalize('myschema.myfunction(col)');
+
+      expect(actual).toBe('(myschema.myfunction(col))');
+    });
+
     it('should handle PgLiteral', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
