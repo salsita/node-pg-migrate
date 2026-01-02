@@ -167,7 +167,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      expect(nextPrefix).toEqual('096');
+      expect(nextPrefix).toEqual('097');
     });
 
     it('should fail to get the next index with invalid filenames', async () => {
