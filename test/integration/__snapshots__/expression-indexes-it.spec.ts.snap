@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`expression indexes (PG 18) > should create expression indexes correctly 3`] = `
+[
+  {
+    "indexdef": "CREATE INDEX users_created_date_idx ON public.users USING btree (((created_at)::date))",
+    "indexname": "users_created_date_idx",
+  },
+  {
+    "indexdef": "CREATE INDEX users_email_index ON public.users USING btree (email)",
+    "indexname": "users_email_index",
+  },
+  {
+    "indexdef": "CREATE INDEX users_email_lower_idx ON public.users USING btree (lower(email))",
+    "indexname": "users_email_lower_idx",
+  },
+  {
+    "indexdef": "CREATE INDEX users_id_meta_idx ON public.users USING btree (id, ((meta ->> 'type'::text)))",
+    "indexname": "users_id_meta_idx",
+  },
+  {
+    "indexdef": "CREATE INDEX users_meta_type_idx ON public.users USING btree (((meta ->> 'type'::text)))",
+    "indexname": "users_meta_type_idx",
+  },
+  {
+    "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)",
+    "indexname": "users_pkey",
+  },
+  {
+    "indexdef": "CREATE INDEX users_score_idx ON public.users USING btree (((score * 10)))",
+    "indexname": "users_score_idx",
+  },
+]
+`;
