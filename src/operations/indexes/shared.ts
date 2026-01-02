@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import type { PgLiteralValue } from '../../utils';
+import { isPgLiteral, type PgLiteralValue } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
@@ -30,7 +30,17 @@ export function generateIndexName(
   }
 
   const cols = columns
-    .map((col) => (isIndexColumn(col) ? schemalize(col.name) : schemalize(col)))
+    .map((col) => {
+      if (isIndexColumn(col)) return schemalize(col.name);
+
+      if (isPgLiteral(col)) {
+        throw new Error(
+          'Index name must be provided when using PgLiteral columns'
+        );
+      }
+
+      return schemalize(col);
+    })
     .join('_');
   const uniq = 'unique' in options && options.unique ? '_unique' : '';
 

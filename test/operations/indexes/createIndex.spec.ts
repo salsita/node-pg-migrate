@@ -271,6 +271,18 @@ describe('operations', () => {
         );
       });
 
+      it('should throw error if index name is not provided with PgLiteral', () => {
+        expect(() =>
+          createIndexFn(
+            'functions',
+            // @ts-expect-error: regression test for pgm.sql
+            PgLiteral.create("(contentSub->>'id')")
+          )
+        ).toThrowError(
+          'Index name must be provided when using PgLiteral columns'
+        );
+      });
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(createIndexFn.reverse).toBeTypeOf('function');
