@@ -5,7 +5,7 @@ INSERT INTO t2(id2) VALUES (1);
 error: insert or update on table "t2" violates foreign key constraint "t2_id2_fkey"
 
 Error executing:
-INSERT INTO t1(created) VALUES (current_timestamp);
+INSERT INTO t1(created) VALUES (current_timestamp); 
 error: null value in column "string" of relation "t1" violates not-null constraint
 
 Error executing:
