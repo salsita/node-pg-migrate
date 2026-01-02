@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PgLiteral } from '../../../src';
 import { createIndex } from '../../../src/operations/indexes';
 import { options1, options2 } from '../../presetMigrationOptions';
 
@@ -185,6 +186,88 @@ describe('operations', () => {
           createIndexFn('films', ['title'], { nulls: 'distinct' })
         ).toThrowError(
           'The "nulls" option can only be used with unique indexes.'
+        );
+      });
+
+      it('should create index with JSON operator expression', () => {
+        const statement = createIndexFn('functions', "contentSub->>'id'", {
+          name: 'functions_contentsub_id_idx',
+        });
+        expect(statement).toBe(
+          'CREATE INDEX "functions_contentsub_id_idx" ON "functions" ((contentSub->>\'id\'));'
+        );
+      });
+
+      it('should create index with expression and WHERE clause', () => {
+        const statement = createIndexFn('functions', "contentSub->>'id'", {
+          name: 'functions_contentsub_id_idx',
+          where: `"deletedAt" IS NULL AND contentSub->>'id' IS NOT NULL`,
+        });
+        expect(statement).toBe(
+          'CREATE INDEX "functions_contentsub_id_idx" ON "functions" ((contentSub->>\'id\')) WHERE "deletedAt" IS NULL AND contentSub->>\'id\' IS NOT NULL;'
+        );
+      });
+
+      it('should create function-based index', () => {
+        const statement = createIndexFn('users', 'lower(email)', {
+          name: 'users_email_lower_idx',
+        });
+        expect(statement).toBe(
+          'CREATE INDEX "users_email_lower_idx" ON "users" ((lower(email)));'
+        );
+      });
+
+      it('should create index with cast expression', () => {
+        const statement = createIndexFn('events', 'created_at::date', {
+          name: 'events_created_date_idx',
+        });
+        expect(statement).toBe(
+          'CREATE INDEX "events_created_date_idx" ON "events" ((created_at::date));'
+        );
+      });
+
+      it('should create index with arithmetic expression', () => {
+        const statement = createIndexFn('metrics', 'value * 100', {
+          name: 'metrics_value_scaled_idx',
+        });
+        expect(statement).toBe(
+          'CREATE INDEX "metrics_value_scaled_idx" ON "metrics" ((value * 100));'
+        );
+      });
+
+      it('should create index with multiple expressions', () => {
+        const statement = createIndexFn(
+          'docs',
+          ["meta->>'type'", "meta->>'version'"],
+          {
+            name: 'docs_meta_type_version_idx',
+          }
+        );
+        expect(statement).toBe(
+          'CREATE INDEX "docs_meta_type_version_idx" ON "docs" ((meta->>\'type\'), (meta->>\'version\'));'
+        );
+      });
+
+      it('should create index with mixed column and expression', () => {
+        const statement = createIndexFn(
+          'docs',
+          ['owner_id', "meta->>'type'"],
+          { name: 'docs_owner_type_idx' }
+        );
+        expect(statement).toBe(
+          'CREATE INDEX "docs_owner_type_idx" ON "docs" ("owner_id", (meta->>\'type\'));'
+        );
+      });
+
+      it('should create index with explicit pgm.sql (regression test)', () => {
+        const statement = createIndexFn(
+          'functions',
+          // @ts-expect-error: regression test for pgm.sql
+          PgLiteral.create("(contentSub->>'id')"),
+          { name: 'functions_expr_sql_idx' }
+        );
+        expect(statement).toBe(
+          'CREATE INDEX "functions_expr_sql_idx" ON "functions" ((contentSub->>\'id\'));'
         );
       });
 
