@@ -154,7 +154,7 @@ describe('utils', () => {
     it('should detect and wrap expression', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
-        shouldQuote: true,
+        shouldQuote: false,
       });
 
       const actual = schemalize("contentSub->>'id'");
@@ -165,7 +165,7 @@ describe('utils', () => {
     it('should detect and wrap function call', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
-        shouldQuote: true,
+        shouldQuote: false,
       });
 
       const actual = schemalize('lower(email)');
@@ -176,7 +176,7 @@ describe('utils', () => {
     it('should detect and wrap arithmetic expression', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
-        shouldQuote: true,
+        shouldQuote: false,
       });
 
       const actual = schemalize('value * 100');
@@ -184,7 +184,7 @@ describe('utils', () => {
       expect(actual).toBe('(value * 100)');
     });
 
-    it('should detect and wrap arithmetic expression without spaces', () => {
+    it('should not detect arithmetic expression without spaces', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
         shouldQuote: true,
@@ -192,13 +192,13 @@ describe('utils', () => {
 
       const actual = schemalize('value*100');
 
-      expect(actual).toBe('(value*100)');
+      expect(actual).toBe('"value*100"');
     });
 
     it('should detect and wrap schema qualified function call', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: true,
-        shouldQuote: true,
+        shouldQuote: false,
       });
 
       const actual = schemalize('myschema.myfunction(col)');
