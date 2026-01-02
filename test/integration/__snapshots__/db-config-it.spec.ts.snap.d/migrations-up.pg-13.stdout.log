@@ -94,6 +94,7 @@
 > - 093_alter_column_expression
 > - 094_unlogged_table
 > - 095_index_nulls
+> - 096_expression_index
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
@@ -559,7 +560,7 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('068_extension', NOW(
 
 ### MIGRATION 069_comments (UP) ###
 CREATE TABLE "test-comment" (
-
+  
 );
 COMMENT ON TABLE "test-comment" IS $pga$table's comment$pga$;
 DROP TABLE "test-comment";
@@ -815,6 +816,23 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('094_unlogged_table',
 
 ### MIGRATION 095_index_nulls (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('095_index_nulls', NOW());
+
+
+### MIGRATION 096_expression_index (UP) ###
+CREATE TABLE "pgm_users" (
+  "id" serial PRIMARY KEY,
+  "email" text,
+  "meta" jsonb,
+  "created_at" timestamp,
+  "score" integer
+);
+CREATE INDEX "pgm_users_email_index" ON "pgm_users" ("email");
+CREATE INDEX "pgm_users_meta_type_idx" ON "pgm_users" ((meta->>'type'));
+CREATE INDEX "pgm_users_email_lower_idx" ON "pgm_users" ((lower(email)));
+CREATE INDEX "pgm_users_created_date_idx" ON "pgm_users" ((created_at::date));
+CREATE INDEX "pgm_users_score_idx" ON "pgm_users" ((score * 10));
+CREATE INDEX "pgm_users_id_meta_idx" ON "pgm_users" ("id", (meta->>'type'));
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('096_expression_index', NOW());
 
 
 Migrations complete!
