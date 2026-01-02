@@ -1,4 +1,5 @@
 > Migrating files:
+> - 096_expression_index
 > - 095_index_nulls
 > - 094_unlogged_table
 > - 093_alter_column_expression
@@ -94,6 +95,11 @@
 > - 003_promise
 > - 002_callback
 > - 001_noop
+### MIGRATION 096_expression_index (DOWN) ###
+DROP TABLE "pgm_users";
+DELETE FROM "public"."pgmigrations" WHERE name='096_expression_index';
+
+
 ### MIGRATION 095_index_nulls (DOWN) ###
 DELETE FROM "public"."pgmigrations" WHERE name='095_index_nulls';
 

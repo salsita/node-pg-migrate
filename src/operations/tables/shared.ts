@@ -330,7 +330,8 @@ export function parseConstraints(
     comment,
   }: ConstraintOptions = options;
 
-  const tableName = typeof table === 'object' ? table.name : table;
+  const tableName =
+    typeof table === 'object' && 'name' in table ? table.name : table;
 
   let constraints: string[] = [];
   const comments: string[] = [];
