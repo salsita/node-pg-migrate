@@ -63,7 +63,9 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     const columns = toArray(rawColumns);
 
     const indexName = generateIndexName(
-      typeof tableName === 'object' ? tableName.name : tableName,
+      typeof tableName === 'object' && 'name' in tableName
+        ? tableName.name
+        : tableName,
       columns,
       options,
       mOptions.schemalize

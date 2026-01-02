@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import type { PgLiteralValue } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
@@ -12,24 +13,28 @@ export interface IndexColumn {
   sort?: 'ASC' | 'DESC';
 }
 
+function isIndexColumn(col: unknown): col is IndexColumn {
+  return typeof col === 'object' && col !== null && 'name' in col;
+}
+
 export function generateIndexName(
   table: Name,
-  columns: Array<string | IndexColumn>,
+  columns: Array<string | IndexColumn | PgLiteralValue>,
   options: CreateIndexOptions | DropIndexOptions,
   schemalize: Literal
 ): Name {
   if (options.name) {
-    return typeof table === 'object'
+    return typeof table === 'object' && 'schema' in table
       ? { schema: table.schema, name: options.name }
       : options.name;
   }
 
   const cols = columns
-    .map((col) => schemalize(typeof col === 'string' ? col : col.name))
+    .map((col) => (isIndexColumn(col) ? schemalize(col.name) : schemalize(col)))
     .join('_');
   const uniq = 'unique' in options && options.unique ? '_unique' : '';
 
-  return typeof table === 'object'
+  return typeof table === 'object' && 'name' in table
     ? {
         schema: table.schema,
         name: `${table.name}_${cols}${uniq}_index`,
@@ -50,20 +55,22 @@ export function generateColumnString(
 }
 
 export function generateColumnsString(
-  columns: Array<string | IndexColumn>,
+  columns: Array<string | IndexColumn | PgLiteralValue>,
   mOptions: MigrationOptions
 ): string {
   return columns
-    .map((column) =>
-      typeof column === 'string'
-        ? generateColumnString(column, mOptions)
-        : [
-            generateColumnString(column.name, mOptions),
-            column.opclass ? mOptions.literal(column.opclass) : undefined,
-            column.sort,
-          ]
-            .filter((s) => typeof s === 'string' && s !== '')
-            .join(' ')
-    )
+    .map((column) => {
+      if (isIndexColumn(column)) {
+        return [
+          generateColumnString(column.name, mOptions),
+          column.opclass ? mOptions.literal(column.opclass) : undefined,
+          column.sort,
+        ]
+          .filter((s) => typeof s === 'string' && s !== '')
+          .join(' ');
+      }
+
+      return generateColumnString(column, mOptions);
+    })
     .join(', ');
 }

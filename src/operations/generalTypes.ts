@@ -24,7 +24,7 @@ export type Value =
 
 export type Type = string | { type: string };
 
-export type Name = string | { schema?: string; name: string };
+export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
 export interface IfNotExistsOption {
   ifNotExists?: boolean;
