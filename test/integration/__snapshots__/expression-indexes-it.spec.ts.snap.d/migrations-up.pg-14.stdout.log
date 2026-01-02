@@ -1,0 +1,20 @@
+> Migrating files:
+> - 001_expression_index
+### MIGRATION 001_expression_index (UP) ###
+CREATE TABLE "users" (
+  "id" serial PRIMARY KEY,
+  "email" text,
+  "meta" jsonb,
+  "created_at" timestamp,
+  "score" integer
+);
+CREATE INDEX "users_email_index" ON "users" ("email");
+CREATE INDEX "users_meta_type_idx" ON "users" ((meta->>'type'));
+CREATE INDEX "users_email_lower_idx" ON "users" ((lower(email)));
+CREATE INDEX "users_created_date_idx" ON "users" ((created_at::date));
+CREATE INDEX "users_score_idx" ON "users" ((score * 10));
+CREATE INDEX "users_id_meta_idx" ON "users" ("id", (meta->>'type'));
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_expression_index', NOW());
+
+
+Migrations complete!
