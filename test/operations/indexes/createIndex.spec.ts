@@ -249,11 +249,9 @@ describe('operations', () => {
       });
 
       it('should create index with mixed column and expression', () => {
-        const statement = createIndexFn(
-          'docs',
-          ['owner_id', "meta->>'type'"],
-          { name: 'docs_owner_type_idx' }
-        );
+        const statement = createIndexFn('docs', ['owner_id', "meta->>'type'"], {
+          name: 'docs_owner_type_idx',
+        });
         expect(statement).toBe(
           'CREATE INDEX "docs_owner_type_idx" ON "docs" ("owner_id", (meta->>\'type\'));'
         );
