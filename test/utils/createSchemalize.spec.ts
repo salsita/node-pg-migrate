@@ -150,5 +150,51 @@ describe('utils', () => {
       expect(actual).toBeTypeOf('string');
       expect(actual).toBe(expected);
     });
+
+    it('should detect and wrap expression', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const actual = schemalize("contentSub->>'id'");
+
+      expect(actual).toBe("(contentSub->>'id')");
+    });
+
+    it('should detect and wrap function call', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const actual = schemalize('lower(email)');
+
+      expect(actual).toBe('(lower(email))');
+    });
+
+    it('should detect and wrap arithmetic expression', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const actual = schemalize('value * 100');
+
+      expect(actual).toBe('(value * 100)');
+    });
+
+    it('should handle PgLiteral', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const pgLiteral = { literal: true, toString: () => 'some_literal' };
+      // @ts-expect-error: Testing PgLiteral duck typing
+      const actual = schemalize(pgLiteral);
+
+      expect(actual).toBe('some_literal');
+    });
   });
 });
