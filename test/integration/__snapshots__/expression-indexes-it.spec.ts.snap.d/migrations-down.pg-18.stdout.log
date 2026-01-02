@@ -1,8 +1,0 @@
-> Migrating files:
-> - 001_expression_index
-### MIGRATION 001_expression_index (DOWN) ###
-DROP TABLE "users";
-DELETE FROM "public"."pgmigrations" WHERE name='001_expression_index';
-
-
-Migrations complete!
