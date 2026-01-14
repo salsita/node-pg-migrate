@@ -96,9 +96,9 @@
     "@types/node": "20.19.26",
     "@types/pg": "8.16.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.0.15",
-    "@vitest/eslint-plugin": "1.5.2",
-    "@vitest/ui": "4.0.15",
+    "@vitest/coverage-v8": "4.0.17",
+    "@vitest/eslint-plugin": "1.6.6",
+    "@vitest/ui": "4.0.17",
     "config": "4.1.1",
     "dotenv": "17.2.3",
     "dotenv-expand": "12.0.3",
@@ -120,7 +120,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.49.0",
     "vitepress": "1.6.4",
-    "vitest": "4.0.15"
+    "vitest": "4.0.17"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",
