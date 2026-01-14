@@ -4,7 +4,8 @@ import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
 import { isNameObject } from '../generalTypes';
-import { parseSequenceOptions, type SequenceOptions } from '../sequences';
+import type { SequenceOptions } from '../sequences';
+import { parseSequenceOptions } from '../sequences';
 
 export type Action =
   | 'NO ACTION'

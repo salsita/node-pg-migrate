@@ -1,11 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { toArray } from '../../utils';
-import {
-  isNameObject,
-  type IfNotExistsOption,
-  type Name,
-  type Reversible,
-} from '../generalTypes';
+import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
+import { isNameObject } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';

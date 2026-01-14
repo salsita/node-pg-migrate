@@ -1,9 +1,6 @@
 import { escapeValue } from '.';
-import {
-  isNameObject,
-  type Name,
-  type Value,
-} from '../operations/generalTypes';
+import type { Name, Value } from '../operations/generalTypes';
+import { isNameObject } from '../operations/generalTypes';
 
 export type Literal = (v: Name) => string;
 

@@ -3,3 +3,6 @@ ignoredBuiltDependencies:
   - esbuild
   - protobufjs
   - ssh2
+
+onlyBuiltDependencies:
+  - unrs-resolver
