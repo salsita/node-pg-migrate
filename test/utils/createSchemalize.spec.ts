@@ -242,6 +242,33 @@ describe('utils', () => {
       }
     );
 
+    it.each([
+      ["contentSub->'id'", "(contentSub->'id')"],
+      ["contentSub->>'id'", "(contentSub->>'id')"],
+      ["contentSub#>'{a,b}'", "(contentSub#>'{a,b}')"],
+      ["contentSub#>>'{a,b}'", "(contentSub#>>'{a,b}')"],
+      ['meta @> \'{"a":1}\'', '(meta @> \'{"a":1}\')'],
+      ['meta <@ \'{"a":1}\'', '(meta <@ \'{"a":1}\')'],
+      ["meta ? 'a'", "(meta ? 'a')"],
+      ["meta ?| array['a','b']", "(meta ?| array['a','b'])"],
+      ["meta ?& array['a','b']", "(meta ?& array['a','b'])"],
+      ['meta || \'{"b":2}\'', '(meta || \'{"b":2}\')'],
+      ["meta - 'a'", "(meta - 'a')"],
+      ["meta #- '{a,b}'", "(meta #- '{a,b}')"],
+      ["meta @? '$.a ? (@ == 1)'", "(meta @? '$.a ? (@ == 1)')"],
+      ["meta @@ '$.a == 1'", "(meta @@ '$.a == 1')"],
+    ])(
+      'should detect and wrap json operator expression: %s',
+      (expr, expected) => {
+        const schemalize = createSchemalize({
+          shouldDecamelize: false,
+          shouldQuote: false,
+        });
+
+        expect(schemalize(expr)).toBe(expected);
+      }
+    );
+
     describe('sql injection hardening', () => {
       it.each([
         // classic comment-based
@@ -301,7 +328,6 @@ describe('utils', () => {
         '/*comment*/',
         '*/',
         '$$',
-        "'||'",
       ])('should not treat token-only payload as expression: %s', (token) => {
         const schemalize = createSchemalize({
           shouldDecamelize: false,

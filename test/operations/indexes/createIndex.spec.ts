@@ -281,6 +281,73 @@ describe('operations', () => {
         );
       });
 
+      it.each([
+        [
+          "contentSub->'id'",
+          'CREATE INDEX "functions_contentsub_id_json_idx" ON "functions" ((contentSub->\'id\'));',
+        ],
+        [
+          "contentSub->>'id'",
+          'CREATE INDEX "functions_contentsub_id_text_idx" ON "functions" ((contentSub->>\'id\'));',
+        ],
+        [
+          "contentSub#>'{a,b}'",
+          'CREATE INDEX "functions_contentsub_path_json_idx" ON "functions" ((contentSub#>\'{a,b}\'));',
+        ],
+        [
+          "contentSub#>>'{a,b}'",
+          'CREATE INDEX "functions_contentsub_path_text_idx" ON "functions" ((contentSub#>>\'{a,b}\'));',
+        ],
+        [
+          'meta @> \'{"a":1}\'',
+          'CREATE INDEX "functions_meta_contains_idx" ON "functions" ((meta @> \'{"a":1}\'));',
+        ],
+        [
+          'meta <@ \'{"a":1}\'',
+          'CREATE INDEX "functions_meta_contained_idx" ON "functions" ((meta <@ \'{"a":1}\'));',
+        ],
+        [
+          "meta ? 'a'",
+          'CREATE INDEX "functions_meta_has_key_idx" ON "functions" ((meta ? \'a\'));',
+        ],
+        [
+          "meta ?| array['a','b']",
+          'CREATE INDEX "functions_meta_has_any_idx" ON "functions" ((meta ?| array[\'a\',\'b\']));',
+        ],
+        [
+          "meta ?& array['a','b']",
+          'CREATE INDEX "functions_meta_has_all_idx" ON "functions" ((meta ?& array[\'a\',\'b\']));',
+        ],
+        [
+          'meta || \'{"b":2}\'',
+          'CREATE INDEX "functions_meta_concat_idx" ON "functions" ((meta || \'{"b":2}\'));',
+        ],
+        [
+          "meta - 'a'",
+          'CREATE INDEX "functions_meta_remove_key_idx" ON "functions" ((meta - \'a\'));',
+        ],
+        [
+          "meta #- '{a,b}'",
+          'CREATE INDEX "functions_meta_remove_path_idx" ON "functions" ((meta #- \'{a,b}\'));',
+        ],
+        [
+          "meta @? '$.a ? (@ == 1)'",
+          'CREATE INDEX "functions_meta_path_exists_idx" ON "functions" ((meta @? \'$.a ? (@ == 1)\'));',
+        ],
+        [
+          "meta @@ '$.a == 1'",
+          'CREATE INDEX "functions_meta_path_predicate_idx" ON "functions" ((meta @@ \'$.a == 1\'));',
+        ],
+      ])('should create index with json operator: %s', (expr, expected) => {
+        const nameMatch = /CREATE INDEX "([^"]+)"/.exec(expected);
+
+        const statement = createIndexFn('functions', expr, {
+          name: nameMatch?.[1] ?? 'idx',
+        });
+
+        expect(statement).toBe(expected);
+      });
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(createIndexFn.reverse).toBeTypeOf('function');
