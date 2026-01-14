@@ -150,6 +150,7 @@ export default defineConfig(
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-useless-default-assignment': 'off',
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/unified-signatures': 'off',
