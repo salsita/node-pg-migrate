@@ -1,6 +1,11 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { toArray } from '../../utils';
-import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
+import {
+  isNameObject,
+  type IfNotExistsOption,
+  type Name,
+  type Reversible,
+} from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';
@@ -63,7 +68,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     const columns = toArray(rawColumns);
 
     const indexName = generateIndexName(
-      typeof tableName === 'object' ? tableName.name : tableName,
+      isNameObject(tableName) ? tableName.name : tableName,
       columns,
       options,
       mOptions.schemalize

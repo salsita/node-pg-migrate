@@ -3,6 +3,7 @@ import { applyType, escapeValue, makeComment, toArray } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
+import { isNameObject } from '../generalTypes';
 import { parseSequenceOptions, type SequenceOptions } from '../sequences';
 
 export type Action =
@@ -330,7 +331,7 @@ export function parseConstraints(
     comment,
   }: ConstraintOptions = options;
 
-  const tableName = typeof table === 'object' ? table.name : table;
+  const tableName = isNameObject(table) ? table.name : table;
 
   let constraints: string[] = [];
   const comments: string[] = [];

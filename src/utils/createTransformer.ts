@@ -1,5 +1,9 @@
 import { escapeValue } from '.';
-import type { Name, Value } from '../operations/generalTypes';
+import {
+  isNameObject,
+  type Name,
+  type Value,
+} from '../operations/generalTypes';
 
 export type Literal = (v: Name) => string;
 
@@ -13,8 +17,7 @@ export function createTransformer(
         new RegExp(`{${param}}`, 'g'),
         val === undefined
           ? ''
-          : typeof val === 'string' ||
-              (typeof val === 'object' && val !== null && 'name' in val)
+          : typeof val === 'string' || isNameObject(val)
             ? literal(val)
             : String(escapeValue(val)).replace(/\$/g, '$$$$')
       );
