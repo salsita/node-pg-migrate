@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
-import type { Name } from '../generalTypes';
+import { isNameObject, isSchemaNameObject, type Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
@@ -11,16 +11,6 @@ export interface IndexColumn {
   opclass?: Name;
 
   sort?: 'ASC' | 'DESC';
-}
-
-function isNameObject(value: Name): value is { schema?: string; name: string } {
-  return typeof value === 'object' && value !== null && 'name' in value;
-}
-
-function isSchemaNameObject(
-  value: Name
-): value is { schema: string; name: string } {
-  return isNameObject(value) && typeof value.schema === 'string';
 }
 
 function isIndexColumn(value: unknown): value is IndexColumn {
