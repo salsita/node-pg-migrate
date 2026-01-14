@@ -9,7 +9,22 @@ export interface SchemalizeOptions {
   readonly shouldQuote: boolean;
 }
 
-const OPERATOR_PATTERN = /(->|::)/;
+// Detect raw SQL expressions (used by indexes, constraints, etc.) to decide when to wrap in parentheses.
+//
+// Important: this is not a SQL sanitizer. It’s only a heuristic so that expression-based index columns like
+//   meta->>'type'
+//   meta#>>'{a,b}'
+//   lower(email)
+//   score * 10
+// are treated as expressions instead of quoted identifiers.
+//
+// JSON/JSONB operators reference:
+// https://www.postgresql.org/docs/current/functions-json.html
+//
+// Notes:
+// - We include single-char operators like '?' and '-' but only treat them as expression operators when
+//   there is at least one alphanumeric character in the string (handled by the final logical check).
+const OPERATOR_PATTERN = /(->>|->|#>>|#>|@\?|@@|@>|<@|\?\||\?&|\?|#-|\|\||::)/;
 const LOGICAL_PATTERN = /[=<>!]+/;
 const FUNCTION_CALL_PATTERN = /^[\w.]+\(/;
 const ARITHMETIC_PATTERN = /\s+[+*/-]\s+/;

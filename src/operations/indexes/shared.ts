@@ -1,8 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import type { PgLiteralValue } from '../../utils';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
-import { isNameObject, isSchemaNameObject, type Name } from '../generalTypes';
+import type { Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
@@ -14,13 +13,28 @@ export interface IndexColumn {
   sort?: 'ASC' | 'DESC';
 }
 
-function isIndexColumn(col: unknown): col is IndexColumn {
-  return typeof col === 'object' && col !== null && 'name' in col;
+function isNameObject(value: Name): value is { schema?: string; name: string } {
+  return typeof value === 'object' && value !== null && 'name' in value;
+}
+
+function isSchemaNameObject(
+  value: Name
+): value is { schema: string; name: string } {
+  return isNameObject(value) && typeof value.schema === 'string';
+}
+
+function isIndexColumn(value: unknown): value is IndexColumn {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    typeof (value as { name?: unknown }).name === 'string'
+  );
 }
 
 export function generateIndexName(
   table: Name,
-  columns: Array<string | IndexColumn | PgLiteralValue>,
+  columns: Array<string | IndexColumn>,
   options: CreateIndexOptions | DropIndexOptions,
   schemalize: Literal
 ): Name {
@@ -58,31 +72,39 @@ export function generateColumnString(
   column: Name,
   mOptions: MigrationOptions
 ): string {
-  const name = mOptions.schemalize(column);
-  const isSpecial = /[ ().]/.test(name);
+  if (isPgLiteral(column)) {
+    return column.toString();
+  }
 
-  return isSpecial
-    ? name // expression
-    : mOptions.literal(name); // single column
+  const name = mOptions.schemalize(column);
+  const isExpression = /[^\w".]/.test(name);
+  if (!isExpression) {
+    return mOptions.literal(name);
+  }
+
+  // Expressions need parentheses in index definitions, unless they're already
+  // wrapped (we consider any expression ending with ')' as already wrapped).
+  const alreadyWrapped = /\)$/.test(name);
+  return alreadyWrapped ? name : `(${name})`;
 }
 
 export function generateColumnsString(
-  columns: Array<string | IndexColumn | PgLiteralValue>,
+  columns: Array<string | IndexColumn>,
   mOptions: MigrationOptions
 ): string {
   return columns
     .map((column) => {
-      if (isIndexColumn(column)) {
-        return [
-          generateColumnString(column.name, mOptions),
-          column.opclass ? mOptions.literal(column.opclass) : undefined,
-          column.sort,
-        ]
-          .filter((s) => typeof s === 'string' && s !== '')
-          .join(' ');
+      if (typeof column === 'string' || isPgLiteral(column)) {
+        return generateColumnString(column as unknown as Name, mOptions);
       }
 
-      return generateColumnString(column, mOptions);
+      return [
+        generateColumnString(column.name, mOptions),
+        column.opclass ? mOptions.literal(column.opclass) : undefined,
+        column.sort,
+      ]
+        .filter((s) => typeof s === 'string' && s !== '')
+        .join(' ');
     })
     .join(', ');
 }
