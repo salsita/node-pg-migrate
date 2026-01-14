@@ -2,7 +2,7 @@ import type { MigrationOptions } from '../../migrationOptions';
 import type { PgLiteralValue } from '../../utils';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
-import type { Name } from '../generalTypes';
+import { isNameObject, isSchemaNameObject, type Name } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
@@ -25,7 +25,7 @@ export function generateIndexName(
   schemalize: Literal
 ): Name {
   if (options.name) {
-    return typeof table === 'object' && 'schema' in table
+    return isSchemaNameObject(table)
       ? { schema: table.schema, name: options.name }
       : options.name;
   }
@@ -45,7 +45,7 @@ export function generateIndexName(
     .join('_');
   const uniq = 'unique' in options && options.unique ? '_unique' : '';
 
-  return typeof table === 'object' && 'name' in table
+  return isNameObject(table)
     ? {
         schema: table.schema,
         name: `${table.name}_${cols}${uniq}_index`,

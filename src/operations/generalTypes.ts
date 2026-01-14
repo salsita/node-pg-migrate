@@ -26,6 +26,31 @@ export type Type = string | { type: string };
 
 export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
+/**
+ * Type guard for the object form of {@link Name}.
+ *
+ * Note: This only checks shape (presence of a "name" property). It intentionally
+ * does not validate contents.
+ */
+export function isNameObject(
+  val: unknown
+): val is Exclude<Name, string | PgLiteralValue> {
+  return typeof val === 'object' && val !== null && 'name' in val;
+}
+
+/**
+ * Type guard for schema-qualified {@link Name} objects.
+ */
+export function isSchemaNameObject(
+  val: unknown
+): val is { schema: string; name: string } {
+  return (
+    isNameObject(val) &&
+    'schema' in val &&
+    typeof (val as { schema?: unknown }).schema === 'string'
+  );
+}
+
 export interface IfNotExistsOption {
   ifNotExists?: boolean;
 }
