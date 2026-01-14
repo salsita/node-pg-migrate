@@ -88,9 +88,9 @@
     "yargs": "~18.0.0"
   },
   "devDependencies": {
-    "@eslint/compat": "2.0.0",
-    "@eslint/js": "9.39.1",
-    "@stylistic/eslint-plugin": "5.6.1",
+    "@eslint/compat": "2.0.1",
+    "@eslint/js": "9.39.2",
+    "@stylistic/eslint-plugin": "5.7.0",
     "@testcontainers/postgresql": "11.11.0",
     "@types/config": "3.3.5",
     "@types/node": "20.19.29",
@@ -103,7 +103,7 @@
     "dotenv": "17.2.3",
     "dotenv-expand": "12.0.3",
     "esbuild-fix-imports-plugin": "1.0.23",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-import-x": "4.16.1",
@@ -118,7 +118,7 @@
     "testcontainers": "11.11.0",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.49.0",
+    "typescript-eslint": "8.53.0",
     "vitepress": "1.6.4",
     "vitest": "4.0.17"
   },
