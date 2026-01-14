@@ -1,7 +1,8 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
-import { isNameObject, isSchemaNameObject, type Name } from '../generalTypes';
+import type { Name } from '../generalTypes';
+import { isNameObject, isSchemaNameObject } from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 

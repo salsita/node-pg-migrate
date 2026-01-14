@@ -2,6 +2,7 @@ import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import eslintPluginVitest from '@vitest/eslint-plugin';
+import { importX as eslintPluginImportX } from 'eslint-plugin-import-x';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import { defineConfig } from 'eslint/config';
@@ -167,6 +168,19 @@ export default defineConfig(
         'error',
         { blankLine: 'always', prev: 'block-like', next: '*' },
       ],
+    },
+  },
+  //#endregion
+
+  //#region import-x
+  {
+    name: 'import overrides',
+    plugins: {
+      // @ts-expect-error: suppress type error
+      'import-x': eslintPluginImportX,
+    },
+    rules: {
+      'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
     },
   },
   //#endregion
