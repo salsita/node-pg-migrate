@@ -31,12 +31,13 @@ export function generateIndexName(
   }
 
   const cols = columns
-    .map((col) => {
+    .map((col, idx) => {
       if (isIndexColumn(col)) return schemalize(col.name);
 
       if (isPgLiteral(col)) {
+        const literalValue = 'value' in col ? col.value : String(col);
         throw new Error(
-          'Index name must be provided when using PgLiteral columns'
+          `Index name must be provided when using PgLiteral columns (column #${idx + 1}: ${literalValue})`
         );
       }
 

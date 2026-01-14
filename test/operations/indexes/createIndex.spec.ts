@@ -277,7 +277,7 @@ describe('operations', () => {
             PgLiteral.create("(contentSub->>'id')")
           )
         ).toThrowError(
-          'Index name must be provided when using PgLiteral columns'
+          "Index name must be provided when using PgLiteral columns (column #1: (contentSub->>'id'))"
         );
       });
 
