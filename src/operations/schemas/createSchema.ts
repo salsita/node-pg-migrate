@@ -15,7 +15,7 @@ export type CreateSchemaFn = (
 export type CreateSchema = Reversible<CreateSchemaFn>;
 
 export function createSchema(mOptions: MigrationOptions): CreateSchema {
-  const _create: CreateSchema = (schemaName: string, options = {}) => {
+  const _create: CreateSchema = (schemaName, options = {}) => {
     const { ifNotExists = false, authorization } = options;
 
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';

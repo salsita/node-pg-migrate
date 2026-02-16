@@ -42,6 +42,7 @@ export default defineConfig(
   {
     name: 'eslint overrides',
     rules: {
+      curly: ['error', 'all'],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'logical-assignment-operators': 'error',
       'no-else-return': 'error',
@@ -265,6 +266,192 @@ export default defineConfig(
       '@typescript-eslint/no-throw-literal': 'off',
       'unicorn/no-array-reduce': 'off',
     },
-  }
+  },
   //#endregion
+
+  {
+    name: "custom",
+    plugins: {
+      custom: {
+        rules: {
+          "no-arrow-parameter-types": {
+            meta: {
+              fixable: "code",
+              hasSuggestions: true,
+              type: "suggestion",
+              dialects: ["typescript"],
+              schema: [
+                {
+                  type: "object",
+                  properties: {
+                    allowOptional: {
+                      type: "boolean",
+                      default: false,
+                      description:
+                        "Allow type annotations when the parameter is optional. Sometimes useful for overloaded functions.",
+                    },
+                  },
+                },
+              ],
+              defaultOptions: [
+                {
+                  allowOptional: false,
+                },
+              ],
+            },
+            create(context) {
+              const options = context.options[0] as { allowOptional: boolean };
+
+              return {
+                ArrowFunctionExpression(node) {
+                  const paramsWithTypeAnnotation = node.params.filter(
+                    (
+                      // @ts-expect-error: will be inferred when moved into an official plugin
+                      param,
+                    ) => param.typeAnnotation !== undefined,
+                  );
+
+                  const isCatchClause =
+                    node.parent.callee?.property?.name === "catch";
+
+                  if (paramsWithTypeAnnotation.length > 0 && !isCatchClause) {
+                    for (const param of paramsWithTypeAnnotation) {
+                      if (param.optional && options.allowOptional) {
+                        continue;
+                      }
+
+                      context.report({
+                        node: param,
+                        message:
+                          "Arrow function parameters should not have type annotations. Instead the Object where the operation is used should be typed correctly.",
+                        fix(fixer) {
+                          if (param.optional) {
+                            return null;
+                          }
+
+                          if (
+                            node.parent.type === "VariableDeclarator" &&
+                            !node.parent.id.typeAnnotation
+                          ) {
+                            const variableDeclarationNode = node.parent;
+
+                            const isAsyncFunction: boolean = node.async;
+
+                            const isBodyBlockStatement =
+                              node.body.type === "BlockStatement";
+
+                            const isBodyJSXElement =
+                              node.body.type === "JSXElement";
+
+                            const hasReturnType = node.returnType !== undefined;
+
+                            const lastParam = node.params.at(-1);
+
+                            const paramIdDifferentLine =
+                              lastParam.loc.start.line !==
+                              variableDeclarationNode.id.loc.end.line;
+
+                            const paramBlockDifferentLine =
+                              lastParam.loc.end.line !==
+                              node.body.loc.start.line;
+
+                            const behindClosingParenthesis = hasReturnType
+                              ? (node.returnType.range[1] as number)
+                              : (lastParam.range[1] as number) + ")".length;
+
+                            const fixes = [
+                              // Removes `=> `
+                              fixer.replaceTextRange(
+                                [
+                                  behindClosingParenthesis,
+                                  node.body.range[0] as number,
+                                ],
+                                !hasReturnType &&
+                                  paramBlockDifferentLine &&
+                                  paramIdDifferentLine
+                                  ? ")"
+                                  : "",
+                              ),
+                              // Removes ` = ` or ` = async `
+                              fixer.replaceTextRange(
+                                [
+                                  variableDeclarationNode.id.range[1] as number,
+                                  (variableDeclarationNode.init
+                                    .range[0] as number) +
+                                    (isAsyncFunction ? "async ".length : 0),
+                                ],
+                                "",
+                              ),
+                              // Replaces `const ` with `function ` or `async function `
+                              fixer.replaceTextRange(
+                                [
+                                  variableDeclarationNode.parent
+                                    .range[0] as number,
+                                  variableDeclarationNode.range[0] as number,
+                                ],
+                                isAsyncFunction
+                                  ? "async function "
+                                  : "function ",
+                              ),
+                            ];
+
+                            // If the body is not a BlockStatement, we need to wrap it in curly braces
+                            if (!isBodyBlockStatement) {
+                              fixes.push(
+                                fixer.insertTextBefore(
+                                  node.body,
+                                  `{return ${isBodyJSXElement ? "(" : ""}`,
+                                ),
+                                fixer.insertTextAfter(
+                                  node.body,
+                                  `${isBodyJSXElement ? ")" : ""}}`,
+                                ),
+                              );
+
+                              if (isBodyJSXElement) {
+                                fixes.push(
+                                  fixer.removeRange([
+                                    node.body.range[1] as number,
+                                    node.range[1] as number,
+                                  ]),
+                                );
+                              }
+                            }
+
+                            return fixes;
+                          }
+
+                          return fixer.removeRange(
+                            param.typeAnnotation.range as [number, number],
+                          );
+                        },
+                        suggest: [
+                          {
+                            desc: "Remove type annotation",
+                            fix(fixer) {
+                              if (param.optional) {
+                                return fixer.removeRange([
+                                  (param.typeAnnotation.range[0] as number) - 1, // Remove the `?` before the type annotation
+                                  param.typeAnnotation.range[1] as number,
+                                ]);
+                              }
+
+                              return null;
+                            },
+                          },
+                        ],
+                      });
+                    }
+                  }
+                },
+              };
+            },
+          },
+        },
+      },
+    },
+    rules: {
+      "custom/no-arrow-parameter-types": ["error", { allowOptional: true }],
+    },
+  },
 );

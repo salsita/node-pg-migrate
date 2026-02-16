@@ -13,7 +13,7 @@ type Options =
   | ({ databaseUrl: string } & TestOptions)
   | ({ dbClient: Client } & TestOptions);
 
-export const run = async (options: Options): Promise<boolean> => {
+export const run: (options: Options) => Promise<boolean> = async (options) => {
   const opts: Omit<RunnerOption, 'direction'> & Options = {
     migrationsTable: 'migrations',
     dir: resolve(import.meta.dirname, 'migrations'),
