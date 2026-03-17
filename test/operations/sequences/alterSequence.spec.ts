@@ -12,7 +12,7 @@ describe('operations', () => {
       });
 
       it('should throw error when no sequence options are provided', () => {
-        expect(() => alterSequenceFn('serial', {})).toThrowError(
+        expect(() => alterSequenceFn('serial', {})).toThrow(
           new Error('No sequence options provided for alterSequence')
         );
       });

@@ -184,9 +184,7 @@ describe('operations', () => {
       it('should throw an error if nulls option is used without unique index', () => {
         expect(() =>
           createIndexFn('films', ['title'], { nulls: 'distinct' })
-        ).toThrowError(
-          'The "nulls" option can only be used with unique indexes.'
-        );
+        ).toThrow('The "nulls" option can only be used with unique indexes.');
       });
 
       it('should create index with JSON operator expression', () => {
@@ -276,7 +274,7 @@ describe('operations', () => {
             // @ts-expect-error: regression test for pgm.sql
             PgLiteral.create("(contentSub->>'id')")
           )
-        ).toThrowError(
+        ).toThrow(
           "Index name must be provided when using PgLiteral columns (column #1: (contentSub->>'id'))"
         );
       });

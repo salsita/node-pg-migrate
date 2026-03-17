@@ -56,7 +56,7 @@ ALTER VIEW "a_view" RESET (classification);`
               check_option: 'CASCADED',
             },
           })
-        ).toThrowError(
+        ).toThrow(
           new Error(
             '"options.check_option" and "checkOption" can\'t be specified together'
           )

@@ -12,7 +12,7 @@ describe('operations', () => {
       });
 
       it('should throw error when no table options are provided', () => {
-        expect(() => alterTableFn('films', {})).toThrowError(
+        expect(() => alterTableFn('films', {})).toThrow(
           new Error('No table options provided for alterTable')
         );
       });

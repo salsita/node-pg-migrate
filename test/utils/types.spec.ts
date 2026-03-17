@@ -77,7 +77,7 @@ describe('utils', () => {
         user: { type: 'ref', references: 'users' },
       };
 
-      expect(() => applyType('user', shorthands)).toThrowError(
+      expect(() => applyType('user', shorthands)).toThrow(
         new Error('Shorthands contain cyclic dependency: user, ref, user')
       );
     });
