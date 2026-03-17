@@ -41,7 +41,7 @@ export function createCast(mOptions: MigrationOptions): CreateCast {
   const _create: CreateCast = (sourceType, targetType, options = {}) => {
     const { functionName, argumentTypes, inout = false, as } = options;
 
-    let conversion = '';
+    let conversion: string;
     if (functionName) {
       const args = argumentTypes || [sourceType];
       conversion = ` WITH FUNCTION ${mOptions.literal(functionName)}(${args.join(', ')})`;
