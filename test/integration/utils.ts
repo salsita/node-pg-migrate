@@ -33,6 +33,8 @@ export const IGNORE_LOG_PATTERNS = [
   /^Can't determine timestamp for \d{3}$/,
   /^\s*\[dotenv@[\d.]+] injecting .* from .+$/i,
   /^\(node:\d+\) ExperimentalWarning: Importing JSON modules is an experimental feature and might change at any time$/,
+  /^\(node:\d+\) DeprecationWarning: Calling client\.query\(\) when the client is already executing a query is deprecated and will be removed in pg@9\.0\. Use async\/await or an external async flow control mechanism instead\.$/,
+  /^\(Use `node --trace-deprecation \.\.\.` to show where the warning was created\)$/,
   /^\(Use `node --trace-warnings \.\.\.` to show where the warning was created\)$/,
 ] as const;
 
