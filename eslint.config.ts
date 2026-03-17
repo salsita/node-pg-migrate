@@ -258,6 +258,7 @@ export default defineConfig(
     name: 'test/migrations/*.js overrides',
     rules: {
       'no-undef': 'off',
+      'preserve-caught-error': 'off',
       'unicorn/prefer-module': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-require-imports': 'off',
