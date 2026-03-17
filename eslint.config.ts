@@ -177,7 +177,6 @@ export default defineConfig(
   {
     name: 'import overrides',
     plugins: {
-      // @ts-expect-error: suppress type error
       'import-x': eslintPluginImportX,
     },
     rules: {
