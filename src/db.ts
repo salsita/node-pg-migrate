@@ -91,7 +91,7 @@ export function db(
           new Error('Connection already failed, do not try to connect again')
         );
       } else {
-        client.connect((err) => {
+        client.connect((err: Error | null) => {
           if (err) {
             connectionStatus = 'ERROR';
             logger.error(`could not connect to postgres: ${inspect(err)}`);
