@@ -60,7 +60,7 @@ describe('operations', () => {
             before: 'blue',
             after: 'red',
           })
-        ).toThrowError(
+        ).toThrow(
           new Error('"before" and "after" can\'t be specified together')
         );
       });
