@@ -1,5 +1,3 @@
-import { createJiti } from 'jiti';
-import { extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
 import { db as Db } from './db';
@@ -7,9 +5,8 @@ import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
 import { getMigrationFilePaths, Migration } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
-import type { MigrationBuilderActions } from './sqlMigration';
-import { sqlMigration as migrateSqlFile } from './sqlMigration';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+import { loadMigrationUnits, type MigrationLoaderConfig } from './migrationLoader';
 
 export interface RunnerOptionConfig {
   /**
@@ -155,7 +152,7 @@ export interface RunnerOptionClient {
   dbClient: ClientBase;
 }
 
-export type RunnerOption = RunnerOptionConfig &
+export type RunnerOption = RunnerOptionConfig & MigrationLoaderConfig &
   (RunnerOptionClient | RunnerOptionUrl);
 
 /**
@@ -166,8 +163,6 @@ export const PG_MIGRATE_LOCK_ID = 7_241_865_325_823_964;
 const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
-
-export const jiti = createJiti(process.cwd());
 
 export async function loadMigrations(
   db: DBConnection,
@@ -181,13 +176,11 @@ export async function loadMigrations(
       useGlob: options.useGlob,
       logger,
     });
-
     const migrations: Migration[] = [];
-    for (const filePath of absoluteFilePaths) {
-      const actions: MigrationBuilderActions =
-        extname(filePath) === '.sql'
-          ? await migrateSqlFile(filePath)
-          : await jiti.import(filePath);
+  
+    // Actual loading of files has been delegated to the loadMigrationUnits function.
+    const migrationUnits = await loadMigrationUnits(options, absoluteFilePaths);
+    for (const { id: filePath, actions } of migrationUnits) {
       shorthands = { ...shorthands, ...actions.shorthands };
 
       migrations.push(

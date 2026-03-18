@@ -3,7 +3,8 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import type { Migration, RunnerOption } from '../../src';
 import type { DBConnection } from '../../src/db';
-import { jiti, loadMigrations } from '../../src/runner';
+import { loadMigrations } from '../../src/runner';
+import { jiti } from '../../src/migrationLoader';
 
 describe('loadMigrations', () => {
   it('should load migration files using jiti', async () => {

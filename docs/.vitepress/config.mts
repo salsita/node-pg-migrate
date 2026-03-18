@@ -94,6 +94,10 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
       text: 'Programmatic API',
       link: 'api',
     },
+    {
+      text: 'Migration Loading Strategies',
+      link: 'migration-loading-strategies',
+    },
   ];
 }
 
