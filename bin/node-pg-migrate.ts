@@ -5,6 +5,7 @@ import type { DotenvConfigOptions } from 'dotenv';
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
 import { createJiti } from 'jiti';
+import type { RunnerOption } from 'node-pg-migrate';
 import {
   Migration,
   PG_MIGRATE_LOCK_ID,
@@ -19,7 +20,6 @@ import type ConnectionParametersType from 'pg/lib/connection-parameters';
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
-import type { RunnerOption } from '../src';
 import type { FilenameFormat } from '../src/migration';
 
 process.on('uncaughtException', (err) => {

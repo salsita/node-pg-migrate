@@ -17,11 +17,11 @@ This keeps existing behavior intact.
 ## Configuration Shape
 
 ```ts
-type MigrationLoader = (filePaths: string[]) => Promise<MigrationUnit[]>
+type MigrationLoader = (filePaths: string[]) => Promise<MigrationUnit[]>;
 
 interface MigrationLoaderStrategy {
-  extensions: string[]
-  loader: MigrationLoader | "default" | "legacySql" | "sql"
+  extensions: string[];
+  loader: MigrationLoader | 'default' | 'legacySql' | 'sql';
 }
 ```
 
@@ -30,17 +30,15 @@ interface MigrationLoaderStrategy {
 This enables grouping `*.up.sql` and `*.down.sql` into one migration unit:
 
 ```ts
-import { runner } from "node-pg-migrate"
+import { runner } from 'node-pg-migrate';
 
 await runner({
   databaseUrl: process.env.DATABASE_URL!,
-  dir: "migrations",
-  direction: "up",
-  migrationsTable: "pgmigrations",
-  migrationLoaderStrategies: [
-    { extensions: [".sql"], loader: "sql" },
-  ],
-})
+  dir: 'migrations',
+  direction: 'up',
+  migrationsTable: 'pgmigrations',
+  migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+});
 ```
 
 With this configuration:
@@ -54,25 +52,26 @@ With this configuration:
 You can provide a loader function directly:
 
 ```ts
-import type { MigrationLoader } from "node-pg-migrate"
-import { runner } from "node-pg-migrate"
+import type { MigrationLoader } from 'node-pg-migrate';
+import { runner } from 'node-pg-migrate';
 
 const customLoader: MigrationLoader = async (filePaths) => {
   // map files to migration units
-  return []
-}
+  return [];
+};
 
 await runner({
   databaseUrl: process.env.DATABASE_URL!,
-  dir: "migrations",
-  direction: "up",
-  migrationsTable: "pgmigrations",
+  dir: 'migrations',
+  direction: 'up',
+  migrationsTable: 'pgmigrations',
   migrationLoaderStrategies: [
-    { extensions: [".sql"], loader: "sql" },
-    { extensions: [".mjs"], loader: customLoader },
+    { extensions: ['.sql'], loader: 'sql' },
+    { extensions: ['.mjs'], loader: customLoader },
   ],
-})
+});
 ```
+
 ## Strategy Matching Rules
 
 - Extension matching is case-insensitive

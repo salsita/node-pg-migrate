@@ -4,9 +4,10 @@ import { db as Db } from './db';
 import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
 import { getMigrationFilePaths, Migration } from './migration';
+import type { MigrationLoaderConfig } from './migrationLoader';
+import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
-import { loadMigrationUnits, type MigrationLoaderConfig } from './migrationLoader';
 
 export interface RunnerOptionConfig {
   /**
@@ -152,7 +153,8 @@ export interface RunnerOptionClient {
   dbClient: ClientBase;
 }
 
-export type RunnerOption = RunnerOptionConfig & MigrationLoaderConfig &
+export type RunnerOption = RunnerOptionConfig &
+  MigrationLoaderConfig &
   (RunnerOptionClient | RunnerOptionUrl);
 
 /**
@@ -177,7 +179,7 @@ export async function loadMigrations(
       logger,
     });
     const migrations: Migration[] = [];
-  
+
     // Actual loading of files has been delegated to the loadMigrationUnits function.
     const migrationUnits = await loadMigrationUnits(options, absoluteFilePaths);
     for (const { id: filePath, actions } of migrationUnits) {

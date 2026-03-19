@@ -1,21 +1,21 @@
-import { createJiti } from "jiti";
-import { type MigrationBuilderActions, sqlMigration } from "./sqlMigration";
-import { basename, extname } from "node:path";
-import { readFile } from "node:fs/promises";
+import { createJiti } from 'jiti';
+import { readFile } from 'node:fs/promises';
+import { basename, extname } from 'node:path';
+import type { MigrationBuilderActions } from './sqlMigration';
+import { sqlMigration } from './sqlMigration';
 
 /***
  * Migration loader module.
- * 
+ *
  * This module is responsible for loading migrations from the file system, allowing for custom loading behaviours.
  * If no configuration is provided, loading will be performed in a manner that is identical to the classic loading behaviour.
- * 
- * A new SQL migration loading behaviour is available that supports pairing up/down migrations in separate files using up/down 
+ *
+ * A new SQL migration loading behaviour is available that supports pairing up/down migrations in separate files using up/down
  * suffixes before the .sql extension.
- * 
+ *
  * This has been kept intentionally simple for maintainability and readability reasons.
- * 
+ *
  */
-
 
 /**
  * The jiti instance to use to load migration files.
@@ -58,7 +58,7 @@ export type MigrationLoader = (filePaths: string[]) => Promise<MigrationUnit[]>;
 /**
  * Predefined loader references.
  */
-type PredefinedLoader = "default" | "legacySql" | "sql";
+type PredefinedLoader = 'default' | 'legacySql' | 'sql';
 
 /**
  * Configuration extension to support multiple loader strategies.
@@ -92,7 +92,6 @@ export interface MigrationLoaderStrategy {
   loader: MigrationLoader | PredefinedLoader;
 }
 
-
 /*************************
  * Loader implementations
  *************************/
@@ -115,8 +114,9 @@ export function createDefaultMigrationLoader(): MigrationLoader {
     );
     return migrationUnits;
   };
+
   return loader;
-};
+}
 
 /**
  * Creates a legacy SQL migration loader that loads migrations from the file paths using the legacy SQL migration loading behaviour.
@@ -130,30 +130,33 @@ export function createLegacySqlMigrationLoader(): MigrationLoader {
         return {
           id: filePath,
           filePaths: [filePath],
-          actions: actions
+          actions: actions,
         };
       })
     );
     return migrationUnits;
   };
+
   return loader;
 }
 
 /**
  * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
- * While is handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been separated from the legacy loader and can be used enabled as needed. 
- * 
+ * While is handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been separated from the legacy loader and can be used enabled as needed.
+ *
  * @returns The SQL migration loader.
  */
 export function createSqlMigrationLoader(): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
     const groups = groupSqlFiles(filePaths);
-    const migrationUnits = await Promise.all(groups.map(async (group) => await readSqlFileGroup(group)));
+    const migrationUnits = await Promise.all(
+      groups.map(async (group) => await readSqlFileGroup(group))
+    );
     return migrationUnits;
   };
+
   return loader;
 }
-
 
 /*************************
  * Loader instances
@@ -172,8 +175,8 @@ export const builtInLoaders: Record<PredefinedLoader, MigrationLoader> = {
  * Default migration loader strategies.
  */
 const defaultStrategies: MigrationLoaderStrategy[] = [
-  { extensions: [".sql"], loader: builtInLoaders.legacySql },
-  { extensions: [".js", ".ts"], loader: builtInLoaders.default },
+  { extensions: ['.sql'], loader: builtInLoaders.legacySql },
+  { extensions: ['.js', '.ts'], loader: builtInLoaders.default },
 ];
 
 /*************************
@@ -186,22 +189,25 @@ const defaultStrategies: MigrationLoaderStrategy[] = [
  * @param extension - The extension to resolve the loader for.
  * @returns The migration loader.
  */
-function resolveMigrationLoader(config: MigrationLoaderConfig, extension: string): MigrationLoader {
-
+function resolveMigrationLoader(
+  config: MigrationLoaderConfig,
+  extension: string
+): MigrationLoader {
   const normalizedExtension = extension.toLowerCase();
   const strategies = config.migrationLoaderStrategies ?? defaultStrategies;
 
-  const foundStrategy = strategies.find(strategy =>
-    strategy.extensions.some(ext => ext.toLowerCase() === normalizedExtension)
+  const foundStrategy = strategies.find((strategy) =>
+    strategy.extensions.some((ext) => ext.toLowerCase() === normalizedExtension)
   );
 
   const loader = foundStrategy?.loader ?? builtInLoaders.default;
 
-  if (typeof loader === "string") {
+  if (typeof loader === 'string') {
     const resolved = builtInLoaders[loader];
     if (!resolved) {
       throw new Error(`Unknown predefined loader: ${loader}`);
     }
+
     return resolved;
   }
 
@@ -213,17 +219,21 @@ function resolveMigrationLoader(config: MigrationLoaderConfig, extension: string
  * @param filePaths - The file paths to associate.
  * @returns The file paths associated to their extensions.
  */
-function associatePathsToExtensions(filePaths: string[]): Map<string, string[]> {
+function associatePathsToExtensions(
+  filePaths: string[]
+): Map<string, string[]> {
   const filesByExtension = new Map<string, string[]>();
-    for (const filePath of filePaths) {
-      const ext = extname(filePath).toLowerCase();
-      if (!filesByExtension.has(ext)) {
-        filesByExtension.set(ext, []);
-      }
-      filesByExtension.get(ext)!.push(filePath);
+  for (const filePath of filePaths) {
+    const ext = extname(filePath).toLowerCase();
+    if (!filesByExtension.has(ext)) {
+      filesByExtension.set(ext, []);
     }
+
+    filesByExtension.get(ext)?.push(filePath);
+  }
+
   return filesByExtension;
-};
+}
 
 /***********************************
  * Migration loader main function
@@ -235,7 +245,10 @@ function associatePathsToExtensions(filePaths: string[]): Map<string, string[]> 
  * @param filePaths - List of files containing migrations.
  * @returns List of migration units, sorted according to the given file paths.
  */
-export async function loadMigrationUnits(config: MigrationLoaderConfig, filePaths: string[]): Promise<MigrationUnit[]> {
+export async function loadMigrationUnits(
+  config: MigrationLoaderConfig,
+  filePaths: string[]
+): Promise<MigrationUnit[]> {
   const migrationUnits: MigrationUnit[] = [];
   const filesByExtension = associatePathsToExtensions(filePaths);
   for (const [extension, filePaths] of filesByExtension) {
@@ -243,15 +256,18 @@ export async function loadMigrationUnits(config: MigrationLoaderConfig, filePath
     const units = await loader(filePaths);
     migrationUnits.push(...units);
   }
+
   // Since the sql migration loader modifies the id, it is no longer comparable. Hence we sort by the file path of the first file in the unit that always exists.
-  const sortedMigrationUnits = migrationUnits.sort((a, b) => a.filePaths[0]!.localeCompare(b.filePaths[0]!));
+  const sortedMigrationUnits = migrationUnits.toSorted((a, b) =>
+    a.filePaths[0].localeCompare(b.filePaths[0])
+  );
   return sortedMigrationUnits;
 }
 
 /*****************************************
  * New SQL migration loading behaviour.
  *****************************************/
- 
+
 // Helper types
 
 /**
@@ -260,7 +276,7 @@ export async function loadMigrationUnits(config: MigrationLoaderConfig, filePath
  */
 type ParsedSqlFile = {
   id: string;
-  direction: "up" | "down" | "none";
+  direction: 'up' | 'down' | 'none';
   filePath: string;
 };
 /**
@@ -279,27 +295,27 @@ type SqlGroup = {
  * @returns The parsed file.
  */
 function parseSqlFile(filePath: string): ParsedSqlFile {
-  const name = basename(filePath, ".sql");
+  const name = basename(filePath, '.sql');
 
-  if (name.endsWith(".up")) {
+  if (name.endsWith('.up')) {
     return {
       id: name.slice(0, -3),
-      direction: "up",
+      direction: 'up',
       filePath,
     };
   }
 
-  if (name.endsWith(".down")) {
+  if (name.endsWith('.down')) {
     return {
       id: name.slice(0, -5),
-      direction: "down",
+      direction: 'down',
       filePath,
     };
   }
 
   return {
     id: name,
-    direction: "none",
+    direction: 'none',
     filePath,
   };
 }
@@ -308,9 +324,9 @@ function parseSqlFile(filePath: string): ParsedSqlFile {
  * Groups the SQL files by their significant part of the filename.
  * @param filePaths - The file paths to group.
  * @returns An array of SQL groups.
- * 
+ *
  * Throws an error if the files are not properly paired.
- * 
+ *
  */
 function groupSqlFiles(filePaths: string[]): SqlGroup[] {
   const groups = new Map<string, SqlGroup>();
@@ -318,15 +334,18 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
     const parsed = parseSqlFile(filePath);
 
     if (!groups.has(parsed.id)) {
-      groups.set(parsed.id, {id: parsed.id});
+      groups.set(parsed.id, { id: parsed.id });
     }
 
-    const group = groups.get(parsed.id)!;
+    const group = groups.get(parsed.id);
+    if (!group) {
+      throw new Error(`No group found for ${parsed.id}`);
+    }
 
-    if (parsed.direction === "up") {
+    if (parsed.direction === 'up') {
       if (group.up) throw new Error(`Duplicate .up.sql for ${parsed.id}`);
       group.up = parsed.filePath;
-    } else if (parsed.direction === "down") {
+    } else if (parsed.direction === 'down') {
       if (group.down) throw new Error(`Duplicate .down.sql for ${parsed.id}`);
       group.down = parsed.filePath;
     } else {
@@ -334,29 +353,29 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
       group.single = parsed.filePath;
     }
   }
+
   for (const [id, group] of groups) {
     if (group.single && (group.up || group.down)) {
       throw new Error(
         `Conflicting SQL migration files for ${id}: cannot mix .sql with .up/.down`
       );
     }
-  
+
     if (group.down && !group.up) {
-      throw new Error(
-        `Found .down.sql without matching .up.sql for ${id}`
-      );
+      throw new Error(`Found .down.sql without matching .up.sql for ${id}`);
     }
   }
-  return Array.from(groups.values());
+
+  return [...groups.values()];
 }
 
 function sqlGroupId(group: SqlGroup): string {
-  let filePath = group.single ?? group.up ?? group.down;
+  const filePath = group.single ?? group.up ?? group.down;
   if (!filePath) {
     throw new Error(`No SQL file found for group ${group.id}`);
   }
-  return filePath.replace(/\.up\.sql$/, ".sql")
-                 .replace(/\.down\.sql$/, ".sql");
+
+  return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
 }
 
 /**
@@ -365,19 +384,19 @@ function sqlGroupId(group: SqlGroup): string {
  * @returns The migration unit.
  */
 async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
-  let actions: MigrationBuilderActions
+  let actions: MigrationBuilderActions;
 
   if (group.single) {
     actions = await sqlMigration(group.single);
   } else {
-
     if (!group.up) {
       // Since a down migration without an up migration is a deviation from expected behaviour, we throw an error.
       throw new Error(`Missing .up.sql for ${group.id}`);
     }
-    const upSql = await readFile(group.up, "utf-8");
 
-    const downSql = group.down ? await readFile(group.down, "utf-8") : undefined;
+    const upSql = await readFile(group.up, 'utf8');
+
+    const downSql = group.down ? await readFile(group.down, 'utf8') : undefined;
     actions = {
       up: (pgm) => pgm.sql(upSql),
       down: downSql ? (pgm) => pgm.sql(downSql) : undefined,
@@ -385,11 +404,9 @@ async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
     };
   }
 
-  const filePaths = [
-    group.up,
-    group.down,
-    group.single,
-  ].filter((p): p is string => Boolean(p));
+  const filePaths = [group.up, group.down, group.single].filter(
+    (p): p is string => Boolean(p)
+  );
 
   return {
     id: sqlGroupId(group),
