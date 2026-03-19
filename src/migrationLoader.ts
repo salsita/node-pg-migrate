@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import type { MigrationBuilderActions } from './sqlMigration';
 import { sqlMigration } from './sqlMigration';
+import { localeCompareStringsNumerically } from './utils/stringComparison';
 
 /***
  * Migration loader module.
@@ -259,7 +260,7 @@ export async function loadMigrationUnits(
 
   // Since the sql migration loader modifies the id, it is no longer comparable. Hence we sort by the file path of the first file in the unit that always exists.
   const sortedMigrationUnits = migrationUnits.toSorted((a, b) =>
-    a.filePaths[0].localeCompare(b.filePaths[0])
+    localeCompareStringsNumerically(a.filePaths[0], b.filePaths[0])
   );
   return sortedMigrationUnits;
 }

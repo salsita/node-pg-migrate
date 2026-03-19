@@ -1,6 +1,7 @@
+import { readdirSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type {
   MigrationLoader,
@@ -135,5 +136,60 @@ describe('loadMigrationUnits', () => {
       expect(ids).toContain(mjsPath);
       expect(units).toHaveLength(2);
     });
+  });
+
+  it('sorts cockroach files up to 062 in numeric order and keeps 062_view before 062_view_test', async () => {
+    const customLoader: MigrationLoader = (filePaths) =>
+      Promise.resolve(
+        filePaths.map((filePath) => ({
+          id: filePath,
+          filePaths: [filePath],
+          actions: {
+            up: () => {},
+            down: () => {},
+            shorthands: {},
+          },
+        }))
+      );
+
+    const config: MigrationLoaderConfig = {
+      migrationLoaderStrategies: [
+        { extensions: ['.js'], loader: customLoader },
+      ],
+    };
+
+    const cockroachDir = resolve(import.meta.dirname, 'cockroach');
+    const filePaths = readdirSync(cockroachDir)
+      .filter((fileName) => {
+        const match = /^(\d+)_.*\.js$/.exec(fileName);
+        if (!match) {
+          return false;
+        }
+
+        const prefix = Number(match[1]);
+        return prefix <= 62;
+      })
+      .toSorted()
+      .map((fileName) => join(cockroachDir, fileName));
+
+    const units = await loadMigrationUnits(config, filePaths);
+    const sortedNames = units.map((unit) => basename(unit.filePaths[0]));
+    const sortedPrefixes = sortedNames.map((fileName) =>
+      Number((/^(\d+)_/.exec(fileName) ?? [])[1])
+    );
+
+    expect(sortedPrefixes).toEqual(sortedPrefixes.toSorted((a, b) => a - b));
+
+    expect(sortedNames.indexOf('062_view.js')).toBeGreaterThanOrEqual(0);
+    expect(sortedNames.indexOf('062_view_test.js')).toBeGreaterThanOrEqual(0);
+    expect(sortedNames.indexOf('062_view.js')).toBeLessThan(
+      sortedNames.indexOf('062_view_test.js')
+    );
+
+    // Regression check for the observed bug.
+    expect(units.slice(-2).map((unit) => unit.filePaths[0])).toEqual([
+      join(cockroachDir, '062_view.js'),
+      join(cockroachDir, '062_view_test.js'),
+    ]);
   });
 });

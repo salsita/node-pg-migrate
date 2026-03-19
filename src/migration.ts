@@ -10,8 +10,10 @@ import { MigrationBuilder } from './migrationBuilder';
 import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationDirection, RunnerOption } from './runner';
 import type { MigrationBuilderActions } from './sqlMigration';
-import { getMigrationTableSchema } from './utils';
-
+import {
+  getMigrationTableSchema,
+  localeCompareStringsNumerically,
+} from './utils';
 /*
  * A new Migration is instantiated for each migration file.
  *
@@ -54,15 +56,6 @@ export type CreateOptions = {
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
-
-function localeCompareStringsNumerically(a: string, b: string): number {
-  return a.localeCompare(b, undefined, {
-    usage: 'sort',
-    numeric: true,
-    sensitivity: 'variant',
-    ignorePunctuation: true,
-  });
-}
 
 function compareFileNamesByTimestamp(
   a: string,

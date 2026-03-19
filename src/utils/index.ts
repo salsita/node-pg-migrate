@@ -13,6 +13,7 @@ export { makeComment } from './makeComment';
 export { PgLiteral, isPgLiteral } from './PgLiteral';
 export type { PgLiteralValue } from './PgLiteral';
 export { quote } from './quote';
+export { localeCompareStringsNumerically } from './stringComparison';
 export { stringIdGenerator } from './stringIdGenerator';
 export { toArray } from './toArray';
 export { applyType, applyTypeAdapters } from './types';
