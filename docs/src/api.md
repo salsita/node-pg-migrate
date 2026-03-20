@@ -38,7 +38,7 @@ which takes options argument with the following structure (similar to [command l
 
 ### MigrationLoaderStrategy
 
-```
+```ts
 export interface MigrationLoaderStrategy {
   // File extensions handled by this strategy.
   extensions: string[];
@@ -49,14 +49,14 @@ export interface MigrationLoaderStrategy {
    * @param filePaths - The file paths to load migrations from.
    * @returns The migration units.
    */
-  loader: MigrationLoader | "default" | "legacySql" | "sql";
+  loader: MigrationLoader | 'default' | 'legacySql' | 'sql';
 }
 ```
 
 ### MigrationUnit
 
-```
-export type MigrationUnit = {
+```ts
+export interface MigrationUnit {
   // The unique identifier for the migration unit. Represents the significant part of the file name used for tracking which migrations have been performed.
   id: string;
 
@@ -65,5 +65,5 @@ export type MigrationUnit = {
 
   // The migration builder actions that are contained within the migration files.
   actions: MigrationBuilderActions;
-};
+}
 ```

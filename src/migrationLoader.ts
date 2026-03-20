@@ -31,7 +31,7 @@ export const jiti = createJiti(process.cwd());
 /**
  * A migration unit is a collection of file paths and related migration actions that are related to a single migration.
  */
-export type MigrationUnit = {
+export interface MigrationUnit {
   /**
    * The unique identifier for the migration unit. Represents the significant part of the file name.
    * Used for tracking which migrations have been performed.
@@ -47,7 +47,7 @@ export type MigrationUnit = {
    * The migration builder actions that are contained within the migration files.
    */
   actions: MigrationBuilderActions;
-};
+}
 
 /**
  * Loader function type.
@@ -293,20 +293,20 @@ export async function loadMigrationUnits(
  * A parsed SQL file is a file that has been parsed and contains the id, direction and file path.
  * An intermediate step before the migration unit is created.
  */
-type ParsedSqlFile = {
+interface ParsedSqlFile {
   id: string;
   direction: 'up' | 'down' | 'none';
   filePath: string;
-};
+}
 /**
  * A SQL group is a group of SQL files associated by significant part of the filename.
  */
-type SqlGroup = {
+interface SqlGroup {
   id: string;
   up?: string;
   down?: string;
   single?: string;
-};
+}
 
 /**
  * Parses a SQL file and returns the parsed file.
