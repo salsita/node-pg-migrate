@@ -1,9 +1,10 @@
 import { createJiti } from 'jiti';
 import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
+import type { Logger } from './logger';
 import type { MigrationBuilderActions } from './sqlMigration';
 import { sqlMigration } from './sqlMigration';
-import { localeCompareStringsNumerically } from './utils/stringComparison';
+import { compareMigrationFileNames } from './utils';
 
 /***
  * Migration loader module.
@@ -72,6 +73,11 @@ export interface MigrationLoaderConfig {
    * If no strategy matches, the default strategy is used.
    */
   migrationLoaderStrategies?: MigrationLoaderStrategy[];
+
+  /**
+   * Redirect messages to this logger object, rather than `console`.
+   */
+  logger?: Logger;
 }
 
 /**
@@ -258,9 +264,8 @@ export async function loadMigrationUnits(
     migrationUnits.push(...units);
   }
 
-  // Since the sql migration loader modifies the id, it is no longer comparable. Hence we sort by the file path of the first file in the unit that always exists.
   const sortedMigrationUnits = migrationUnits.toSorted((a, b) =>
-    localeCompareStringsNumerically(a.filePaths[0], b.filePaths[0])
+    compareMigrationFileNames(basename(a.id), basename(b.id), config.logger)
   );
   return sortedMigrationUnits;
 }

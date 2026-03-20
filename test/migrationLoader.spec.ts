@@ -109,9 +109,10 @@ describe('loadMigrationUnits', () => {
         'export const shorthands = {};\nexport const up = () => {};\nexport const down = () => {};\n'
       );
 
+      const customId = '000_custom-js-id';
       const customUnits: MigrationUnit[] = [
         {
-          id: 'custom-js-id',
+          id: customId,
           filePaths: [jsPath],
           actions: {
             up: () => {},
@@ -132,7 +133,7 @@ describe('loadMigrationUnits', () => {
       const units = await loadMigrationUnits(config, [jsPath, mjsPath]);
       const ids = units.map((u) => u.id);
 
-      expect(ids).toContain('custom-js-id');
+      expect(ids).toContain(customId);
       expect(ids).toContain(mjsPath);
       expect(units).toHaveLength(2);
     });

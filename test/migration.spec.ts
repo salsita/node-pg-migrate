@@ -7,9 +7,9 @@ import type { Logger } from '../src/logger';
 import {
   FilenameFormat,
   getMigrationFilePaths,
-  getNumericPrefix,
   Migration,
 } from '../src/migration';
+import { getNumericPrefix } from '../src/utils';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';

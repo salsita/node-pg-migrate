@@ -1,7 +1,13 @@
+export {
+  compareFileNamesByTimestamp,
+  compareMigrationFileNames,
+  localeCompareStringsNumerically,
+} from './comparators';
 export { createSchemalize } from './createSchemalize';
 export { createTransformer } from './createTransformer';
 export { decamelize } from './decamelize';
 export { escapeValue } from './escapeValue';
+export { getNumericPrefix, getSuffixFromFileName } from './fileNameUtils';
 export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
@@ -13,7 +19,6 @@ export { makeComment } from './makeComment';
 export { PgLiteral, isPgLiteral } from './PgLiteral';
 export type { PgLiteralValue } from './PgLiteral';
 export { quote } from './quote';
-export { localeCompareStringsNumerically } from './stringComparison';
 export { stringIdGenerator } from './stringIdGenerator';
 export { toArray } from './toArray';
 export { applyType, applyTypeAdapters } from './types';

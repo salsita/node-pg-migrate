@@ -11,8 +11,10 @@ import type { ColumnDefinitions } from './operations/tables';
 import type { MigrationDirection, RunnerOption } from './runner';
 import type { MigrationBuilderActions } from './sqlMigration';
 import {
+  compareMigrationFileNames,
   getMigrationTableSchema,
-  localeCompareStringsNumerically,
+  getNumericPrefix,
+  getSuffixFromFileName,
 } from './utils';
 /*
  * A new Migration is instantiated for each migration file.
@@ -56,17 +58,6 @@ export type CreateOptions = {
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
-
-function compareFileNamesByTimestamp(
-  a: string,
-  b: string,
-  logger?: Logger
-): number {
-  const aTimestamp = getNumericPrefix(a, logger);
-  const bTimestamp = getNumericPrefix(b, logger);
-
-  return aTimestamp - bTimestamp;
-}
 
 interface LoadMigrationFilesOptions {
   /**
@@ -130,11 +121,7 @@ export async function getMigrationFilePaths(
     });
 
     return globMatches
-      .toSorted(
-        (a, b) =>
-          compareFileNamesByTimestamp(a.name, b.name, logger) ||
-          localeCompareStringsNumerically(a.name, b.name)
-      )
+      .toSorted((a, b) => compareMigrationFileNames(a.name, b.name, logger))
       .map((pathScurry) => pathScurry.fullpath());
   }
 
@@ -155,16 +142,8 @@ export async function getMigrationFilePaths(
         (dirent.isFile() || dirent.isSymbolicLink()) &&
         !ignoreRegexp.test(dirent.name)
     )
-    .toSorted(
-      (a, b) =>
-        compareFileNamesByTimestamp(a.name, b.name, logger) ||
-        localeCompareStringsNumerically(a.name, b.name)
-    )
+    .toSorted((a, b) => compareMigrationFileNames(a.name, b.name, logger))
     .map((dirent) => resolve(dir, dirent.name));
-}
-
-function getSuffixFromFileName(fileName: string): string {
-  return extname(fileName).slice(1);
 }
 
 async function getLastSuffix(
@@ -179,46 +158,6 @@ async function getLastSuffix(
   } catch {
     return undefined;
   }
-}
-
-/**
- * Extracts numeric value from everything in `filename` before `SEPARATOR`.
- * 17 digit numbers are interpreted as UTC date and converted to the number
- * representation of that date. 1...4 digit numbers are interpreted as index
- * based naming scheme.
- *
- * @param filename filename to extract the prefix from
- * @param logger Redirect messages to this logger object, rather than `console`.
- * @returns numeric value of the filename prefix (everything before `SEPARATOR`).
- */
-export function getNumericPrefix(
-  filename: string,
-  logger: Logger = console
-): number {
-  const prefix = (/^(\d+)/.exec(filename) || '')[0];
-  const value = Number(prefix);
-
-  if (!/^\d+$/.test(prefix) || Number.isNaN(value)) {
-    logger.error(`Cannot determine numeric prefix for "${filename}"`);
-    throw new Error(`Cannot determine numeric prefix for "${filename}"`);
-  }
-
-  // Special case for UTC timestamp
-  if (prefix.length === 17) {
-    // utc: 20200513070724505
-    const year = prefix.slice(0, 4);
-    const month = prefix.slice(4, 6);
-    const date = prefix.slice(6, 8);
-    const hours = prefix.slice(8, 10);
-    const minutes = prefix.slice(10, 12);
-    const seconds = prefix.slice(12, 14);
-    const ms = prefix.slice(14, 17);
-    return new Date(
-      `${year}-${month}-${date}T${hours}:${minutes}:${seconds}.${ms}Z`
-    ).valueOf();
-  }
-
-  return value;
 }
 
 async function resolveSuffix(

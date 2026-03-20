@@ -6,11 +6,11 @@ import type { DotenvConfigOptions } from 'dotenv';
 // @ts-ignore: when a clean was made, the types are not present in the first run
 import type { RunnerOption } from 'node-pg-migrate';
 import {
+  jiti,
   Migration,
-  PG_MIGRATE_LOCK_ID,
   runner as migrationRunner,
+  PG_MIGRATE_LOCK_ID,
 } from 'node-pg-migrate';
-import { jiti } from 'node-pg-migrate/migrationLoader';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { format } from 'node:util';
