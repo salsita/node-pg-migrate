@@ -3,12 +3,12 @@
 import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
-// @ts-ignore: when a clean was made, the types are not present in the first run
-import { createJiti } from 'jiti';
+import type { RunnerOption } from 'node-pg-migrate';
 import {
+  jiti,
   Migration,
-  PG_MIGRATE_LOCK_ID,
   runner as migrationRunner,
+  PG_MIGRATE_LOCK_ID,
 } from 'node-pg-migrate';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
@@ -19,7 +19,6 @@ import type ConnectionParametersType from 'pg/lib/connection-parameters';
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
-import type { RunnerOption } from '../src';
 import type { FilenameFormat } from '../src/migration';
 
 process.on('uncaughtException', (err) => {
@@ -404,7 +403,6 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jiti = createJiti(process.cwd());
   const configModule: unknown = await jiti.import(resolve(configFileName));
 
   let json: unknown;

@@ -202,3 +202,4 @@ Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 - [CLI commands](/cli)
 - [Programmatic API](/api)
 - [Migration files](/migrations/)
+- [Migration loading strategies (including SQL)](/migration-loading-strategies)

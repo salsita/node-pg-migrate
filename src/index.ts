@@ -1,5 +1,6 @@
 export { Migration } from './migration';
 export { MigrationBuilder } from './migrationBuilder';
+export { jiti } from './migrationLoader';
 export type {
   CreateCast,
   CreateCastFn,

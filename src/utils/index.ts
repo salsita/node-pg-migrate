@@ -1,7 +1,13 @@
+export {
+  compareFileNamesByTimestamp,
+  compareMigrationFileNames,
+  localeCompareStringsNumerically,
+} from './comparators';
 export { createSchemalize } from './createSchemalize';
 export { createTransformer } from './createTransformer';
 export { decamelize } from './decamelize';
 export { escapeValue } from './escapeValue';
+export { getNumericPrefix, getSuffixFromFileName } from './fileNameUtils';
 export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
