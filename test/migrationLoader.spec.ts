@@ -143,17 +143,17 @@ describe('loadMigrationUnits', () => {
   it('preserves input ordering within each extension bucket', async () => {
     const calls: Array<{ ext: string; filePaths: string[] }> = [];
 
-    const makeLoader =
-      (ext: string) =>
-      async (bucketFilePaths: string[]) => {
-        calls.push({ ext, filePaths: [...bucketFilePaths] });
+    const makeLoader = (ext: string) => (bucketFilePaths: string[]) => {
+      calls.push({ ext, filePaths: [...bucketFilePaths] });
 
-        return bucketFilePaths.map((filePath) => ({
+      return Promise.resolve(
+        bucketFilePaths.map((filePath) => ({
           id: filePath,
           filePaths: [filePath],
           actions: { up: () => {}, down: () => {}, shorthands: {} },
-        }));
-      };
+        }))
+      );
+    };
 
     const config: MigrationLoaderConfig = {
       migrationLoaderStrategies: [
@@ -199,18 +199,25 @@ describe('loadMigrationUnits', () => {
 
       const filePaths = await getMigrationFilePaths(dir, {});
 
-      expect(filePaths.map((p) => basename(p))).toEqual(['2_foo.js', '10_bar.js']);
+      expect(filePaths.map((p) => basename(p))).toEqual([
+        '2_foo.js',
+        '10_bar.js',
+      ]);
       expect(filePaths).toEqual([path2, path10]);
 
-      const customLoader: MigrationLoader = async (bucketFilePaths) =>
-        bucketFilePaths.map((filePath) => ({
-          id: filePath,
-          filePaths: [filePath],
-          actions: { up: () => {}, down: () => {}, shorthands: {} },
-        }));
+      const customLoader: MigrationLoader = (bucketFilePaths) =>
+        Promise.resolve(
+          bucketFilePaths.map((filePath) => ({
+            id: filePath,
+            filePaths: [filePath],
+            actions: { up: () => {}, down: () => {}, shorthands: {} },
+          }))
+        );
 
       const config: MigrationLoaderConfig = {
-        migrationLoaderStrategies: [{ extensions: ['.js'], loader: customLoader }],
+        migrationLoaderStrategies: [
+          { extensions: ['.js'], loader: customLoader },
+        ],
       };
 
       const units = await loadMigrationUnits(config, filePaths);

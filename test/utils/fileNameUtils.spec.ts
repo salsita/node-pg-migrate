@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Logger } from '../../src/logger';
-import {
-  getNumericPrefix,
-  getSuffixFromFileName,
-} from '../../src/utils';
+import { getNumericPrefix, getSuffixFromFileName } from '../../src/utils';
 
 describe('getSuffixFromFileName', () => {
   it('extracts extension without the leading dot', () => {
@@ -52,9 +49,9 @@ describe('getNumericPrefix', () => {
   it('should get timestamp for shortened iso format', () => {
     const now = new Date();
 
-    expect(
-      getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
-    ).toBe(now.valueOf());
+    expect(getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)).toBe(
+      now.valueOf()
+    );
   });
 
   it('should get prefix for index strings', () => {

@@ -155,7 +155,7 @@ export function createLegacySqlMigrationLoader(): MigrationLoader {
 
 /**
  * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
- * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been 
+ * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been
  * separated from the legacy loader and can be used enabled as needed.
  *
  * @returns The SQL migration loader.
@@ -230,12 +230,12 @@ function resolveMigrationLoader(
 
 /**
  * Associates the file paths to their extensions.
- * 
+ *
  * - `Map` preserves insertion order, so extension buckets are iterated in
  *   the order their extension is first encountered in `filePaths`.
  * - Within each extension bucket, we push in the order files appear in
  *   `filePaths`, so input order is preserved for that extension.
- * 
+ *
  * @param filePaths - The file paths to associate.
  * @returns The file paths associated to their extensions.
  */
@@ -390,12 +390,12 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
 
 /**
  * Returns the group id for a SQL group.
- * 
+ *
  * Compatibility: when using the new grouped SQL loader (`loader: "sql"`),
  * ids are normalized so that switching representations doesn't double-track
  * migrations. Concretely, `.up.sql` / `.down.sql` map to the equivalent
  * `.sql` id (e.g. `001_init.up.sql` -> `001_init.sql`).
- * 
+ *
  * @param group - The SQL file group to get the id for.
  * @returns The group id.
  */
@@ -404,6 +404,7 @@ function sqlGroupId(group: SqlGroup): string {
   if (!filePath) {
     throw new Error(`No SQL file found for group ${group.id}`);
   }
+
   return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
 }
 
