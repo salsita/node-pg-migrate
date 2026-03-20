@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { getMigrationFilePaths } from '../src/migration';
 import type {
   MigrationLoader,
   MigrationLoaderConfig,
@@ -136,6 +137,110 @@ describe('loadMigrationUnits', () => {
       expect(ids).toContain(customId);
       expect(ids).toContain(mjsPath);
       expect(units).toHaveLength(2);
+    });
+  });
+
+  it('preserves input ordering within each extension bucket', async () => {
+    const calls: Array<{ ext: string; filePaths: string[] }> = [];
+
+    const makeLoader =
+      (ext: string) =>
+      async (bucketFilePaths: string[]) => {
+        calls.push({ ext, filePaths: [...bucketFilePaths] });
+
+        return bucketFilePaths.map((filePath) => ({
+          id: filePath,
+          filePaths: [filePath],
+          actions: { up: () => {}, down: () => {}, shorthands: {} },
+        }));
+      };
+
+    const config: MigrationLoaderConfig = {
+      migrationLoaderStrategies: [
+        { extensions: ['.sql'], loader: makeLoader('.sql') },
+        { extensions: ['.js'], loader: makeLoader('.js') },
+      ],
+    };
+
+    // `.sql` appears first, so the `.sql` bucket must be processed first.
+    // Within each bucket, the order must match the input array order.
+    const filePaths = [
+      join(process.cwd(), '010_one.sql'),
+      join(process.cwd(), '002_b.js'),
+      join(process.cwd(), '001_a.js'),
+      join(process.cwd(), '011_two.sql'),
+    ];
+
+    await loadMigrationUnits(config, filePaths);
+
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toEqual({
+      ext: '.sql',
+      filePaths: [filePaths[0], filePaths[3]],
+    });
+    expect(calls[1]).toEqual({
+      ext: '.js',
+      filePaths: [filePaths[1], filePaths[2]],
+    });
+  });
+
+  it('orders 2_foo.js before 10_bar.js consistently between getMigrationFilePaths and loadMigrationUnits', async () => {
+    await withTempDir(async (dir) => {
+      const path2 = await writeMigrationFile(
+        dir,
+        '2_foo.js',
+        'export const shorthands = {};\nexport const up = () => {};\nexport const down = () => {};\n'
+      );
+      const path10 = await writeMigrationFile(
+        dir,
+        '10_bar.js',
+        'export const shorthands = {};\nexport const up = () => {};\nexport const down = () => {};\n'
+      );
+
+      const filePaths = await getMigrationFilePaths(dir, {});
+
+      expect(filePaths.map((p) => basename(p))).toEqual(['2_foo.js', '10_bar.js']);
+      expect(filePaths).toEqual([path2, path10]);
+
+      const customLoader: MigrationLoader = async (bucketFilePaths) =>
+        bucketFilePaths.map((filePath) => ({
+          id: filePath,
+          filePaths: [filePath],
+          actions: { up: () => {}, down: () => {}, shorthands: {} },
+        }));
+
+      const config: MigrationLoaderConfig = {
+        migrationLoaderStrategies: [{ extensions: ['.js'], loader: customLoader }],
+      };
+
+      const units = await loadMigrationUnits(config, filePaths);
+
+      expect(units.map((u) => basename(u.filePaths[0]))).toEqual([
+        '2_foo.js',
+        '10_bar.js',
+      ]);
+    });
+  });
+
+  it('groups .up.sql-only (no .down.sql) into a single migration with undefined down action', async () => {
+    await withTempDir(async (dir) => {
+      const upPath = await writeMigrationFile(
+        dir,
+        '001_create_users.up.sql',
+        'CREATE TABLE users(id serial primary key);\n'
+      );
+
+      const config: MigrationLoaderConfig = {
+        migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+      };
+
+      const units = await loadMigrationUnits(config, [upPath]);
+
+      expect(units).toHaveLength(1);
+      expect(units[0].id).toBe(join(dir, '001_create_users.sql'));
+      expect(units[0].filePaths).toEqual([upPath]);
+      expect(units[0].actions.up).toBeTypeOf('function');
+      expect(units[0].actions.down).toBeUndefined();
     });
   });
 

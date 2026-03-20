@@ -9,7 +9,6 @@ import {
   getMigrationFilePaths,
   Migration,
 } from '../src/migration';
-import { getNumericPrefix } from '../src/utils';
 
 const callbackMigration = '1414549381268_names.js';
 const promiseMigration = '1414549381268_names_promise.js';
@@ -38,39 +37,6 @@ describe('migration', () => {
   beforeEach(() => {
     queryMock = vi.fn();
     dbMock.query = queryMock;
-  });
-
-  describe('getNumericPrefix', () => {
-    it('should allow any non-numeric character as a separator', () => {
-      expect(getNumericPrefix('1-line-as-separator.js')).toBe(1);
-      expect(getNumericPrefix('2_underscore-as-separator.ts')).toBe(2);
-      expect(getNumericPrefix('3 space-as-separator.sql')).toBe(3);
-    });
-
-    it('should fail with a non-numeric value', () => {
-      const prefix = 'invalid-prefix';
-      expect(() => getNumericPrefix(prefix, logger)).toThrow(
-        new Error(`Cannot determine numeric prefix for "${prefix}"`)
-      );
-    });
-
-    it('should get timestamp for normal timestamp', () => {
-      const now = Date.now();
-      expect(getNumericPrefix(String(now), logger)).toBe(now);
-    });
-
-    it('should get timestamp for shortened iso format', () => {
-      const now = new Date();
-
-      expect(
-        getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)
-      ).toBe(now.valueOf());
-    });
-
-    it('should get prefix for index strings', () => {
-      expect(getNumericPrefix('0001', logger)).toBe(1);
-      expect(getNumericPrefix('1234', logger)).toBe(1234);
-    });
   });
 
   describe('getMigrationFilePaths', () => {

@@ -91,7 +91,7 @@ export interface MigrationLoaderStrategy {
 
   /**
    * Loader that handles conversion of file paths to migration units.
-   * Can be a loader function, when used as an API,  or a predefined loader when using a json configuration file.
+   * Can be a loader function, when used as an API, or a predefined loader when using a json configuration file.
    *
    * @param filePaths - The file paths to load migrations from.
    * @returns The migration units.
@@ -109,16 +109,19 @@ export interface MigrationLoaderStrategy {
  */
 export function createDefaultMigrationLoader(): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
-    const migrationUnits: MigrationUnit[] = await Promise.all(
-      filePaths.map(async (filePath) => {
-        const action: MigrationBuilderActions = await jiti.import(filePath);
-        return {
-          id: filePath,
-          filePaths: [filePath],
-          actions: action,
-        };
-      })
-    );
+    const migrationUnits: MigrationUnit[] = [];
+
+    // Load migrations sequentially to avoid unnecessary parallelism and
+    // potential handle pressure from many concurrent imports.
+    for (const filePath of filePaths) {
+      const action: MigrationBuilderActions = await jiti.import(filePath);
+      migrationUnits.push({
+        id: filePath,
+        filePaths: [filePath],
+        actions: action,
+      });
+    }
+
     return migrationUnits;
   };
 
@@ -131,16 +134,19 @@ export function createDefaultMigrationLoader(): MigrationLoader {
  */
 export function createLegacySqlMigrationLoader(): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
-    const migrationUnits: MigrationUnit[] = await Promise.all(
-      filePaths.map(async (filePath) => {
-        const actions = await sqlMigration(filePath);
-        return {
-          id: filePath,
-          filePaths: [filePath],
-          actions: actions,
-        };
-      })
-    );
+    const migrationUnits: MigrationUnit[] = [];
+
+    // Load migrations sequentially for deterministic behavior and to avoid
+    // creating many concurrent file reads/imports.
+    for (const filePath of filePaths) {
+      const actions = await sqlMigration(filePath);
+      migrationUnits.push({
+        id: filePath,
+        filePaths: [filePath],
+        actions,
+      });
+    }
+
     return migrationUnits;
   };
 
@@ -149,7 +155,8 @@ export function createLegacySqlMigrationLoader(): MigrationLoader {
 
 /**
  * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
- * While is handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been separated from the legacy loader and can be used enabled as needed.
+ * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been 
+ * separated from the legacy loader and can be used enabled as needed.
  *
  * @returns The SQL migration loader.
  */
@@ -223,6 +230,12 @@ function resolveMigrationLoader(
 
 /**
  * Associates the file paths to their extensions.
+ * 
+ * - `Map` preserves insertion order, so extension buckets are iterated in
+ *   the order their extension is first encountered in `filePaths`.
+ * - Within each extension bucket, we push in the order files appear in
+ *   `filePaths`, so input order is preserved for that extension.
+ * 
  * @param filePaths - The file paths to associate.
  * @returns The file paths associated to their extensions.
  */
@@ -375,12 +388,22 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
   return [...groups.values()];
 }
 
+/**
+ * Returns the group id for a SQL group.
+ * 
+ * Compatibility: when using the new grouped SQL loader (`loader: "sql"`),
+ * ids are normalized so that switching representations doesn't double-track
+ * migrations. Concretely, `.up.sql` / `.down.sql` map to the equivalent
+ * `.sql` id (e.g. `001_init.up.sql` -> `001_init.sql`).
+ * 
+ * @param group - The SQL file group to get the id for.
+ * @returns The group id.
+ */
 function sqlGroupId(group: SqlGroup): string {
   const filePath = group.single ?? group.up ?? group.down;
   if (!filePath) {
     throw new Error(`No SQL file found for group ${group.id}`);
   }
-
   return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
 }
 
@@ -410,7 +433,7 @@ async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
     };
   }
 
-  const filePaths = [group.up, group.down, group.single].filter(
+  const filePaths = [group.single ?? group.up, group.down].filter(
     (p): p is string => Boolean(p)
   );
 

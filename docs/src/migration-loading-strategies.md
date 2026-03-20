@@ -44,6 +44,7 @@ await runner({
 With this configuration:
 
 - `001_init.up.sql` + `001_init.down.sql` are treated as one migration (`001_init`)
+- The migration `id` is normalized to the equivalent `.sql` form (`001_init.up.sql` / `001_init.down.sql` -> `001_init.sql`). This means you can switch from a single `001_init.sql` migration to split `.up/.down` files (or vice versa) without creating a second entry in `migrationsTable`.
 - `001_init.sql` still works as a single-file SQL migration
 - mixing `001_init.sql` with `001_init.up.sql` / `001_init.down.sql` throws an error
 
@@ -78,9 +79,9 @@ await runner({
 - Each strategy handles one or more extensions
 - If no strategy matches an extension, the `default` loader is used
 
-# Legacy SQL migrations
+## Legacy SQL migrations
 
-## Why it exists
+### Why it exists
 
 The legacy SQL loader has been supported for a long time, even when it was less visible in the docs.
 
@@ -91,7 +92,7 @@ Common use cases include:
 
 So if your team already relies on plain `.sql` files, that workflow is still supported.
 
-## Markers and default fallback
+### Markers and default fallback
 
 The classic SQL template uses marker comments:
 

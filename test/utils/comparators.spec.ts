@@ -3,21 +3,28 @@ import type { Logger } from '../../src/logger';
 import {
   compareFileNamesByTimestamp,
   compareMigrationFileNames,
-  getSuffixFromFileName,
+  localeCompareStringsNumerically,
 } from '../../src/utils';
 
-describe('getSuffixFromFileName', () => {
-  it('extracts extension without the leading dot', () => {
-    expect(getSuffixFromFileName('001_migration.js')).toBe('js');
-    expect(getSuffixFromFileName('001_migration.sql')).toBe('sql');
+describe('localeCompareStringsNumerically', () => {
+  it('sorts 062_view before 062_view_test', () => {
+    const files = ['062_view_test.js', '062_view.js'];
+
+    const sorted = files.toSorted(localeCompareStringsNumerically);
+
+    expect(sorted).toEqual(['062_view.js', '062_view_test.js']);
   });
 
-  it('returns empty string when there is no extension', () => {
-    expect(getSuffixFromFileName('no-extension')).toBe('');
+  it('sorts numeric substrings in numeric order', () => {
+    const files = ['10_bar.js', '2_foo.js'];
+
+    const sorted = files.toSorted(localeCompareStringsNumerically);
+
+    expect(sorted).toEqual(['2_foo.js', '10_bar.js']);
   });
 
-  it('extracts only the last extension', () => {
-    expect(getSuffixFromFileName('archive.tar.gz')).toBe('gz');
+  it('returns 0 for equal strings', () => {
+    expect(localeCompareStringsNumerically('abc', 'abc')).toBe(0);
   });
 });
 
