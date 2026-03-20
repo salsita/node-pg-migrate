@@ -4,13 +4,13 @@ import type { DotenvConfigOptions } from 'dotenv';
 // Import as node-pg-migrate, so tsup does not self-reference as '../dist'
 // otherwise this could not be imported by esm
 // @ts-ignore: when a clean was made, the types are not present in the first run
-import { createJiti } from 'jiti';
 import type { RunnerOption } from 'node-pg-migrate';
 import {
   Migration,
   PG_MIGRATE_LOCK_ID,
   runner as migrationRunner,
 } from 'node-pg-migrate';
+import { jiti } from 'node-pg-migrate/migrationLoader';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { format } from 'node:util';
@@ -404,7 +404,6 @@ process.env.SUPPRESS_NO_CONFIG_WARNING = oldSuppressWarning;
 
 const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
-  const jiti = createJiti(process.cwd());
   const configModule: unknown = await jiti.import(resolve(configFileName));
 
   let json: unknown;
