@@ -37,8 +37,8 @@ importers:
         specifier: 20.19.37
         version: 20.19.37
       '@types/pg':
-        specifier: 8.18.0
-        version: 8.18.0
+        specifier: 8.20.0
+        version: 8.20.0
       '@types/yargs':
         specifier: 17.0.35
         version: 17.0.35
@@ -83,7 +83,7 @@ importers:
         version: 63.0.0(eslint@10.0.3(jiti@2.6.1))
       node-pg-migrate:
         specifier: file:.
-        version: file:(@types/pg@8.18.0)(pg@8.20.0)
+        version: file:(@types/pg@8.20.0)(pg@8.20.0)
       npm-run-all2:
         specifier: 8.0.4
         version: 8.0.4
@@ -97,8 +97,8 @@ importers:
         specifier: 4.3.0
         version: 4.3.0(prettier@3.8.1)(typescript@5.9.3)
       prettier-plugin-pkg:
-        specifier: 0.21.2
-        version: 0.21.2(prettier@3.8.1)
+        specifier: 0.22.1
+        version: 0.22.1(prettier@3.8.1)
       testcontainers:
         specifier: 11.13.0
         version: 11.13.0
@@ -934,8 +934,8 @@ packages:
   '@types/node@20.19.37':
     resolution: {integrity: sha512-8kzdPJ3FsNsVIurqBs7oodNnCEVbni9yUEkaHbgptDACOPW04jimGagZ51E6+lXUwJjgnBw+hyko/lkFWCldqw==}
 
-  '@types/pg@8.18.0':
-    resolution: {integrity: sha512-gT+oueVQkqnj6ajGJXblFR4iavIXWsGAFCk3dP4Kki5+a9R4NMt0JARdk6s8cUKcfUoqP5dAtDSLU8xYUTFV+Q==}
+  '@types/pg@8.20.0':
+    resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
 
   '@types/ssh2-streams@0.1.13':
     resolution: {integrity: sha512-faHyY3brO9oLEA0QlcO8N2wT7R0+1sHWZvQ+y3rMLwdY1ZyS1z0W3t65j9PqT4HmQ6ALzNe7RZlNuCNE0wBSWA==}
@@ -2631,8 +2631,8 @@ packages:
       vue-tsc:
         optional: true
 
-  prettier-plugin-pkg@0.21.2:
-    resolution: {integrity: sha512-CSlM5+51B7yTKcoRWT4M3ImcdFHD5NUz0Xu2t8J03B761zu6J3BjSo/XleKp2kB0tH49K7oG5Uuqn6ldI5LRLg==}
+  prettier-plugin-pkg@0.22.1:
+    resolution: {integrity: sha512-l9qnxic48hgTXsvXi9yWWWzovpqkEYo/Ljf8Af7zSkDTNVmLwscXW63IEVMJXH94DyloO8YkogeLheJUzJh/ZQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       prettier: ^3.0.3
@@ -4020,7 +4020,7 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/pg@8.18.0':
+  '@types/pg@8.20.0':
     dependencies:
       '@types/node': 20.19.37
       pg-protocol: 1.13.0
@@ -5636,14 +5636,14 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  node-pg-migrate@file:(@types/pg@8.18.0)(pg@8.20.0):
+  node-pg-migrate@file:(@types/pg@8.20.0)(pg@8.20.0):
     dependencies:
       glob: 13.0.6
       jiti: 2.6.1
       pg: 8.20.0
       yargs: 18.0.0
     optionalDependencies:
-      '@types/pg': 8.18.0
+      '@types/pg': 8.20.0
 
   node-releases@2.0.36: {}
 
@@ -5824,7 +5824,7 @@ snapshots:
       prettier: 3.8.1
       typescript: 5.9.3
 
-  prettier-plugin-pkg@0.21.2(prettier@3.8.1):
+  prettier-plugin-pkg@0.22.1(prettier@3.8.1):
     dependencies:
       prettier: 3.8.1
 
