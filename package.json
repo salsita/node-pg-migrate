@@ -103,7 +103,7 @@
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
     "esbuild-fix-imports-plugin": "1.0.23",
-    "eslint": "10.0.3",
+    "eslint": "10.1.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-gitignore": "0.1.0",
     "eslint-plugin-import-x": "4.16.2",
@@ -118,7 +118,7 @@
     "testcontainers": "11.13.0",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.57.1",
+    "typescript-eslint": "8.58.0",
     "vitepress": "1.6.4",
     "vitest": "4.1.2"
   },
