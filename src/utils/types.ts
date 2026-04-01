@@ -27,7 +27,7 @@ function toType(type: string | Readonly<ColumnDefinition>): ColumnDefinition {
 }
 
 function removeType<TColumnDefinition extends Readonly<ColumnDefinition>>({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // oxlint-disable-next-line typescript/no-unused-vars
   type,
   ...rest
 }: TColumnDefinition): Omit<TColumnDefinition, 'type'> {

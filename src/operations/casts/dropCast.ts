@@ -9,7 +9,7 @@ export type DropCast = (
   dropOptions?: DropCastOptions
 ) => string;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line typescript/no-unused-vars
 export function dropCast(mOptions: MigrationOptions): DropCast {
   const _drop: DropCast = (sourceType, targetType, options = {}) => {
     const { ifExists = false } = options;

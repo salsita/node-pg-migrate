@@ -8,7 +8,6 @@ export const down = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_temp_table;');
   try {
     await pgm.db.query('DROP TABLE "tmp"');
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw 1;
   } catch (error) {
     if (error === 1) {

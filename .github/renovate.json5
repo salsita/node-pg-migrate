@@ -37,14 +37,8 @@
       "minimumReleaseAge": null
     },
     {
-      "groupName": "eslint",
-      "matchPackageNames": [
-        "@eslint/**",
-        "@stylistic/**",
-        "eslint",
-        "eslint-**",
-        "typescript-eslint"
-      ],
+      "groupName": "oxlint",
+      "matchPackageNames": ["oxlint", "oxlint-tsgolint"],
       "minimumReleaseAge": null
     },
     {

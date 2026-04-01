@@ -1,4 +1,6 @@
 {
+  "oxc.enable": true,
+
   // Always use the `package.json`'s `typescript`
   "typescript.tsdk": "node_modules/typescript/lib",
 

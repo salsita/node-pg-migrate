@@ -836,10 +836,8 @@ export class MigrationBuilder {
             );
           }
 
-          // eslint-disable-next-line unicorn/prefer-spread
           this._steps = this._steps.concat(operation.reverse(...args));
         } else {
-          // eslint-disable-next-line unicorn/prefer-spread
           this._steps = this._steps.concat(operation(...args));
         }
       };
@@ -969,7 +967,6 @@ export class MigrationBuilder {
     this.func = PgLiteral.create;
 
     // Expose DB so we can access database within transaction
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     const wrapDB =
       <T extends any[], TResult>(operation: (...args: T) => TResult) =>
       (...args: T) => {
@@ -980,7 +977,6 @@ export class MigrationBuilder {
         return operation(...args);
       };
 
-    /* eslint-enable @typescript-eslint/no-explicit-any */
     this.db = {
       query: wrapDB(db.query),
       select: wrapDB(db.select),
