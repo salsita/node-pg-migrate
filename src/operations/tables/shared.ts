@@ -175,17 +175,15 @@ export function parseColumns(
 } {
   const extendingTypeShorthands = mOptions.typeShorthands;
 
-  let columnsWithOptions = Object.keys(columns)
-    // eslint-disable-next-line unicorn/prefer-object-from-entries
-    .reduce<{
-      [x: string]: ColumnDefinition & FunctionParamType;
-    }>(
-      (previous, column) => ({
-        ...previous,
-        [column]: applyType(columns[column], extendingTypeShorthands),
-      }),
-      {}
-    );
+  let columnsWithOptions = Object.keys(columns).reduce<{
+    [x: string]: ColumnDefinition & FunctionParamType;
+  }>(
+    (previous, column) => ({
+      ...previous,
+      [column]: applyType(columns[column], extendingTypeShorthands),
+    }),
+    {}
+  );
 
   const primaryColumns = Object.entries(columnsWithOptions)
     .filter(([, { primaryKey }]) => Boolean(primaryKey))

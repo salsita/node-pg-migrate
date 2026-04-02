@@ -33,9 +33,6 @@ node_modules/
 # Optional npm cache directory
 .npm
 
-# Optional eslint cache
-.eslintcache
-
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
@@ -102,3 +99,6 @@ yarn.lock
 
 # Snapshot test files
 !test/integration/__snapshots__/**/*.log
+
+# AI
+.claude/

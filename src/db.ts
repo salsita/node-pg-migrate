@@ -15,7 +15,6 @@ import type { Logger } from './logger';
 
 // see ClientBase in @types/pg
 export interface DB {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   query(
     queryConfig: QueryArrayConfig,
     values?: any[]
@@ -32,10 +31,8 @@ export interface DB {
     queryTextOrConfig: string | QueryConfig,
     values?: any[]
   ): Promise<any[]>;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface DBConnection extends DB {
   createConnection(): Promise<void>;
 
@@ -53,6 +50,7 @@ export interface DBConnection extends DB {
 
   connected: () => boolean;
 
+  // oxlint-disable-next-line typescript/explicit-module-boundary-types
   addBeforeCloseListener: (listener: any) => number;
 
   close(): Promise<void>;

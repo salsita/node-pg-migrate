@@ -15,7 +15,6 @@ export const up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_reference;');
   try {
     await pgm.db.query('INSERT INTO t2(id2) VALUES (1);');
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw 1;
   } catch (error) {
     if (error === 1) {
@@ -28,7 +27,6 @@ export const up = async (pgm) => {
   await pgm.db.query('SAVEPOINT sp_not_null;');
   try {
     await pgm.db.query('INSERT INTO t1(created) VALUES (current_timestamp); ');
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw 1;
   } catch (error) {
     if (error === 1) {

@@ -508,7 +508,7 @@ if (action === 'create') {
 
   if (upDownArg !== null) {
     const parsedUpDownArg = Number.parseInt(`${upDownArg}`, 10);
-    // eslint-disable-next-line eqeqeq
+    // oxlint-disable-next-line eqeqeq
     if (parsedUpDownArg == upDownArg) {
       numMigrations = parsedUpDownArg;
     } else {
@@ -532,7 +532,7 @@ if (action === 'create') {
     return {
       dryRun,
       databaseUrl: {
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        // oxlint-disable-next-line typescript/no-misused-spread
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
           ? {
@@ -545,7 +545,7 @@ if (action === 'create') {
             }
           : undefined),
       } as ClientConfig,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // oxlint-disable-next-line typescript/no-non-null-assertion
       dir: MIGRATIONS_DIR!,
       useGlob: USE_GLOB,
       ignorePattern: IGNORE_PATTERN,
@@ -553,7 +553,7 @@ if (action === 'create') {
       createSchema: CREATE_SCHEMA,
       migrationsSchema: MIGRATIONS_SCHEMA,
       createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // oxlint-disable-next-line typescript/no-non-null-assertion
       migrationsTable: MIGRATIONS_TABLE!,
       count,
       timestamp,
