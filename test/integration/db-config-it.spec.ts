@@ -120,72 +120,71 @@ describe.each(PG_VERSIONS)(
       return execUp;
     }
 
-    it.concurrent(
-      'fails when no config file or env vars are provided',
-      async ({ expect }) => {
-        let execUp: { stdout?: string; stderr?: string };
-        let execDown: { stdout?: string; stderr?: string };
+    it.concurrent('fails when no config file or env vars are provided', async ({
+      expect,
+    }) => {
+      let execUp: { stdout?: string; stderr?: string };
+      let execDown: { stdout?: string; stderr?: string };
 
-        try {
-          execUp = await execMigrate({
-            expect,
-            direction: 'up',
-            env: { ...process.env, DATABASE_URL: '' },
-          });
-        } catch (error) {
-          execUp = error as { stdout?: string; stderr?: string };
-        }
-
-        try {
-          execDown = await execMigrate({
-            expect,
-            direction: 'down',
-            env: { ...process.env, DATABASE_URL: '' },
-          });
-        } catch (error) {
-          execDown = error as { stdout?: string; stderr?: string };
-        }
-
-        expect(execUp.stderr).toContain(ERROR_MESSAGE);
-        expect(execDown.stderr).toContain(ERROR_MESSAGE);
+      try {
+        execUp = await execMigrate({
+          expect,
+          direction: 'up',
+          env: { ...process.env, DATABASE_URL: '' },
+        });
+      } catch (error) {
+        execUp = error as { stdout?: string; stderr?: string };
       }
-    );
 
-    it.concurrent(
-      'fails with config file missing DB connection',
-      async ({ expect, task }) => {
-        const file = configFile(task.name);
-        writeFileSync(file, JSON.stringify({}), 'utf8');
-
-        let execUp: { stdout?: string; stderr?: string };
-        let execDown: { stdout?: string; stderr?: string };
-
-        try {
-          execUp = await execMigrate({
-            expect,
-            direction: 'up',
-            configFile: file,
-            env: { ...process.env, DATABASE_URL: '' },
-          });
-        } catch (error) {
-          execUp = error as { stdout?: string; stderr?: string };
-        }
-
-        try {
-          execDown = await execMigrate({
-            expect,
-            direction: 'down',
-            configFile: file,
-            env: { ...process.env, DATABASE_URL: '' },
-          });
-        } catch (error) {
-          execDown = error as { stdout?: string; stderr?: string };
-        }
-
-        expect(execUp.stderr).toContain(ERROR_MESSAGE);
-        expect(execDown.stderr).toContain(ERROR_MESSAGE);
+      try {
+        execDown = await execMigrate({
+          expect,
+          direction: 'down',
+          env: { ...process.env, DATABASE_URL: '' },
+        });
+      } catch (error) {
+        execDown = error as { stdout?: string; stderr?: string };
       }
-    );
+
+      expect(execUp.stderr).toContain(ERROR_MESSAGE);
+      expect(execDown.stderr).toContain(ERROR_MESSAGE);
+    });
+
+    it.concurrent('fails with config file missing DB connection', async ({
+      expect,
+      task,
+    }) => {
+      const file = configFile(task.name);
+      writeFileSync(file, JSON.stringify({}), 'utf8');
+
+      let execUp: { stdout?: string; stderr?: string };
+      let execDown: { stdout?: string; stderr?: string };
+
+      try {
+        execUp = await execMigrate({
+          expect,
+          direction: 'up',
+          configFile: file,
+          env: { ...process.env, DATABASE_URL: '' },
+        });
+      } catch (error) {
+        execUp = error as { stdout?: string; stderr?: string };
+      }
+
+      try {
+        execDown = await execMigrate({
+          expect,
+          direction: 'down',
+          configFile: file,
+          env: { ...process.env, DATABASE_URL: '' },
+        });
+      } catch (error) {
+        execDown = error as { stdout?: string; stderr?: string };
+      }
+
+      expect(execUp.stderr).toContain(ERROR_MESSAGE);
+      expect(execDown.stderr).toContain(ERROR_MESSAGE);
+    });
 
     it('succeeds with valid config file containing user, database, etc', async ({
       expect,

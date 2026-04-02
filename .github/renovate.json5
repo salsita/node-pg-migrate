@@ -47,8 +47,8 @@
       "minimumReleaseAge": null
     },
     {
-      "groupName": "prettier",
-      "matchPackageNames": ["prettier"],
+      "groupName": "oxfmt",
+      "matchPackageNames": ["oxfmt"],
       "minimumReleaseAge": null
     },
     {

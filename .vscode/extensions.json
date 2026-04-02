@@ -1,7 +1,6 @@
 {
   "recommendations": [
     "editorconfig.editorconfig",
-    "esbenp.prettier-vscode",
     "kravets.vscode-publint",
     "oxc.oxc-vscode",
     "redhat.vscode-yaml",
