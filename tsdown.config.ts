@@ -1,38 +1,35 @@
-import { fixExtensionsPlugin } from 'esbuild-fix-imports-plugin';
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 
 export default defineConfig([
-  // build the executeable
+  // build the executable
   {
     entry: ['bin/node-pg-migrate.ts'],
     outDir: 'bin',
     clean: false,
     format: ['esm'],
-    target: ['node20.11'],
     dts: false,
     minify: false,
     sourcemap: false,
-    bundle: false,
+    unbundle: true,
+    fixedExtension: false,
   },
   {
     entry: ['src/index.ts'],
     outDir: 'dist/bundle',
     clean: true,
     format: ['esm'],
-    target: ['node20.11'],
     dts: true,
     minify: false,
     sourcemap: false,
-    bundle: true,
+    fixedExtension: false,
   },
   {
     entry: ['src/**/*'],
-    target: ['node20.11'],
     dts: true,
     clean: true,
-    bundle: false, // Important: set to false
+    unbundle: true,
     format: ['esm'],
     outDir: 'dist/legacy',
-    esbuildPlugins: [fixExtensionsPlugin()],
+    fixedExtension: false,
   },
 ]);
