@@ -6,7 +6,6 @@ export default defineConfig({
     'docs/.vitepress/config.mts',
     'docs/.vitepress/theme/index.ts',
     'templates',
-    '.prettierrc.js',
     'test/jiti/migrations/**/*.js',
     'test/jiti/migrations/**/*.mjs',
   ],
@@ -127,11 +126,11 @@ export default defineConfig({
     //#region unicorn
     'unicorn/filename-case': 'off',
     'unicorn/no-array-callback-reference': 'off', // reduces readability
-    'unicorn/no-nested-ternary': 'off', // incompatible with prettier
+    'unicorn/no-nested-ternary': 'off', // incompatible with formatter
     'unicorn/no-null': 'off', // incompatible with TypeScript
     'unicorn/no-object-as-default-parameter': 'off', // https://github.com/sindresorhus/eslint-plugin-unicorn/issues/2199
     'unicorn/no-zero-fractions': 'off', // deactivated to raise awareness of floating operations
-    'unicorn/number-literal-case': 'off', // incompatible with prettier
+    'unicorn/number-literal-case': 'off', // incompatible with formatter
     'unicorn/numeric-separators-style': 'off', // "magic numbers" may carry specific meaning
     'unicorn/prefer-string-slice': 'off', // string.substring is sometimes easier to use
     'unicorn/prefer-ternary': 'off', // ternaries aren't always better

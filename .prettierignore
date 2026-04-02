@@ -1,6 +1,0 @@
-.pnpm-store/
-bin/*.js
-coverage/
-dist/
-CHANGELOG.md
-pnpm-lock.yaml
