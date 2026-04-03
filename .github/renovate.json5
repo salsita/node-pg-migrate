@@ -37,6 +37,11 @@
       "minimumReleaseAge": null
     },
     {
+      "groupName": "dotenv",
+      "matchPackageNames": ["dotenv", "dotenv-expand"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
       "groupName": "oxlint",
       "matchPackageNames": ["oxlint", "oxlint-tsgolint"],
       "minimumReleaseAge": null
