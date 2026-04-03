@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "@testcontainers/postgresql": "11.13.0",
-    "@types/config": "3.3.5",
+    "@types/config": "4.4.0",
     "@types/node": "20.19.39",
     "@types/pg": "8.20.0",
     "@types/yargs": "17.0.35",
