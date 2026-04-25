@@ -107,7 +107,7 @@
     "pg": "8.20.0",
     "testcontainers": "11.14.0",
     "tsdown": "0.21.10",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "vitepress": "1.6.4",
     "vitest": "4.1.4"
   },
