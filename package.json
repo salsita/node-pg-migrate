@@ -101,7 +101,7 @@
     "dotenv-expand": "12.0.3",
     "node-pg-migrate": "file:.",
     "npm-run-all2": "8.0.4",
-    "oxfmt": "0.47.0",
+    "oxfmt": "0.49.0",
     "oxlint": "1.62.0",
     "oxlint-tsgolint": "0.22.1",
     "pg": "8.20.0",
