@@ -125,16 +125,39 @@ Other available options are:
 ```jsonc
 {
   "schema": "public",
-  "createSchema": false,
-  "migrationsDir": "migrations",
-  "migrationsSchema": "public",
-  "createMigrationsSchema": false,
-  "migrationsTable": "pgmigrations",
-  "migrationFilenameFormat": "utc",
-  "migrationFileLanguage": "js",
-  "ignorePattern": undefined,
-  "checkOrder": true,
+  "create-schema": false,
+  "database-url-var": "SECRET_DB_URL",
+  "migrations-dir": "migrations",
+  "use-glob": false,
+  "migrations-schema": "public",
+  "create-migrations-schema": false,
+  "migrations-table": "pgmigrations",
+  "migration-filename-format": "utc",
+  "migration-file-language": "js",
+  "ignore-pattern": "/SKIP$/",
+  "template-file-name": "templates/new-migration.js",
+  "check-order": true,
   "verbose": true,
   "decamelize": false,
 }
 ```
+
+If you want to vary the configuration (e.g. for different environments), you can provide a map of configuration
+groups and specify which to use with the `--config-value` command line option.
+
+For example with a config like:
+
+```jsonc
+{
+  "dev": {
+    "migrations-schema": "public",
+    "verbose": true
+  },
+  "prod": {
+    "migrations-schema": "myapp"
+  }
+}
+```
+
+The command `node-pg-migrate --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
+There are no constraints on how you name your configuration groups.
