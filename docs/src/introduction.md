@@ -1,7 +1,23 @@
 # What is node-pg-migrate?
 
-Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)  
-Started by [Theo Ephraim](https://github.com/theoephraim/), then handed over to [Salsita Software](https://www.salsitasoft.com/) and now maintained by [@Shinigami92](https://github.com/Shinigami92).
+Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
+
+## Maintainers
+
+### Active
+
+| Name                  | GitHub                                         |
+| --------------------- | ---------------------------------------------- |
+| Christopher Quadflieg | [@Shinigami92](https://github.com/Shinigami92) |
+| Breno A.              | [@brenoepics](https://github.com/brenoepics)   |
+| Omar Diab             | [@osdiab](https://github.com/osdiab)           |
+
+### Former
+
+| Name             | Link                                            |
+| ---------------- | ----------------------------------------------- |
+| Theo Ephraim     | [@theoephraim](https://github.com/theoephraim/) |
+| Salsita Software | [salsita.ai](https://salsita.ai/)               |
 
 ## Explanation & Goals
 
