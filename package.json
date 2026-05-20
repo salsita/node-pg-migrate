@@ -55,7 +55,9 @@
   "author": "Theo Ephraim",
   "contributors": [
     "Salsita Software <jando@salsitasoft.com>",
-    "Christopher Quadflieg <chrissi92@hotmail.de>"
+    "Christopher Quadflieg <chrissi92@hotmail.de>",
+    "Breno A. <git@breno.tech>",
+    "Omar Diab <me@omardiab.com>"
   ],
   "type": "module",
   "exports": {

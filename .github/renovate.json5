@@ -67,6 +67,6 @@
   ],
   "vulnerabilityAlerts": {
     "labels": ["c: security"],
-    "assignees": ["@Shinigami92"]
+    "assignees": ["@Shinigami92", "@brenoepics", "@osdiab"]
   }
 }
