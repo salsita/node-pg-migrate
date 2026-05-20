@@ -190,7 +190,7 @@ export const builtInLoaders: Record<PredefinedLoader, MigrationLoader> = {
  */
 const defaultStrategies: MigrationLoaderStrategy[] = [
   { extensions: ['.sql'], loader: builtInLoaders.legacySql },
-  { extensions: ['.js', '.ts'], loader: builtInLoaders.default },
+  { extensions: ['.js', '.ts', '.cjs', '.mjs'], loader: builtInLoaders.default },
 ];
 
 /*************************

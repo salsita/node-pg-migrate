@@ -48,7 +48,7 @@ export interface CreateOptionsTemplate {
 }
 
 export interface CreateOptionsDefault {
-  language?: 'js' | 'ts' | 'sql';
+  language?: 'js' | 'ts' | 'sql' | 'cjs' | 'mjs';
   ignorePattern?: string;
 }
 
@@ -246,12 +246,12 @@ export class Migration implements RunMigration {
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
         : join(
-            import.meta.dirname,
-            '..',
-            '..',
-            'templates',
-            `migration-template.${await resolveSuffix(directory, options)}`
-          );
+          import.meta.dirname,
+          '..',
+          '..',
+          'templates',
+          `migration-template.${await resolveSuffix(directory, options)}`
+        );
     const suffix = getSuffixFromFileName(templateFileName);
 
     // file name looks like migrations/1391877300255_migration-title.js
