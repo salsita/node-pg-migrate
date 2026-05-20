@@ -81,13 +81,31 @@ Add `node-pg-migrate` to `scripts` section of your `package.json` so you are abl
 }
 ```
 
+```jsonc [CommonJS module]
+{
+  "scripts": {
+    // ..
+    "migrate": "node-pg-migrate -j cjs", // [!code ++]
+  },
+}
+```
+
+```jsonc [ES module]
+{
+  "scripts": {
+    // ..
+    "migrate": "node-pg-migrate -j mjs", // [!code ++]
+  },
+}
+```
+
 :::
 
 Now, lets create your first migration:
 
 ```bash
 npm run migrate create my-first-migration
-# creates migrations/xxx_my-first-migration.js or ts
+# creates migrations/xxx_my-first-migration.js, ts, cjs or mjs
 ```
 
 Open it and change the contents to:
