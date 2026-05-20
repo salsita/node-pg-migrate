@@ -160,7 +160,7 @@ const parser = yargs(process.argv.slice(2))
     [migrationFileLanguageArg]: {
       alias: 'j',
       defaultDescription: 'last one used or "js" if there is no migration yet',
-      choices: ['js', 'ts', 'sql'],
+      choices: ['js', 'ts', 'sql', 'cjs', 'mjs'],
       describe:
         'Language of the migration file (Only valid with the create action)',
       type: 'string',
@@ -266,9 +266,9 @@ let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
-let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
+let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | undefined = argv[
   migrationFileLanguageArg
-] as 'js' | 'ts' | 'sql' | undefined;
+] as 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | undefined;
 let MIGRATIONS_FILENAME_FORMAT: FilenameFormat | undefined = argv[
   migrationFilenameFormatArg
 ] as FilenameFormat | undefined;
@@ -345,8 +345,8 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILE_LANGUAGE,
       migrationFileLanguageArg,
       json,
-      (val): val is 'js' | 'ts' | 'sql' =>
-        val === 'js' || val === 'ts' || val === 'sql'
+      (val): val is 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' =>
+        val === 'js' || val === 'ts' || val === 'sql' || val === 'cjs' || val === 'mjs'
     );
     MIGRATIONS_FILENAME_FORMAT = applyIf(
       MIGRATIONS_FILENAME_FORMAT,
@@ -453,9 +453,9 @@ if (action === 'create') {
     ...(TEMPLATE_FILE_NAME
       ? { templateFileName: TEMPLATE_FILE_NAME }
       : {
-          language: MIGRATIONS_FILE_LANGUAGE,
-          ignorePattern: IGNORE_PATTERN,
-        }),
+        language: MIGRATIONS_FILE_LANGUAGE,
+        ignorePattern: IGNORE_PATTERN,
+      }),
   })
     .then(
       (
@@ -536,13 +536,13 @@ if (action === 'create') {
         ...databaseUrl,
         ...(typeof rejectUnauthorized === 'boolean'
           ? {
-              ssl: {
-                // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
-                // @ts-expect-error: ignore possible boolean for now
-                ...databaseUrl.ssl,
-                rejectUnauthorized,
-              },
-            }
+            ssl: {
+              // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
+              // @ts-expect-error: ignore possible boolean for now
+              ...databaseUrl.ssl,
+              rejectUnauthorized,
+            },
+          }
           : undefined),
       } as ClientConfig,
       // oxlint-disable-next-line typescript/no-non-null-assertion
@@ -572,8 +572,8 @@ if (action === 'create') {
   const promise =
     action === 'redo'
       ? migrationRunner(options('down')).then(() =>
-          migrationRunner(options('up', Number.POSITIVE_INFINITY, false))
-        )
+        migrationRunner(options('up', Number.POSITIVE_INFINITY, false))
+      )
       : migrationRunner(options(action));
   promise
     .then(() => {
