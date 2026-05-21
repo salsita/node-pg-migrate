@@ -160,7 +160,7 @@ const parser = yargs(process.argv.slice(2))
     [migrationFileLanguageArg]: {
       alias: 'j',
       defaultDescription: 'last one used or "js" if there is no migration yet',
-      choices: ['js', 'ts', 'sql', 'cjs', 'mjs'],
+      choices: ['js', 'ts', 'sql', 'cjs', 'mjs', 'cts', 'mts'],
       describe:
         'Language of the migration file (Only valid with the create action)',
       type: 'string',
@@ -266,14 +266,23 @@ let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
-let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | undefined =
-  argv[migrationFileLanguageArg] as
-    | 'js'
-    | 'ts'
-    | 'sql'
-    | 'cjs'
-    | 'mjs'
-    | undefined;
+let MIGRATIONS_FILE_LANGUAGE:
+  | 'js'
+  | 'ts'
+  | 'sql'
+  | 'cjs'
+  | 'mjs'
+  | 'cts'
+  | 'mts'
+  | undefined = argv[migrationFileLanguageArg] as
+  | 'js'
+  | 'ts'
+  | 'sql'
+  | 'cjs'
+  | 'mjs'
+  | 'cts'
+  | 'mts'
+  | undefined;
 let MIGRATIONS_FILENAME_FORMAT: FilenameFormat | undefined = argv[
   migrationFilenameFormatArg
 ] as FilenameFormat | undefined;
@@ -350,12 +359,14 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILE_LANGUAGE,
       migrationFileLanguageArg,
       json,
-      (val): val is 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' =>
+      (val): val is 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | 'cts' | 'mts' =>
         val === 'js' ||
         val === 'ts' ||
         val === 'sql' ||
         val === 'cjs' ||
-        val === 'mjs'
+        val === 'mjs' ||
+        val === 'cts' ||
+        val === 'mts'
     );
     MIGRATIONS_FILENAME_FORMAT = applyIf(
       MIGRATIONS_FILENAME_FORMAT,
