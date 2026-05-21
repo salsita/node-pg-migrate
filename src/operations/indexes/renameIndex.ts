@@ -49,8 +49,7 @@ export function renameIndex(mOptions: MigrationOptions): RenameIndex {
       case 'extension':
         return `ALTER INDEX ${indexNameStr}${noStr} DEPENDS ON EXTENSION ${newNameStr};`;
       case 'alter':
-        return `ALTER INDEX${ifExistsStr} ${indexNameStr} ALTER${columStr} ${columNumber}
-    SET STATISTICS ${integer};`;
+        return `ALTER INDEX${ifExistsStr} ${indexNameStr} ALTER${columStr} ${columNumber} SET STATISTICS ${integer};`;
       case 'all':
         return `ALTER INDEX ALL IN TABLESPACE ${indexNameStr}${ownerByStr} SET TABLESPACE ${newNameStr}${noWaitStr};`;
     }
