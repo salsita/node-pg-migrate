@@ -106,10 +106,10 @@ pgm.createIndex('table', [
 | Option        | Type                                  | Description                                     | Default Value |
 | ------------- | ------------------------------------- | ----------------------------------------------- | ------------- |
 | `clause`      | [AlterIndexAction](/migrations/#type) | action to perform on the index                  | `rename`      |
-| `ifExists`    | `boolean`                             | adds `IF EXISTS` clause | `false`       |
-| `no`          | `boolean`                             | adds `NO` clause to the action     |  `false`       |
+| `ifExists`    | `boolean`                             | adds `IF EXISTS` clause                         | `false`       |
+| `no`          | `boolean`                             | adds `NO` clause to the action                  | `false`       |
 | `columNumber` | `number`                              | column number for the index                     | `null`        |
-| `colum`       | `boolean`                             | column index  to alter            | `null`        |
+| `colum`       | `boolean`                             | column index to alter                           | `null`        |
 | `integer`     | `number`                              | integer value for the index                     | `null`        |
 | `ownedBy`     | `string` or `array[string]`           | sets the table and column the index is owned by | `null`        |
 | `noWait`      | `boolean`                             | adds `NOWAIT` clause                            | `false`       |
