@@ -9,7 +9,7 @@ This is useful when you need custom loading behavior, or when you want SQL files
 If `migrationLoaderStrategies` is not provided, the loader uses built-in defaults:
 
 - `.sql` files use the legacy SQL loader (`legacySql`)
-- `.js` , `.ts`, `.cjs` and `.mjs` files use the default loader (`default`)
+- `.js` , `.ts`, `.cjs`, `.mjs`, `.cts` and `.mts` files use the default loader (`default`)
 - unsupported extensions fall back to `default`
 
 This keeps existing behavior intact.
