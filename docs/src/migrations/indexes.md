@@ -83,3 +83,84 @@ pgm.createIndex('table', [
 | `concurrently` | `boolean` | drop this index concurrently |
 | `ifExists`     | `boolean` | default false                |
 | `cascade`      | `boolean` | default false                |
+
+:::
+
+## Operation: `renameIndex`
+
+#### `pgm.renameIndex( name, newName, options )`
+
+> [!IMPORTANT]
+> Rename an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterindex.html)
+
+### Arguments
+
+| Name      | Type               | Description                       |
+| --------- | ------------------ | --------------------------------- |
+| `name`    | `string`           | name of the index to rename       |
+| `newName` | `string` or `null` | new name for the index            |
+| `options` | `object`           | Check below for available options |
+
+#### Options
+
+| Option        | Type                                  | Description                                     | Default Value |
+| ------------- | ------------------------------------- | ----------------------------------------------- | ------------- |
+| `clause`      | [AlterIndexAction](/migrations/#type) | action to perform on the index                  | `rename`      |
+| `ifExists`    | `boolean`                             | default false                                   | `false`       |
+| `no`          | `boolean`                             | default false                                   | `false`       |
+| `columNumber` | `number`                              | column number for the index                     | `null`        |
+| `colum`       | `boolean`                             | column to alter                                 | `null`        |
+| `integer`     | `number`                              | integer value for the index                     | `null`        |
+| `ownedBy`     | `string` or `array[string]`           | sets the table and column the index is owned by | `null`        |
+| `noWait`      | `boolean`                             | adds `NOWAIT` clause                            | `false`       |
+
+### Examples
+
+::: code-group
+
+```ts [single column]
+pgm.renameIndex('index_name', 'new_index_name');
+//expected output: ALTER INDEX index_name RENAME TO new_index_name;
+```
+
+```ts [single column]
+pgm.renameIndex('index_name', 'new_index_name', { ifExists: true });
+//expected output: ALTER INDEX IF EXISTS index_name RENAME TO new_index_name;
+```
+
+```ts [single column]
+pgm.renameIndex('name', 'tablespace_name', { clause: 'set-table' }); // has ifExists option
+//expected output: ALTER INDEX name SET TABLESPACE tablespace_name;
+```
+
+```ts [single column]
+pgm.renameIndex('name', 'index_name', { clause: 'attach-partition' });
+//expected output: ALTER INDEX name ATTACH PARTITION index_name;
+```
+
+```ts [single column]
+pgm.renameIndex('name', 'extension_name', {
+  clause: 'extension',
+  no: true,
+});
+//expected output: ALTER INDEX name NO DEPENDS ON EXTENSION extension_name;
+```
+
+```ts [single column]
+pgm.renameIndex('index_name', null, {
+  clause: 'alter',
+  colum: true,
+  columNumber: 23,
+  integer: 100,
+}); // has ifExists option
+//expected output: ALTER INDEX index_name ALTER COLUMN 23 SET STATISTICS 100;
+```
+
+```ts [single column]
+pgm.renameIndex('index_name', 'new_tablespace', {
+  clause: 'all',
+  ownedBy: ['app_user', 'admin_user'],
+  noWait: true,
+});
+//expected output: ALTER INDEX ALL IN TABLESPACE index_name OWNED BY app_user, admin_user SET TABLESPACE new_tablespace NOWAIT;
+```
