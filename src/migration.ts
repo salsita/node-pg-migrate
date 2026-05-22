@@ -1,5 +1,5 @@
 import { glob } from 'glob';
-import { createReadStream, createWriteStream } from 'node:fs';
+import { createReadStream, createWriteStream, existsSync } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
@@ -58,6 +58,8 @@ export type CreateOptions = {
 } & (CreateOptionsTemplate | CreateOptionsDefault);
 
 const SEPARATOR = '_';
+
+const existsTsConfig = existsSync('./tsconfig.json');
 
 interface LoadMigrationFilesOptions {
   /**
@@ -160,12 +162,16 @@ async function getLastSuffix(
   }
 }
 
+const lastSuff = existsTsConfig ? 'ts' : 'js';
+
 async function resolveSuffix(
   directory: string,
   options: CreateOptionsDefault
 ): Promise<string> {
   const { language, ignorePattern } = options;
-  return language || (await getLastSuffix(directory, ignorePattern)) || 'js';
+  return (
+    language || (await getLastSuffix(directory, ignorePattern)) || lastSuff
+  );
 }
 
 export class Migration implements RunMigration {
