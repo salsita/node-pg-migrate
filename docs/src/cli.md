@@ -106,6 +106,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
 | `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
 from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other
@@ -140,6 +141,7 @@ Other available options are:
   "check-order": true,
   "verbose": true,
   "decamelize": false,
+  "tsconfig-paths": "./tsconfig.json",
 }
 ```
 

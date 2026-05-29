@@ -77,6 +77,7 @@ const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
 const advisoryLockModeArg = 'advisory-lock-mode';
+const tsconfigPathsArg = 'tsconfig-paths';
 
 const parser = yargs(process.argv.slice(2))
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -224,6 +225,12 @@ const parser = yargs(process.argv.slice(2))
       choices: ['fail', 'wait'],
       type: 'string',
     },
+    [tsconfigPathsArg]: {
+      defaultDescription: 'false',
+      describe:
+        "Enable jiti's tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover tsconfig.json, or a path to a specific tsconfig.json",
+      type: 'string',
+    },
   })
 
   .version()
@@ -301,6 +308,9 @@ let DECAMELIZE = argv[decamelizeArg];
 let ADVISORY_LOCK_MODE: 'fail' | 'wait' | undefined = argv[
   advisoryLockModeArg
 ] as 'fail' | 'wait' | undefined;
+let TSCONFIG_PATHS: boolean | string | undefined = parseTsconfigPaths(
+  argv[tsconfigPathsArg]
+);
 
 function applyIf<TArg, TKey extends string = string>(
   arg: TArg,
@@ -323,6 +333,33 @@ function isString(val: unknown): val is string {
 
 function isBoolean(val: unknown): val is boolean {
   return typeof val === 'boolean';
+}
+
+function isBooleanOrString(val: unknown): val is boolean | string {
+  return typeof val === 'boolean' || typeof val === 'string';
+}
+
+/**
+ * Coerces the `--tsconfig-paths` CLI value into the `boolean | string` shape that
+ * jiti expects: the literals `true`/`false` toggle auto-discovery, any other
+ * string is treated as an explicit path to a `tsconfig.json`.
+ */
+function parseTsconfigPaths(
+  val: string | undefined
+): boolean | string | undefined {
+  if (val === undefined) {
+    return undefined;
+  }
+
+  if (val === 'true') {
+    return true;
+  }
+
+  if (val === 'false') {
+    return false;
+  }
+
+  return val;
 }
 
 function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
@@ -396,6 +433,12 @@ function readJson(json: unknown): void {
     CHECK_ORDER = applyIf(CHECK_ORDER, checkOrderArg, json, isBoolean);
     VERBOSE = applyIf(VERBOSE, verboseArg, json, isBoolean);
     DECAMELIZE = applyIf(DECAMELIZE, decamelizeArg, json, isBoolean);
+    TSCONFIG_PATHS = applyIf(
+      TSCONFIG_PATHS,
+      tsconfigPathsArg,
+      json,
+      isBooleanOrString
+    );
     DB_CONNECTION = applyIf(
       DB_CONNECTION,
       databaseUrlVarArg,
@@ -605,6 +648,7 @@ if (action === 'create') {
       fake,
       decamelize: DECAMELIZE,
       advisoryLockMode: ADVISORY_LOCK_MODE,
+      tsconfigPaths: TSCONFIG_PATHS,
     };
   };
 
