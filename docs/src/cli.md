@@ -151,11 +151,11 @@ For example with a config like:
 {
   "dev": {
     "migrations-schema": "public",
-    "verbose": true
+    "verbose": true,
   },
   "prod": {
-    "migrations-schema": "myapp"
-  }
+    "migrations-schema": "myapp",
+  },
 }
 ```
 
