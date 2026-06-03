@@ -76,6 +76,7 @@ const decamelizeArg = 'decamelize';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
+const advisoryLockModeArg = 'advisory-lock-mode';
 
 const parser = yargs(process.argv.slice(2))
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -216,6 +217,13 @@ const parser = yargs(process.argv.slice(2))
       describe: 'Treats number argument to up/down migration as timestamp',
       type: 'boolean',
     },
+    [advisoryLockModeArg]: {
+      default: 'fail',
+      describe:
+        'Controls behavior when the migration advisory lock is already held by another process. Use "fail" to throw immediately or "wait" to block until the lock becomes available',
+      choices: ['fail', 'wait'],
+      type: 'string',
+    },
   })
 
   .version()
@@ -290,6 +298,9 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
+let ADVISORY_LOCK_MODE: 'fail' | 'wait' | undefined = argv[
+  advisoryLockModeArg
+] as 'fail' | 'wait' | undefined;
 
 function applyIf<TArg, TKey extends string = string>(
   arg: TArg,
@@ -405,6 +416,12 @@ function readJson(json: unknown): void {
         ssl: json.ssl,
       };
     }
+    ADVISORY_LOCK_MODE = applyIf(
+      ADVISORY_LOCK_MODE,
+      advisoryLockModeArg,
+      json,
+      (val): val is 'fail' | 'wait' => val === 'fail' || val === 'wait'
+    );
   } else {
     DB_CONNECTION ??= json as string | ConnectionParametersType | ClientConfig;
   }
@@ -455,6 +472,7 @@ MIGRATIONS_TABLE ??= 'pgmigrations';
 SCHEMA ??= ['public'];
 CHECK_ORDER ??= true;
 VERBOSE ??= true;
+ADVISORY_LOCK_MODE ??= 'fail';
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
@@ -586,6 +604,7 @@ if (action === 'create') {
       lockValue,
       fake,
       decamelize: DECAMELIZE,
+      advisoryLockMode: ADVISORY_LOCK_MODE,
     };
   };
 
