@@ -191,6 +191,56 @@ describe('runner', () => {
     expect(executedMigrations).toHaveLength(0);
   });
 
+  it('should call pg_advisory_lock when advisory lock mode is set to "wait"', async () => {
+    const dbClient = {
+      query: vi.fn((query) => {
+        switch (query) {
+          case 'SELECT pg_advisory_lock(7241865325823964)': {
+            return Promise.resolve();
+          }
+
+          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+            return Promise.resolve({
+              rows: [{}], // migration table exists
+            });
+          }
+
+          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+            return Promise.resolve({
+              rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
+            });
+          }
+
+          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+            return Promise.resolve({
+              rows: [], // no migrations executed
+            });
+          }
+
+          default: {
+            return Promise.resolve({ rows: [{}] }); // bypass other queries
+          }
+        }
+      }),
+    } as unknown as ClientBase;
+
+    await expect(
+      runner({
+        advisoryLockMode: 'wait',
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        dir: 'test/cockroach',
+        direction: 'up',
+      })
+    ).resolves.not.toThrow();
+
+    // Verify that the query with blocking lock was called
+    expect(dbClient.query).toHaveBeenCalledWith(
+      'SELECT pg_advisory_lock(7241865325823964)',
+      undefined
+    );
+  });
+
   it('should use the provided lock value', async () => {
     const customLockValue = 12345;
     const dbClient = {
