@@ -1,3 +1,4 @@
+import type { Jiti } from 'jiti';
 import { createJiti } from 'jiti';
 import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
@@ -75,6 +76,21 @@ export interface MigrationLoaderConfig {
   migrationLoaderStrategies?: MigrationLoaderStrategy[];
 
   /**
+   * Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when
+   * loading TypeScript/JavaScript migration files. This makes `compilerOptions.paths`
+   * aliases defined in your `tsconfig.json` resolvable from within migration files.
+   *
+   * - `true`: auto-discover the nearest `tsconfig.json` (walking up from `cwd()`)
+   * - `string`: explicit path to a `tsconfig.json` file
+   * - `false` / `undefined` (default): disabled
+   *
+   * Has no effect on the built-in SQL loaders.
+   *
+   * @default false
+   */
+  tsconfigPaths?: boolean | string;
+
+  /**
    * Redirect messages to this logger object, rather than `console`.
    */
   logger?: Logger;
@@ -105,16 +121,20 @@ export interface MigrationLoaderStrategy {
 
 /**
  * Creates a default migration loader that uses jiti to load migrations from the file paths.
+ * @param jitiInstance - The jiti instance to use to load migration files. Defaults to the shared {@link jiti} instance.
  * @returns The default migration loader.
  */
-export function createDefaultMigrationLoader(): MigrationLoader {
+export function createDefaultMigrationLoader(
+  jitiInstance: Jiti = jiti
+): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
     const migrationUnits: MigrationUnit[] = [];
 
     // Load migrations sequentially to avoid unnecessary parallelism and
     // potential handle pressure from many concurrent imports.
     for (const filePath of filePaths) {
-      const action: MigrationBuilderActions = await jiti.import(filePath);
+      const action: MigrationBuilderActions =
+        await jitiInstance.import(filePath);
       migrationUnits.push({
         id: filePath,
         filePaths: [filePath],
@@ -186,41 +206,73 @@ export const builtInLoaders: Record<PredefinedLoader, MigrationLoader> = {
 };
 
 /**
- * Default migration loader strategies.
+ * Builds the default migration loader strategies for a given default loader.
+ * @param defaultLoader - The loader to use for non-SQL extensions.
+ * @returns The default migration loader strategies.
  */
-const defaultStrategies: MigrationLoaderStrategy[] = [
-  { extensions: ['.sql'], loader: builtInLoaders.legacySql },
-  {
-    extensions: ['.js', '.ts', '.cjs', '.mjs', '.cts', '.mts'],
-    loader: builtInLoaders.default,
-  },
-];
+function getDefaultStrategies(
+  defaultLoader: MigrationLoader
+): MigrationLoaderStrategy[] {
+  return [
+    { extensions: ['.sql'], loader: builtInLoaders.legacySql },
+    {
+      extensions: ['.js', '.ts', '.cjs', '.mjs', '.cts', '.mts'],
+      loader: defaultLoader,
+    },
+  ];
+}
 
 /*************************
  * Loader utility functions
  *************************/
 
 /**
+ * Resolves the default (non-SQL) migration loader for a given configuration.
+ *
+ * When {@link MigrationLoaderConfig.tsconfigPaths} is enabled, a dedicated jiti
+ * instance is created so that TypeScript path aliases are resolved; otherwise the
+ * shared default loader (bound to the shared {@link jiti} instance) is reused.
+ *
+ * @param config - The Runner configuration object.
+ * @returns The default migration loader.
+ */
+function resolveDefaultLoader(config: MigrationLoaderConfig): MigrationLoader {
+  if (config.tsconfigPaths === undefined || config.tsconfigPaths === false) {
+    return builtInLoaders.default;
+  }
+
+  const configuredJiti = createJiti(process.cwd(), {
+    tsconfigPaths: config.tsconfigPaths,
+  });
+
+  return createDefaultMigrationLoader(configuredJiti);
+}
+
+/**
  * Resolves the migration loader for a given extension.
  * @param config - The Runner configuration object.
  * @param extension - The extension to resolve the loader for.
+ * @param defaultLoader - The fallback loader to use when no strategy matches or the `default` predefined loader is referenced.
  * @returns The migration loader.
  */
 function resolveMigrationLoader(
   config: MigrationLoaderConfig,
-  extension: string
+  extension: string,
+  defaultLoader: MigrationLoader
 ): MigrationLoader {
   const normalizedExtension = extension.toLowerCase();
-  const strategies = config.migrationLoaderStrategies ?? defaultStrategies;
+  const strategies =
+    config.migrationLoaderStrategies ?? getDefaultStrategies(defaultLoader);
 
   const foundStrategy = strategies.find((strategy) =>
     strategy.extensions.some((ext) => ext.toLowerCase() === normalizedExtension)
   );
 
-  const loader = foundStrategy?.loader ?? builtInLoaders.default;
+  const loader = foundStrategy?.loader ?? defaultLoader;
 
   if (typeof loader === 'string') {
-    const resolved = builtInLoaders[loader];
+    const resolved =
+      loader === 'default' ? defaultLoader : builtInLoaders[loader];
     if (!resolved) {
       throw new Error(`Unknown predefined loader: ${loader}`);
     }
@@ -273,9 +325,10 @@ export async function loadMigrationUnits(
   filePaths: string[]
 ): Promise<MigrationUnit[]> {
   const migrationUnits: MigrationUnit[] = [];
+  const defaultLoader = resolveDefaultLoader(config);
   const filesByExtension = associatePathsToExtensions(filePaths);
   for (const [extension, filePaths] of filesByExtension) {
-    const loader = resolveMigrationLoader(config, extension);
+    const loader = resolveMigrationLoader(config, extension, defaultLoader);
     const units = await loader(filePaths);
     migrationUnits.push(...units);
   }

@@ -73,6 +73,33 @@ await runner({
 });
 ```
 
+## TypeScript Path Aliases (`tsconfigPaths`)
+
+The default loader uses [`jiti`](https://github.com/unjs/jiti) to load `.js` / `.ts` migration files.
+By default, `compilerOptions.paths` aliases from your `tsconfig.json` are **not** resolved.
+Set `tsconfigPaths` to enable them:
+
+- `true` — auto-discover the nearest `tsconfig.json` (walking up from `cwd()`)
+- a `string` — explicit path to a `tsconfig.json` file
+- `false` / omitted (default) — disabled
+
+```ts
+import { runner } from 'node-pg-migrate';
+
+await runner({
+  databaseUrl: process.env.DATABASE_URL!,
+  dir: 'migrations',
+  direction: 'up',
+  migrationsTable: 'pgmigrations',
+  // resolve `compilerOptions.paths` aliases inside migration files
+  tsconfigPaths: './tsconfig.json',
+});
+```
+
+This option only affects the jiti-based loader; it has no effect on the SQL loaders.
+When a custom `migrationLoaderStrategies` array maps an extension to the `'default'` predefined
+loader, that loader honors `tsconfigPaths` as well.
+
 ## Strategy Matching Rules
 
 - Extension matching is case-insensitive

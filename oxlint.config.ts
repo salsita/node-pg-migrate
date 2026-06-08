@@ -8,6 +8,7 @@ export default defineConfig({
     'templates',
     'test/jiti/migrations/**/*.js',
     'test/jiti/migrations/**/*.mjs',
+    'test/jiti/tsconfig-paths/**',
   ],
   options: {
     reportUnusedDisableDirectives: 'error',
