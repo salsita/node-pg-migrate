@@ -133,7 +133,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      expect(nextPrefix).toEqual('097');
+      expect(nextPrefix).toEqual('098');
     });
 
     it('should fail to get the next index with invalid filenames', async () => {
