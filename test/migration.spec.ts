@@ -67,7 +67,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(71);
+      expect(filePaths).toHaveLength(72);
 
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
