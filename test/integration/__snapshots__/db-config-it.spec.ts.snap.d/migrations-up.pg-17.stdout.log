@@ -95,7 +95,6 @@
 > - 094_unlogged_table
 > - 095_index_nulls
 > - 096_expression_index
-> - 097_rename_index
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
