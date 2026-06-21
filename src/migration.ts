@@ -48,7 +48,7 @@ export interface CreateOptionsTemplate {
 }
 
 export interface CreateOptionsDefault {
-  language?: 'js' | 'ts' | 'sql';
+  language?: 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | 'cts' | 'mts';
   ignorePattern?: string;
 }
 

@@ -17,5 +17,11 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true
   },
-  "exclude": ["node_modules", "templates", "dist", "migrations"]
+  "exclude": [
+    "node_modules",
+    "templates",
+    "dist",
+    "migrations",
+    "test/jiti/tsconfig-paths"
+  ]
 }

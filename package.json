@@ -1,6 +1,6 @@
 {
   "name": "node-pg-migrate",
-  "version": "9.0.0-alpha.9",
+  "version": "9.0.0-alpha.11",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "git clean -fdx --exclude .claude",
@@ -96,8 +96,8 @@
     "@types/node": "20.19.39",
     "@types/pg": "8.20.0",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.1.6",
-    "@vitest/ui": "4.1.6",
+    "@vitest/coverage-v8": "4.1.7",
+    "@vitest/ui": "4.1.7",
     "config": "4.4.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
@@ -111,7 +111,7 @@
     "tsdown": "0.21.10",
     "typescript": "6.0.3",
     "vitepress": "1.6.4",
-    "vitest": "4.1.6"
+    "vitest": "4.1.7"
   },
   "peerDependencies": {
     "@types/pg": ">=6.0.0 <9.0.0",
@@ -122,7 +122,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "pnpm@10.34.1",
   "engines": {
     "node": ">=20.11.0"
   }

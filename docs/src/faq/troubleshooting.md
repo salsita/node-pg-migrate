@@ -60,3 +60,13 @@ For up-to-date default values from `node-postgres`, [see](https://github.com/bri
 
 Starting from version 8.0, `node-pg-migrate` will refuse to run migrations if `DATABASE_URL` is not set, or if the required environment variables (`PGHOST`, `PGUSER`, `PGDATABASE`) are missing. This check ensures that migrations do not run with default or unintended connection parameters.
 This behavior is based on the `node-postgres` library, which synthesizes some default connection parameters. For example, `pg` sets the `host` to `localhost` and the `port` to `5432` if they are missing.
+
+## Another migration is already running
+
+You may encounter this error when running migration processes concurrently against the same PostgreSQL instance, even if they target different databases.
+
+By default, migration locking uses a PostgreSQL advisory lock that is scoped to the entire PostgreSQL instance. As a result, only one migration process can hold the lock at a time. When multiple migration processes start simultaneously, subsequent processes will fail with the error:
+
+> Another migration is already running
+
+To avoid this, set `advisoryLockMode` to `'wait'`. In this mode, a migration process will wait for the advisory lock to be released instead of failing immediately.

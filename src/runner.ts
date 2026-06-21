@@ -9,6 +9,8 @@ import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
 import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
 
+type AdvisoryLockMode = 'fail' | 'wait';
+
 export interface RunnerOptionConfig {
   /**
    * The table storing which migrations have been run.
@@ -135,6 +137,11 @@ export interface RunnerOptionConfig {
    * Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method).
    */
   verbose?: boolean;
+
+  /**
+   * Controls behavior when the migration advisory lock is already held by another process. Use `fail` to throw immediately or wait to block until the lock becomes available. Default to `fail`
+   */
+  advisoryLockMode?: AdvisoryLockMode;
 }
 
 export interface RunnerOptionUrl {
@@ -215,14 +222,22 @@ export async function loadMigrations(
 
 async function lock(
   db: DBConnection,
-  lockValue: number = PG_MIGRATE_LOCK_ID
+  lockValue: number = PG_MIGRATE_LOCK_ID,
+  advisoryLockMode: AdvisoryLockMode = 'fail'
 ): Promise<void> {
+  if (advisoryLockMode === 'wait') {
+    await db.query(`SELECT pg_advisory_lock(${lockValue})`);
+    return;
+  }
+
   const [result] = await db.select(
     `SELECT pg_try_advisory_lock(${lockValue}) AS "lockObtained"`
   );
 
   if (!result.lockObtained) {
-    throw new Error('Another migration is already running');
+    throw new Error(
+      "Another migration is already running. Advisory lock mode is set to 'fail'."
+    );
   }
 }
 
@@ -421,7 +436,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     await db.createConnection();
 
     if (!options.noLock) {
-      await lock(db, options.lockValue);
+      await lock(db, options.lockValue, options.advisoryLockMode);
     }
 
     if (options.schema) {

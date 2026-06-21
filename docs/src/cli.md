@@ -94,17 +94,19 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 | `migrations-table`          | `t`     | `pgmigrations`                  | The table storing which migrations have been run                                                                                                                                                                                                                                        |
 | `ignore-pattern`            |         | `undefined`                     | Regex pattern for file names to ignore (ignores files starting with `.` by default). Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns |
 | `migration-filename-format` |         | `timestamp`                     | Choose prefix of file, `utc` (`20200605075829074`), `timestamp` (`1591343909074`), or `index` (`0012`)                                                                                                                                                                                  |
-| `migration-file-language`   | `j`     | `js`                            | Language of the migration file to create (`js`, `ts` or `sql`)                                                                                                                                                                                                                          |
+| `migration-file-language`   | `j`     | `js`                            | Language of the migration file to create (`js`, `ts`, `sql`, `cjs`, `mjs`, `cts`, `mts`)                                                                                                                                                                                                |
 | `template-file-name`        |         | `undefined`                     | Utilize a custom migration template file with language inferred from its extension. The file should export the up method, accepting a MigrationBuilder instance.                                                                                                                        |
 | `envPath`                   |         | `same level where it's invoked` | Retrieve the path to a .env file. This feature proves handy when dealing with nested projects or when referencing a global .env file.                                                                                                                                                   |
 | `timestamp`                 |         | `false`                         | Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)                                                                                                                            |
 | `check-order`               |         | `true`                          | Check order of migrations before running them, to switch it off supply `--no-check-order`                                                                                                                                                                                               |
 | `single-transaction`        |         | `true`                          | Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back, to switch it off supply `--no-single-transaction`                                                                                                                    |
 | `no-lock`                   |         | `false`                         | Disables locking mechanism and checks                                                                                                                                                                                                                                                   |
+| `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
 | `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
 | `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
 from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other
@@ -125,16 +127,40 @@ Other available options are:
 ```jsonc
 {
   "schema": "public",
-  "createSchema": false,
-  "migrationsDir": "migrations",
-  "migrationsSchema": "public",
-  "createMigrationsSchema": false,
-  "migrationsTable": "pgmigrations",
-  "migrationFilenameFormat": "utc",
-  "migrationFileLanguage": "js",
-  "ignorePattern": undefined,
-  "checkOrder": true,
+  "create-schema": false,
+  "database-url-var": "SECRET_DB_URL",
+  "migrations-dir": "migrations",
+  "use-glob": false,
+  "migrations-schema": "public",
+  "create-migrations-schema": false,
+  "migrations-table": "pgmigrations",
+  "migration-filename-format": "utc",
+  "migration-file-language": "js",
+  "ignore-pattern": "/SKIP$/",
+  "template-file-name": "templates/new-migration.js",
+  "check-order": true,
   "verbose": true,
   "decamelize": false,
+  "tsconfig-paths": "./tsconfig.json",
 }
 ```
+
+If you want to vary the configuration (e.g. for different environments), you can provide a map of configuration
+groups and specify which to use with the `--config-value` command line option.
+
+For example with a config like:
+
+```jsonc
+{
+  "dev": {
+    "migrations-schema": "public",
+    "verbose": true,
+  },
+  "prod": {
+    "migrations-schema": "myapp",
+  },
+}
+```
+
+The command `node-pg-migrate --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
+There are no constraints on how you name your configuration groups.

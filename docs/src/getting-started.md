@@ -87,7 +87,7 @@ Now, lets create your first migration:
 
 ```bash
 npm run migrate create my-first-migration
-# creates migrations/xxx_my-first-migration.js or ts
+# creates migrations/xxx_my-first-migration.js, ts, cjs, mjs, cts or mts
 ```
 
 Open it and change the contents to:

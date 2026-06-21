@@ -76,6 +76,8 @@ const decamelizeArg = 'decamelize';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
+const advisoryLockModeArg = 'advisory-lock-mode';
+const tsconfigPathsArg = 'tsconfig-paths';
 
 const parser = yargs(process.argv.slice(2))
   .usage('Usage: $0 [up|down|create|redo] [migrationName] [options]')
@@ -160,7 +162,7 @@ const parser = yargs(process.argv.slice(2))
     [migrationFileLanguageArg]: {
       alias: 'j',
       defaultDescription: 'last one used or "js" if there is no migration yet',
-      choices: ['js', 'ts', 'sql'],
+      choices: ['js', 'ts', 'sql', 'cjs', 'mjs', 'cts', 'mts'],
       describe:
         'Language of the migration file (Only valid with the create action)',
       type: 'string',
@@ -216,6 +218,19 @@ const parser = yargs(process.argv.slice(2))
       describe: 'Treats number argument to up/down migration as timestamp',
       type: 'boolean',
     },
+    [advisoryLockModeArg]: {
+      default: 'fail',
+      describe:
+        'Controls behavior when the migration advisory lock is already held by another process. Use "fail" to throw immediately or "wait" to block until the lock becomes available',
+      choices: ['fail', 'wait'],
+      type: 'string',
+    },
+    [tsconfigPathsArg]: {
+      defaultDescription: 'false',
+      describe:
+        "Enable jiti's tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover tsconfig.json, or a path to a specific tsconfig.json",
+      type: 'string',
+    },
   })
 
   .version()
@@ -266,9 +281,23 @@ let CREATE_SCHEMA = argv[createSchemaArg];
 let MIGRATIONS_SCHEMA = argv[migrationsSchemaArg];
 let CREATE_MIGRATIONS_SCHEMA = argv[createMigrationsSchemaArg];
 let MIGRATIONS_TABLE = argv[migrationsTableArg];
-let MIGRATIONS_FILE_LANGUAGE: 'js' | 'ts' | 'sql' | undefined = argv[
-  migrationFileLanguageArg
-] as 'js' | 'ts' | 'sql' | undefined;
+let MIGRATIONS_FILE_LANGUAGE:
+  | 'js'
+  | 'ts'
+  | 'sql'
+  | 'cjs'
+  | 'mjs'
+  | 'cts'
+  | 'mts'
+  | undefined = argv[migrationFileLanguageArg] as
+  | 'js'
+  | 'ts'
+  | 'sql'
+  | 'cjs'
+  | 'mjs'
+  | 'cts'
+  | 'mts'
+  | undefined;
 let MIGRATIONS_FILENAME_FORMAT: FilenameFormat | undefined = argv[
   migrationFilenameFormatArg
 ] as FilenameFormat | undefined;
@@ -276,6 +305,12 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
+let ADVISORY_LOCK_MODE: 'fail' | 'wait' | undefined = argv[
+  advisoryLockModeArg
+] as 'fail' | 'wait' | undefined;
+let TSCONFIG_PATHS: boolean | string | undefined = parseTsconfigPaths(
+  argv[tsconfigPathsArg]
+);
 
 function applyIf<TArg, TKey extends string = string>(
   arg: TArg,
@@ -298,6 +333,33 @@ function isString(val: unknown): val is string {
 
 function isBoolean(val: unknown): val is boolean {
   return typeof val === 'boolean';
+}
+
+function isBooleanOrString(val: unknown): val is boolean | string {
+  return typeof val === 'boolean' || typeof val === 'string';
+}
+
+/**
+ * Coerces the `--tsconfig-paths` CLI value into the `boolean | string` shape that
+ * jiti expects: the literals `true`/`false` toggle auto-discovery, any other
+ * string is treated as an explicit path to a `tsconfig.json`.
+ */
+function parseTsconfigPaths(
+  val: string | undefined
+): boolean | string | undefined {
+  if (val === undefined) {
+    return undefined;
+  }
+
+  if (val === 'true') {
+    return true;
+  }
+
+  if (val === 'false') {
+    return false;
+  }
+
+  return val;
 }
 
 function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
@@ -345,8 +407,14 @@ function readJson(json: unknown): void {
       MIGRATIONS_FILE_LANGUAGE,
       migrationFileLanguageArg,
       json,
-      (val): val is 'js' | 'ts' | 'sql' =>
-        val === 'js' || val === 'ts' || val === 'sql'
+      (val): val is 'js' | 'ts' | 'sql' | 'cjs' | 'mjs' | 'cts' | 'mts' =>
+        val === 'js' ||
+        val === 'ts' ||
+        val === 'sql' ||
+        val === 'cjs' ||
+        val === 'mjs' ||
+        val === 'cts' ||
+        val === 'mts'
     );
     MIGRATIONS_FILENAME_FORMAT = applyIf(
       MIGRATIONS_FILENAME_FORMAT,
@@ -365,6 +433,12 @@ function readJson(json: unknown): void {
     CHECK_ORDER = applyIf(CHECK_ORDER, checkOrderArg, json, isBoolean);
     VERBOSE = applyIf(VERBOSE, verboseArg, json, isBoolean);
     DECAMELIZE = applyIf(DECAMELIZE, decamelizeArg, json, isBoolean);
+    TSCONFIG_PATHS = applyIf(
+      TSCONFIG_PATHS,
+      tsconfigPathsArg,
+      json,
+      isBooleanOrString
+    );
     DB_CONNECTION = applyIf(
       DB_CONNECTION,
       databaseUrlVarArg,
@@ -385,6 +459,12 @@ function readJson(json: unknown): void {
         ssl: json.ssl,
       };
     }
+    ADVISORY_LOCK_MODE = applyIf(
+      ADVISORY_LOCK_MODE,
+      advisoryLockModeArg,
+      json,
+      (val): val is 'fail' | 'wait' => val === 'fail' || val === 'wait'
+    );
   } else {
     DB_CONNECTION ??= json as string | ConnectionParametersType | ClientConfig;
   }
@@ -435,6 +515,7 @@ MIGRATIONS_TABLE ??= 'pgmigrations';
 SCHEMA ??= ['public'];
 CHECK_ORDER ??= true;
 VERBOSE ??= true;
+ADVISORY_LOCK_MODE ??= 'fail';
 
 if (action === 'create') {
   // replaces spaces with dashes - should help fix some errors
@@ -566,6 +647,8 @@ if (action === 'create') {
       lockValue,
       fake,
       decamelize: DECAMELIZE,
+      advisoryLockMode: ADVISORY_LOCK_MODE,
+      tsconfigPaths: TSCONFIG_PATHS,
     };
   };
 
