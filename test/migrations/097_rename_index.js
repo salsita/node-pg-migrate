@@ -1,25 +1,10 @@
 export const up = (pgm) => {
-  const schema = 'foobar';
-  const tableName = { schema, name: 'barfoo' };
-  const columnName = 'bazfoo';
-
-  pgm.createSchema(schema);
-  pgm.createTable(tableName, {
-    foo_id: {
-      type: 'serial',
-      primaryKey: true,
-    },
-    [columnName]: {
-      type: 'integer',
-      notNull: true,
-    },
-  });
-  pgm.createIndex(tableName, columnName);
-
-  const oldIndexName = pgm.getIndexName(tableName, columnName);
+  const currentIndexName = 'idxfoo';
   const newIndexName = 'quxfoo';
-  pgm.renameIndex(oldIndexName, newIndexName);
-  pgm.dropIndex(tableName, newIndexName);
+  pgm.createIndex('t1', ['nmbr'], { name: currentIndexName });
+
+  pgm.renameIndex(currentIndexName, newIndexName);
+  pgm.dropIndex('t1', [], { name: newIndexName });
 };
 
 export const down = () => null;
