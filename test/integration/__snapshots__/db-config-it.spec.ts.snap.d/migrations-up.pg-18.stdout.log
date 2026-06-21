@@ -95,7 +95,6 @@
 > - 094_unlogged_table
 > - 095_index_nulls
 > - 096_expression_index
-> - 097_rename_index
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
@@ -862,13 +861,6 @@ CREATE INDEX "pgm_users_meta_remove_path_operator_idx" ON "pgm_users" ((meta #- 
 CREATE INDEX "pgm_users_meta_path_exists_operator_idx" ON "pgm_users" ((meta @? '$.id ? (@ == 1)'));
 CREATE INDEX "pgm_users_meta_path_predicate_operator_idx" ON "pgm_users" ((meta @@ '$.id == 1'));
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('096_expression_index', NOW());
-
-
-### MIGRATION 097_rename_index (UP) ###
-CREATE INDEX "idxfoo" ON "t1" ("nmbr");
-ALTER INDEX "idxfoo" RENAME TO "quxfoo";
-DROP INDEX "quxfoo";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_rename_index', NOW());
 
 
 Migrations complete!
