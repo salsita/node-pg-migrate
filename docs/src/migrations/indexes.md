@@ -118,11 +118,11 @@ pgm.renameIndex('index_name', 'new_index_name');
 
 ### Arguments
 
-| Name      | Type               | Description                       |
-| --------- | ------------------ | --------------------------------- |
-| `name`    | `string`           | name of the index to rename       |
-| `newName` | `string` or `null` | new name for the param            |
-| `options` | `object`           | Check below for available options |
+| Name      | Type     | Description                       |
+| --------- | -------- | --------------------------------- |
+| `name`    | `string` | name of the index to rename       |
+| `newName` | `string` | new name for the param            |
+| `options` | `object` | Check below for available options |
 
 #### Options
 
@@ -131,11 +131,11 @@ pgm.renameIndex('index_name', 'new_index_name');
 | `clause`      | [AlterIndexAction](/migrations/#type) | action to perform on the index                  | `set-table`   |
 | `ifExists`    | `boolean`                             | adds `IF EXISTS` clause                         | `false`       |
 | `no`          | `boolean`                             | adds `NO` clause to the action                  | `false`       |
-| `columNumber` | `number`                              | column number for the index                     | `null`        |
-| `colum`       | `boolean`                             | column index to alter                           | `null`        |
-| `integer`     | `number`                              | integer value for the index                     | `null`        |
 | `ownedBy`     | `string` or `array[string]`           | sets the table and column the index is owned by | `null`        |
 | `noWait`      | `boolean`                             | adds `NOWAIT` clause                            | `false`       |
+<!-- | `columNumber` | `number`                              | column number for the index                     | `null`        |
+| `colum`       | `boolean`                             | column index to alter                           | `null`        |
+| `integer`     | `number`                              | integer value for the index                     | `null`        | -->
 
 ### Examples
 
@@ -164,15 +164,15 @@ pgm.alterIndex('name', 'extension_name', {
 //expected output: ALTER INDEX name NO DEPENDS ON EXTENSION extension_name;
 ```
 
-```ts [single column]
-pgm.alterIndex('index_name', null, {
+<!-- ```ts [single column]
+pgm.alterIndex('index_name', {
   clause: 'alter',
   colum: true,
   columNumber: 23,
   integer: 100,
 }); // has ifExists option
 //expected output: ALTER INDEX index_name ALTER COLUMN 23 SET STATISTICS 100;
-```
+``` -->
 
 ```ts [single column]
 pgm.alterIndex('index_name', 'new_tablespace', {

@@ -30,7 +30,7 @@ export type AlterIndexAction =
   | 'set-table'
   | 'attach-partition'
   | 'extension'
-  | 'alter'
+  // | "alter" -- breaking change, not supported yet
   | 'all';
 
 /**
