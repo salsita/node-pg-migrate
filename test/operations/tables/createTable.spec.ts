@@ -728,6 +728,29 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
         }
       );
 
+      it('should support array column type options', () => {
+        const arrayDimension = 8;
+
+        const statement = createTableFn('arrays', {
+          tags: {
+            type: PgType.TEXT,
+            array: true,
+          },
+          scores: {
+            type: PgType.INTEGER,
+            array: arrayDimension,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE TABLE "arrays" (
+  "tags" text ARRAY,
+  "scores" integer ARRAY[${arrayDimension}]
+);`
+        );
+      });
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(createTableFn.reverse).toBeTypeOf('function');

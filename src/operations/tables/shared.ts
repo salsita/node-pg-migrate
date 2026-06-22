@@ -35,6 +35,8 @@ export type SequenceGeneratedOptions = {
 export interface ColumnDefinition extends Partial<ReferencesOptions> {
   type: string;
 
+  array?: boolean | number;
+
   collation?: string;
 
   unique?: boolean;
@@ -219,6 +221,7 @@ export function parseColumns(
     columns: Object.entries(columnsWithOptions).map(([columnName, options]) => {
       const {
         type,
+        array,
         collation,
         default: defaultValue,
         unique,
@@ -302,7 +305,14 @@ export function parseColumns(
       const constraintsStr =
         constraints.length > 0 ? ` ${constraints.join(' ')}` : '';
 
-      const sType = typeof type === 'object' ? mOptions.literal(type) : type;
+      const baseType = typeof type === 'object' ? mOptions.literal(type) : type;
+
+      const sType =
+        array === true
+          ? `${baseType} ARRAY`
+          : typeof array === 'number'
+            ? `${baseType} ARRAY[${array}]`
+            : baseType;
 
       return `${mOptions.literal(columnName)} ${sType}${constraintsStr}`;
     }),
