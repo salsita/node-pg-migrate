@@ -59,10 +59,14 @@
 
 #### Options
 
-| Option     | Type      | Description                        |
-| ---------- | --------- | ---------------------------------- |
-| `ifExists` | `boolean` | Drops constraint only if it exists |
-| `cascade`  | `boolean` | Drops also dependent objects       |
+| Option          | Type      | Description                                                                  |
+| --------------- | --------- | ---------------------------------------------------------------------------- |
+| `ifExists`      | `boolean` | Adds `IF EXISTS` to `DROP CONSTRAINT` so a missing constraint does not error |
+| `ifTableExists` | `boolean` | Adds `IF EXISTS` to `ALTER TABLE` so a missing table does not error          |
+| `cascade`       | `boolean` | Drops also dependent objects                                                 |
+
+> [!NOTE]
+> `ifExists` only guards the constraint name (`DROP CONSTRAINT IF EXISTS`). `ifTableExists` guards the table (`ALTER TABLE IF EXISTS`) and can hide typos, schema mistakes, or migration-order issues. It is mainly useful for retry-safe non-transactional migrations.
 
 ## Operation: `renameConstraint`
 

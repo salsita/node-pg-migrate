@@ -31,6 +31,37 @@ describe('operations', () => {
           'ALTER TABLE "distributors" DROP CONSTRAINT IF EXISTS "zipchk" CASCADE;'
         );
       });
+
+      it.each([
+        [
+          'ifExists',
+          { ifExists: true },
+          'ALTER TABLE "distributors" DROP CONSTRAINT IF EXISTS "zipchk";',
+        ],
+        [
+          'ifTableExists',
+          { ifTableExists: true },
+          'ALTER TABLE IF EXISTS "distributors" DROP CONSTRAINT "zipchk";',
+        ],
+        [
+          'ifTableExists and ifExists',
+          { ifTableExists: true, ifExists: true },
+          'ALTER TABLE IF EXISTS "distributors" DROP CONSTRAINT IF EXISTS "zipchk";',
+        ],
+        [
+          'ifTableExists, ifExists and cascade',
+          { ifTableExists: true, ifExists: true, cascade: true },
+          'ALTER TABLE IF EXISTS "distributors" DROP CONSTRAINT IF EXISTS "zipchk" CASCADE;',
+        ],
+      ] as const)(
+        'should return sql statement with %s',
+        (_, options, expected) => {
+          const statement = dropConstraintFn('distributors', 'zipchk', options);
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe(expected);
+        }
+      );
     });
   });
 });

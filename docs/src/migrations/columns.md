@@ -6,32 +6,48 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 It is an object (key/value) where each key is the name of the column,
 and the value is another object that defines the options for the column.
 
-| Option                        | Type                                  | Description                                                                                  |
-| ----------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `type`                        | `string`                              | Data type (use normal postgres types)                                                        |
-| `collation`                   | `string`                              | Collation of data type                                                                       |
-| `unique`                      | `boolean`                             | Set to true to add a unique constraint on this column                                        |
-| `primaryKey`                  | `boolean`                             | Set to true to make this column the primary key                                              |
-| `notNull`                     | `boolean`                             | Set to true to make this column not null                                                     |
-| `default`                     | `string`                              | Adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression. |
-| `check`                       | `string`                              | SQL for a check constraint for this column                                                   |
-| `references`                  | [Name](/migrations/#type) or `string` | A table name that this column is a foreign key to                                            |
-| `referencesConstraintName`    | `string`                              | Name of the created constraint                                                               |
-| `referencesConstraintComment` | `string`                              | Comment on the created constraint                                                            |
-| `onDelete`                    | `string`                              | Adds ON DELETE constraint for a reference column                                             |
-| `onUpdate`                    | `string`                              | Adds ON UPDATE constraint for a reference column                                             |
-| `match`                       | `string`                              | `FULL` or `SIMPLE`                                                                           |
-| `deferrable`                  | `boolean`                             | Flag for deferrable column constraint                                                        |
-| `deferred`                    | `boolean`                             | Flag for initially deferred deferrable column constraint                                     |
-| `comment`                     | `string`                              | Adds comment on column                                                                       |
-| `expressionGenerated`         | `string`                              | Expression to compute column value                                                           |
-| `sequenceGenerated`           | `object`                              | Creates identity column see [sequence options section](sequences.md#sequence-options)        |
-| `precedence`                  | `string`                              | `ALWAYS` or `BY DEFAULT`                                                                     |
+| Option                        | Type                                  | Description                                                                                       |
+| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `type`                        | `string`                              | Data type (use normal postgres types)                                                             |
+| `array`                       | `boolean` or `number`                 | Defines the column as a PostgreSQL array type. Use `true` for `ARRAY` or a number for `ARRAY[n]`. |
+| `collation`                   | `string`                              | Collation of data type                                                                            |
+| `unique`                      | `boolean`                             | Set to true to add a unique constraint on this column                                             |
+| `primaryKey`                  | `boolean`                             | Set to true to make this column the primary key                                                   |
+| `notNull`                     | `boolean`                             | Set to true to make this column not null                                                          |
+| `default`                     | `string`                              | Adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.      |
+| `check`                       | `string`                              | SQL for a check constraint for this column                                                        |
+| `references`                  | [Name](/migrations/#type) or `string` | A table name that this column is a foreign key to                                                 |
+| `referencesConstraintName`    | `string`                              | Name of the created constraint                                                                    |
+| `referencesConstraintComment` | `string`                              | Comment on the created constraint                                                                 |
+| `onDelete`                    | `string`                              | Adds ON DELETE constraint for a reference column                                                  |
+| `onUpdate`                    | `string`                              | Adds ON UPDATE constraint for a reference column                                                  |
+| `match`                       | `string`                              | `FULL` or `SIMPLE`                                                                                |
+| `deferrable`                  | `boolean`                             | Flag for deferrable column constraint                                                             |
+| `deferred`                    | `boolean`                             | Flag for initially deferred deferrable column constraint                                          |
+| `comment`                     | `string`                              | Adds comment on column                                                                            |
+| `expressionGenerated`         | `string`                              | Expression to compute column value                                                                |
+| `sequenceGenerated`           | `object`                              | Creates identity column see [sequence options section](sequences.md#sequence-options)             |
+| `precedence`                  | `string`                              | `ALWAYS` or `BY DEFAULT`                                                                          |
 
 ## Data types & Convenience Shorthand
 
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the
 queries by hand.
+
+**PostgreSQL array columns can be defined with the `array` option:**
+
+```ts
+pgm.addColumns('myTable', {
+  tags: { type: PgType.TEXT, array: true },
+  payByQuarter: { type: PgType.INTEGER, array: 4 },
+});
+```
+
+String-based PostgreSQL array type declarations continue to work as before:
+
+```ts
+pgm.addColumns('myTable', { tags: { type: 'text[]' } });
+```
 
 **There are some aliases on types to make things more foolproof:** _(int, string, float, double, datetime, bool)_
 

@@ -64,6 +64,77 @@ describe('operations', () => {
         );
       });
 
+      it('should support unbounded array column type option', () => {
+        const statement = addColumnsFn('transactions', {
+          tags: {
+            type: PgType.TEXT,
+            array: true,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "transactions"
+  ADD "tags" text ARRAY;`);
+      });
+
+      it('should pass numeric array dimensions through to SQL', () => {
+        const arrayDimension = 17;
+
+        const statement = addColumnsFn('transactions', {
+          scores: {
+            type: PgType.INTEGER,
+            array: arrayDimension,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "transactions"
+  ADD "scores" integer ARRAY[${arrayDimension}];`);
+      });
+
+      it('should support array option for different column types', () => {
+        const statement = addColumnsFn('transactions', {
+          ids: {
+            type: PgType.UUID,
+            array: true,
+          },
+          aliases: {
+            type: 'varchar(30)',
+            array: true,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "transactions"
+  ADD "ids" uuid ARRAY,
+  ADD "aliases" varchar(30) ARRAY;`);
+      });
+
+      it('should keep string-based array type declarations unchanged', () => {
+        const statement = addColumnsFn('transactions', {
+          tags: {
+            type: `${PgType.TEXT}[]`,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "transactions"
+  ADD "tags" text[];`);
+      });
+
+      it('should ignore false array option', () => {
+        const statement = addColumnsFn('transactions', {
+          description: {
+            type: PgType.TEXT,
+            array: false,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "transactions"
+  ADD "description" text;`);
+      });
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(addColumnsFn.reverse).toBeTypeOf('function');
