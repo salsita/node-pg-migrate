@@ -96,6 +96,7 @@
 > - 095_index_nulls
 > - 096_expression_index
 > - 097_drop_constraint_if_table_exists
+> - 098_rename_index
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
@@ -860,6 +861,13 @@ ALTER TABLE "drop_constraint_if_table_exists"
 DROP TABLE "drop_constraint_if_table_exists";
 ALTER TABLE IF EXISTS "drop_constraint_if_table_exists" DROP CONSTRAINT IF EXISTS "drop_constraint_if_table_exists_check";
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_drop_constraint_if_table_exists', NOW());
+
+
+### MIGRATION 098_rename_index (UP) ###
+CREATE INDEX "idxfoo" ON "t1" ("nmbr");
+ALTER INDEX "idxfoo" RENAME TO "quxfoo";
+DROP INDEX "quxfoo";
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_rename_index', NOW());
 
 
 Migrations complete!
