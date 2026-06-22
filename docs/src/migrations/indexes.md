@@ -88,24 +88,47 @@ pgm.createIndex('table', [
 
 ## Operation: `renameIndex`
 
-#### `pgm.renameIndex( name, newName, options )`
+#### `pgm.renameIndex( name, newName )`
 
 > [!IMPORTANT]
 > Rename an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterindex.html)
 
 ### Arguments
 
+| Name      | Type     | Description                 |
+| --------- | -------- | --------------------------- |
+| `name`    | `string` | name of the index to rename |
+| `newName` | `string` | new name for the index      |
+
+### Examples
+
+::: code-group
+
+```ts [single column]
+pgm.renameIndex('index_name', 'new_index_name');
+//expected output: ALTER INDEX index_name RENAME TO new_index_name;
+```
+
+## Operation: `alterIndex`
+
+#### `pgm.alterIndex( name, newName, options )`
+
+> [!IMPORTANT]
+> Alter an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterindex.html)
+
+### Arguments
+
 | Name      | Type               | Description                       |
 | --------- | ------------------ | --------------------------------- |
 | `name`    | `string`           | name of the index to rename       |
-| `newName` | `string` or `null` | new name for the index            |
+| `newName` | `string` or `null` | new name for the param            |
 | `options` | `object`           | Check below for available options |
 
 #### Options
 
 | Option        | Type                                  | Description                                     | Default Value |
 | ------------- | ------------------------------------- | ----------------------------------------------- | ------------- |
-| `clause`      | [AlterIndexAction](/migrations/#type) | action to perform on the index                  | `rename`      |
+| `clause`      | [AlterIndexAction](/migrations/#type) | action to perform on the index                  | `set-table`   |
 | `ifExists`    | `boolean`                             | adds `IF EXISTS` clause                         | `false`       |
 | `no`          | `boolean`                             | adds `NO` clause to the action                  | `false`       |
 | `columNumber` | `number`                              | column number for the index                     | `null`        |
@@ -119,27 +142,22 @@ pgm.createIndex('table', [
 ::: code-group
 
 ```ts [single column]
-pgm.renameIndex('index_name', 'new_index_name');
-//expected output: ALTER INDEX index_name RENAME TO new_index_name;
-```
-
-```ts [single column]
-pgm.renameIndex('index_name', 'new_index_name', { ifExists: true });
-//expected output: ALTER INDEX IF EXISTS index_name RENAME TO new_index_name;
-```
-
-```ts [single column]
-pgm.renameIndex('name', 'tablespace_name', { clause: 'set-table' }); // has ifExists option
+pgm.alterIndex('name', 'tablespace_name'); // has ifExists option
 //expected output: ALTER INDEX name SET TABLESPACE tablespace_name;
 ```
 
 ```ts [single column]
-pgm.renameIndex('name', 'index_name', { clause: 'attach-partition' });
+pgm.alterIndex('name', 'tablespace_name', { clause: 'set-table' }); // has ifExists option
+//expected output: ALTER INDEX name SET TABLESPACE tablespace_name;
+```
+
+```ts [single column]
+pgm.alterIndex('name', 'index_name', { clause: 'attach-partition' });
 //expected output: ALTER INDEX name ATTACH PARTITION index_name;
 ```
 
 ```ts [single column]
-pgm.renameIndex('name', 'extension_name', {
+pgm.alterIndex('name', 'extension_name', {
   clause: 'extension',
   no: true,
 });
@@ -147,7 +165,7 @@ pgm.renameIndex('name', 'extension_name', {
 ```
 
 ```ts [single column]
-pgm.renameIndex('index_name', null, {
+pgm.alterIndex('index_name', null, {
   clause: 'alter',
   colum: true,
   columNumber: 23,
@@ -157,7 +175,7 @@ pgm.renameIndex('index_name', null, {
 ```
 
 ```ts [single column]
-pgm.renameIndex('index_name', 'new_tablespace', {
+pgm.alterIndex('index_name', 'new_tablespace', {
   clause: 'all',
   ownedBy: ['app_user', 'admin_user'],
   noWait: true,
