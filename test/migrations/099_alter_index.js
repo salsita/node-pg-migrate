@@ -1,9 +1,7 @@
 export const up = (pgm) => {
   const indexName = 'idxfoo';
   const tablespaceName = 'tablespace_name';
-  pgm.sql(`CREATE TABLESPACE tablespace_name
-[ OWNER postgres ]
-LOCATION '/';`);
+  pgm.sql(`CREATE TABLESPACE tablespace_name LOCATION '/';`);
   pgm.createIndex('t1', ['nmbr'], { name: indexName });
 
   pgm.alterIndex(indexName, tablespaceName);
