@@ -27,7 +27,6 @@ export type Type = string | { type: string };
 export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
 export type AlterIndexAction =
-  | 'rename'
   | 'set-table'
   | 'attach-partition'
   | 'extension'
