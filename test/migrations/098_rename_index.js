@@ -4,7 +4,10 @@ export const up = (pgm) => {
   pgm.createIndex('t1', ['nmbr'], { name: currentIndexName });
 
   pgm.renameIndex(currentIndexName, newIndexName);
-  pgm.dropIndex('t1', [], { name: newIndexName });
 };
 
-export const down = () => null;
+export const down = (pgm) => {
+  const currentIndexName = 'idxfoo';
+  const newIndexName = 'quxfoo';
+  pgm.renameIndex.reverse(newIndexName, currentIndexName);
+};
