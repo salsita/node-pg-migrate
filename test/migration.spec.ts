@@ -46,7 +46,7 @@ describe('migration', () => {
       const filePaths = await getMigrationFilePaths(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(96);
+      expect(filePaths).toHaveLength(97);
       expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -67,7 +67,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(71);
+      expect(filePaths).toHaveLength(72);
 
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
@@ -83,7 +83,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(109);
+      expect(filePaths).toHaveLength(110);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -103,7 +103,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(108);
+      expect(filePaths).toHaveLength(109);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -133,7 +133,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      expect(nextPrefix).toEqual('097');
+      expect(nextPrefix).toEqual('098');
     });
 
     it('should fail to get the next index with invalid filenames', async () => {

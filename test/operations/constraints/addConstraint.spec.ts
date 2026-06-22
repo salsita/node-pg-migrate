@@ -171,6 +171,18 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
             )
           );
         });
+
+        it('should forward dropConstraint options in reverse', () => {
+          const statement = addConstraintFn.reverse('distributors', 'zipchk', {
+            ifTableExists: true,
+            ifExists: true,
+          });
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe(
+            'ALTER TABLE IF EXISTS "distributors" DROP CONSTRAINT IF EXISTS "zipchk";'
+          );
+        });
       });
     });
   });
