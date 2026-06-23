@@ -9,5 +9,5 @@ export const up = (pgm) => {
 export const down = (pgm) => {
   const currentIndexName = 'idxfoo';
   const newIndexName = 'quxfoo';
-  pgm.renameIndex.reverse(newIndexName, currentIndexName);
+  pgm.renameIndex(currentIndexName, newIndexName).reverse;
 };
