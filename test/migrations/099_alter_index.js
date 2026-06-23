@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 const tablespacePath = '/tmp/pg_test_ts';
 
 export const up = (pgm) => {
