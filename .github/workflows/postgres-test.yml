@@ -560,6 +560,12 @@ jobs:
         if: always()
         run: docker logs "${{ job.services.postgres.id }}"
 
+      - name: Create set table directory
+        run: docker exec "${{ job.services.postgres.id }}" mkdir -p /tmp/pg_test_ts
+
+      - name: Set permissions for set table directory
+        run: docker exec "${{ job.services.postgres.id }}" chmod 777 /tmp/pg_test_ts
+
   typescript-migration-via-jiti-test:
     runs-on: ubuntu-latest
     strategy:
