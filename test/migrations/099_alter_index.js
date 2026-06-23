@@ -3,8 +3,9 @@ export const up = (pgm) => {
   const tablespaceName = 'tablespace_name';
   const tablespacePath = '/tmp/pg_test_ts';
 
-  pgm.createIndex('t1', ['nmbr'], { name: indexName });
+  pgm.noTransaction();
   pgm.sql(`CREATE TABLESPACE ${tablespaceName} LOCATION '${tablespacePath}';`);
+  pgm.createIndex('t1', ['nmbr'], { name: indexName });
 
   pgm.alterIndex(indexName, tablespaceName);
 };
