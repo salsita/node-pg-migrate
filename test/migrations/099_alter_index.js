@@ -14,6 +14,8 @@ export const down = (pgm) => {
   const indexName = 'idxfoose';
   const tablespaceName = 'tablespace_name';
 
+  pgm.noTransaction();
+
   pgm.dropIndex('t1', [], { name: indexName });
   pgm.sql(`DROP TABLESPACE ${tablespaceName};`);
 };
