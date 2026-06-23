@@ -1,25 +1,18 @@
-import fs from 'fs';
-
-const tablespacePath = '/tmp/pg_test_ts';
-
 export const up = (pgm) => {
-  const indexName = 'idxfoo';
+  const indexName = 'idxfoose';
   const tablespaceName = 'tablespace_name';
+  const tablespacePath = '/tmp/pg_test_ts';
 
-  if (!fs.existsSync(tablespacePath)) {
-    fs.mkdirSync(tablespacePath, { recursive: true });
-    fs.chmodSync(tablespacePath, 0o777);
-  }
-
-  pgm.noTransaction();
-  pgm.sql(`CREATE TABLESPACE ${tablespaceName} LOCATION '${tablespacePath}';`);
   pgm.createIndex('t1', ['nmbr'], { name: indexName });
+  pgm.sql(`CREATE TABLESPACE ${tablespaceName} LOCATION '${tablespacePath}';`);
 
   pgm.alterIndex(indexName, tablespaceName);
 };
 
 export const down = (pgm) => {
-  pgm.noTransaction();
-  pgm.dropIndex('t1', 'idxfoo');
-  pgm.sql(`DROP TABLESPACE tablespace_name;`);
+  const indexName = 'idxfoose';
+  const tablespaceName = 'tablespace_name';
+
+  pgm.dropIndex('t1', [], { name: indexName });
+  pgm.sql(`DROP TABLESPACE ${tablespaceName};`);
 };
