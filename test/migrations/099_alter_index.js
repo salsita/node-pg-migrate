@@ -1,8 +1,16 @@
+const tablespacePath = '/tmp/pg_test_ts';
+
 export const up = (pgm) => {
   const indexName = 'idxfoo';
   const tablespaceName = 'tablespace_name';
+
+  if (!fs.existsSync(tablespacePath)) {
+    fs.mkdirSync(tablespacePath, { recursive: true });
+    fs.chmodSync(tablespacePath, 0o777);
+  }
+
   pgm.noTransaction();
-  pgm.sql(`CREATE TABLESPACE tablespace_name OWNER ubuntu LOCATION '/';`);
+  pgm.sql(`CREATE TABLESPACE ${tablespaceName} LOCATION '${tablespacePath}';`);
   pgm.createIndex('t1', ['nmbr'], { name: indexName });
 
   pgm.alterIndex(indexName, tablespaceName);
