@@ -2,7 +2,7 @@ export const up = (pgm) => {
   const indexName = 'idxfoo';
   const tablespaceName = 'tablespace_name';
   pgm.noTransaction();
-  pgm.sql(`CREATE TABLESPACE tablespace_name LOCATION '/';`);
+  pgm.sql(`CREATE TABLESPACE tablespace_name OWNER ubuntu LOCATION '/';`);
   pgm.createIndex('t1', ['nmbr'], { name: indexName });
 
   pgm.alterIndex(indexName, tablespaceName);
