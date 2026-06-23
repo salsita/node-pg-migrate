@@ -554,7 +554,7 @@ jobs:
         run: docker exec "${{ job.services.postgres.id }}" mkdir -p /tmp/pg_test_ts
 
       - name: Set permissions for set table directory
-        run: docker exec "${{ job.services.postgres.id }}" chmod 777 /tmp/pg_test_ts
+        run: docker exec "${{ job.services.postgres.id }}" chown ubuntu:ubuntu /tmp/pg_test_ts
 
       - name: Integration Test
         run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations --timestamps
