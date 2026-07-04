@@ -1,26 +1,26 @@
-import type { DB } from './db';
-import type { Logger } from './logger';
-import type { MigrationOptions } from './migrationOptions';
-import * as casts from './operations/casts';
-import * as domains from './operations/domains';
-import * as extensions from './operations/extensions';
-import * as functions from './operations/functions';
-import type { Operation } from './operations/generalTypes';
-import * as grants from './operations/grants';
-import * as indexes from './operations/indexes';
-import * as mViews from './operations/materializedViews';
-import * as operators from './operations/operators';
-import * as policies from './operations/policies';
-import * as roles from './operations/roles';
-import * as schemas from './operations/schemas';
-import * as sequences from './operations/sequences';
-import * as sql from './operations/sql';
-import type { ColumnDefinitions } from './operations/tables';
-import * as tables from './operations/tables';
-import * as triggers from './operations/triggers';
-import * as types from './operations/types';
-import * as views from './operations/views';
-import { createSchemalize } from './utils';
+import type { DB } from "./db";
+import type { Logger } from "./logger";
+import type { MigrationOptions } from "./migrationOptions";
+import * as casts from "./operations/casts";
+import * as domains from "./operations/domains";
+import * as extensions from "./operations/extensions";
+import * as functions from "./operations/functions";
+import type { Operation } from "./operations/generalTypes";
+import * as grants from "./operations/grants";
+import * as indexes from "./operations/indexes";
+import * as mViews from "./operations/materializedViews";
+import * as operators from "./operations/operators";
+import * as policies from "./operations/policies";
+import * as roles from "./operations/roles";
+import * as schemas from "./operations/schemas";
+import * as sequences from "./operations/sequences";
+import * as sql from "./operations/sql";
+import type { ColumnDefinitions } from "./operations/tables";
+import * as tables from "./operations/tables";
+import * as triggers from "./operations/triggers";
+import * as types from "./operations/types";
+import * as views from "./operations/views";
+import { createSchemalize } from "./utils";
 /**
  * Export "PgLiteral" of module "src/utils/PgLiteral.ts" was reexported through module "src/utils/index.ts"
  * while both modules are dependencies of each other and will end up in different chunks by current Rollup settings.
@@ -29,7 +29,7 @@ import { createSchemalize } from './utils';
  * Either change the import in "src/migrationBuilder.ts" to point directly to the exporting module
  * or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
  */
-import { PgLiteral } from './utils/PgLiteral';
+import { PgLiteral } from "./utils/PgLiteral";
 
 /*
  * The migration builder is used to actually create a migration from instructions
@@ -318,7 +318,7 @@ export class MigrationBuilder {
 
   /**
    * Rename an index.
-
+   *
    * @see https://www.postgresql.org/docs/current/sql-alterindex.html
    */
   public readonly renameIndex: (
@@ -824,7 +824,7 @@ export class MigrationBuilder {
     db: DB,
     typeShorthands: ColumnDefinitions | undefined,
     shouldDecamelize: boolean,
-    logger: Logger
+    logger: Logger,
   ) {
     this._steps = [];
     this._REVERSE_MODE = false;
@@ -838,10 +838,10 @@ export class MigrationBuilder {
       <TOperation extends Operation>(operation: TOperation) =>
       (...args: Parameters<TOperation>) => {
         if (this._REVERSE_MODE) {
-          if (typeof operation.reverse !== 'function') {
+          if (typeof operation.reverse !== "function") {
             const name = `pgm.${operation.name}()`;
             throw new Error(
-              `Impossible to automatically infer down migration for "${name}"`
+              `Impossible to automatically infer down migration for "${name}"`,
             );
           }
 
@@ -934,7 +934,7 @@ export class MigrationBuilder {
     this.renameOperatorFamily = wrap(operators.renameOperatorFamily(options));
     this.addToOperatorFamily = wrap(operators.addToOperatorFamily(options));
     this.removeFromOperatorFamily = wrap(
-      operators.removeFromOperatorFamily(options)
+      operators.removeFromOperatorFamily(options),
     );
 
     this.createPolicy = wrap(policies.createPolicy(options));
@@ -953,10 +953,10 @@ export class MigrationBuilder {
     this.alterMaterializedView = wrap(mViews.alterMaterializedView(options));
     this.renameMaterializedView = wrap(mViews.renameMaterializedView(options));
     this.renameMaterializedViewColumn = wrap(
-      mViews.renameMaterializedViewColumn(options)
+      mViews.renameMaterializedViewColumn(options),
     );
     this.refreshMaterializedView = wrap(
-      mViews.refreshMaterializedView(options)
+      mViews.refreshMaterializedView(options),
     );
 
     this.grantRoles = wrap(grants.grantRoles(options));
@@ -981,7 +981,7 @@ export class MigrationBuilder {
       <T extends any[], TResult>(operation: (...args: T) => TResult) =>
       (...args: T) => {
         if (this._REVERSE_MODE) {
-          throw new Error('Impossible to automatically infer down migration');
+          throw new Error("Impossible to automatically infer down migration");
         }
 
         return operation(...args);
@@ -1021,7 +1021,7 @@ export class MigrationBuilder {
   }
 
   getSql(): string {
-    return `${this.getSqlSteps().join('\n')}\n`;
+    return `${this.getSqlSteps().join("\n")}\n`;
   }
 
   getSqlSteps(): string[] {
