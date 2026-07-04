@@ -108,4 +108,5 @@ pgm.createIndex('table', [
 pgm.renameIndex('index_name', 'new_index_name');
 //expected output: ALTER INDEX index_name RENAME TO new_index_name;
 ```
+
 :::
