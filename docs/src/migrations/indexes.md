@@ -84,8 +84,6 @@ pgm.createIndex('table', [
 | `ifExists`     | `boolean` | default false                |
 | `cascade`      | `boolean` | default false                |
 
-:::
-
 ## Operation: `renameIndex`
 
 #### `pgm.renameIndex( name, newName )`
