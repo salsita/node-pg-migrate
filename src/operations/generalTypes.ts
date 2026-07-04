@@ -26,13 +26,6 @@ export type Type = string | { type: string };
 
 export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
-export type AlterIndexAction =
-  | 'set-table'
-  | 'attach-partition'
-  | 'extension'
-  // | "alter" -- breaking change, not supported yet
-  | 'all';
-
 /**
  * Type guard for the object form of {@link Name}.
  *
