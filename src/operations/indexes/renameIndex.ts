@@ -1,7 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import type { Reversible } from '../generalTypes';
+import type { Name, Reversible } from '../generalTypes';
 
-export type RenameIndexFn = (name: string, newName: string) => string;
+export type RenameIndexFn = (name: Name, newName: Name) => string;
 export type RenameIndex = Reversible<RenameIndexFn>;
 
 export function renameIndex(mOptions: MigrationOptions): RenameIndex {
