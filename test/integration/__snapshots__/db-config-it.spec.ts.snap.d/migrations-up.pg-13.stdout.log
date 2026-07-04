@@ -866,7 +866,6 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_drop_constraint_
 ### MIGRATION 098_rename_index (UP) ###
 CREATE INDEX "idxfoo" ON "t1" ("nmbr");
 ALTER INDEX "idxfoo" RENAME TO "quxfoo";
-DROP INDEX "quxfoo";
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('098_rename_index', NOW());
 
 

@@ -98,6 +98,7 @@
 > - 002_callback
 > - 001_noop
 ### MIGRATION 098_rename_index (DOWN) ###
+ALTER INDEX "quxfoo" RENAME TO "idxfoo";
 DELETE FROM "public"."pgmigrations" WHERE name='098_rename_index';
 
 
