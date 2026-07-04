@@ -44,7 +44,7 @@ describe('migration', () => {
       const dir = 'test/migrations';
       const resolvedDir = resolve(dir);
       const filePaths = await getMigrationFilePaths(dir, { logger });
-      const EXPECTED_FILE_PATHS_LENGTH = 99;
+      const EXPECTED_FILE_PATHS_LENGTH = 98;
 
       expect(Array.isArray(filePaths)).toBeTruthy();
       expect(filePaths).toHaveLength(EXPECTED_FILE_PATHS_LENGTH);
@@ -61,7 +61,7 @@ describe('migration', () => {
       const dir = 'test/migrations';
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '.+test.+';
-      const FILE_PATHS_LENGTH = 74;
+      const FILE_PATHS_LENGTH = 73;
 
       const filePaths = await getMigrationFilePaths(dir, {
         ignorePattern,
@@ -78,7 +78,7 @@ describe('migration', () => {
 
     it('should resolve files matching `dir` glob (starting from cwd())', async () => {
       const dir = 'test/{cockroach,migrations}/**';
-      const FILE_PATHS_LENGTH = 112;
+      const FILE_PATHS_LENGTH = 111;
 
       const filePaths = await getMigrationFilePaths(dir, {
         useGlob: true,
@@ -98,7 +98,7 @@ describe('migration', () => {
       const dir = 'test/{cockroach,migrations}/**';
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '*/cockroach/*test*';
-      const FILE_PATHS_LENGTH = 111;
+      const FILE_PATHS_LENGTH = 110;
 
       const filePaths = await getMigrationFilePaths(dir, {
         ignorePattern,
@@ -130,7 +130,7 @@ describe('migration', () => {
       const dir = 'test/{cockroach,migrations}/**';
       // ignores those files that have `test` in their name (not in the path, just filename)
       const ignorePattern = '*/cockroach/*test*';
-      const NEXT_INDEX_VALUE = '100';
+      const NEXT_INDEX_VALUE = '099';
 
       const nextPrefix = await Migration.getFilePrefix(
         FilenameFormat.index,
