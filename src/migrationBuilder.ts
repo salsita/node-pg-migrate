@@ -317,6 +317,15 @@ export class MigrationBuilder {
   public readonly addIndex: (...args: Parameters<indexes.CreateIndex>) => void;
 
   /**
+   * Rename an index.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-alterindex.html
+   */
+  public readonly renameIndex: (
+    ...args: Parameters<indexes.RenameIndex>
+  ) => void;
+
+  /**
    * Define a new database role.
    *
    * @see https://www.postgresql.org/docs/current/sql-createrole.html
@@ -886,6 +895,7 @@ export class MigrationBuilder {
     this.createIndex = wrap(indexes.createIndex(options));
     this.dropIndex = wrap(indexes.dropIndex(options));
     this.addIndex = this.createIndex;
+    this.renameIndex = wrap(indexes.renameIndex(options));
 
     this.createRole = wrap(roles.createRole(options));
     this.dropRole = wrap(roles.dropRole(options));
