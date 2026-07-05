@@ -90,13 +90,15 @@ pgm.createIndex('table', [
 
 > [!IMPORTANT]
 > Rename an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterindex.html)
+>
+> Reverse Operation: same operation in opposite direction
 
 ### Arguments
 
-| Name      | Type     | Description                 |
-| --------- | -------- | --------------------------- |
-| `name`    | `string` | name of the index to rename |
-| `newName` | `string` | new name for the index      |
+| Name      | Type                      | Description                 |
+| --------- | ------------------------- | --------------------------- |
+| `name`    | [Name](/migrations/#type) | name of the index to rename |
+| `newName` | [Name](/migrations/#type) | new name for the index      |
 
 ### Examples
 
