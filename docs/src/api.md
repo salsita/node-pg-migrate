@@ -7,6 +7,29 @@ which takes options argument with the following structure (similar to [command l
 
 For a directory structure of
 
+```
+.
+├── migrations
+│   ├── 00_init.sql
+│   └── 01_foobar.sql
+└── run_migrations.js
+```
+
+this will run migrations from `migrations/` directory:
+
+```javascript
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { runner } from 'node-pg-migrate';
+
+await runner({
+  databaseUrl: process.env.DATABASE_URL,
+  dir: `${import.meta.dirname}/migrations`,
+  migrationsTable: 'pgmigrations',
+  direction: 'up',
+  verbose: true,
+});
+```
 
 ## Options
 
