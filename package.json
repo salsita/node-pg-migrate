@@ -93,7 +93,7 @@
   "devDependencies": {
     "@testcontainers/postgresql": "11.14.0",
     "@types/config": "4.4.0",
-    "@types/node": "20.19.39",
+    "@types/node": "26.1.1",
     "@types/pg": "8.20.0",
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.1.10",
@@ -114,8 +114,8 @@
     "vitest": "4.1.10"
   },
   "peerDependencies": {
-    "@types/pg": ">=6.0.0 <9.0.0",
-    "pg": ">=4.3.0 <9.0.0"
+    "@types/pg": ">=7.0.0 <9.0.0",
+    "pg": ">=7.0.2 <9.0.0"
   },
   "peerDependenciesMeta": {
     "@types/pg": {
@@ -124,6 +124,6 @@
   },
   "packageManager": "pnpm@10.34.4",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.0.0"
   }
 }

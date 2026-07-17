@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         cockroach_version: [23.2.28, 24.3.23, 25.3.5]
       fail-fast: false
     timeout-minutes: 10
