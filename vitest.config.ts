@@ -23,12 +23,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['clover', 'cobertura', 'json-summary', 'json', 'lcov', 'text'],
-      include: [
-        'src',
-        // TODO @Shinigami92 2024-04-02: Add 'bin' folder in another PR
-        //'bin'
+      include: ['src'],
+      exclude: [
+        'src/operations/*Types.ts',
+        // TODO @Shinigami92 2026-07-17: The CLI is exercised by the integration/CLI e2e jobs,
+        // not the unit suite that feeds coverage.
+        // Cover it once it is split into smaller units under src/cli/ in a follow-up PR.
+        'src/cli.ts',
       ],
-      exclude: ['src/operations/*Types.ts'],
       reportOnFailure: true,
       thresholds: {
         lines: 90,
