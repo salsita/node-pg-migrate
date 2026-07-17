@@ -87,6 +87,10 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
       link: 'getting-started',
     },
     {
+      text: 'Upgrading',
+      link: 'upgrading',
+    },
+    {
       text: 'CLI',
       link: 'cli',
     },
