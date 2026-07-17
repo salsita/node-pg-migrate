@@ -1,8 +1,9 @@
 import { glob } from 'glob';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
+import { fileURLToPath } from 'node:url';
 import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import type { Logger } from './logger';
@@ -22,6 +23,17 @@ import {
  * It is responsible for storing the name of the file and knowing how to execute
  * the up and down migrations defined in the file.
  */
+
+/**
+ * Resolve the root directory of this package (the directory containing its
+ * `package.json`, next to the shipped `templates/` folder). Uses the package's
+ * own name so it is independent of how deep the built module is nested.
+ */
+function getPackageRootDir(): string {
+  return dirname(
+    fileURLToPath(import.meta.resolve('node-pg-migrate/package.json'))
+  );
+}
 
 export type MigrationAction = (
   pgm: MigrationBuilder,
@@ -246,9 +258,10 @@ export class Migration implements RunMigration {
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
         : join(
-            import.meta.dirname,
-            '..',
-            '..',
+            // Resolve the bundled templates relative to the package root rather
+            // than a hard-coded number of `..` segments, so it keeps working
+            // regardless of where the built output lands (dist/, bin/, …).
+            getPackageRootDir(),
             'templates',
             `migration-template.${await resolveSuffix(directory, options)}`
           );

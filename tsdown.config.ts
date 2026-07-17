@@ -15,25 +15,15 @@ export default defineConfig([
     unbundle: true,
     fixedExtension: false,
   },
+  // build the programmatic API as a single bundled entry point
   {
     entry: ['src/index.ts'],
-    outDir: 'dist/bundle',
+    outDir: 'dist',
     clean: true,
     format: ['esm'],
     dts: true,
     minify: false,
     sourcemap: false,
-    fixedExtension: false,
-  },
-  {
-    // Exclude cli.ts — it is not part of the public library surface and is
-    // emitted separately as the bin executable above.
-    entry: ['src/**/*', '!src/cli.ts'],
-    dts: true,
-    clean: true,
-    unbundle: true,
-    format: ['esm'],
-    outDir: 'dist/legacy',
     fixedExtension: false,
   },
 ]);
