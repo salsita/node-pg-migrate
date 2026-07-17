@@ -2,8 +2,10 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig([
   // build the executable
+  // Source lives in src/cli.ts but is emitted as bin/node-pg-migrate.js to keep
+  // the published `bin` path (and `node bin/node-pg-migrate.js`) stable.
   {
-    entry: ['bin/node-pg-migrate.ts'],
+    entry: { 'node-pg-migrate': 'src/cli.ts' },
     outDir: 'bin',
     clean: false,
     format: ['esm'],
@@ -24,7 +26,9 @@ export default defineConfig([
     fixedExtension: false,
   },
   {
-    entry: ['src/**/*'],
+    // Exclude cli.ts — it is not part of the public library surface and is
+    // emitted separately as the bin executable above.
+    entry: ['src/**/*', '!src/cli.ts'],
     dts: true,
     clean: true,
     unbundle: true,

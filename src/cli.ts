@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import type { DotenvConfigOptions } from 'dotenv';
-// Import as node-pg-migrate, so tsup does not self-reference as '../dist'
-// otherwise this could not be imported by esm
+// Import as node-pg-migrate, so tsdown does not self-reference as '../dist'
+// otherwise this could not be imported by esm. The built CLI lives alone in
+// bin/, so it must resolve the library through the package `exports` map by
+// name rather than via relative paths into dist/.
 import type { RunnerOption } from 'node-pg-migrate';
 import {
   jiti,
@@ -19,7 +21,7 @@ import type ConnectionParametersType from 'pg/lib/connection-parameters';
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
-import type { FilenameFormat } from '../src/migration';
+import type { FilenameFormat } from './migration';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
