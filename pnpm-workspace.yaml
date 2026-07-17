@@ -1,8 +1,43 @@
-ignoredBuiltDependencies:
-  - cpu-features
-  - esbuild
-  - protobufjs
-  - ssh2
+allowBuilds:
+  cpu-features: false
+  esbuild: false
+  protobufjs: false
+  ssh2: false
 
-onlyBuiltDependencies:
-  - unrs-resolver
+minimumReleaseAgeExclude:
+  - '@oxlint-tsgolint/darwin-arm64@0.25.0'
+  - '@oxlint-tsgolint/darwin-x64@0.25.0'
+  - '@oxlint-tsgolint/linux-arm64@0.25.0'
+  - '@oxlint-tsgolint/linux-x64@0.25.0'
+  - '@oxlint-tsgolint/win32-arm64@0.25.0'
+  - '@oxlint-tsgolint/win32-x64@0.25.0'
+  - '@yuku-codegen/binding-darwin-arm64@0.6.5'
+  - '@yuku-codegen/binding-darwin-x64@0.6.5'
+  - '@yuku-codegen/binding-freebsd-x64@0.6.5'
+  - '@yuku-codegen/binding-linux-arm-gnu@0.6.5'
+  - '@yuku-codegen/binding-linux-arm-musl@0.6.5'
+  - '@yuku-codegen/binding-linux-arm64-gnu@0.6.5'
+  - '@yuku-codegen/binding-linux-arm64-musl@0.6.5'
+  - '@yuku-codegen/binding-linux-x64-gnu@0.6.5'
+  - '@yuku-codegen/binding-linux-x64-musl@0.6.5'
+  - '@yuku-codegen/binding-win32-arm64@0.6.5'
+  - '@yuku-codegen/binding-win32-x64@0.6.5'
+  - '@yuku-parser/binding-darwin-arm64@0.6.5'
+  - '@yuku-parser/binding-darwin-x64@0.6.5'
+  - '@yuku-parser/binding-freebsd-x64@0.6.5'
+  - '@yuku-parser/binding-linux-arm-gnu@0.6.5'
+  - '@yuku-parser/binding-linux-arm-musl@0.6.5'
+  - '@yuku-parser/binding-linux-arm64-gnu@0.6.5'
+  - '@yuku-parser/binding-linux-arm64-musl@0.6.5'
+  - '@yuku-parser/binding-linux-x64-gnu@0.6.5'
+  - '@yuku-parser/binding-linux-x64-musl@0.6.5'
+  - '@yuku-parser/binding-win32-arm64@0.6.5'
+  - '@yuku-parser/binding-win32-x64@0.6.5'
+  - '@yuku-toolchain/types@0.5.43'
+  - obug@2.1.4
+  - oxlint-tsgolint@0.25.0
+  - rolldown-plugin-dts@0.27.11
+  - tsdown@0.22.9
+  - yuku-ast@0.1.7
+  - yuku-codegen@0.6.5
+  - yuku-parser@0.6.5
