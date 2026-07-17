@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -149,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -208,7 +208,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -270,7 +270,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -326,7 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -394,7 +394,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -452,7 +452,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -508,7 +508,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -564,7 +564,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -618,7 +618,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -673,7 +673,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -728,7 +728,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
