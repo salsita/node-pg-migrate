@@ -122,7 +122,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.34.4",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=22.0.0"
   }
