@@ -65,12 +65,8 @@
       "default": "./bin/*.js"
     },
     ".": {
-      "types": "./dist/bundle/index.d.ts",
-      "default": "./dist/bundle/index.js"
-    },
-    "./*": {
-      "types": "./dist/legacy/*.d.ts",
-      "default": "./dist/legacy/*.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
