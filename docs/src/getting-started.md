@@ -3,7 +3,7 @@
 ## Preconditions
 
 - Node.js 22 or higher
-- PostgreSQL 13 or higher (lower versions may work but are not supported officially)
+- PostgreSQL 14 or higher (lower versions may work but are not supported officially)
 
 If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a
 direct or dev dependency
