@@ -41,10 +41,9 @@ export function createOperatorClass(
     const familyStr = family ? ` FAMILY ${family}` : '';
     const operatorListStr = operatorList
       .map(operatorMap(mOptions))
-      .join(',\n  ');
+      .join(mOptions.pretty ? ',\n  ' : ', ');
 
-    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr}${familyStr} AS
-  ${operatorListStr};`;
+    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr}${familyStr} AS${mOptions.pretty ? `\n  ${operatorListStr}` : ` ${operatorListStr}`};`;
   };
 
   _create.reverse = (

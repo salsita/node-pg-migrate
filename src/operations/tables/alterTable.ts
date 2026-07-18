@@ -32,8 +32,14 @@ export function alterTable(mOptions: MigrationOptions): AlterTable {
       throw new Error('No table options provided for alterTable');
     }
 
-    return `ALTER TABLE ${mOptions.literal(tableName)}
-  ${formatLines(alterDefinition)};`;
+    const alterDefinitionStr = formatLines(
+      alterDefinition,
+      '  ',
+      ',',
+      mOptions.pretty
+    );
+
+    return `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? `\n  ${alterDefinitionStr}` : ` ${alterDefinitionStr}`};`;
   };
 
   return _alter;

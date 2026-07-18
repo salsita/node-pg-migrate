@@ -106,10 +106,13 @@ pgm.createTable(
 will generate
 
 ```sql
-CREATE TABLE "my_schema"."my_table_name" (
- "id" serial
-);
+CREATE TABLE "my_schema"."my_table_name" ("id" serial);
 ```
+
+> [!TIP]
+> By default the generated SQL is emitted on a single line. Set the `pretty`
+> option (or pass `--pretty` on the CLI) to format statements with linebreaks
+> and indentation for easier reading.
 
 ### Type
 

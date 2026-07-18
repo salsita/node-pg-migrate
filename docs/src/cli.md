@@ -104,6 +104,7 @@ You can adjust defaults by passing arguments to `node-pg-migrate`:
 | `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
 | `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
+| `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
 | `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
 | `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
@@ -141,6 +142,7 @@ Other available options are:
   "check-order": true,
   "verbose": true,
   "decamelize": false,
+  "pretty": false,
   "tsconfig-paths": "./tsconfig.json",
 }
 ```

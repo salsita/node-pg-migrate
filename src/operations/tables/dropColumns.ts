@@ -27,8 +27,9 @@ export function dropColumns(mOptions: MigrationOptions): DropColumns {
       .map(mOptions.literal)
       .map((column) => `DROP ${ifExistsStr}${column}${cascadeStr}`);
 
-    return `ALTER TABLE ${mOptions.literal(tableName)}
-${formatLines(lines)};`;
+    const linesStr = formatLines(lines, '  ', ',', mOptions.pretty);
+
+    return `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? '\n' : ' '}${linesStr};`;
   };
 
   return _drop;

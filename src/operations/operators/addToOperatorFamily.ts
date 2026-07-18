@@ -23,10 +23,9 @@ export const addToOperatorFamily = (
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const operatorListStr = operatorList
       .map(operatorMap(mOptions))
-      .join(',\n  ');
+      .join(mOptions.pretty ? ',\n  ' : ', ');
 
-    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} ADD
-  ${operatorListStr};`;
+    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} ADD${mOptions.pretty ? `\n  ${operatorListStr}` : ` ${operatorListStr}`};`;
   };
 
   method.reverse = removeFromOperatorFamily(mOptions);

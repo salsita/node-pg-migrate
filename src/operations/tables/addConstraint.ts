@@ -41,10 +41,15 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
       throw new Error('No constraint options provided for addConstraint');
     }
 
-    const constraintStr = formatLines(constraints, '  ADD ');
+    const constraintStr = formatLines(
+      constraints,
+      '  ADD ',
+      ',',
+      mOptions.pretty
+    );
 
     return [
-      `ALTER TABLE ${mOptions.literal(tableName)}\n${constraintStr};`,
+      `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? '\n' : ' '}${constraintStr};`,
       ...comments,
     ].join('\n');
   };

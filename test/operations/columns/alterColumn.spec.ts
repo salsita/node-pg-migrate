@@ -30,11 +30,7 @@ describe('operations', () => {
         });
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER TABLE "distributors"
-  ALTER "address" DROP DEFAULT,
-  ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,
-  ALTER "address" DROP NOT NULL,
-  ALTER "address" DROP IDENTITY;
+          `ALTER TABLE "distributors" ALTER "address" DROP DEFAULT, ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text, ALTER "address" DROP NOT NULL, ALTER "address" DROP IDENTITY;
 COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`
         );
       });
@@ -52,12 +48,7 @@ COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pg
         });
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER TABLE "distributors"
-  ALTER "address" DROP DEFAULT,
-  ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,
-  ALTER "address" DROP NOT NULL,
-  ALTER "address" DROP IDENTITY,
-  ALTER "address" SET EXPRESSION AS (other+1);
+          `ALTER TABLE "distributors" ALTER "address" DROP DEFAULT, ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text, ALTER "address" DROP NOT NULL, ALTER "address" DROP IDENTITY, ALTER "address" SET EXPRESSION AS (other+1);
 COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`
         );
       });
@@ -75,12 +66,7 @@ COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pg
         });
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER TABLE "distributors"
-  ALTER "address" DROP DEFAULT,
-  ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,
-  ALTER "address" DROP NOT NULL,
-  ALTER "address" DROP IDENTITY,
-  ALTER "address" DROP EXPRESSION;
+          `ALTER TABLE "distributors" ALTER "address" DROP DEFAULT, ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text, ALTER "address" DROP NOT NULL, ALTER "address" DROP IDENTITY, ALTER "address" DROP EXPRESSION;
 COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`
         );
       });

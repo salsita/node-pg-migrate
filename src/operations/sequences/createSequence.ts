@@ -24,13 +24,13 @@ export function createSequence(mOptions: MigrationOptions): CreateSequence {
     const temporaryStr = temporary ? ' TEMPORARY' : '';
     const ifNotExistsStr = ifNotExists ? ' IF NOT EXISTS' : '';
     const sequenceNameStr = mOptions.literal(sequenceName);
-    const clausesStr = parseSequenceOptions(
-      mOptions.typeShorthands,
-      options
-    ).join('\n  ');
+    const clauses = parseSequenceOptions(mOptions.typeShorthands, options);
+    const clausesStr = clauses.join(mOptions.pretty ? '\n  ' : ' ');
+    const clausesSuffix = clausesStr
+      ? `${mOptions.pretty ? '\n  ' : ' '}${clausesStr}`
+      : '';
 
-    return `CREATE${temporaryStr} SEQUENCE${ifNotExistsStr} ${sequenceNameStr}
-  ${clausesStr};`;
+    return `CREATE${temporaryStr} SEQUENCE${ifNotExistsStr} ${sequenceNameStr}${clausesSuffix};`;
   };
 
   _create.reverse = dropSequence(mOptions);

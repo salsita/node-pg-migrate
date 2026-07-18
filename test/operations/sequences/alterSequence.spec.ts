@@ -23,8 +23,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER SEQUENCE "serial"
-  RESTART WITH 105;`);
+        expect(statement).toBe(`ALTER SEQUENCE "serial" RESTART WITH 105;`);
       });
     });
   });

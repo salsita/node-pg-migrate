@@ -101,11 +101,13 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     if (actions.length > 0) {
       const columnsStr = formatLines(
         actions,
-        `  ALTER ${mOptions.literal(columnName)} `
+        `  ALTER ${mOptions.literal(columnName)} `,
+        ',',
+        mOptions.pretty
       );
 
       queries.push(
-        `ALTER TABLE ${mOptions.literal(tableName)}\n${columnsStr};`
+        `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? '\n' : ' '}${columnsStr};`
       );
     }
 

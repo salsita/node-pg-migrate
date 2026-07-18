@@ -23,8 +23,9 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "distributors"
-    ENABLE ROW LEVEL SECURITY;`);
+        expect(statement).toBe(
+          `ALTER TABLE "distributors" ENABLE ROW LEVEL SECURITY;`
+        );
       });
 
       it('should generate SQL for SET LOGGED', () => {
@@ -33,8 +34,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "my_table"
-    SET LOGGED;`);
+        expect(statement).toBe(`ALTER TABLE "my_table" SET LOGGED;`);
       });
 
       it('should generate SQL for SET UNLOGGED', () => {
@@ -43,8 +43,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "my_table"
-    SET UNLOGGED;`);
+        expect(statement).toBe(`ALTER TABLE "my_table" SET UNLOGGED;`);
       });
     });
   });

@@ -26,9 +26,9 @@ export function createType(mOptions: MigrationOptions): CreateType {
 
         return `${mOptions.literal(attributeName)} ${typeStr}`;
       })
-      .join(',\n');
+      .join(mOptions.pretty ? ',\n' : ', ');
 
-    return `CREATE TYPE ${mOptions.literal(typeName)} AS (\n${attributes}\n);`;
+    return `CREATE TYPE ${mOptions.literal(typeName)} AS (${mOptions.pretty ? `\n${attributes}\n` : attributes});`;
   };
 
   _create.reverse = dropType(mOptions);

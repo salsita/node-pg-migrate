@@ -75,6 +75,7 @@ const timestampArg = 'timestamp';
 const dryRunArg = 'dry-run';
 const fakeArg = 'fake';
 const decamelizeArg = 'decamelize';
+const prettyArg = 'pretty';
 const verboseArg = 'verbose';
 const rejectUnauthorizedArg = 'reject-unauthorized';
 const envPathArg = 'envPath';
@@ -149,6 +150,12 @@ const parser = yargs(process.argv.slice(2))
     [decamelizeArg]: {
       defaultDescription: 'false',
       describe: 'Runs decamelize on table/columns/etc names',
+      type: 'boolean',
+    },
+    [prettyArg]: {
+      defaultDescription: 'false',
+      describe:
+        'Formats the generated SQL statements with linebreaks and indentation (use `--no-pretty` or omit for single-line statements)',
       type: 'boolean',
     },
     [configValueArg]: {
@@ -330,6 +337,7 @@ let TEMPLATE_FILE_NAME = argv[templateFileNameArg];
 let CHECK_ORDER = argv[checkOrderArg];
 let VERBOSE = argv[verboseArg];
 let DECAMELIZE = argv[decamelizeArg];
+let PRETTY = argv[prettyArg];
 let ADVISORY_LOCK_MODE: 'fail' | 'wait' | undefined = argv[
   advisoryLockModeArg
 ] as 'fail' | 'wait' | undefined;
@@ -435,6 +443,7 @@ function readJson(json: unknown): void {
     CHECK_ORDER = applyIf(CHECK_ORDER, checkOrderArg, json, isBoolean);
     VERBOSE = applyIf(VERBOSE, verboseArg, json, isBoolean);
     DECAMELIZE = applyIf(DECAMELIZE, decamelizeArg, json, isBoolean);
+    PRETTY = applyIf(PRETTY, prettyArg, json, isBoolean);
     TSCONFIG_PATHS = applyIf(
       TSCONFIG_PATHS,
       tsconfigPathsArg,
@@ -645,6 +654,7 @@ if (action === 'create') {
       lockValue,
       fake,
       decamelize: DECAMELIZE,
+      pretty: PRETTY,
       advisoryLockMode: ADVISORY_LOCK_MODE,
       tsconfigPaths: TSCONFIG_PATHS,
     };

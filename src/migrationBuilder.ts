@@ -824,7 +824,8 @@ export class MigrationBuilder {
     db: DB,
     typeShorthands: ColumnDefinitions | undefined,
     shouldDecamelize: boolean,
-    logger: Logger
+    logger: Logger,
+    pretty: boolean = false
   ) {
     this._steps = [];
     this._REVERSE_MODE = false;
@@ -856,6 +857,7 @@ export class MigrationBuilder {
       schemalize: createSchemalize({ shouldDecamelize, shouldQuote: false }),
       literal: createSchemalize({ shouldDecamelize, shouldQuote: true }),
       logger,
+      pretty,
     };
 
     // Defines the methods that are accessible via pgm in each migrations there

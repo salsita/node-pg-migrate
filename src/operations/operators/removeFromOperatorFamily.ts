@@ -20,10 +20,9 @@ export const removeFromOperatorFamily = (
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
     const operatorListStr = operatorList
       .map(operatorMap(mOptions))
-      .join(',\n  ');
+      .join(mOptions.pretty ? ',\n  ' : ', ');
 
-    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} DROP
-  ${operatorListStr};`;
+    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} DROP${mOptions.pretty ? `\n  ${operatorListStr}` : ` ${operatorListStr}`};`;
   };
 
   return method;

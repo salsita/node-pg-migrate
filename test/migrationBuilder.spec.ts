@@ -10,7 +10,8 @@ describe('migrationBuilder', () => {
       },
       undefined,
       true,
-      console
+      console,
+      false
     );
 
     pgm.createTable('users', {

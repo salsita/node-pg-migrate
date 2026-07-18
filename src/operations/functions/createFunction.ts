@@ -82,11 +82,10 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
     const replaceStr = replace ? ' OR REPLACE' : '';
     const paramsStr = formatParams(functionParams, mOptions);
     const functionNameStr = mOptions.literal(functionName);
+    const nl = mOptions.pretty ? '\n  ' : ' ';
+    const optionsStr = options.join(nl);
 
-    return `CREATE${replaceStr} FUNCTION ${functionNameStr}${paramsStr}
-  RETURNS ${returns}
-  AS ${escapeValue(definition)}
-  ${options.join('\n  ')};`;
+    return `CREATE${replaceStr} FUNCTION ${functionNameStr}${paramsStr}${nl}RETURNS ${returns}${nl}AS ${escapeValue(definition)}${nl}${optionsStr};`;
   };
 
   _create.reverse = dropFunction(mOptions);

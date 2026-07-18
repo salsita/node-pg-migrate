@@ -30,7 +30,8 @@ export function alterSequence(mOptions: MigrationOptions): AlterSequence {
       throw new Error('No sequence options provided for alterSequence');
     }
 
-    return `ALTER SEQUENCE ${mOptions.literal(sequenceName)}
-  ${clauses.join('\n  ')};`;
+    const clausesStr = clauses.join(mOptions.pretty ? '\n  ' : ' ');
+
+    return `ALTER SEQUENCE ${mOptions.literal(sequenceName)}${mOptions.pretty ? `\n  ${clausesStr}` : ` ${clausesStr}`};`;
   };
 }

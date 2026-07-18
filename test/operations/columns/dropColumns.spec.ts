@@ -15,10 +15,7 @@ describe('operations', () => {
         const statement = dropColumnsFn('distributors', 'address');
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(
-          `ALTER TABLE "distributors"
-  DROP "address";`
-        );
+        expect(statement).toBe(`ALTER TABLE "distributors" DROP "address";`);
       });
 
       it('should return sql statement with dropOptions', () => {
@@ -34,8 +31,9 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "distributors"
-  DROP IF EXISTS "address" CASCADE;`);
+        expect(statement).toBe(
+          `ALTER TABLE "distributors" DROP IF EXISTS "address" CASCADE;`
+        );
       });
 
       it('should return sql statement with schema', () => {
@@ -50,8 +48,9 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "myschema"."distributors"
-  DROP "address";`);
+        expect(statement).toBe(
+          `ALTER TABLE "myschema"."distributors" DROP "address";`
+        );
       });
 
       it.each([
@@ -60,17 +59,13 @@ describe('operations', () => {
           'should drop multiple columns 1',
           options1,
           ['myTableName', ['colC1', 'colC2']],
-          `ALTER TABLE "myTableName"
-  DROP "colC1",
-  DROP "colC2";`,
+          `ALTER TABLE "myTableName" DROP "colC1", DROP "colC2";`,
         ],
         [
           'should drop multiple columns 2',
           options2,
           ['myTableName', ['colC1', 'colC2']],
-          `ALTER TABLE "my_table_name"
-  DROP "col_c1",
-  DROP "col_c2";`,
+          `ALTER TABLE "my_table_name" DROP "col_c1", DROP "col_c2";`,
         ],
       ] as const)('%s', (_, optionPreset, [tableName, columns], expected) => {
         const dropColumnsFn = dropColumns(optionPreset);

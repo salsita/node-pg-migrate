@@ -58,10 +58,10 @@ export function alterMaterializedView(
       throw new Error('No options provided for alterMaterializedView');
     }
 
-    const clausesStr = formatLines(clauses);
+    const clausesStr = formatLines(clauses, '  ', ',', mOptions.pretty);
     const viewNameStr = mOptions.literal(viewName);
 
-    return `ALTER MATERIALIZED VIEW ${viewNameStr}\n${clausesStr};`;
+    return `ALTER MATERIALIZED VIEW ${viewNameStr}${mOptions.pretty ? '\n' : ' '}${clausesStr};`;
   };
 
   return _alter;
