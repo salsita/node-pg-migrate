@@ -487,16 +487,12 @@ const configFileName: string | undefined = argv[configFileArg];
 if (configFileName) {
   const configModule: unknown = await jiti.import(resolve(configFileName));
 
-  let json: unknown;
-  if (
+  const json: unknown =
     configModule &&
     typeof configModule === 'object' &&
     'default' in configModule
-  ) {
-    json = (configModule as { default: unknown }).default;
-  } else {
-    json = configModule;
-  }
+      ? (configModule as { default: unknown }).default
+      : configModule;
 
   const section = argv[configValueArg];
   if (json && typeof json === 'object' && section in json) {

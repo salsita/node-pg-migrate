@@ -61,6 +61,9 @@
     // oxlint-disable directives in `src/cli.ts` are not reported as unused.
     "typescript/no-non-null-assertion": "warn",
 
+    // --- unicorn ---
+    "unicorn/prefer-ternary": "error",
+
     // ==========================================================================
     // Permanently off — project conventions / deliberate decisions.
     // These were consciously disabled in the previous `oxlint.config.ts`; the
@@ -149,8 +152,6 @@
     "unicorn/prefer-type-error": "off",
     "unicorn/prefer-string-starts-ends-with": "off",
     "unicorn/prefer-number-coercion": "off",
-    // was newly set to error; defer
-    "unicorn/prefer-ternary": "off",
 
     // --- vitest ---
     // 10 violations (test files)
