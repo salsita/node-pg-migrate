@@ -353,13 +353,11 @@ export class Migration implements RunMigration {
     action: MigrationAction,
     pgm: MigrationBuilder
   ): Promise<unknown> {
-    if (action.length === 2) {
-      await new Promise<void>((resolve) => {
-        action(pgm, resolve);
-      });
-    } else {
-      await action(pgm);
-    }
+    await (action.length === 2
+      ? new Promise<void>((resolve) => {
+          action(pgm, resolve);
+        })
+      : action(pgm));
 
     const sqlSteps = pgm.getSqlSteps();
 

@@ -68,11 +68,10 @@ describe.each(PG_VERSIONS)(
       envPath?: string;
     }): string {
       let command = 'node bin/node-pg-migrate.js';
-      if (direction === 'up') {
-        command += ' up -m test/migrations';
-      } else {
-        command += ' down 0 -m test/migrations --timestamps';
-      }
+      command +=
+        direction === 'up'
+          ? ' up -m test/migrations'
+          : ' down 0 -m test/migrations --timestamps';
 
       if (configFile) {
         command += ` --config-file ${configFile}`;
