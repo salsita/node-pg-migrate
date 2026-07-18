@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createTrigger } from '../../../src/operations/triggers';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('triggers', () => {
@@ -51,6 +51,35 @@ describe('operations', () => {
           `CREATE OR REPLACE FUNCTION "check_account_update"() RETURNS trigger AS $pga$a$pga$ VOLATILE LANGUAGE plpgsql;
 CREATE TRIGGER "check_update" INSTEAD OF UPDATE OR INSERT ON "accounts" FOR EACH ROW EXECUTE PROCEDURE "check_account_update"();`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = createTrigger(options1Pretty)(
+          'accounts',
+          'check_update',
+          {
+            language: 'plpgsql',
+            operation: ['UPDATE', 'INSERT'],
+            when: 'INSTEAD OF',
+            function: 'check_account_update',
+            replace: true,
+            ifExists: true,
+            constraint: false,
+          },
+          'a'
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement)
+          .toBe(`CREATE OR REPLACE FUNCTION "check_account_update"()
+  RETURNS trigger
+  AS $pga$a$pga$
+  VOLATILE
+  LANGUAGE plpgsql;
+CREATE TRIGGER "check_update"
+  INSTEAD OF UPDATE OR INSERT ON "accounts"
+  FOR EACH ROW
+  EXECUTE PROCEDURE "check_account_update"();`);
       });
 
       it('should return sql statement with schema', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alterMaterializedView } from '../../../src/operations/materializedViews';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('materializedViews', () => {
@@ -33,6 +33,26 @@ describe('operations', () => {
         expect(statement).toBe(
           `ALTER MATERIALIZED VIEW "a_mview" CLUSTER ON "a_cluster", DEPENDS ON EXTENSION "a_extension", SET (fillfactor = 70, fillfactor2 = 50), RESET (reset1, reset2);`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = alterMaterializedView(options1Pretty)('a_mview', {
+          cluster: 'a_cluster',
+          extension: 'a_extension',
+          storageParameters: {
+            fillfactor: 70,
+            fillfactor2: 50,
+            reset1: null,
+            reset2: null,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER MATERIALIZED VIEW "a_mview"
+  CLUSTER ON "a_cluster",
+  DEPENDS ON EXTENSION "a_extension",
+  SET (fillfactor = 70, fillfactor2 = 50),
+  RESET (reset1, reset2);`);
       });
 
       it('should return sql statement without cluster', () => {

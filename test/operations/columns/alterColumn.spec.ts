@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alterColumn } from '../../../src/operations/tables';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('columns', () => {
@@ -33,6 +33,30 @@ describe('operations', () => {
           `ALTER TABLE "distributors" ALTER "address" DROP DEFAULT, ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text, ALTER "address" DROP NOT NULL, ALTER "address" DROP IDENTITY;
 COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = alterColumn(options1Pretty)(
+          'distributors',
+          'address',
+          {
+            default: null,
+            type: 'varchar(30)',
+            collation: 'C',
+            using: 'address::text',
+            notNull: false,
+            sequenceGenerated: null,
+            comment: 'Address of the distributor',
+          }
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "distributors"
+  ALTER "address" DROP DEFAULT,
+  ALTER "address" SET DATA TYPE varchar(30) COLLATE C USING address::text,
+  ALTER "address" DROP NOT NULL,
+  ALTER "address" DROP IDENTITY;
+COMMENT ON COLUMN "distributors"."address" IS $pga$Address of the distributor$pga$;`);
       });
 
       it('should return sql statement with columnOptions and expressionGenerated', () => {

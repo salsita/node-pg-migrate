@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSequence } from '../../../src/operations/sequences';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('sequences', () => {
@@ -36,6 +36,31 @@ describe('operations', () => {
         expect(statement).toBe(
           `CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial" AS bigint INCREMENT BY 2 MAXVALUE 1000 START WITH 1 CACHE 1 CYCLE OWNED BY mytable.mycol;`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = createSequence(options1Pretty)('serial', {
+          temporary: true,
+          ifNotExists: true,
+          type: 'bigint',
+          increment: 2,
+          minvalue: 0,
+          maxvalue: 1000,
+          start: 1,
+          cache: 1,
+          cycle: true,
+          owner: 'mytable.mycol',
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial"
+  AS bigint
+  INCREMENT BY 2
+  MAXVALUE 1000
+  START WITH 1
+  CACHE 1
+  CYCLE
+  OWNED BY mytable.mycol;`);
       });
 
       it('should return sql statement with schema', () => {

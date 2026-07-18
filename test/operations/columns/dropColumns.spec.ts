@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { dropColumns } from '../../../src/operations/tables';
-import { options1, options2 } from '../../presetMigrationOptions';
+import {
+  options1,
+  options1Pretty,
+  options2,
+} from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('columns', () => {
@@ -34,6 +38,18 @@ describe('operations', () => {
         expect(statement).toBe(
           `ALTER TABLE "distributors" DROP IF EXISTS "address" CASCADE;`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = dropColumns(options1Pretty)('myTableName', [
+          'colC1',
+          'colC2',
+        ]);
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "myTableName"
+  DROP "colC1",
+  DROP "colC2";`);
       });
 
       it('should return sql statement with schema', () => {

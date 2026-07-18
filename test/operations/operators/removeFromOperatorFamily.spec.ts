@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { removeFromOperatorFamily } from '../../../src/operations/operators';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('operators', () => {
@@ -36,6 +36,41 @@ describe('operations', () => {
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           `ALTER OPERATOR FAMILY "integer_ops" USING btree DROP OPERATOR 1 ""(int4, int2), OPERATOR 2 ""(int4, int2), FUNCTION 1 ""(int4, int2);`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = removeFromOperatorFamily(options1Pretty)(
+          'integer_ops',
+          'btree',
+          [
+            {
+              type: 'operator',
+              number: 1,
+              name: '',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'operator',
+              number: 2,
+              name: '',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+            {
+              type: 'function',
+              number: 1,
+              name: '',
+              params: [{ type: 'int4' }, { type: 'int2' }],
+            },
+          ]
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER OPERATOR FAMILY "integer_ops" USING btree DROP
+  OPERATOR 1 ""(int4, int2),
+  OPERATOR 2 ""(int4, int2),
+  FUNCTION 1 ""(int4, int2);`
         );
       });
 

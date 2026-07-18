@@ -42,4 +42,30 @@ describe('migrationBuilder', () => {
 
     expect(pgm.getSql()).toMatchSnapshot();
   });
+
+  it('should format the generated SQL across multiple lines when pretty is enabled', () => {
+    const pgm = new MigrationBuilder(
+      {
+        query: vi.fn(),
+        select: vi.fn(),
+      },
+      undefined,
+      true,
+      console,
+      true
+    );
+
+    pgm.createTable('users', {
+      id: 'id',
+      name: { type: 'varchar(1000)', notNull: true },
+    });
+
+    expect(pgm.getSql()).toBe(
+      `CREATE TABLE "users" (
+  "id" serial PRIMARY KEY,
+  "name" varchar(1000) NOT NULL
+);
+`
+    );
+  });
 });

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { addConstraint } from '../../../src/operations/tables';
-import { options1, options2 } from '../../presetMigrationOptions';
+import {
+  options1,
+  options1Pretty,
+  options2,
+} from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('constraints', () => {
@@ -28,6 +32,24 @@ describe('operations', () => {
         expect(statement).toBe(
           `ALTER TABLE "distributors" ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE, ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE, ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE;`
         );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = addConstraint(options1Pretty)(
+          'distributors',
+          'zipchk',
+          {
+            check: ['char_length(zipcode) = 5', 'zipcode <> 0'],
+            exclude: 'zipcode WITH =',
+            deferrable: true,
+          }
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER TABLE "distributors"
+  ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE,
+  ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE,
+  ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE;`);
       });
 
       it('should return sql statement with schema', () => {
