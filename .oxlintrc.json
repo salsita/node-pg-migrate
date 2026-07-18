@@ -43,6 +43,7 @@
       "error",
       { "ignoreCase": true, "ignoreDeclarationSort": true }
     ],
+    "no-use-before-define": "error",
     "prefer-template": "error",
 
     // --- import ---
@@ -131,7 +132,6 @@
     // 10 violations
     "no-shadow": "off",
     // was newly set to error; defer
-    "no-use-before-define": "off",
     "radix": "off",
     "no-await-in-loop": "off",
     "require-await": "off",

@@ -270,6 +270,29 @@ if (dotenv) {
   }
 }
 
+/**
+ * Coerces the `--tsconfig-paths` CLI value into the `boolean | string` shape that
+ * jiti expects: the literals `true`/`false` toggle auto-discovery, any other
+ * string is treated as an explicit path to a `tsconfig.json`.
+ */
+function parseTsconfigPaths(
+  val: string | undefined
+): boolean | string | undefined {
+  if (val === undefined) {
+    return undefined;
+  }
+
+  if (val === 'true') {
+    return true;
+  }
+
+  if (val === 'false') {
+    return false;
+  }
+
+  return val;
+}
+
 let MIGRATIONS_DIR = argv[migrationsDirArg];
 let USE_GLOB = argv[useGlobArg];
 let DB_CONNECTION:
@@ -339,29 +362,6 @@ function isBoolean(val: unknown): val is boolean {
 
 function isBooleanOrString(val: unknown): val is boolean | string {
   return typeof val === 'boolean' || typeof val === 'string';
-}
-
-/**
- * Coerces the `--tsconfig-paths` CLI value into the `boolean | string` shape that
- * jiti expects: the literals `true`/`false` toggle auto-discovery, any other
- * string is treated as an explicit path to a `tsconfig.json`.
- */
-function parseTsconfigPaths(
-  val: string | undefined
-): boolean | string | undefined {
-  if (val === undefined) {
-    return undefined;
-  }
-
-  if (val === 'true') {
-    return true;
-  }
-
-  if (val === 'false') {
-    return false;
-  }
-
-  return val;
 }
 
 function isClientConfig(val: unknown): val is ClientConfig & { name?: string } {
