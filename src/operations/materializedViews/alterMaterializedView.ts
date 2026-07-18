@@ -54,6 +54,10 @@ export function alterMaterializedView(
       clauses.push(`RESET (${resetOptions})`);
     }
 
+    if (clauses.length === 0) {
+      throw new Error('No options provided for alterMaterializedView');
+    }
+
     const clausesStr = formatLines(clauses);
     const viewNameStr = mOptions.literal(viewName);
 

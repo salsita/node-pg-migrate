@@ -11,13 +11,10 @@ describe('operations', () => {
         expect(alterMaterializedViewFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-04-02: This should throw an error
-      it('should return sql statement', () => {
-        const statement = alterMaterializedViewFn('a_mview', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER MATERIALIZED VIEW "a_mview"
-  ;`);
+      it('should throw an error for empty options', () => {
+        expect(() => alterMaterializedViewFn('a_mview', {})).toThrow(
+          new Error('No options provided for alterMaterializedView')
+        );
       });
 
       it('should return sql statement with materializedOptions', () => {
