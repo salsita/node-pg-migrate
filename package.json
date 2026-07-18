@@ -3,7 +3,7 @@
   "version": "10.0.0-alpha.0",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
-    "clean": "git clean -fdx --exclude .claude",
+    "clean": "git clean -fdx --exclude .claude --exclude local",
     "build": "tsdown",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

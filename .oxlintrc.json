@@ -1,0 +1,202 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "oxc", "promise", "typescript", "unicorn", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "perf": "error",
+    "restriction": "off"
+  },
+  "options": {
+    "reportUnusedDisableDirectives": "error",
+    "typeAware": true,
+    "typeCheck": false
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "docs/.vitepress/config.mts",
+    "docs/.vitepress/theme/index.ts",
+    "templates",
+    "test/jiti/migrations/**/*.js",
+    "test/jiti/migrations/**/*.mjs",
+    "test/jiti/tsconfig-paths/**"
+  ],
+  "rules": {
+    // ==========================================================================
+    // Enforced rules (currently pass, keep on)
+    // ==========================================================================
+
+    // --- eslint core ---
+    // `eqeqeq` is already error via the `pedantic` category; this only sets the `null: ignore` option.
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "sort-imports": [
+      "error",
+      { "ignoreCase": true, "ignoreDeclarationSort": true }
+    ],
+    "prefer-template": "error",
+
+    // --- import ---
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+
+    // --- typescript ---
+    "typescript/explicit-module-boundary-types": "error",
+    "typescript/array-type": [
+      "error",
+      { "default": "array-simple", "readonly": "generic" }
+    ],
+    "typescript/prefer-find": "error",
+    "typescript/prefer-for-of": "error",
+    "typescript/prefer-readonly-parameter-types": "off",
+    // Kept at `warn` (matches the previous config) so the `no-non-null-assertion`
+    // oxlint-disable directives in `src/cli.ts` are not reported as unused.
+    "typescript/no-non-null-assertion": "warn",
+
+    // ==========================================================================
+    // Permanently off — project conventions / deliberate decisions.
+    // These were consciously disabled in the previous `oxlint.config.ts`; the
+    // new categories block re-enabled them. They are NOT meant to be adopted.
+    // ==========================================================================
+
+    // Fires on the intentional reversible-operation naming (`_drop`, `_rename`,
+    // `_refresh`, …) used across every operation. Core convention.
+    "no-underscore-dangle": "off",
+    // Pure style, no value for this codebase.
+    "no-inline-comments": "off",
+    // Flags the deliberate `TODO @Shinigami92 …` tracking comments.
+    "no-warning-comments": "off",
+    // Reduces readability (as noted in the previous config).
+    "unicorn/no-array-callback-reference": "off",
+
+    // ==========================================================================
+    // Temporarily off — TODO(follow-up PR): re-enable one rule (or tight group)
+    // per PR and fix the violations. Not fixed in this PR by design.
+    // ==========================================================================
+
+    // --- type-aware typescript (high volume) ---
+    // 183 violations
+    "typescript/strict-boolean-expressions": "off",
+    // 36 violations
+    "typescript/no-unsafe-type-assertion": "off",
+    // 32 violations — behaviour-changing (`??` vs `||`), review each
+    "typescript/prefer-nullish-coalescing": "off",
+    // 20 violations
+    "typescript/strict-void-return": "off",
+    // previously off ("enable later"); test override keeps it enforced
+    "typescript/restrict-template-expressions": "off",
+
+    // --- type-aware typescript (untyped `pgm` fixtures + misc, previously off) ---
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/no-unsafe-argument": "off",
+    "typescript/no-floating-promises": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/no-deprecated": "off",
+    "typescript/no-unnecessary-type-parameters": "off",
+    "typescript/no-useless-default-assignment": "off",
+    "typescript/unbound-method": "off",
+    "typescript/no-confusing-void-expression": "off",
+    "typescript/no-unnecessary-type-assertion": "off",
+    "typescript/return-await": "off",
+    "typescript/prefer-includes": "off",
+    "typescript/prefer-ts-expect-error": "off",
+    "typescript/ban-ts-comment": "off",
+
+    // 37 violations — was newly set to error; defer the cleanup
+    "typescript/explicit-function-return-type": "off",
+    // 3 violations
+    "typescript/consistent-type-imports": "off",
+
+    // --- eslint core ---
+    // 176 violations (mostly large test `describe` blocks)
+    "max-lines-per-function": "off",
+    // 14 violations
+    "max-lines": "off",
+    // 50 violations
+    "require-unicode-regexp": "off",
+    // 11 violations
+    "no-throw-literal": "off",
+    // 10 violations
+    "no-shadow": "off",
+    // was newly set to error; defer
+    "curly": "off",
+    "no-use-before-define": "off",
+    "radix": "off",
+    "no-await-in-loop": "off",
+    "require-await": "off",
+    "preserve-caught-error": "off",
+
+    // --- import ---
+    "import/no-named-as-default-member": "off",
+    "import/max-dependencies": "off",
+
+    // --- oxc ---
+    "oxc/no-accumulating-spread": "off",
+
+    // --- unicorn ---
+    "unicorn/prefer-string-replace-all": "off",
+    "unicorn/prefer-top-level-await": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/prefer-at": "off",
+    "unicorn/prefer-type-error": "off",
+    "unicorn/prefer-string-starts-ends-with": "off",
+    "unicorn/prefer-number-coercion": "off",
+    // was newly set to error; defer
+    "unicorn/prefer-ternary": "off",
+
+    // --- vitest ---
+    // 10 violations (test files)
+    "vitest/no-conditional-in-test": "off"
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.spec.ts", "test/**/*.spec.d.ts"],
+      "rules": {
+        "typescript/no-deprecated": "off",
+
+        "typescript/restrict-template-expressions": [
+          "error",
+          {
+            "allowNumber": true,
+            "allowBoolean": true,
+            "allowAny": true
+          }
+        ],
+
+        "unicorn/no-useless-undefined": ["error", { "checkArguments": false }],
+
+        "vitest/expect-expect": "off",
+        "vitest/no-alias-methods": "error",
+        "vitest/prefer-each": "error",
+        "vitest/prefer-to-have-length": "error",
+        "vitest/require-mock-type-parameters": "off",
+        "vitest/require-to-throw-message": "off",
+        "vitest/valid-describe-callback": "off",
+        "vitest/valid-expect": ["error", { "maxArgs": 2 }],
+        "vitest/warn-todo": "warn"
+      }
+    },
+    {
+      "files": ["test/migrations/*.js"],
+      "rules": {
+        "no-undef": "off",
+        "preserve-caught-error": "off",
+        "typescript/explicit-module-boundary-types": "off",
+        "typescript/no-require-imports": "off",
+        "typescript/only-throw-error": "off",
+        "unicorn/no-array-reduce": "off",
+        "unicorn/prefer-module": "off"
+      }
+    }
+  ]
+}
