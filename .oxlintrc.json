@@ -36,6 +36,7 @@
     // ==========================================================================
 
     // --- eslint core ---
+    "curly": "error",
     // `eqeqeq` is already error via the `pedantic` category; this only sets the `null: ignore` option.
     "eqeqeq": ["error", "always", { "null": "ignore" }],
     "sort-imports": [
@@ -114,8 +115,6 @@
 
     // 37 violations — was newly set to error; defer the cleanup
     "typescript/explicit-function-return-type": "off",
-    // 3 violations
-    "typescript/consistent-type-imports": "off",
 
     // --- eslint core ---
     // 176 violations (mostly large test `describe` blocks)
@@ -129,7 +128,6 @@
     // 10 violations
     "no-shadow": "off",
     // was newly set to error; defer
-    "curly": "off",
     "no-use-before-define": "off",
     "radix": "off",
     "no-await-in-loop": "off",
