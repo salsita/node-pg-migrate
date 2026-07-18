@@ -173,172 +173,6 @@ export function createLegacySqlMigrationLoader(): MigrationLoader {
   return loader;
 }
 
-/**
- * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
- * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been
- * separated from the legacy loader and can be used enabled as needed.
- *
- * @returns The SQL migration loader.
- */
-export function createSqlMigrationLoader(): MigrationLoader {
-  const loader: MigrationLoader = async (filePaths: string[]) => {
-    const groups = groupSqlFiles(filePaths);
-    const migrationUnits = await Promise.all(
-      groups.map(async (group) => await readSqlFileGroup(group))
-    );
-    return migrationUnits;
-  };
-
-  return loader;
-}
-
-/*************************
- * Loader instances
- *************************/
-
-/**
- * Built-in predefined loaders.
- */
-export const builtInLoaders: Record<PredefinedLoader, MigrationLoader> = {
-  default: createDefaultMigrationLoader(),
-  legacySql: createLegacySqlMigrationLoader(),
-  sql: createSqlMigrationLoader(),
-};
-
-/**
- * Builds the default migration loader strategies for a given default loader.
- * @param defaultLoader - The loader to use for non-SQL extensions.
- * @returns The default migration loader strategies.
- */
-function getDefaultStrategies(
-  defaultLoader: MigrationLoader
-): MigrationLoaderStrategy[] {
-  return [
-    { extensions: ['.sql'], loader: builtInLoaders.legacySql },
-    {
-      extensions: ['.js', '.ts', '.cjs', '.mjs', '.cts', '.mts'],
-      loader: defaultLoader,
-    },
-  ];
-}
-
-/*************************
- * Loader utility functions
- *************************/
-
-/**
- * Resolves the default (non-SQL) migration loader for a given configuration.
- *
- * When {@link MigrationLoaderConfig.tsconfigPaths} is enabled, a dedicated jiti
- * instance is created so that TypeScript path aliases are resolved; otherwise the
- * shared default loader (bound to the shared {@link jiti} instance) is reused.
- *
- * @param config - The Runner configuration object.
- * @returns The default migration loader.
- */
-function resolveDefaultLoader(config: MigrationLoaderConfig): MigrationLoader {
-  if (config.tsconfigPaths === undefined || config.tsconfigPaths === false) {
-    return builtInLoaders.default;
-  }
-
-  const configuredJiti = createJiti(process.cwd(), {
-    tsconfigPaths: config.tsconfigPaths,
-  });
-
-  return createDefaultMigrationLoader(configuredJiti);
-}
-
-/**
- * Resolves the migration loader for a given extension.
- * @param config - The Runner configuration object.
- * @param extension - The extension to resolve the loader for.
- * @param defaultLoader - The fallback loader to use when no strategy matches or the `default` predefined loader is referenced.
- * @returns The migration loader.
- */
-function resolveMigrationLoader(
-  config: MigrationLoaderConfig,
-  extension: string,
-  defaultLoader: MigrationLoader
-): MigrationLoader {
-  const normalizedExtension = extension.toLowerCase();
-  const strategies =
-    config.migrationLoaderStrategies ?? getDefaultStrategies(defaultLoader);
-
-  const foundStrategy = strategies.find((strategy) =>
-    strategy.extensions.some((ext) => ext.toLowerCase() === normalizedExtension)
-  );
-
-  const loader = foundStrategy?.loader ?? defaultLoader;
-
-  if (typeof loader === 'string') {
-    const resolved =
-      loader === 'default' ? defaultLoader : builtInLoaders[loader];
-    if (!resolved) {
-      throw new Error(`Unknown predefined loader: ${loader}`);
-    }
-
-    return resolved;
-  }
-
-  return loader;
-}
-
-/**
- * Associates the file paths to their extensions.
- *
- * - `Map` preserves insertion order, so extension buckets are iterated in
- *   the order their extension is first encountered in `filePaths`.
- * - Within each extension bucket, we push in the order files appear in
- *   `filePaths`, so input order is preserved for that extension.
- *
- * @param filePaths - The file paths to associate.
- * @returns The file paths associated to their extensions.
- */
-function associatePathsToExtensions(
-  filePaths: string[]
-): Map<string, string[]> {
-  const filesByExtension = new Map<string, string[]>();
-  for (const filePath of filePaths) {
-    const ext = extname(filePath).toLowerCase();
-    if (!filesByExtension.has(ext)) {
-      filesByExtension.set(ext, []);
-    }
-
-    filesByExtension.get(ext)?.push(filePath);
-  }
-
-  return filesByExtension;
-}
-
-/***********************************
- * Migration loader main function
- ***********************************/
-
-/**
- * Loads the migration units from the file paths.
- * @param config - The migration loader configuration.
- * @param filePaths - List of files containing migrations.
- * @returns List of migration units, sorted according to the given file paths.
- */
-export async function loadMigrationUnits(
-  config: MigrationLoaderConfig,
-  filePaths: string[]
-): Promise<MigrationUnit[]> {
-  const migrationUnits: MigrationUnit[] = [];
-  const defaultLoader = resolveDefaultLoader(config);
-  const filesByExtension = associatePathsToExtensions(filePaths);
-  for (const [extension, filePaths] of filesByExtension) {
-    const loader = resolveMigrationLoader(config, extension, defaultLoader);
-    const units = await loader(filePaths);
-    migrationUnits.push(...units);
-  }
-
-  const sortedMigrationUnits = migrationUnits.toSorted((a, b) =>
-    compareMigrationFileNames(basename(a.id), basename(b.id), config.logger)
-  );
-  return sortedMigrationUnits;
-}
-
 /*****************************************
  * New SQL migration loading behaviour.
  *****************************************/
@@ -505,4 +339,170 @@ async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
     filePaths: filePaths,
     actions: actions,
   };
+}
+
+/**
+ * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
+ * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been
+ * separated from the legacy loader and can be used enabled as needed.
+ *
+ * @returns The SQL migration loader.
+ */
+export function createSqlMigrationLoader(): MigrationLoader {
+  const loader: MigrationLoader = async (filePaths: string[]) => {
+    const groups = groupSqlFiles(filePaths);
+    const migrationUnits = await Promise.all(
+      groups.map(async (group) => await readSqlFileGroup(group))
+    );
+    return migrationUnits;
+  };
+
+  return loader;
+}
+
+/*************************
+ * Loader instances
+ *************************/
+
+/**
+ * Built-in predefined loaders.
+ */
+export const builtInLoaders: Record<PredefinedLoader, MigrationLoader> = {
+  default: createDefaultMigrationLoader(),
+  legacySql: createLegacySqlMigrationLoader(),
+  sql: createSqlMigrationLoader(),
+};
+
+/**
+ * Builds the default migration loader strategies for a given default loader.
+ * @param defaultLoader - The loader to use for non-SQL extensions.
+ * @returns The default migration loader strategies.
+ */
+function getDefaultStrategies(
+  defaultLoader: MigrationLoader
+): MigrationLoaderStrategy[] {
+  return [
+    { extensions: ['.sql'], loader: builtInLoaders.legacySql },
+    {
+      extensions: ['.js', '.ts', '.cjs', '.mjs', '.cts', '.mts'],
+      loader: defaultLoader,
+    },
+  ];
+}
+
+/*************************
+ * Loader utility functions
+ *************************/
+
+/**
+ * Resolves the default (non-SQL) migration loader for a given configuration.
+ *
+ * When {@link MigrationLoaderConfig.tsconfigPaths} is enabled, a dedicated jiti
+ * instance is created so that TypeScript path aliases are resolved; otherwise the
+ * shared default loader (bound to the shared {@link jiti} instance) is reused.
+ *
+ * @param config - The Runner configuration object.
+ * @returns The default migration loader.
+ */
+function resolveDefaultLoader(config: MigrationLoaderConfig): MigrationLoader {
+  if (config.tsconfigPaths === undefined || config.tsconfigPaths === false) {
+    return builtInLoaders.default;
+  }
+
+  const configuredJiti = createJiti(process.cwd(), {
+    tsconfigPaths: config.tsconfigPaths,
+  });
+
+  return createDefaultMigrationLoader(configuredJiti);
+}
+
+/**
+ * Resolves the migration loader for a given extension.
+ * @param config - The Runner configuration object.
+ * @param extension - The extension to resolve the loader for.
+ * @param defaultLoader - The fallback loader to use when no strategy matches or the `default` predefined loader is referenced.
+ * @returns The migration loader.
+ */
+function resolveMigrationLoader(
+  config: MigrationLoaderConfig,
+  extension: string,
+  defaultLoader: MigrationLoader
+): MigrationLoader {
+  const normalizedExtension = extension.toLowerCase();
+  const strategies =
+    config.migrationLoaderStrategies ?? getDefaultStrategies(defaultLoader);
+
+  const foundStrategy = strategies.find((strategy) =>
+    strategy.extensions.some((ext) => ext.toLowerCase() === normalizedExtension)
+  );
+
+  const loader = foundStrategy?.loader ?? defaultLoader;
+
+  if (typeof loader === 'string') {
+    const resolved =
+      loader === 'default' ? defaultLoader : builtInLoaders[loader];
+    if (!resolved) {
+      throw new Error(`Unknown predefined loader: ${loader}`);
+    }
+
+    return resolved;
+  }
+
+  return loader;
+}
+
+/**
+ * Associates the file paths to their extensions.
+ *
+ * - `Map` preserves insertion order, so extension buckets are iterated in
+ *   the order their extension is first encountered in `filePaths`.
+ * - Within each extension bucket, we push in the order files appear in
+ *   `filePaths`, so input order is preserved for that extension.
+ *
+ * @param filePaths - The file paths to associate.
+ * @returns The file paths associated to their extensions.
+ */
+function associatePathsToExtensions(
+  filePaths: string[]
+): Map<string, string[]> {
+  const filesByExtension = new Map<string, string[]>();
+  for (const filePath of filePaths) {
+    const ext = extname(filePath).toLowerCase();
+    if (!filesByExtension.has(ext)) {
+      filesByExtension.set(ext, []);
+    }
+
+    filesByExtension.get(ext)?.push(filePath);
+  }
+
+  return filesByExtension;
+}
+
+/***********************************
+ * Migration loader main function
+ ***********************************/
+
+/**
+ * Loads the migration units from the file paths.
+ * @param config - The migration loader configuration.
+ * @param filePaths - List of files containing migrations.
+ * @returns List of migration units, sorted according to the given file paths.
+ */
+export async function loadMigrationUnits(
+  config: MigrationLoaderConfig,
+  filePaths: string[]
+): Promise<MigrationUnit[]> {
+  const migrationUnits: MigrationUnit[] = [];
+  const defaultLoader = resolveDefaultLoader(config);
+  const filesByExtension = associatePathsToExtensions(filePaths);
+  for (const [extension, filePaths] of filesByExtension) {
+    const loader = resolveMigrationLoader(config, extension, defaultLoader);
+    const units = await loader(filePaths);
+    migrationUnits.push(...units);
+  }
+
+  const sortedMigrationUnits = migrationUnits.toSorted((a, b) =>
+    compareMigrationFileNames(basename(a.id), basename(b.id), config.logger)
+  );
+  return sortedMigrationUnits;
 }
