@@ -37,7 +37,9 @@ export function generateIndexName(
 
   const cols = columns
     .map((col, idx) => {
-      if (isIndexColumn(col)) return schemalize(col.name);
+      if (isIndexColumn(col)) {
+        return schemalize(col.name);
+      }
 
       if (isPgLiteral(col)) {
         const literalValue = 'value' in col ? col.value : String(col);

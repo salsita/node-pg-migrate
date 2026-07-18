@@ -418,13 +418,19 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
     }
 
     if (parsed.direction === 'up') {
-      if (group.up) throw new Error(`Duplicate .up.sql for ${parsed.id}`);
+      if (group.up) {
+        throw new Error(`Duplicate .up.sql for ${parsed.id}`);
+      }
       group.up = parsed.filePath;
     } else if (parsed.direction === 'down') {
-      if (group.down) throw new Error(`Duplicate .down.sql for ${parsed.id}`);
+      if (group.down) {
+        throw new Error(`Duplicate .down.sql for ${parsed.id}`);
+      }
       group.down = parsed.filePath;
     } else {
-      if (group.single) throw new Error(`Duplicate .sql for ${parsed.id}`);
+      if (group.single) {
+        throw new Error(`Duplicate .sql for ${parsed.id}`);
+      }
       group.single = parsed.filePath;
     }
   }
