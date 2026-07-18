@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { addConstraint } from '../../../src/operations/tables';
-import { options1, options2 } from '../../presetMigrationOptions';
+import {
+  options1,
+  options1Pretty,
+  options2,
+} from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('constraints', () => {
@@ -25,6 +29,23 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER TABLE "distributors" ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE, ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE, ADD CONSTRAINT "zipchk" EXCLUDE zipcode WITH = DEFERRABLE INITIALLY IMMEDIATE;`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = addConstraint(options1Pretty)(
+          'distributors',
+          'zipchk',
+          {
+            check: ['char_length(zipcode) = 5', 'zipcode <> 0'],
+            exclude: 'zipcode WITH =',
+            deferrable: true,
+          }
+        );
+
+        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(`ALTER TABLE "distributors"
   ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5) DEFERRABLE INITIALLY IMMEDIATE,
   ADD CONSTRAINT "zipchk" CHECK (zipcode <> 0) DEFERRABLE INITIALLY IMMEDIATE,
@@ -43,8 +64,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER TABLE "myschema"."distributors"
-  ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5);`
+          `ALTER TABLE "myschema"."distributors" ADD CONSTRAINT "zipchk" CHECK (char_length(zipcode) = 5);`
         );
       });
 
@@ -54,30 +74,26 @@ describe('operations', () => {
           'should works with strings 1',
           options1,
           ['myTableName', 'myConstraintName', 'CHECK name IS NOT NULL'],
-          `ALTER TABLE "myTableName"
-  ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`,
+          `ALTER TABLE "myTableName" ADD CONSTRAINT "myConstraintName" CHECK name IS NOT NULL;`,
         ],
         [
           'should works with strings 2',
           options2,
           ['myTableName', 'myConstraintName', 'CHECK name IS NOT NULL'],
-          `ALTER TABLE "my_table_name"
-  ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`,
+          `ALTER TABLE "my_table_name" ADD CONSTRAINT "my_constraint_name" CHECK name IS NOT NULL;`,
         ],
         // should not add constraint name if not defined
         [
           'should not add constraint name if not defined 1',
           options1,
           ['myTableName', null, 'CHECK name IS NOT NULL'],
-          `ALTER TABLE "myTableName"
-  ADD CHECK name IS NOT NULL;`,
+          `ALTER TABLE "myTableName" ADD CHECK name IS NOT NULL;`,
         ],
         [
           'should not add constraint name if not defined 2',
           options2,
           ['myTableName', null, 'CHECK name IS NOT NULL'],
-          `ALTER TABLE "my_table_name"
-  ADD CHECK name IS NOT NULL;`,
+          `ALTER TABLE "my_table_name" ADD CHECK name IS NOT NULL;`,
         ],
         // should create comments
         [
@@ -91,8 +107,7 @@ describe('operations', () => {
               comment: 'this is an important primary key',
             },
           ],
-          `ALTER TABLE "myTableName"
-  ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
+          `ALTER TABLE "myTableName" ADD CONSTRAINT "myConstraintName" PRIMARY KEY ("colA");
 COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an important primary key$pga$;`,
         ],
         [
@@ -106,8 +121,7 @@ COMMENT ON CONSTRAINT "myConstraintName" ON "myTableName" IS $pga$this is an imp
               comment: 'this is an important primary key',
             },
           ],
-          `ALTER TABLE "my_table_name"
-  ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
+          `ALTER TABLE "my_table_name" ADD CONSTRAINT "my_constraint_name" PRIMARY KEY ("col_a");
 COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an important primary key$pga$;`,
         ],
       ] as const)(

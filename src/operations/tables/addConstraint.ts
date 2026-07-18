@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropConstraintOptions } from './dropConstraint';
 import { dropConstraint } from './dropConstraint';
@@ -41,10 +41,15 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
       throw new Error('No constraint options provided for addConstraint');
     }
 
-    const constraintStr = formatLines(constraints, '  ADD ');
+    const constraintStr = formatLines(
+      constraints,
+      '  ADD ',
+      ',',
+      mOptions.pretty
+    );
 
     return [
-      `ALTER TABLE ${mOptions.literal(tableName)}\n${constraintStr};`,
+      `ALTER TABLE ${mOptions.literal(tableName)}${formatSeparator(mOptions.pretty)}${constraintStr};`,
       ...comments,
     ].join('\n');
   };

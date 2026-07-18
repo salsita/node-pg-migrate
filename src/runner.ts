@@ -124,6 +124,15 @@ export interface RunnerOptionConfig {
   decamelize?: boolean;
 
   /**
+   * Format the generated SQL statements with linebreaks and indentation for
+   * better readability. When `false`, each statement is emitted as a single
+   * line.
+   *
+   * @default false
+   */
+  pretty?: boolean;
+
+  /**
    * Redirect log messages to this function, rather than `console`.
    */
   log?: LogFn;

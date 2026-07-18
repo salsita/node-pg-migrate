@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { formatSeparator } from '../../utils';
 import type { Name } from '../generalTypes';
 import type { SequenceOptions } from './shared';
 import { parseSequenceOptions } from './shared';
@@ -30,7 +31,9 @@ export function alterSequence(mOptions: MigrationOptions): AlterSequence {
       throw new Error('No sequence options provided for alterSequence');
     }
 
-    return `ALTER SEQUENCE ${mOptions.literal(sequenceName)}
-  ${clauses.join('\n  ')};`;
+    const nl = formatSeparator(mOptions.pretty, '  ');
+    const clausesStr = clauses.join(nl);
+
+    return `ALTER SEQUENCE ${mOptions.literal(sequenceName)}${nl}${clausesStr};`;
   };
 }

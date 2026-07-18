@@ -416,7 +416,8 @@ export class Migration implements RunMigration {
       this.db,
       this.typeShorthands,
       Boolean(this.options.decamelize),
-      this.logger
+      this.logger,
+      Boolean(this.options.pretty)
     );
     const action = this._getAction(direction);
 

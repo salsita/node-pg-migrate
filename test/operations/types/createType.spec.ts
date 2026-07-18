@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PgType } from '../../../src';
 import { createType } from '../../../src/operations/types';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('types', () => {
@@ -14,6 +14,18 @@ describe('operations', () => {
 
       it('should return sql statement', () => {
         const statement = createTypeFn('compfoo', {
+          f1: 'int',
+          f2: PgType.TEXT,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE TYPE "compfoo" AS ("f1" integer, "f2" text);`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = createType(options1Pretty)('compfoo', {
           f1: 'int',
           f2: PgType.TEXT,
         });

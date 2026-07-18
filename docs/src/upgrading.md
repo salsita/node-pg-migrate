@@ -3,6 +3,34 @@
 This page documents the changes you need to be aware of when upgrading between
 major versions of `node-pg-migrate`.
 
+## From v9 to v10
+
+### Breaking changes
+
+#### SQL statements are now single-line by default
+
+The generated SQL statements are now emitted on a **single line by default**.
+Previously, statements were always formatted across multiple lines with
+indentation.
+
+This is purely cosmetic — the SQL is semantically identical — but it changes the
+output you see in logs, dry runs, and `MigrationBuilder.getSql()`. If you snapshot
+or assert on the generated SQL, update those expectations accordingly.
+
+To restore the previous multi-line formatting, enable the new `pretty` option:
+
+```bash
+node-pg-migrate up --pretty
+```
+
+```jsonc
+{
+  "pretty": true,
+}
+```
+
+Or, when using the programmatic API, pass `pretty: true` to `runner()`.
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript
