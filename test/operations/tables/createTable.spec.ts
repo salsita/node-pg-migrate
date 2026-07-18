@@ -12,11 +12,10 @@ describe('operations', () => {
         expect(createTableFn).toBeTypeOf('function');
       });
 
-      it('should return sql statement', () => {
-        const statement = createTableFn('films', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE TABLE "films" (\n  \n);');
+      it('should throw an error for empty columns', () => {
+        expect(() => createTableFn('films', {})).toThrow(
+          new Error('No columns provided for createTable')
+        );
       });
 
       it('should return sql statement with tableOptions', () => {
@@ -53,18 +52,16 @@ describe('operations', () => {
         );
       });
 
-      // TODO @Shinigami92 2024-03-12: This should throw an error when columns are empty
-      it('should return sql statement with schema', () => {
-        const statement = createTableFn(
-          {
-            name: 'films',
-            schema: 'myschema',
-          },
-          {}
-        );
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE TABLE "myschema"."films" (\n  \n);');
+      it('should throw an error for empty columns with schema', () => {
+        expect(() =>
+          createTableFn(
+            {
+              name: 'films',
+              schema: 'myschema',
+            },
+            {}
+          )
+        ).toThrow(new Error('No columns provided for createTable'));
       });
 
       it.each([

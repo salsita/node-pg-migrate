@@ -562,7 +562,7 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('068_extension', NOW(
 
 ### MIGRATION 069_comments (UP) ###
 CREATE TABLE "test-comment" (
-  
+  "id" serial
 );
 COMMENT ON TABLE "test-comment" IS $pga$table's comment$pga$;
 DROP TABLE "test-comment";
