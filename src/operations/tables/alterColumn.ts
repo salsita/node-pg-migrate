@@ -3,6 +3,7 @@ import {
   applyTypeAdapters,
   escapeValue,
   formatLines,
+  formatSeparator,
   makeComment,
 } from '../../utils';
 import type { Name, Value } from '../generalTypes';
@@ -107,7 +108,7 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
       );
 
       queries.push(
-        `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? '\n' : ' '}${columnsStr};`
+        `ALTER TABLE ${mOptions.literal(tableName)}${formatSeparator(mOptions.pretty)}${columnsStr};`
       );
     }
 

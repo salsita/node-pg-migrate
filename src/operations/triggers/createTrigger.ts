@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { escapeValue, toArray } from '../../utils';
+import { escapeValue, formatSeparator, toArray } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
@@ -76,7 +76,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       );
     }
 
-    const nl = mOptions.pretty ? '\n  ' : ' ';
+    const nl = formatSeparator(mOptions.pretty, '  ');
     const defferStr = constraint
       ? `${deferrable ? `DEFERRABLE INITIALLY ${deferred ? 'DEFERRED' : 'IMMEDIATE'}` : 'NOT DEFERRABLE'}${nl}`
       : '';

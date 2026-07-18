@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { Name } from '../generalTypes';
 
 export interface AlterTableOptions {
@@ -39,7 +39,7 @@ export function alterTable(mOptions: MigrationOptions): AlterTable {
       mOptions.pretty
     );
 
-    return `ALTER TABLE ${mOptions.literal(tableName)}${mOptions.pretty ? `\n  ${alterDefinitionStr}` : ` ${alterDefinitionStr}`};`;
+    return `ALTER TABLE ${mOptions.literal(tableName)}${formatSeparator(mOptions.pretty, '  ')}${alterDefinitionStr};`;
   };
 
   return _alter;

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { Name, Nullable } from '../generalTypes';
 import type { StorageParameters } from './shared';
 import { storageParameterStr } from './shared';
@@ -61,7 +61,7 @@ export function alterMaterializedView(
     const clausesStr = formatLines(clauses, '  ', ',', mOptions.pretty);
     const viewNameStr = mOptions.literal(viewName);
 
-    return `ALTER MATERIALIZED VIEW ${viewNameStr}${mOptions.pretty ? '\n' : ' '}${clausesStr};`;
+    return `ALTER MATERIALIZED VIEW ${viewNameStr}${formatSeparator(mOptions.pretty)}${clausesStr};`;
   };
 
   return _alter;

@@ -1,5 +1,6 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import {
+  formatBlock,
   formatLines,
   formatPartitionColumns,
   intersection,
@@ -93,7 +94,7 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ',',
       mOptions.pretty
     );
-    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (${mOptions.pretty ? `\n${tableDefinitionStr}\n` : tableDefinitionStr})${inheritsStr}${partitionStr};`;
+    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (${formatBlock(tableDefinitionStr, mOptions.pretty)})${inheritsStr}${partitionStr};`;
     const comments = [...columnComments, ...constraintComments];
 
     if (comment !== undefined) {

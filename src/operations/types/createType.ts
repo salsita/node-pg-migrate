@@ -1,5 +1,10 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { applyType, escapeValue } from '../../utils';
+import {
+  applyType,
+  escapeValue,
+  formatBlock,
+  formatSeparator,
+} from '../../utils';
 import type { Name, Reversible, Type, Value } from '../generalTypes';
 import type { DropTypeOptions } from './dropType';
 import { dropType } from './dropType';
@@ -26,9 +31,9 @@ export function createType(mOptions: MigrationOptions): CreateType {
 
         return `${mOptions.literal(attributeName)} ${typeStr}`;
       })
-      .join(mOptions.pretty ? ',\n' : ', ');
+      .join(`,${formatSeparator(mOptions.pretty)}`);
 
-    return `CREATE TYPE ${mOptions.literal(typeName)} AS (${mOptions.pretty ? `\n${attributes}\n` : attributes});`;
+    return `CREATE TYPE ${mOptions.literal(typeName)} AS (${formatBlock(attributes, mOptions.pretty)});`;
   };
 
   _create.reverse = dropType(mOptions);

@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { applyType } from '../../utils';
+import { applyType, formatLines, formatSeparator } from '../../utils';
 import type { Name, Reversible, Type } from '../generalTypes';
 import type { DropOperatorClassOptions } from './dropOperatorClass';
 import { dropOperatorClass } from './dropOperatorClass';
@@ -39,11 +39,14 @@ export function createOperatorClass(
     const typeStr = mOptions.literal(applyType(type).type);
     const indexMethodStr = mOptions.literal(indexMethod);
     const familyStr = family ? ` FAMILY ${family}` : '';
-    const operatorListStr = operatorList
-      .map(operatorMap(mOptions))
-      .join(mOptions.pretty ? ',\n  ' : ', ');
+    const operatorListStr = formatLines(
+      operatorList.map(operatorMap(mOptions)),
+      '  ',
+      ',',
+      mOptions.pretty
+    );
 
-    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr}${familyStr} AS${mOptions.pretty ? `\n  ${operatorListStr}` : ` ${operatorListStr}`};`;
+    return `CREATE OPERATOR CLASS ${operatorClassNameStr}${defaultStr} FOR TYPE ${typeStr} USING ${indexMethodStr}${familyStr} AS${formatSeparator(mOptions.pretty)}${operatorListStr};`;
   };
 
   _create.reverse = (

@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { formatLines, formatSeparator } from '../../utils';
 import type { Name } from '../generalTypes';
 import type { OperatorListDefinition } from './shared';
 import { operatorMap } from './shared';
@@ -18,11 +19,14 @@ export const removeFromOperatorFamily = (
     operatorList
   ) => {
     const operatorFamilyNameStr = mOptions.literal(operatorFamilyName);
-    const operatorListStr = operatorList
-      .map(operatorMap(mOptions))
-      .join(mOptions.pretty ? ',\n  ' : ', ');
+    const operatorListStr = formatLines(
+      operatorList.map(operatorMap(mOptions)),
+      '  ',
+      ',',
+      mOptions.pretty
+    );
 
-    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} DROP${mOptions.pretty ? `\n  ${operatorListStr}` : ` ${operatorListStr}`};`;
+    return `ALTER OPERATOR FAMILY ${operatorFamilyNameStr} USING ${indexMethod} DROP${formatSeparator(mOptions.pretty)}${operatorListStr};`;
   };
 
   return method;
