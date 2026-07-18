@@ -11,12 +11,10 @@ describe('operations', () => {
         expect(alterViewFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-09: This should throw an error
-      it('should return sql statement', () => {
-        const statement = alterViewFn('a_view', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toHaveLength(0);
+      it('should throw an error for empty options', () => {
+        expect(() => alterViewFn('a_view', {})).toThrow(
+          new Error('No options provided for alterView')
+        );
       });
 
       it('should return sql statement with viewOptions', () => {

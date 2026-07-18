@@ -46,6 +46,10 @@ export function alterView(mOptions: MigrationOptions): AlterView {
       clauses.push(`RESET (${resetOptions})`);
     }
 
+    if (clauses.length === 0) {
+      throw new Error('No options provided for alterView');
+    }
+
     return clauses
       .map((clause) => `ALTER VIEW ${mOptions.literal(viewName)} ${clause};`)
       .join('\n');
