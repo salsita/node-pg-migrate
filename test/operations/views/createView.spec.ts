@@ -11,12 +11,10 @@ describe('operations', () => {
         expect(createViewFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-03-20: This should throw an error
-      it.todo('should return sql statement', () => {
-        const statement = createViewFn('comedies', {}, '');
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE VIEW "comedies" AS ;');
+      it('should throw an error for an empty definition', () => {
+        expect(() => createViewFn('comedies', {}, '')).toThrow(
+          new Error('No definition provided for createView')
+        );
       });
 
       it('should return sql statement with viewOptions', () => {
