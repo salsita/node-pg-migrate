@@ -76,19 +76,29 @@ Add `node-pg-migrate` to `scripts` section of your `package.json` so you are abl
 {
   "scripts": {
     // ..
-    "migrate": "node-pg-migrate -j ts", // [!code ++]
+    "migrate": "node-pg-migrate", // [!code ++]
   },
 }
 ```
 
 :::
 
-Now, lets create your first migration:
+Now, lets create your first migration. The `create` command accepts
+`-j`/`--migration-file-language` to choose the file language:
 
-```bash
+::: code-group
+
+```bash [JavaScript]
 npm run migrate create my-first-migration
-# creates migrations/xxx_my-first-migration.js, ts, cjs, mjs, cts or mts
+# creates migrations/xxx_my-first-migration.js
 ```
+
+```bash [TypeScript]
+npm run migrate create my-first-migration -j ts
+# creates migrations/xxx_my-first-migration.ts
+```
+
+:::
 
 Open it and change the contents to:
 

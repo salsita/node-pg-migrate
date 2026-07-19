@@ -73,7 +73,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -139,7 +139,7 @@ jobs:
           EOF
 
       - name: Integration Test for URL object config
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -198,7 +198,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -260,7 +260,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -314,7 +314,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/integration_test
 
@@ -384,7 +384,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -437,7 +437,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
         env:
           PGHOST: localhost
           PGUSER: ubuntu
@@ -495,7 +495,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -s myschema --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema -m test/migrations --timestamps
+        run: pnpm run migrate up -s myschema --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
@@ -551,7 +551,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations --timestamps
+        run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
@@ -607,7 +607,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/ts/migrations && pnpm run migrate down 0 -m test/ts/migrations --timestamps
+        run: pnpm run migrate up -m test/ts/migrations && pnpm run migrate down 0 -m test/ts/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 

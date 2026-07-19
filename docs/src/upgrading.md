@@ -7,6 +7,40 @@ major versions of `node-pg-migrate`.
 
 ### Breaking changes
 
+#### The CLI now uses subcommands
+
+The command-line parser was rewritten around idiomatic subcommands. Options now
+belong to the command they apply to and must be passed **after** the command:
+
+```bash
+node-pg-migrate up --pretty -m migrations # [!code ++]
+node-pg-migrate --pretty up -m migrations # [!code --]
+```
+
+Each command has its own help (`node-pg-migrate up --help`,
+`node-pg-migrate create --help`, …). The `migration-file-language` (`-j`),
+`migration-filename-format` and `template-file-name` options are only valid on
+the `create` command.
+
+If you previously used a package.json script that placed options before the
+command, move the options after it:
+
+```jsonc
+{
+  "scripts": {
+    "migrate": "node-pg-migrate -j ts", // [!code --]
+    "migrate": "node-pg-migrate", // [!code ++]
+  },
+}
+```
+
+```bash
+npm run migrate create my-migration -j ts
+```
+
+The version flag is `-i`/`--version` (unchanged), and the minimum supported
+Node.js version is now `>=22.12.0`.
+
 #### SQL statements are now single-line by default
 
 The generated SQL statements are now emitted on a **single line by default**.

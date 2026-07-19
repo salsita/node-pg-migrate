@@ -28,8 +28,8 @@ export default defineConfig({
         'src/operations/*Types.ts',
         // TODO @Shinigami92 2026-07-17: The CLI is exercised by the integration/CLI e2e jobs,
         // not the unit suite that feeds coverage.
-        // Cover it once it is split into smaller units under src/cli/ in a follow-up PR.
-        'src/cli.ts',
+        // Cover it once dedicated unit tests are added for src/cli/ in a follow-up PR.
+        'src/cli/**',
       ],
       reportOnFailure: true,
       thresholds: {

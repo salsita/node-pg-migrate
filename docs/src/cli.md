@@ -61,6 +61,13 @@ More on that below.
 
 ## Available Commands
 
+`node-pg-migrate` uses subcommands. Each command exposes only its relevant
+options and has its own help output, e.g. `node-pg-migrate up --help` or
+`node-pg-migrate create --help`. Options must be passed _after_ the command
+(for example `node-pg-migrate up 2 -m migrations`).
+
+You can print the installed version with `node-pg-migrate --version` (alias `-i`).
+
 | Command                                   |                                                       Description                                                       |
 | ----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------: |
 | `node-pg-migrate create {migration-name}` | creates a new migration file with a timestamp prepended to the name you provide. Dashes replace spaces and underscores. |
@@ -74,11 +81,14 @@ More on that below.
 ## Configuration
 
 > [!TIP]
-> See all by running `node-pg-migrate --help`.
+> See all options for a command by running its help, e.g. `node-pg-migrate up --help`.
 >
 > Most of the configuration options can be also specified in the [config](https://www.npmjs.com/package/config) file.
 
-You can adjust defaults by passing arguments to `node-pg-migrate`:
+You can adjust defaults by passing arguments to the command. The
+`migration-file-language`, `migration-filename-format` and `template-file-name`
+options are only available on the `create` command; the remaining options below
+apply to the `up`, `down` and `redo` commands:
 
 | Argument                    | Aliases | Default                         | Description                                                                                                                                                                                                                                                                             |
 | --------------------------- | ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -164,5 +174,5 @@ For example with a config like:
 }
 ```
 
-The command `node-pg-migrate --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
+The command `node-pg-migrate up --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
 There are no constraints on how you name your configuration groups.
