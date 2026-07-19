@@ -82,16 +82,15 @@
     "templates"
   ],
   "dependencies": {
+    "commander": "~15.0.0",
     "glob": "~13.0.0",
-    "jiti": "~2.7.0",
-    "yargs": "~18.0.0"
+    "jiti": "~2.7.0"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "12.0.4",
     "@types/config": "4.4.0",
     "@types/node": "26.1.1",
     "@types/pg": "8.20.0",
-    "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.1.10",
     "@vitest/ui": "4.1.10",
     "config": "4.4.2",
@@ -120,6 +119,6 @@
   },
   "packageManager": "pnpm@11.11.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   }
 }

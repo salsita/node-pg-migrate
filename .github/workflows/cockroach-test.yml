@@ -52,6 +52,6 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock --timestamps
+        run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock
         env:
           DATABASE_URL: postgresql://root@localhost:26257/integration_test

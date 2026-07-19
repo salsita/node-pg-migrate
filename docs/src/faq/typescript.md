@@ -10,9 +10,17 @@ You can add a script to your `package.json`:
 {
   "scripts": {
     // ..
-    "migrate": "node-pg-migrate -j ts", // [!code ++]
+    "migrate": "node-pg-migrate", // [!code ++]
   },
 }
+```
+
+TypeScript and JavaScript migration files are picked up automatically. When
+creating a new migration, choose TypeScript with
+`-j ts`/`--migration-file-language ts` (only valid on the `create` command):
+
+```bash
+npm run migrate create my-migration -j ts
 ```
 
 Now you can run migrations with:
