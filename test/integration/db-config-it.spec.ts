@@ -71,7 +71,7 @@ describe.each(PG_VERSIONS)(
       command +=
         direction === 'up'
           ? ' up -m test/migrations'
-          : ' down 0 -m test/migrations --timestamps';
+          : ' down 0 -m test/migrations';
 
       if (configFile) {
         command += ` --config-file ${configFile}`;
