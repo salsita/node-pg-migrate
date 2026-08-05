@@ -50,7 +50,6 @@ export interface DBConnection extends DB {
 
   connected: () => boolean;
 
-  // oxlint-disable-next-line typescript/explicit-module-boundary-types
   addBeforeCloseListener: (listener: any) => number;
 
   close(): Promise<void>;
