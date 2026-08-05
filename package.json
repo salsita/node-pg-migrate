@@ -105,7 +105,7 @@
     "testcontainers": "12.1.0",
     "tsdown": "0.22.14",
     "typescript": "7.0.2",
-    "vitepress": "2.0.0-alpha.18",
+    "vitepress": "2.0.0-alpha.19",
     "vitest": "4.1.10"
   },
   "peerDependencies": {
