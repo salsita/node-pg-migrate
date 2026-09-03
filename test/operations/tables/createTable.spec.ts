@@ -303,6 +303,25 @@ describe('operations', () => {
           ],
           `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_fk_col_a_col_b" FOREIGN KEY ("col_a", "col_b") REFERENCES otherTable (A, B));`,
         ],
+        [
+          'should check table references work correctly for name objects',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            {
+              constraints: {
+                foreignKeys: [
+                  {
+                    columns: [{ name: 'colA' }, { name: 'colB' }],
+                    references: 'otherTable (A, B)',
+                  },
+                ],
+              },
+            },
+          ],
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B));`,
+        ],
         // should check table unique constraint work correctly
         [
           'should check table unique constraint work correctly 1',
@@ -344,6 +363,27 @@ describe('operations', () => {
             { constraints: { unique: 'colA' } },
           ],
           `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_uniq_col_a" UNIQUE ("col_a"));`,
+        ],
+        // should check table unique constraint work correctly for name objects
+        [
+          'should check table unique constraint work correctly for name objects 1',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            { constraints: { unique: [{ name: 'colA' }, { name: 'colB' }] } },
+          ],
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"));`,
+        ],
+        [
+          'should check table unique constraint work correctly for name objects 2',
+          options2,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            { constraints: { unique: [{ name: 'colA' }, { name: 'colB' }] } },
+          ],
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"));`,
         ],
         // should check table unique constraint work correctly for array of arrays
         [

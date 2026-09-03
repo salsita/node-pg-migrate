@@ -372,7 +372,9 @@ export function parseConstraints(
       ? uniqueArray
       : [uniqueArray]) as Array<Name | Name[]>) {
       const cols = toArray(uniqueSet);
-      const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`);
+      const name = literal(
+        optionName || `${tableName}_uniq_${cols.map(getNameString).join('_')}`
+      );
 
       constraints.push(
         `CONSTRAINT ${name} UNIQUE (${cols.map(literal).join(', ')})`
@@ -396,7 +398,7 @@ export function parseConstraints(
       const name = literal(
         referencesConstraintName ||
           optionName ||
-          `${tableName}_fk_${cols.join('_')}`
+          `${tableName}_fk_${cols.map(getNameString).join('_')}`
       );
       const key = cols.map(literal).join(', ');
       const referencesStr = parseReferences(fk, literal);

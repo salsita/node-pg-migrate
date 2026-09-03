@@ -98,7 +98,6 @@
     "typescript/no-unsafe-assignment": "off",
     "typescript/no-unsafe-return": "off",
     "typescript/no-unsafe-argument": "off",
-    "typescript/no-base-to-string": "off",
     "typescript/no-deprecated": "off",
     "typescript/no-unnecessary-type-parameters": "off",
     "typescript/no-useless-default-assignment": "off",
