@@ -3,7 +3,7 @@ import { Client } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
 import { db as Db } from '../src/db';
-import type { Logger } from '../src/logger';
+import type { LogFn, Logger } from '../src/logger';
 
 type MockClient = {
   connect: (cb: (err?: Error | null) => void) => void;
@@ -40,10 +40,10 @@ vi.mock('pg', () => {
 
 describe('db', () => {
   const log: Logger = {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
+    debug: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
   };
 
   describe('constructor', () => {

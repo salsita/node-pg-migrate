@@ -91,8 +91,6 @@
     "typescript/strict-boolean-expressions": "off",
     // 32 violations — behaviour-changing (`??` vs `||`), review each
     "typescript/prefer-nullish-coalescing": "off",
-    // 20 violations
-    "typescript/strict-void-return": "off",
     // previously off ("enable later"); test override keeps it enforced
     "typescript/restrict-template-expressions": "off",
 
