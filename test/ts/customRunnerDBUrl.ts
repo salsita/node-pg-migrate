@@ -9,4 +9,4 @@ async function start(): Promise<void> {
   process.exit(result ? 0 : 1);
 }
 
-start();
+void start();

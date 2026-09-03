@@ -193,7 +193,7 @@ ${error}
       );
       if (!isExternalClient) {
         connectionStatus = 'DISCONNECTED';
-        ownClient?.end();
+        await ownClient?.end();
       }
     },
   };

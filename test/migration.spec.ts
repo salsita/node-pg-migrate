@@ -270,7 +270,7 @@ describe('migration', () => {
       );
 
       expect(() => {
-        migration.apply(direction);
+        void migration.apply(direction);
       }).toThrow(
         new Error(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
