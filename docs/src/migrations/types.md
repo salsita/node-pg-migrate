@@ -63,7 +63,7 @@ operation (`dropType`) when the migration is rolled back.
 
 ## Operation: `alterType`
 
-#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
+#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type, attribute_options )`
 
 > [!IMPORTANT]
 > Add attribute to an existing data
@@ -71,11 +71,21 @@ operation (`dropType`) when the migration is rolled back.
 
 ### Arguments
 
-| Name             | Type                      | Description                  |
-| ---------------- | ------------------------- | ---------------------------- |
-| `type_name`      | [Name](/migrations/#type) | name of the type             |
-| `attribute_name` | `string`                  | name of the attribute to add |
-| `attribute_type` | `string`                  | type of the attribute to add |
+| Name                | Type                      | Description                       |
+| ------------------- | ------------------------- | --------------------------------- |
+| `type_name`         | [Name](/migrations/#type) | name of the type                  |
+| `attribute_name`    | `string`                  | name of the attribute to add      |
+| `attribute_type`    | `string`                  | type of the attribute to add      |
+| `attribute_options` | `object`                  | Check below for available options |
+
+### Options
+
+`ADD ATTRIBUTE` itself takes no options - these are forwarded to the reverse
+operation (`dropTypeAttribute`) when the migration is rolled back.
+
+| Option     | Type      | Description                       |
+| ---------- | --------- | --------------------------------- |
+| `ifExists` | `boolean` | drops attribute only if it exists |
 
 ## Reverse Operation: `dropTypeAttribute`
 

@@ -7,7 +7,8 @@ import { dropTypeAttribute } from './dropTypeAttribute';
 export type AddTypeAttributeFn = (
   typeName: Name,
   attributeName: string,
-  attributeType: Type & DropTypeAttributeOptions
+  attributeType: Type,
+  attributeOptions?: DropTypeAttributeOptions
 ) => string;
 
 export type AddTypeAttribute = Reversible<AddTypeAttributeFn>;
@@ -25,7 +26,12 @@ export function addTypeAttribute(mOptions: MigrationOptions): AddTypeAttribute {
     return `ALTER TYPE ${typeNameStr} ADD ATTRIBUTE ${attributeNameStr} ${typeStr};`;
   };
 
-  _alterAttributeAdd.reverse = dropTypeAttribute(mOptions);
+  _alterAttributeAdd.reverse = (
+    typeName,
+    attributeName,
+    attributeType,
+    attributeOptions
+  ) => dropTypeAttribute(mOptions)(typeName, attributeName, attributeOptions);
 
   return _alterAttributeAdd;
 }
