@@ -3,7 +3,7 @@ import { applyType, escapeValue, makeComment, toArray } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
-import { isNameObject } from '../generalTypes';
+import { getNameString } from '../generalTypes';
 import type { SequenceOptions } from '../sequences';
 import { parseSequenceOptions } from '../sequences';
 
@@ -265,7 +265,9 @@ export function parseColumns(
       if (references) {
         const name =
           referencesConstraintName ||
-          (referencesConstraintComment ? `${tableName}_fk_${columnName}` : '');
+          (referencesConstraintComment
+            ? `${getNameString(tableName)}_fk_${columnName}`
+            : '');
         const constraintName = name
           ? `CONSTRAINT ${mOptions.literal(name)} `
           : '';
@@ -340,7 +342,7 @@ export function parseConstraints(
     comment,
   }: ConstraintOptions = options;
 
-  const tableName = isNameObject(table) ? table.name : table;
+  const tableName = getNameString(table);
 
   let constraints: string[] = [];
   const comments: string[] = [];
