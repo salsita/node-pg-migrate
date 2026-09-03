@@ -11,21 +11,22 @@ import { dropType } from './dropType';
 
 export type CreateTypeFn = (
   typeName: Name,
-  values: (Value[] | { [name: string]: Type }) & DropTypeOptions
+  values: Value[] | { [name: string]: Type },
+  typeOptions?: DropTypeOptions
 ) => string;
 
 export type CreateType = Reversible<CreateTypeFn>;
 
 export function createType(mOptions: MigrationOptions): CreateType {
-  const _create: CreateType = (typeName, options) => {
-    if (Array.isArray(options)) {
-      const optionsStr = options.map(escapeValue).join(', ');
+  const _create: CreateType = (typeName, values) => {
+    if (Array.isArray(values)) {
+      const valuesStr = values.map(escapeValue).join(', ');
       const typeNameStr = mOptions.literal(typeName);
 
-      return `CREATE TYPE ${typeNameStr} AS ENUM (${optionsStr});`;
+      return `CREATE TYPE ${typeNameStr} AS ENUM (${valuesStr});`;
     }
 
-    const attributes = Object.entries(options)
+    const attributes = Object.entries(values)
       .map(([attributeName, attribute]) => {
         const typeStr = applyType(attribute, mOptions.typeShorthands).type;
 
@@ -36,7 +37,8 @@ export function createType(mOptions: MigrationOptions): CreateType {
     return `CREATE TYPE ${mOptions.literal(typeName)} AS (${formatBlock(attributes, mOptions.pretty)});`;
   };
 
-  _create.reverse = dropType(mOptions);
+  _create.reverse = (typeName, values, typeOptions) =>
+    dropType(mOptions)(typeName, typeOptions);
 
   return _create;
 }
