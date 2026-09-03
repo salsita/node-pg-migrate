@@ -219,6 +219,19 @@ describe('utils', () => {
       expect(actual).toBe('some_literal');
     });
 
+    it('should use the value of a literal-like object that is not a PgLiteral', () => {
+      const schemalize = createSchemalize({
+        shouldDecamelize: true,
+        shouldQuote: true,
+      });
+
+      const literalLike = { literal: false, value: 'myValue' };
+      // @ts-expect-error: Testing a runtime shape that `Name` does not allow
+      const actual = schemalize(literalLike);
+
+      expect(actual).toBe('"my_value"');
+    });
+
     it('should escape double quotes when quoting identifiers', () => {
       const schemalize = createSchemalize({
         shouldDecamelize: false,
