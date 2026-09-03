@@ -2,7 +2,11 @@ import type { MigrationOptions } from '../../migrationOptions';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
-import { isNameObject, isSchemaNameObject } from '../generalTypes';
+import {
+  getNameString,
+  isNameObject,
+  isSchemaNameObject,
+} from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
@@ -58,7 +62,7 @@ export function generateIndexName(
         schema: table.schema,
         name: `${table.name}_${cols}${uniq}_index`,
       }
-    : `${table}_${cols}${uniq}_index`;
+    : `${getNameString(table)}_${cols}${uniq}_index`;
 }
 
 export function generateColumnString(
