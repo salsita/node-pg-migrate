@@ -37,8 +37,18 @@ describe('operations', () => {
 );`);
       });
 
-      // TODO @Shinigami92 2024-03-18: The typeOptions are buggy
-      it.todo('should return sql statement with typeOptions');
+      it('should ignore typeOptions, because they only affect the reverse', () => {
+        const statement = createTypeFn(
+          'compfoo',
+          { f1: 'int', f2: PgType.TEXT },
+          { ifExists: true, cascade: true }
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE TYPE "compfoo" AS ("f1" integer, "f2" text);`
+        );
+      });
 
       it('should return sql statement with schema', () => {
         const statement = createTypeFn(
@@ -68,6 +78,26 @@ describe('operations', () => {
 
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe('DROP TYPE "compfoo";');
+        });
+
+        it('should return sql statement with typeOptions', () => {
+          const statement = createTypeFn.reverse(
+            'compfoo',
+            { f1: 'int', f2: PgType.TEXT },
+            { ifExists: true, cascade: true }
+          );
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe('DROP TYPE IF EXISTS "compfoo" CASCADE;');
+        });
+
+        it('should return sql statement with typeOptions for an enum', () => {
+          const statement = createTypeFn.reverse('myenum', ['a', 'b'], {
+            ifExists: true,
+          });
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe('DROP TYPE IF EXISTS "myenum";');
         });
       });
     });

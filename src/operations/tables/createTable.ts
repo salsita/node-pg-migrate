@@ -104,7 +104,8 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
     return `${createTableQuery}${comments.length > 0 ? `\n${comments.join('\n')}` : ''}`;
   };
 
-  _create.reverse = dropTable(mOptions);
+  _create.reverse = (tableName, columns, options) =>
+    dropTable(mOptions)(tableName, options);
 
   return _create;
 }

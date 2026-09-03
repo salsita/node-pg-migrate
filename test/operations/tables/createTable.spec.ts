@@ -670,6 +670,17 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe('DROP TABLE "films";');
         });
+
+        it('should return sql statement with drop options', () => {
+          const statement = createTableFn.reverse(
+            'films',
+            {},
+            { ifExists: true, cascade: true }
+          );
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe('DROP TABLE IF EXISTS "films" CASCADE;');
+        });
       });
     });
   });
