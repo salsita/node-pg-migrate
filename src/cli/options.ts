@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { Option } from 'commander';
 import { PG_MIGRATE_LOCK_ID } from 'node-pg-migrate';
+import type { FilenameFormat } from '../migration';
 import {
   advisoryLockModeArg,
   checkOrderArg,
@@ -34,6 +35,18 @@ import {
 } from './args';
 
 /**
+ * Languages accepted by `--migration-file-language`.
+ */
+export type MigrationFileLanguage =
+  | 'js'
+  | 'ts'
+  | 'sql'
+  | 'cjs'
+  | 'mjs'
+  | 'cts'
+  | 'mts';
+
+/**
  * Parsed shape of the CLI options exposed by commander.
  *
  * commander exposes each option value under its camelCase name. Options that
@@ -57,8 +70,8 @@ export interface CliOptions {
   pretty?: boolean;
   configValue?: string;
   configFile?: string;
-  migrationFileLanguage?: string;
-  migrationFilenameFormat?: string;
+  migrationFileLanguage?: MigrationFileLanguage;
+  migrationFilenameFormat?: FilenameFormat;
   templateFileName?: string;
   envPath?: string;
   dryRun?: boolean;
@@ -68,7 +81,7 @@ export interface CliOptions {
   lockValue?: number;
   rejectUnauthorized?: boolean;
   timestamp?: boolean;
-  advisoryLockMode?: string;
+  advisoryLockMode?: 'fail' | 'wait';
   tsconfigPaths?: string;
   forceExit?: boolean;
 }

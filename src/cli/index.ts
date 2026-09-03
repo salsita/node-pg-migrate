@@ -14,6 +14,8 @@ process.on('uncaughtException', (err) => {
 // Resolve the version from package.json. The built CLI lives in bin/, so the
 // package manifest is one directory up at runtime (both in this repo and once
 // published, where bin/ sits next to package.json).
+// `JSON.parse` returns `any`, so the shape of our own manifest has to be stated.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 const { version } = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8')
 ) as { version: string };

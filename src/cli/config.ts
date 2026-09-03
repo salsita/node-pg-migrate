@@ -29,16 +29,7 @@ import {
   useGlobArg,
   verboseArg,
 } from './args';
-import type { CliOptions } from './options';
-
-type MigrationFileLanguage =
-  | 'js'
-  | 'ts'
-  | 'sql'
-  | 'cjs'
-  | 'mjs'
-  | 'cts'
-  | 'mts';
+import type { CliOptions, MigrationFileLanguage } from './options';
 
 type DbConnection =
   | string
@@ -208,21 +199,14 @@ export async function resolveConfig(
   let MIGRATIONS_SCHEMA = options.migrationsSchema;
   let CREATE_MIGRATIONS_SCHEMA = options.createMigrationsSchema;
   let MIGRATIONS_TABLE = options.migrationsTable;
-  let MIGRATIONS_FILE_LANGUAGE = options.migrationFileLanguage as
-    | MigrationFileLanguage
-    | undefined;
-  let MIGRATIONS_FILENAME_FORMAT = options.migrationFilenameFormat as
-    | FilenameFormat
-    | undefined;
+  let MIGRATIONS_FILE_LANGUAGE = options.migrationFileLanguage;
+  let MIGRATIONS_FILENAME_FORMAT = options.migrationFilenameFormat;
   let TEMPLATE_FILE_NAME = options.templateFileName;
   let CHECK_ORDER = options.checkOrder;
   let VERBOSE = options.verbose;
   let DECAMELIZE = options.decamelize;
   let PRETTY = options.pretty;
-  let ADVISORY_LOCK_MODE = options.advisoryLockMode as
-    | 'fail'
-    | 'wait'
-    | undefined;
+  let ADVISORY_LOCK_MODE = options.advisoryLockMode;
   let TSCONFIG_PATHS: boolean | string | undefined = parseTsconfigPaths(
     options.tsconfigPaths
   );
@@ -330,15 +314,16 @@ export async function resolveConfig(
         json,
         (val): val is 'fail' | 'wait' => val === 'fail' || val === 'wait'
       );
-    } else {
-      DB_CONNECTION ??= json as DbConnection;
+    } else if (typeof json === 'string') {
+      DB_CONNECTION ??= json;
     }
   }
 
   // Load config (and suppress the no-config-warning)
   const oldSuppressWarning = process.env.SUPPRESS_NO_CONFIG_WARNING;
   process.env.SUPPRESS_NO_CONFIG_WARNING = 'yes';
-  const configValue = options.configValue as string;
+  // commander defaults this flag, so it is always present.
+  const configValue = options.configValue ?? 'db';
   const config = await tryImport<typeof import('config')>('config');
   if (config?.has(configValue)) {
     const db = config.get(configValue);
@@ -359,7 +344,7 @@ export async function resolveConfig(
         : configModule;
 
     if (json && typeof json === 'object' && configValue in json) {
-      readJson((json as Record<string, unknown>)[configValue]);
+      readJson(Reflect.get(json, configValue));
     } else {
       readJson(json);
     }

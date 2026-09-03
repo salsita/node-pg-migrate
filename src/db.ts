@@ -57,18 +57,33 @@ export interface DBConnection extends DB {
 
 type ConnectionStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR' | 'EXTERNAL';
 
+function isClientBase(
+  connection: ClientBase | string | ClientConfig
+): connection is ClientBase {
+  return (
+    typeof connection === 'object' &&
+    'query' in connection &&
+    typeof connection.query === 'function'
+  );
+}
+
 export function db(
   connection: ClientBase | string | ClientConfig,
   logger: Logger = console
 ): DBConnection {
-  const isExternalClient =
-    typeof connection === 'object' &&
-    'query' in connection &&
-    typeof connection.query === 'function';
+  // A client we create ourselves is also ours to close again, while an
+  // externally provided one stays under the caller's control.
+  let ownClient: Client | undefined;
+  let client: ClientBase;
 
-  const client: Client = isExternalClient
-    ? (connection as Client)
-    : new pg.Client(connection as string | ClientConfig);
+  if (isClientBase(connection)) {
+    client = connection;
+  } else {
+    ownClient = new pg.Client(connection);
+    client = ownClient;
+  }
+
+  const isExternalClient = ownClient === undefined;
 
   let connectionStatus: ConnectionStatus = isExternalClient
     ? 'EXTERNAL'
@@ -178,7 +193,7 @@ ${error}
       );
       if (!isExternalClient) {
         connectionStatus = 'DISCONNECTED';
-        client.end();
+        ownClient?.end();
       }
     },
   };

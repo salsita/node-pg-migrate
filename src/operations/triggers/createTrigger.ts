@@ -93,6 +93,9 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       ? `${createFunction(mOptions)(
           functionName,
           [],
+          // Passing a `definition` selects the `CreateTriggerFn2` overload,
+          // which is the one that also carries the function options.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           { ...(triggerOptions as FunctionOptions), returns: 'trigger' },
           definition
         )}\n`

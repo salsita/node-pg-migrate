@@ -270,7 +270,7 @@ export function parseColumns(
           ? `CONSTRAINT ${mOptions.literal(name)} `
           : '';
         constraints.push(
-          `${constraintName}${parseReferences(options as ReferencesOptions, mOptions.literal)}`
+          `${constraintName}${parseReferences({ ...options, references }, mOptions.literal)}`
         );
 
         if (referencesConstraintComment) {
@@ -363,6 +363,9 @@ export function parseConstraints(
       Array.isArray(uniqueSet)
     );
 
+    // `unique` accepts a single column, a column set, or a list of column sets,
+    // which the element type cannot express once the sets are nested.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     for (const uniqueSet of (isArrayOfArrays
       ? uniqueArray
       : [uniqueArray]) as Array<Name | Name[]>) {

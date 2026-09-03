@@ -359,7 +359,9 @@ function getMigrationsToRun(
       );
     }
 
-    return toRun as Migration[];
+    return toRun.filter(
+      (migration): migration is Migration => typeof migration === 'object'
+    );
   }
 
   const upMigrations = migrations.filter(
@@ -431,9 +433,10 @@ function getLogger(options: RunnerOption): Logger {
 export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const logger = getLogger(options);
 
-  const connection =
-    (options as RunnerOptionClient).dbClient ||
-    (options as RunnerOptionUrl).databaseUrl;
+  const dbClient = 'dbClient' in options ? options.dbClient : undefined;
+  const databaseUrl =
+    'databaseUrl' in options ? options.databaseUrl : undefined;
+  const connection = dbClient ?? databaseUrl;
 
   if (connection == null) {
     throw new Error('You must provide either a databaseUrl or a dbClient');
@@ -524,7 +527,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     if (db.connected()) {
       if (!options.noLock) {
         await unlock(db, options.lockValue).catch((error: unknown) => {
-          logger.warn((error as Error).message);
+          logger.warn(error instanceof Error ? error.message : String(error));
         });
       }
 
