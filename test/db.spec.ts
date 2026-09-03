@@ -49,9 +49,9 @@ describe('db', () => {
   describe('constructor', () => {
     let db: DBConnection;
 
-    afterEach(() => {
+    afterEach(async () => {
       if (db) {
-        db.close();
+        await db.close();
       }
     });
 
@@ -81,8 +81,8 @@ describe('db', () => {
       db = Db(undefined, log);
     });
 
-    afterEach(() => {
-      db.close();
+    afterEach(async () => {
+      await db.close();
 
       vi.clearAllMocks();
     });

@@ -355,7 +355,7 @@ export class Migration implements RunMigration {
   ): Promise<unknown> {
     await (action.length === 2
       ? new Promise<void>((resolve) => {
-          action(pgm, resolve);
+          void action(pgm, resolve);
         })
       : action(pgm));
 

@@ -98,7 +98,6 @@
     "typescript/no-unsafe-assignment": "off",
     "typescript/no-unsafe-return": "off",
     "typescript/no-unsafe-argument": "off",
-    "typescript/no-floating-promises": "off",
     "typescript/no-base-to-string": "off",
     "typescript/no-deprecated": "off",
     "typescript/no-unnecessary-type-parameters": "off",
@@ -110,9 +109,6 @@
     "typescript/prefer-includes": "off",
     "typescript/prefer-ts-expect-error": "off",
     "typescript/ban-ts-comment": "off",
-
-    // 37 violations — was newly set to error; defer the cleanup
-    "typescript/explicit-function-return-type": "off",
 
     // --- eslint core ---
     // 176 violations (mostly large test `describe` blocks)
