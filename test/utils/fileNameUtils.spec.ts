@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Logger } from '../../src/logger';
+import type { LogFn, Logger } from '../../src/logger';
 import { getNumericPrefix, getSuffixFromFileName } from '../../src/utils';
 
 describe('getSuffixFromFileName', () => {
@@ -23,9 +23,9 @@ describe('getSuffixFromFileName', () => {
 
 describe('getNumericPrefix', () => {
   const logger: Logger = {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
   };
 
   it('should allow any non-numeric character as a separator', () => {

@@ -20,6 +20,9 @@ export const INTEGRATION_TIMEOUT = Number(
 /**
  * Promisified version of Node.js `child_process.exec` for running shell commands asynchronously.
  */
+// `exec` returns a `ChildProcess` instead of `void`, which is the documented
+// Node.js signature `promisify` is designed to consume.
+// oxlint-disable-next-line typescript/strict-void-return
 export const exec = promisify(processExec);
 
 /**

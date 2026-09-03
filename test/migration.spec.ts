@@ -3,7 +3,7 @@ import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
-import type { Logger } from '../src/logger';
+import type { LogFn, Logger } from '../src/logger';
 import {
   FilenameFormat,
   getMigrationFilePaths,
@@ -25,9 +25,9 @@ describe('migration', () => {
   const dbMock = {} as DBConnection;
 
   const logger: Logger = {
-    info: () => null,
-    warn: () => null,
-    error: () => null,
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
   };
 
   const options = { migrationsTable } as RunnerOption;
