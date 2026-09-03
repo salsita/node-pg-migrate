@@ -89,8 +89,6 @@
     // --- type-aware typescript (high volume) ---
     // 183 violations
     "typescript/strict-boolean-expressions": "off",
-    // 36 violations
-    "typescript/no-unsafe-type-assertion": "off",
     // 32 violations — behaviour-changing (`??` vs `||`), review each
     "typescript/prefer-nullish-coalescing": "off",
     // 20 violations
@@ -162,6 +160,8 @@
       "files": ["test/**/*.spec.ts", "test/**/*.spec.d.ts"],
       "rules": {
         "typescript/no-deprecated": "off",
+        // Mocks and stubs are deliberately narrowed from partial fakes
+        "typescript/no-unsafe-type-assertion": "off",
 
         "typescript/restrict-template-expressions": [
           "error",

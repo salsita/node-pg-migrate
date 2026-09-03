@@ -88,7 +88,7 @@ export function generateColumnsString(
   return columns
     .map((column) => {
       if (typeof column === 'string' || isPgLiteral(column)) {
-        return generateColumnString(column as unknown as Name, mOptions);
+        return generateColumnString(column, mOptions);
       }
 
       return [

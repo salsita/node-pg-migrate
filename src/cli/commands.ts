@@ -141,6 +141,9 @@ export async function runMigration(
 
     return {
       dryRun,
+      // The spread of the loosely typed config connection cannot be proven to
+      // produce a `ClientConfig`.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       databaseUrl: {
         // oxlint-disable-next-line typescript/no-misused-spread
         ...databaseUrl,
