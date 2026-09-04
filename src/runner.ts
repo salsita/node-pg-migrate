@@ -84,6 +84,15 @@ export interface RunnerOptionConfig {
    */
   file?: string;
 
+  /**
+   * Print the SQL that would be run without applying anything.
+   *
+   * The whole session runs inside a read-only transaction, so nothing is created, recorded
+   * or written - not the migrations schema, not the migrations table, and not any statement
+   * a migration issues itself through `pgm.db.query(...)`. No advisory lock is taken.
+   *
+   * @default false
+   */
   dryRun?: boolean;
 
   /**
@@ -263,6 +272,103 @@ async function unlock(
   }
 }
 
+/**
+ * `read_only_sql_transaction` - raised when a statement tries to write inside the read-only
+ * transaction a dry run wraps itself in.
+ */
+const READ_ONLY_SQLSTATE = '25006';
+
+const AUTOCOMMIT_BEFORE_DDL = 'autocommit_before_ddl';
+
+/**
+ * Read a session setting without failing when the server does not know it.
+ */
+async function getSetting(
+  db: DBConnection,
+  name: string
+): Promise<string | undefined> {
+  const [row] = await db.select(
+    `SELECT current_setting('${name}', true) AS setting`
+  );
+
+  const setting: unknown = row?.setting;
+
+  return typeof setting === 'string' && setting.length > 0
+    ? setting.toLowerCase()
+    : undefined;
+}
+
+/**
+ * Make sure the database will really refuse the writes a dry run is not supposed to make.
+ *
+ * CockroachDB v25 and newer default `autocommit_before_ddl` to `on`, which commits DDL
+ * immediately and escapes the surrounding transaction - including a read-only one. Measured
+ * on v25.3.5: a `CREATE TABLE` inside `BEGIN; SET TRANSACTION READ ONLY;` was applied for
+ * real. Turning the setting off restores the correct behavior, but a dry run that might not
+ * be dry has to fail closed rather than warn and continue.
+ *
+ * Servers that do not know the setting at all (PostgreSQL, CockroachDB v23.2) keep DDL
+ * inside the transaction and reject it in a read-only one, so there is nothing to do there.
+ */
+async function assertDryRunIsEnforceable(db: DBConnection): Promise<void> {
+  const isOff = (value: string | undefined): boolean =>
+    value === undefined || value === 'off' || value === 'false';
+
+  if (isOff(await getSetting(db, AUTOCOMMIT_BEFORE_DDL))) {
+    return;
+  }
+
+  await db.query(`SET ${AUTOCOMMIT_BEFORE_DDL} = false`);
+
+  const value = await getSetting(db, AUTOCOMMIT_BEFORE_DDL);
+
+  if (!isOff(value)) {
+    throw new Error(
+      `Refusing to dry run: this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the read-only transaction and be applied for real.`
+    );
+  }
+}
+
+async function createSchemas(
+  db: DBConnection,
+  schemas: ReadonlyArray<string>,
+  dryRun: boolean,
+  logger: Logger
+): Promise<void> {
+  if (dryRun) {
+    for (const schema of schemas) {
+      logger.info(`> Would create schema "${schema}"`);
+    }
+
+    return;
+  }
+
+  await Promise.all(
+    schemas.map((schema) => db.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`))
+  );
+}
+
+/**
+ * Whether the table storing which migrations have been run already exists.
+ *
+ * This is a plain `SELECT`, so it is also safe inside the read-only transaction a dry run
+ * uses - unlike querying the table itself, which would raise `42P01` and poison the
+ * transaction for every statement that follows.
+ */
+async function migrationsTableExists(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<boolean> {
+  const schema = getMigrationTableSchema(options);
+  const { migrationsTable } = options;
+
+  const migrationTables = await db.select(
+    `SELECT table_name FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}'`
+  );
+
+  return migrationTables?.length === 1;
+}
+
 async function ensureMigrationsTable(
   db: DBConnection,
   options: RunnerOption
@@ -278,11 +384,7 @@ async function ensureMigrationsTable(
       name: migrationsTable,
     });
 
-    const migrationTables = await db.select(
-      `SELECT table_name FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}'`
-    );
-
-    if (migrationTables && migrationTables.length === 1) {
+    if (await migrationsTableExists(db, options)) {
       const primaryKeyConstraints = await db.select(
         `SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}' AND constraint_type = 'PRIMARY KEY'`
       );
@@ -406,6 +508,15 @@ function runMigrations(
   );
 }
 
+function isReadOnlyViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === READ_ONLY_SQLSTATE
+  );
+}
+
 function getLogger(options: RunnerOption): Logger {
   const { log, logger, verbose } = options;
 
@@ -445,11 +556,26 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   }
 
   const db = Db(connection, logger);
+  const dryRun = Boolean(options.dryRun);
+  let readOnlyTransaction = false;
 
   try {
     await db.createConnection();
 
-    if (!options.noLock) {
+    if (dryRun) {
+      await assertDryRunIsEnforceable(db);
+
+      // From here on the database itself refuses every write, including the ones we do not
+      // control: a migration reaching for `pgm.db.query('DROP TABLE ...')` is stopped by
+      // the server rather than by our own honor system.
+      await db.query('BEGIN');
+      await db.query('SET TRANSACTION READ ONLY');
+      readOnlyTransaction = true;
+    }
+
+    // A dry run never writes, so it has nothing to serialize against - and it must not be
+    // able to block a real deployment while it prints.
+    if (!options.noLock && !dryRun) {
       await lock(db, options.lockValue, options.advisoryLockMode);
     }
 
@@ -457,11 +583,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       const schemas = getSchemas(options.schema);
 
       if (options.createSchema) {
-        await Promise.all(
-          schemas.map((schema) =>
-            db.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`)
-          )
-        );
+        await createSchemas(db, schemas, dryRun, logger);
       }
 
       await db.query(
@@ -470,16 +592,26 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
 
     if (options.migrationsSchema && options.createMigrationsSchema) {
-      await db.query(
-        `CREATE SCHEMA IF NOT EXISTS "${options.migrationsSchema}"`
-      );
+      await createSchemas(db, [options.migrationsSchema], dryRun, logger);
     }
 
-    await ensureMigrationsTable(db, options);
+    let hasMigrationsTable = true;
+
+    if (dryRun) {
+      hasMigrationsTable = await migrationsTableExists(db, options);
+
+      if (!hasMigrationsTable) {
+        logger.info(
+          `> Would create migrations table "${getMigrationTableSchema(options)}"."${options.migrationsTable}"`
+        );
+      }
+    } else {
+      await ensureMigrationsTable(db, options);
+    }
 
     const [migrations, runNames] = await Promise.all([
       loadMigrations(db, options, logger),
-      getRunMigrations(db, options),
+      hasMigrationsTable ? getRunMigrations(db, options) : [],
     ]);
 
     if (options.checkOrder !== false) {
@@ -503,21 +635,34 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       logger.info(`> - ${m.name}`);
     }
 
-    if (options.fake) {
-      await runMigrations(toRun, 'markAsRun', options.direction);
-    } else if (options.singleTransaction) {
-      await db.query('BEGIN');
-
-      try {
+    try {
+      if (options.fake) {
+        await runMigrations(toRun, 'markAsRun', options.direction);
+      } else if (dryRun || !options.singleTransaction) {
+        // A dry run is already inside its own read-only transaction; opening another one
+        // and committing it would end exactly the guarantee it is there to provide.
         await runMigrations(toRun, 'apply', options.direction);
-        await db.query('COMMIT');
-      } catch (error) {
-        logger.warn('> Rolling back attempted migration ...');
-        await db.query('ROLLBACK');
-        throw error;
+      } else {
+        await db.query('BEGIN');
+
+        try {
+          await runMigrations(toRun, 'apply', options.direction);
+          await db.query('COMMIT');
+        } catch (error) {
+          logger.warn('> Rolling back attempted migration ...');
+          await db.query('ROLLBACK');
+          throw error;
+        }
       }
-    } else {
-      await runMigrations(toRun, 'apply', options.direction);
+    } catch (error) {
+      if (dryRun && isReadOnlyViolation(error)) {
+        throw new Error(
+          'This migration writes to the database directly (e.g. through `pgm.db.query(...)`), which a dry run refuses: it holds a read-only transaction so that nothing can be applied. Run without `--dry-run` to apply it.',
+          { cause: error }
+        );
+      }
+
+      throw error;
     }
 
     return toRun.map((m) => ({
@@ -527,7 +672,15 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }));
   } finally {
     if (db.connected()) {
-      if (!options.noLock) {
+      if (readOnlyTransaction) {
+        // Ends the read-only transaction. It cannot have changed anything, but leaving it
+        // open would strand the session for an externally provided client.
+        await db.query('ROLLBACK').catch((error: unknown) => {
+          logger.warn(error instanceof Error ? error.message : String(error));
+        });
+      }
+
+      if (!options.noLock && !dryRun) {
         await unlock(db, options.lockValue).catch((error: unknown) => {
           logger.warn(error instanceof Error ? error.message : String(error));
         });

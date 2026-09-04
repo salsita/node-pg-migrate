@@ -337,4 +337,59 @@ describe('migration', () => {
       expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
     });
   });
+
+  describe('self.markAsRun', () => {
+    it('should call db.query on normal operations', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        options,
+        {},
+        logger
+      );
+
+      await migration.markAsRun('up');
+
+      expect(queryMock).toHaveBeenCalledExactlyOnceWith(
+        expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
+      );
+    });
+
+    it('should not call db.query on --dry-run', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        { ...options, dryRun: true },
+        {},
+        logger
+      );
+
+      await migration.markAsRun('up');
+
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`INSERT INTO "public"."${migrationsTable}"`)
+      );
+    });
+
+    it('should not delete the migration row on --dry-run', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        { ...options, dryRun: true },
+        {},
+        logger
+      );
+
+      await migration.markAsRun('down');
+
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`DELETE FROM "public"."${migrationsTable}"`)
+      );
+    });
+  });
 });

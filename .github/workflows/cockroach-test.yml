@@ -51,6 +51,21 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      # CockroachDB v25 defaults `autocommit_before_ddl` to `on`, which commits DDL out of
+      # the surrounding transaction - including the read-only one a dry run relies on. This
+      # default already flipped between minor versions once, so it is guarded per version.
+      - name: Dry Run Test
+        run: |
+          pnpm run migrate up -m test/dry-run-migrations --dry-run
+          tables=$(docker exec roach ./cockroach sql --insecure --database=integration_test --format=csv --execute="SHOW TABLES")
+          echo "$tables"
+          if echo "$tables" | grep -qE 'dry_run_table|pgmigrations'; then
+            echo "::error::--dry-run created objects in the database"
+            exit 1
+          fi
+        env:
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test
+
       - name: Integration Test
         run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock
         env:

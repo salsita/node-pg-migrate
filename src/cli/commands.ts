@@ -93,7 +93,7 @@ export async function runMigration(
 
   const dryRun = options.dryRun;
   if (dryRun) {
-    console.log('dry run');
+    console.log('> Dry run: nothing will be applied, recorded or created');
   }
 
   const singleTransaction = options.singleTransaction;
@@ -188,7 +188,11 @@ export async function runMigration(
       : migrationRunner(buildOptions(action));
   promise
     .then(() => {
-      console.log('Migrations complete!');
+      console.log(
+        dryRun
+          ? 'Dry run complete! Nothing was applied.'
+          : 'Migrations complete!'
+      );
       process.exit(0);
     })
     .catch((error: unknown) => {

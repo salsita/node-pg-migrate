@@ -244,9 +244,10 @@ export function addRunnerOptions(command: Command): Command {
       )
     )
     .addOption(
-      new Option(`--${dryRunArg}`, "Prints the SQL but doesn't run it").default(
-        false
-      )
+      new Option(
+        `--${dryRunArg}`,
+        "Prints the SQL but doesn't run it (read-only transaction: nothing is created, recorded or written)"
+      ).default(false)
     )
     .addOption(
       new Option(`--${fakeArg}`, 'Marks migrations as run').default(false)
