@@ -340,7 +340,7 @@ export async function resolveConfig(
       configModule &&
       typeof configModule === 'object' &&
       'default' in configModule
-        ? (configModule as { default: unknown }).default
+        ? configModule.default
         : configModule;
 
     if (json && typeof json === 'object' && configValue in json) {

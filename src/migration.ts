@@ -198,7 +198,7 @@ export class Migration implements RunMigration {
     if (filenameFormat === FilenameFormat.index) {
       const filePaths = await getMigrationFilePaths(directory, {
         ignorePattern,
-        useGlob: /\*/.test(directory) || /\*/.test(ignorePattern || ''),
+        useGlob: directory.includes('*') || (ignorePattern || '').includes('*'),
       });
 
       // Get the minimum last found prefix as the total number of matching files

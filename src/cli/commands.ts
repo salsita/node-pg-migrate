@@ -50,15 +50,12 @@ export async function runCreate(
           ignorePattern: config.ignorePattern,
         }),
   })
-    .then(
-      (
-        // @ts-ignore: when a clean was made, the types are not present in the first run
-        migrationPath
-      ) => {
-        console.log(format('Created migration -- %s', migrationPath));
-        process.exit(0);
-      }
-    )
+    // The parameter is annotated explicitly so this still type-checks when a
+    // clean was made and the built types are not present in the first run.
+    .then((migrationPath: string) => {
+      console.log(format('Created migration -- %s', migrationPath));
+      process.exit(0);
+    })
     .catch((error: unknown) => {
       console.error(error);
       process.exit(1);

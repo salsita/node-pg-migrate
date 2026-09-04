@@ -192,37 +192,36 @@ describe('runner', () => {
   });
 
   it('should call pg_advisory_lock when advisory lock mode is set to "wait"', async () => {
-    const dbClient = {
-      query: vi.fn((query) => {
-        switch (query) {
-          case 'SELECT pg_advisory_lock(7241865325823964)': {
-            return Promise.resolve();
-          }
-
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
-            return Promise.resolve({
-              rows: [{}], // migration table exists
-            });
-          }
-
-          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
-            return Promise.resolve({
-              rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
-            });
-          }
-
-          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
-            return Promise.resolve({
-              rows: [], // no migrations executed
-            });
-          }
-
-          default: {
-            return Promise.resolve({ rows: [{}] }); // bypass other queries
-          }
+    const queryMock = vi.fn((query) => {
+      switch (query) {
+        case 'SELECT pg_advisory_lock(7241865325823964)': {
+          return Promise.resolve();
         }
-      }),
-    } as unknown as ClientBase;
+
+        case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+          return Promise.resolve({
+            rows: [{}], // migration table exists
+          });
+        }
+
+        case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+          return Promise.resolve({
+            rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
+          });
+        }
+
+        case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+          return Promise.resolve({
+            rows: [], // no migrations executed
+          });
+        }
+
+        default: {
+          return Promise.resolve({ rows: [{}] }); // bypass other queries
+        }
+      }
+    });
+    const dbClient = { query: queryMock } as unknown as ClientBase;
 
     await expect(
       runner({
@@ -235,7 +234,7 @@ describe('runner', () => {
     ).resolves.not.toThrow();
 
     // Verify that the query with blocking lock was called
-    expect(dbClient.query).toHaveBeenCalledWith(
+    expect(queryMock).toHaveBeenCalledWith(
       'SELECT pg_advisory_lock(7241865325823964)',
       undefined
     );
@@ -243,39 +242,38 @@ describe('runner', () => {
 
   it('should use the provided lock value', async () => {
     const customLockValue = 12345;
-    const dbClient = {
-      query: vi.fn((query) => {
-        switch (query) {
-          case `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`: {
-            return Promise.resolve({
-              rows: [{ lockObtained: true }], // lock obtained with custom value
-            });
-          }
-
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
-            return Promise.resolve({
-              rows: [{}], // migration table exists
-            });
-          }
-
-          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
-            return Promise.resolve({
-              rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
-            });
-          }
-
-          case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
-            return Promise.resolve({
-              rows: [], // no migrations executed
-            });
-          }
-
-          default: {
-            return Promise.resolve({ rows: [{}] }); // bypass other queries
-          }
+    const queryMock = vi.fn((query) => {
+      switch (query) {
+        case `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`: {
+          return Promise.resolve({
+            rows: [{ lockObtained: true }], // lock obtained with custom value
+          });
         }
-      }),
-    } as unknown as ClientBase;
+
+        case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+          return Promise.resolve({
+            rows: [{}], // migration table exists
+          });
+        }
+
+        case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+          return Promise.resolve({
+            rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
+          });
+        }
+
+        case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+          return Promise.resolve({
+            rows: [], // no migrations executed
+          });
+        }
+
+        default: {
+          return Promise.resolve({ rows: [{}] }); // bypass other queries
+        }
+      }
+    });
+    const dbClient = { query: queryMock } as unknown as ClientBase;
 
     await expect(
       runner({
@@ -288,7 +286,7 @@ describe('runner', () => {
     ).resolves.not.toThrow();
 
     // Verify that the query with custom lock value was called
-    expect(dbClient.query).toHaveBeenCalledWith(
+    expect(queryMock).toHaveBeenCalledWith(
       `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`,
       undefined
     );

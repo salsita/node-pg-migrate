@@ -88,7 +88,9 @@ describe('db', () => {
     });
 
     it('should call client.connect if this is the first query', async () => {
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn();
+      });
 
       await db.query('query');
 
@@ -114,9 +116,9 @@ describe('db', () => {
     it('should not call client.query if client.connect fails', async () => {
       const error = 'error';
 
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) =>
-        fn(new Error(error))
-      );
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn(new Error(error));
+      });
 
       await expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.query).not.toHaveBeenCalled();
@@ -125,7 +127,9 @@ describe('db', () => {
     it('should resolve promise if query throws no error', async () => {
       const result = 'result';
 
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn();
+      });
       vi.spyOn(hoisted.client, 'query').mockResolvedValue(result);
 
       await expect(db.query('query')).resolves.toBe(result);

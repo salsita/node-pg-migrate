@@ -73,7 +73,7 @@ export async function setupPostgresDatabase(
   containerImage: string,
   databaseName: string = 'node_pg_migrate'
 ): Promise<StartedPostgreSqlContainer> {
-  return await new PostgreSqlContainer(containerImage)
+  return new PostgreSqlContainer(containerImage)
     .withUsername('ubuntu')
     .withPassword('ubuntu')
     .withDatabase(databaseName)
