@@ -164,7 +164,8 @@ async function getLastSuffix(
 ): Promise<string | undefined> {
   try {
     const files = await getMigrationFilePaths(dir, { ignorePattern });
-    return files.length > 0 ? getSuffixFromFileName(files.at(-1)!) : undefined;
+    const lastFile = files.at(-1);
+    return lastFile === undefined ? undefined : getSuffixFromFileName(lastFile);
   } catch {
     return undefined;
   }

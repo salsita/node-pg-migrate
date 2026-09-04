@@ -58,9 +58,7 @@
     "typescript/prefer-find": "error",
     "typescript/prefer-for-of": "error",
     "typescript/prefer-readonly-parameter-types": "off",
-    // Kept at `warn` (matches the previous config) so the `no-non-null-assertion`
-    // oxlint-disable directives in `src/cli.ts` are not reported as unused.
-    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-non-null-assertion": "error",
 
     // --- unicorn ---
     "unicorn/prefer-ternary": "error",
