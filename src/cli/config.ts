@@ -73,7 +73,8 @@ async function tryImport<TModule = unknown>(
   moduleName: string
 ): Promise<TModule | null> {
   try {
-    const module = await import(moduleName);
+    const module: { default?: TModule } & TModule = await import(moduleName);
+
     return module.default || module;
   } catch (error) {
     if (

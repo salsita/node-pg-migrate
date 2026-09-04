@@ -316,10 +316,12 @@ async function getRunMigrations(
     name: migrationsTable,
   });
 
-  return db.column(
+  const runNames: string[] = await db.column(
     nameColumn,
     `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
   );
+
+  return runNames;
 }
 
 function getMigrationsToRun(
