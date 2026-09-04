@@ -39,12 +39,13 @@
     "curly": "error",
     // `eqeqeq` is already error via the `pedantic` category; this only sets the `null: ignore` option.
     "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-redeclare": "off", // not useful with typescript
+    "no-use-before-define": "error",
+    "prefer-template": "error",
     "sort-imports": [
       "error",
       { "ignoreCase": true, "ignoreDeclarationSort": true }
     ],
-    "no-use-before-define": "error",
-    "prefer-template": "error",
 
     // --- import ---
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
