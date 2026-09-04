@@ -180,7 +180,7 @@ COMMENT ON CONSTRAINT "my_constraint_name" ON "my_table_name" IS $pga$this is an
               'CHECK (char_length(zipcode) = 5)'
             )
           ).toThrow(
-            new Error(
+            new TypeError(
               'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
             )
           );

@@ -313,7 +313,7 @@ describe('utils', () => {
         const actual = literal(payload);
 
         // Safety contract: we must end up with one quoted identifier; embedded quotes are escaped.
-        const escaped = payload.replace(/"/g, '""');
+        const escaped = payload.replaceAll('"', '""');
         expect(actual).toBe(`"${escaped}"`);
       });
 
@@ -329,7 +329,7 @@ describe('utils', () => {
         const actual = literal({ schema, name });
 
         expect(actual).toBe(
-          `"${schema.replace(/"/g, '""')}"."${name.replace(/"/g, '""')}"`
+          `"${schema.replaceAll('"', '""')}"."${name.replaceAll('"', '""')}"`
         );
       });
 

@@ -62,7 +62,7 @@ export function addConstraint(mOptions: MigrationOptions): CreateConstraint {
     }
 
     if (typeof expressionOrOptions === 'string') {
-      throw new Error(
+      throw new TypeError(
         'Impossible to automatically infer down migration for addConstraint with raw SQL expression'
       );
     }

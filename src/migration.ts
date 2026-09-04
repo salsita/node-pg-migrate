@@ -164,9 +164,8 @@ async function getLastSuffix(
 ): Promise<string | undefined> {
   try {
     const files = await getMigrationFilePaths(dir, { ignorePattern });
-    return files.length > 0
-      ? getSuffixFromFileName(files[files.length - 1])
-      : undefined;
+    const lastFile = files.at(-1);
+    return lastFile === undefined ? undefined : getSuffixFromFileName(lastFile);
   } catch {
     return undefined;
   }
@@ -231,7 +230,7 @@ export class Migration implements RunMigration {
     }
 
     return filenameFormat === FilenameFormat.utc
-      ? new Date().toISOString().replace(/\D/g, '')
+      ? new Date().toISOString().replaceAll(/\D/g, '')
       : Date.now().toString();
   }
 
@@ -403,7 +402,7 @@ export class Migration implements RunMigration {
     }
 
     if (typeof action !== 'function') {
-      throw new Error(
+      throw new TypeError(
         `Unknown value for direction: ${direction}. Is the migration ${this.name} exporting a '${direction}' function?`
       );
     }

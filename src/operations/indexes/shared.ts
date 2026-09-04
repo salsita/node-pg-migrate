@@ -81,7 +81,7 @@ export function generateColumnString(
 
   // Expressions need parentheses in index definitions, unless they're already
   // wrapped (we consider any expression ending with ')' as already wrapped).
-  const alreadyWrapped = /\)$/.test(name);
+  const alreadyWrapped = name.endsWith(')');
   return alreadyWrapped ? name : `(${name})`;
 }
 

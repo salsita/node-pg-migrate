@@ -45,10 +45,11 @@ export function applyType(
 
   let ext: ColumnDefinition | null = null;
   const types: string[] = [options.type];
+  let lastType = options.type;
 
-  while (typeShorthands[types[types.length - 1]]) {
+  while (typeShorthands[lastType]) {
     ext = {
-      ...toType(typeShorthands[types[types.length - 1]]),
+      ...toType(typeShorthands[lastType]),
       ...(ext === null ? {} : removeType(ext)),
     };
 
@@ -58,6 +59,7 @@ export function applyType(
       );
     } else {
       types.push(ext.type);
+      lastType = ext.type;
     }
   }
 

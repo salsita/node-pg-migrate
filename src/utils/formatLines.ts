@@ -4,10 +4,12 @@ export function formatLines(
   separator = ',',
   pretty = false
 ): string {
-  const collapsed = lines.map((line) => line.replace(/(?:\r\n|\r|\n)+/g, ' '));
+  const collapsed = lines.map((line) =>
+    line.replaceAll(/(?:\r\n|\r|\n)+/g, ' ')
+  );
 
   if (pretty) {
-    return collapsed.join(`${separator}\n`).replace(/^/gm, replace);
+    return collapsed.join(`${separator}\n`).replaceAll(/^/gm, replace);
   }
 
   // Single-line output: drop the leading indentation of the prefix but keep

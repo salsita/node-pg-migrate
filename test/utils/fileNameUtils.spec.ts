@@ -49,9 +49,9 @@ describe('getNumericPrefix', () => {
   it('should get timestamp for shortened iso format', () => {
     const now = new Date();
 
-    expect(getNumericPrefix(now.toISOString().replace(/\D/g, ''), logger)).toBe(
-      now.valueOf()
-    );
+    expect(
+      getNumericPrefix(now.toISOString().replaceAll(/\D/g, ''), logger)
+    ).toBe(now.valueOf());
   });
 
   it('should get prefix for index strings', () => {

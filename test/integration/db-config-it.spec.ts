@@ -27,7 +27,7 @@ describe.each(PG_VERSIONS)(
     function configFile(taskName: string): string {
       return resolve(
         tmpdir(),
-        `${postgresVersion}-${taskName.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.json`
+        `${postgresVersion}-${taskName.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-config.json`
       );
     }
 
@@ -346,7 +346,7 @@ describe.each(PG_VERSIONS)(
     }) => {
       const file = resolve(
         tmpdir(),
-        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
+        `${postgresVersion}-${task.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
       );
       const configContent = `export default {
   host: '${pgContainer.getHost()}',
@@ -383,7 +383,7 @@ describe.each(PG_VERSIONS)(
     it('succeeds with TypeScript config file', async ({ expect, task }) => {
       const file = resolve(
         tmpdir(),
-        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
+        `${postgresVersion}-${task.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
       );
       const configContent = `interface DatabaseConfig {
   host: string;
@@ -433,7 +433,7 @@ export default config;`;
     }) => {
       const file = resolve(
         tmpdir(),
-        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
+        `${postgresVersion}-${task.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-config.js`
       );
       const configContent = `module.exports = {
   host: '${pgContainer.getHost()}',
@@ -473,7 +473,7 @@ export default config;`;
     }) => {
       const file = resolve(
         tmpdir(),
-        `${postgresVersion}-${task.name.replace(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
+        `${postgresVersion}-${task.name.replaceAll(/[^a-zA-Z0-9_-]/g, '_')}-config.ts`
       );
       const configContent = `interface DatabaseConfig {
   host: string;
