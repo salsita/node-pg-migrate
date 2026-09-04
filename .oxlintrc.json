@@ -96,7 +96,6 @@
     "typescript/no-unsafe-member-access": "off", // 360
     "typescript/no-unsafe-call": "off", // 353
     "typescript/no-unsafe-assignment": "off", // 52
-    "typescript/no-unsafe-return": "off", // 16
     "typescript/no-unsafe-argument": "off", // 12
     "typescript/no-useless-default-assignment": "off", // 8
 

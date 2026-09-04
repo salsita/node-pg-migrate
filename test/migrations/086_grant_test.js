@@ -3,7 +3,14 @@ import { constants } from './085_grant_tables_schemas_roles.js';
 const { schema, table, role1, role2, tablePrivileges, schemaPrivilege } =
   constants;
 
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param role {string}
+ * @param tableName {string}
+ * @param privileges {string[]}
+ */
 const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
+  /** @type {Array<{ privilege_type: string }>} */
   const rows = await pgm.db.select(`
     SELECT grantee, privilege_type
     FROM information_schema.role_table_grants
@@ -17,14 +24,27 @@ const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
   );
 };
 
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param role {string}
+ * @param schemaName {string}
+ * @param privilege {string}
+ */
 const hasSchemaPrivilege = async (pgm, role, schemaName, privilege) => {
+  /** @type {Array<{ has_schema_privilege: boolean }>} */
   const rows = await pgm.db.select(`
     SELECT has_schema_privilege('${role}', '${schemaName}', '${privilege}');
   `);
   return rows.length > 0 && rows[0].has_schema_privilege;
 };
 
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param role {string}
+ * @param roleGroups {string[]}
+ */
 const isMemberOf = async (pgm, role, roleGroups) => {
+  /** @type {Array<{ rolname: string }>} */
   const rows = await pgm.db.select(`
     SELECT rolname FROM pg_roles WHERE pg_has_role('${role}', oid, 'member') AND rolname <> '${role}';
   `);

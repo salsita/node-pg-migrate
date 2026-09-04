@@ -89,7 +89,7 @@ export function db(
     ? 'EXTERNAL'
     : 'DISCONNECTED';
 
-  const beforeCloseListeners: any[] = [];
+  const beforeCloseListeners: Array<() => unknown> = [];
 
   const connected: DBConnection['connected'] = () =>
     connectionStatus === 'CONNECTED' || connectionStatus === 'EXTERNAL';
@@ -162,7 +162,11 @@ ${error}
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[]
   ) => {
-    const { rows } = await query(queryTextOrConfig, values);
+    const { rows }: { rows: unknown[] } = await query(
+      queryTextOrConfig,
+      values
+    );
+
     return rows;
   };
 
@@ -171,8 +175,12 @@ ${error}
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[]
   ) => {
-    const rows = await select(queryTextOrConfig, values);
-    return rows.map((r: { [key: string]: any }) => r[columnName]);
+    const rows: Array<Record<string, unknown>> = await select(
+      queryTextOrConfig,
+      values
+    );
+
+    return rows.map((r) => r[columnName]);
   };
 
   return {
@@ -184,7 +192,7 @@ ${error}
     connected,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
     close: async () => {
-      await beforeCloseListeners.reduce(
+      await beforeCloseListeners.reduce<Promise<unknown>>(
         (promise, listener) =>
           promise.then(listener).catch((error: any) => {
             logger.error(error.stack || error);
