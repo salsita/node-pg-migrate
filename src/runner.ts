@@ -218,7 +218,7 @@ export async function loadMigrations(
     return migrations;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(`Error loading migration files: ${error.message}`, {
+      throw new TypeError(`Error loading migration files: ${error.message}`, {
         cause: error,
       });
     }
@@ -298,7 +298,9 @@ async function ensureMigrationsTable(
       );
     }
   } catch (error: any) {
-    throw new Error(`Unable to ensure migrations table: ${error.stack}`);
+    throw new Error(`Unable to ensure migrations table: ${error.stack}`, {
+      cause: error,
+    });
   }
 }
 
@@ -316,12 +318,10 @@ async function getRunMigrations(
     name: migrationsTable,
   });
 
-  const runNames: string[] = await db.column(
+  return db.column(
     nameColumn,
     `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
   );
-
-  return runNames;
 }
 
 function getMigrationsToRun(

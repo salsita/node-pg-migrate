@@ -87,7 +87,7 @@
     // ==========================================================================
 
     // --- type-aware typescript (high volume) ---
-    // 183 violations
+    // 177 violations
     "typescript/strict-boolean-expressions": "off",
     // 32 violations — behaviour-changing (`??` vs `||`), review each
     "typescript/prefer-nullish-coalescing": "off",
@@ -96,41 +96,37 @@
     "typescript/no-unsafe-member-access": "off", // 360
     "typescript/no-unsafe-call": "off", // 353
     "typescript/no-unsafe-assignment": "off", // 52
+    "typescript/no-unsafe-return": "off", // 16
     "typescript/no-unsafe-argument": "off", // 12
     "typescript/no-useless-default-assignment": "off", // 8
 
     // --- eslint core ---
-    // 176 violations (mostly large test `describe` blocks)
+    // 187 violations (mostly large test `describe` blocks)
     "max-lines-per-function": "off",
-    // 14 violations
+    // 15 violations
     "max-lines": "off",
-    // 50 violations
+    // 41 violations
     "require-unicode-regexp": "off",
     // 11 violations
     "no-throw-literal": "off",
     // 10 violations
     "no-shadow": "off",
     // was newly set to error; defer
-    "radix": "off",
-    "no-await-in-loop": "off",
-    "require-await": "off",
-    "preserve-caught-error": "off",
+    "radix": "off", // 3
+    "no-await-in-loop": "off", // 3
+    "require-await": "off", // 1
 
     // --- import ---
-    "import/no-named-as-default-member": "off",
-    "import/max-dependencies": "off",
+    "import/no-named-as-default-member": "off", // 2
+    "import/max-dependencies": "off", // 2
 
     // --- oxc ---
-    "oxc/no-accumulating-spread": "off",
+    "oxc/no-accumulating-spread": "off", // 2
 
     // --- unicorn ---
-    "unicorn/prefer-string-replace-all": "off",
-    "unicorn/prefer-top-level-await": "off",
-    "unicorn/consistent-function-scoping": "off",
-    "unicorn/prefer-at": "off",
-    "unicorn/prefer-type-error": "off",
-    "unicorn/prefer-string-starts-ends-with": "off",
-    "unicorn/prefer-number-coercion": "off",
+    "unicorn/prefer-top-level-await": "off", // 4
+    "unicorn/consistent-function-scoping": "off", // 5
+    "unicorn/prefer-number-coercion": "off", // 1
 
     // --- vitest ---
     // 10 violations (test files)

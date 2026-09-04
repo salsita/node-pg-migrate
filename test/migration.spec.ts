@@ -155,7 +155,9 @@ describe('migration', () => {
     });
 
     it('should get a normalized UTC as a prefix', async () => {
-      const now = Number.parseInt(new Date().toISOString().replace(/\D/g, ''));
+      const now = Number.parseInt(
+        new Date().toISOString().replaceAll(/\D/g, '')
+      );
 
       const dir = 'test/migrations/**';
       const prefix = await Migration.getFilePrefix('utc', dir);
@@ -272,7 +274,7 @@ describe('migration', () => {
       expect(() => {
         void migration.apply(direction);
       }).toThrow(
-        new Error(
+        new TypeError(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
         )
       );

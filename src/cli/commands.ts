@@ -34,7 +34,7 @@ export async function runCreate(
   // replaces spaces with dashes - should help fix some errors
   let newMigrationName = nameArgs.length > 0 ? nameArgs.join('-') : '';
   // forces use of dashes in names - keep thing clean
-  newMigrationName = newMigrationName.replace(/[ _]+/g, '-');
+  newMigrationName = newMigrationName.replaceAll(/[ _]+/g, '-');
 
   if (!newMigrationName) {
     console.error("'migrationName' is required.");
@@ -119,7 +119,7 @@ export async function runMigration(
     if (parsedUpDownArg === Number(upDownArg)) {
       numMigrations = parsedUpDownArg;
     } else {
-      migrationName = posArgs.join('-').replace(/_ /g, '-');
+      migrationName = posArgs.join('-').replaceAll('_ ', '-');
     }
   }
 

@@ -10,13 +10,13 @@ export function createTransformer(
   return (statement, mapping = {}) =>
     Object.keys(mapping).reduce((str, param) => {
       const val = mapping?.[param];
-      return str.replace(
+      return str.replaceAll(
         new RegExp(`{${param}}`, 'g'),
         val === undefined
           ? ''
           : typeof val === 'string' || isNameObject(val)
             ? literal(val)
-            : String(escapeValue(val)).replace(/\$/g, '$$$$')
+            : String(escapeValue(val)).replaceAll('$', '$$$$')
       );
     }, statement);
 }

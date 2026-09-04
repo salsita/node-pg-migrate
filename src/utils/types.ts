@@ -46,9 +46,9 @@ export function applyType(
   let ext: ColumnDefinition | null = null;
   const types: string[] = [options.type];
 
-  while (typeShorthands[types[types.length - 1]]) {
+  while (typeShorthands[types.at(-1)!]) {
     ext = {
-      ...toType(typeShorthands[types[types.length - 1]]),
+      ...toType(typeShorthands[types.at(-1)!]),
       ...(ext === null ? {} : removeType(ext)),
     };
 

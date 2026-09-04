@@ -20,7 +20,7 @@ export function decamelize(text: string): string {
   // Split lowercase sequences followed by uppercase character.
   // `dataForUSACounties` → `data_For_USACounties`
   // `myURLstring → `my_URLstring`
-  const decamelized = text.replace(
+  const decamelized = text.replaceAll(
     /([\p{Lowercase_Letter}\d])(\p{Uppercase_Letter})/gu,
     REPLACEMENT
   );
@@ -28,7 +28,7 @@ export function decamelize(text: string): string {
   // Split multiple uppercase characters followed by one or more lowercase characters.
   // `my_URLstring` → `my_ur_lstring`
   return decamelized
-    .replace(
+    .replaceAll(
       /(\p{Uppercase_Letter})(\p{Uppercase_Letter}\p{Lowercase_Letter}+)/gu,
       REPLACEMENT
     )
