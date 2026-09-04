@@ -93,21 +93,12 @@
     "typescript/prefer-nullish-coalescing": "off",
 
     // --- type-aware typescript (untyped `pgm` fixtures + misc, previously off) ---
-    "typescript/no-unsafe-member-access": "off",
-    "typescript/no-unsafe-call": "off",
-    "typescript/no-unsafe-assignment": "off",
-    "typescript/no-unsafe-return": "off",
-    "typescript/no-unsafe-argument": "off",
-    "typescript/no-deprecated": "off",
-    "typescript/no-unnecessary-type-parameters": "off",
-    "typescript/no-useless-default-assignment": "off",
-    "typescript/unbound-method": "off",
-    "typescript/no-confusing-void-expression": "off",
-    "typescript/no-unnecessary-type-assertion": "off",
-    "typescript/return-await": "off",
-    "typescript/prefer-includes": "off",
-    "typescript/prefer-ts-expect-error": "off",
-    "typescript/ban-ts-comment": "off",
+    "typescript/no-unsafe-member-access": "off", // 360
+    "typescript/no-unsafe-call": "off", // 353
+    "typescript/no-unsafe-assignment": "off", // 52
+    "typescript/no-unsafe-return": "off", // 16
+    "typescript/no-unsafe-argument": "off", // 12
+    "typescript/no-useless-default-assignment": "off", // 8
 
     // --- eslint core ---
     // 176 violations (mostly large test `describe` blocks)

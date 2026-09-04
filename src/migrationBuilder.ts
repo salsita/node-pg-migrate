@@ -989,10 +989,14 @@ export class MigrationBuilder {
         return operation(...args);
       };
 
+    // `db.query` and `db.select` are standalone closures created by `db()`,
+    // not bound methods, so unbinding them here is safe.
+    /* oxlint-disable typescript/unbound-method */
     this.db = {
       query: wrapDB(db.query),
       select: wrapDB(db.select),
     };
+    /* oxlint-enable typescript/unbound-method */
   }
 
   /**

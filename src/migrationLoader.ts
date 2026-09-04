@@ -324,8 +324,14 @@ async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
 
     const downSql = group.down ? await readFile(group.down, 'utf8') : undefined;
     actions = {
-      up: (pgm) => pgm.sql(upSql),
-      down: downSql ? (pgm) => pgm.sql(downSql) : undefined,
+      up: (pgm) => {
+        pgm.sql(upSql);
+      },
+      down: downSql
+        ? (pgm) => {
+            pgm.sql(downSql);
+          }
+        : undefined,
       shorthands: {},
     };
   }
@@ -352,7 +358,7 @@ export function createSqlMigrationLoader(): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
     const groups = groupSqlFiles(filePaths);
     const migrationUnits = await Promise.all(
-      groups.map(async (group) => await readSqlFileGroup(group))
+      groups.map((group) => readSqlFileGroup(group))
     );
     return migrationUnits;
   };

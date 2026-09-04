@@ -4,10 +4,9 @@ export type ViewOptions = {
   [key: string]: boolean | number | string;
 };
 
-export function viewOptionStr<
-  TViewOptions extends Nullable<ViewOptions>,
-  TKey extends keyof TViewOptions,
->(options: TViewOptions): (key: TKey) => string {
+export function viewOptionStr<TViewOptions extends Nullable<ViewOptions>>(
+  options: TViewOptions
+): (key: keyof TViewOptions) => string {
   return (key) => {
     const value = options[key] === true ? '' : ` = ${options[key]}`;
 

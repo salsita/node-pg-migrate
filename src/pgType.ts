@@ -361,6 +361,7 @@ export const PgType = Object.freeze({
    *
    * @deprecated see `PG_SNAPSHOT`
    */
+  // oxlint-disable-next-line typescript/no-deprecated -- this is the declaration itself
   TXID_SNAPSHOT: 'txid_snapshot',
   /**
    * universally unique identifier

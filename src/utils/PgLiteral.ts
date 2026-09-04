@@ -9,10 +9,11 @@ export class PgLiteral {
   /**
    * Creates a new `PgLiteral` instance.
    *
+   * @param this Unused, declared so the method can be passed around unbound.
    * @param str The string value.
    * @returns The new `PgLiteral` instance.
    */
-  static create(str: string): PgLiteral {
+  static create(this: void, str: string): PgLiteral {
     return new PgLiteral(str);
   }
 
@@ -59,6 +60,6 @@ export function isPgLiteral(val: unknown): val is PgLiteral {
     (typeof val === 'object' &&
       val !== null &&
       'literal' in val &&
-      (val as { literal: unknown }).literal === true)
+      val.literal === true)
   );
 }
