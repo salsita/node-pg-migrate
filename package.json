@@ -93,7 +93,7 @@
     "@types/pg": "8.23.1",
     "@vitest/coverage-v8": "4.1.11",
     "@vitest/ui": "4.1.11",
-    "config": "4.4.2",
+    "config": "5.0.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
     "node-pg-migrate": "file:.",
