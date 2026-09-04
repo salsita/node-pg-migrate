@@ -236,8 +236,8 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(vitest@4.1.11)
       config:
-        specifier: 4.4.2
-        version: 4.4.2
+        specifier: 5.0.1
+        version: 5.0.1
       dotenv:
         specifier: 17.3.1
         version: 17.3.1
@@ -1444,9 +1444,9 @@ packages:
     resolution: {integrity: sha512-6FqVXeETqWPoGcfzrXb37E50NP0LXT8kAMu5ooZayhWWdgEY4lBEEcbQNXtkuKQsGduxiIcI4gOTsxTmuq/bSg==}
     engines: {node: '>= 14'}
 
-  config@4.4.2:
-    resolution: {integrity: sha512-5HJD7TX70gOG2dAd72eDjDeSTYn6D8nOiKgysQQS8mRUo9X1wDtlzb1JlmIWkP+sM9zKRVdYJxmj+qmCsYu6DQ==}
-    engines: {node: '>= 20.0.0'}
+  config@5.0.1:
+    resolution: {integrity: sha512-vnJGpQA9FjKSTafO9TiNZr1+NiZAIuZXScp034tH+R6VH3Ufe7r+Z730j/f6/KQ2+kNIly6auTYloIaNhpK8lg==}
+    engines: {node: '>= 20.11.0'}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -2892,7 +2892,7 @@ snapshots:
 
   '@types/config@4.4.0':
     dependencies:
-      config: 4.4.2
+      config: 5.0.1
 
   '@types/deep-eql@4.0.2': {}
 
@@ -3425,7 +3425,7 @@ snapshots:
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
-  config@4.4.2:
+  config@5.0.1:
     dependencies:
       json5: 2.2.3
 
