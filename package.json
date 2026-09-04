@@ -99,7 +99,7 @@
     "node-pg-migrate": "file:.",
     "npm-run-all2": "9.0.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.77.0",
+    "oxlint": "1.81.0",
     "oxlint-tsgolint": "7.0.2001",
     "pg": "8.23.0",
     "testcontainers": "12.1.0",
