@@ -65,6 +65,33 @@ node-pg-migrate up --pretty
 
 Or, when using the programmatic API, pass `pretty: true` to `runner()`.
 
+#### `--dry-run` no longer writes to the database
+
+`--dry-run` used to suppress only the _generated_ SQL. Everything else still ran for real:
+it created the migrations schema and the migrations table, `--fake --dry-run` inserted into
+(or deleted from) the migrations table, and any statement a migration issued itself through
+`pgm.db.query(...)` was executed - including destructive ones.
+
+A dry run now runs inside a read-only transaction (`BEGIN; SET TRANSACTION READ ONLY;`), so
+the database refuses every write. In practice:
+
+- the migrations schema and table are no longer created - if you relied on
+  `up --dry-run` to provision them, run a real migration instead;
+- `--fake --dry-run` prints the `INSERT`/`DELETE` and records nothing;
+- a migration that writes through `pgm.db.query(...)` now **fails** under `--dry-run`
+  instead of silently applying its changes;
+- no advisory lock is taken, so a dry run can no longer block (or be blocked by) a real
+  migration.
+
+On CockroachDB, `autocommit_before_ddl` is turned off for the session first, because v25 and
+newer would otherwise commit DDL out of the transaction. If that cannot be guaranteed, the
+dry run refuses to start rather than proceed.
+
+`Migration.markAsRun()` now resolves to `void` instead of the `pg` `QueryResult`; it does not
+query at all during a dry run.
+
+See [Dry Runs](cli#dry-runs) for the full behavior and its limitations.
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript

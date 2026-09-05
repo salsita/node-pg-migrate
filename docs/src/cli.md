@@ -78,6 +78,35 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
 | `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
 
+## Dry Runs
+
+`node-pg-migrate up --dry-run` prints the SQL a real run would execute and applies none of
+it. The whole session runs inside a read-only transaction
+(`BEGIN; SET TRANSACTION READ ONLY;`), so the guarantee is enforced by the database rather
+than by `node-pg-migrate` itself:
+
+- the migrations schema and the migrations table are **not** created - a missing table is
+  reported as `> Would create migrations table ...`;
+- `--fake --dry-run` prints the `INSERT`/`DELETE` it would run and records nothing;
+- `--create-schema` and `--create-migrations-schema` report `> Would create schema ...`;
+- no [advisory lock](#configuration) is taken, so a dry run can never block a deployment;
+- a statement a migration issues itself - `pgm.db.query(...)` - is refused by the server.
+
+Reading the database still works, so `pgm.db.select(...)` inside a migration behaves as
+usual.
+
+### Limitations
+
+A dry run prints; it does not validate. Because nothing is applied, a migration cannot see
+what an earlier pending migration would have created:
+
+- a migration that reads schema or data produced by an earlier migration of the same run
+  will fail;
+- a migration that writes through `pgm.db.query(...)` fails with a message pointing at that
+  write - the read-only transaction refuses it;
+- `redo --dry-run` prints the `down` migrations and then reports `No migrations to run!` for
+  the `up` half, because the `down` half was never applied.
+
 ## Configuration
 
 > [!TIP]
@@ -113,6 +142,7 @@ apply to the `up`, `down` and `redo` commands:
 | `no-lock`                   |         | `false`                         | Disables locking mechanism and checks                                                                                                                                                                                                                                                   |
 | `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
 | `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
+| `dry-run`                   |         | `false`                         | Print the SQL that would run without applying anything, [see](#dry-runs)                                                                                                                                                                                                                |
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
 | `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |

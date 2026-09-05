@@ -112,6 +112,44 @@ async function execSql(
 }
 
 /**
+ * Runs a `SELECT` on the provided PostgreSQL container and returns the values of the first
+ * column, one per row.
+ *
+ * @param pgContainer The PostgreSQL container instance to query.
+ * @param sql The `SELECT` statement to run.
+ *
+ * @returns The values of the first column of every returned row.
+ *
+ * @throws Throws an error if the query fails.
+ */
+export async function psqlSelect(
+  pgContainer: StartedPostgreSqlContainer,
+  sql: string
+): Promise<string[]> {
+  const res = await pgContainer.exec([
+    'psql',
+    '-U',
+    pgContainer.getUsername(),
+    '-d',
+    pgContainer.getDatabase(),
+    '-At',
+    '-c',
+    sql,
+  ]);
+
+  if (res.exitCode !== 0) {
+    throw new Error(`Failed to execute SQL command: ${sql}`, {
+      cause: res.stderr || res.stdout,
+    });
+  }
+
+  return res.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+/**
  * Cleans and removes all unnecessary or redundant objects and data from the public schema in the database.
  *
  * It ensures that the public schema is entirely reset to a clean state, except for system or default roles and objects.

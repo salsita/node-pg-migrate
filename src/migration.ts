@@ -4,7 +4,6 @@ import { mkdir, readdir } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { fileURLToPath } from 'node:url';
-import type { QueryResult } from 'pg';
 import type { DBConnection } from './db';
 import type { Logger } from './logger';
 import { MigrationBuilder } from './migrationBuilder';
@@ -377,7 +376,11 @@ export class Migration implements RunMigration {
       );
     }
 
-    if (typeof this.logger.debug === 'function') {
+    if (this.options.dryRun) {
+      // Printing the SQL is the whole point of a dry run, so it must not depend on
+      // `verbose` - `logger.debug` is stripped when that is off.
+      this.logger.info(`${sqlSteps.join('\n')}\n`);
+    } else if (typeof this.logger.debug === 'function') {
       this.logger.debug(`${sqlSteps.join('\n')}\n\n`);
     }
 
@@ -428,7 +431,14 @@ export class Migration implements RunMigration {
     return this._apply(action, pgm);
   }
 
-  markAsRun(direction: MigrationDirection): Promise<QueryResult> {
-    return this.db.query(this._getMarkAsRun(this._getAction(direction)));
+  async markAsRun(direction: MigrationDirection): Promise<void> {
+    const sql = this._getMarkAsRun(this._getAction(direction));
+
+    if (this.options.dryRun) {
+      this.logger.info(`${sql}\n`);
+      return;
+    }
+
+    await this.db.query(sql);
   }
 }
