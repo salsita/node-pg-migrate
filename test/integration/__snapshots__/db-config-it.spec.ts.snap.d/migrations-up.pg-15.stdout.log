@@ -122,6 +122,10 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('005_table_test', NOW
 
 ### MIGRATION 006_table_rename (UP) ###
 ALTER TABLE "t2" RENAME TO "t2r";
+CREATE SCHEMA "rename_schema";
+CREATE TABLE "rename_schema"."original" ("id" integer);
+ALTER TABLE "rename_schema"."original" RENAME TO "intermediate";
+ALTER TABLE "rename_schema"."intermediate" RENAME TO "renamed";
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('006_table_rename', NOW());
 
 

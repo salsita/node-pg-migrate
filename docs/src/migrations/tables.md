@@ -71,6 +71,10 @@
 | `tablename`     | [Name](/migrations/#type) | name of the table to rename |
 | `new_tablename` | [Name](/migrations/#type) | new name of the table       |
 
+Renaming preserves the table’s schema, including during automatic reversal. If
+`new_tablename` specifies a schema, it must match the schema in `tablename`.
+Use a separate schema-changing operation to move a table to another schema.
+
 ## Operation: `alterTable`
 
 #### `pgm.alterTable( tablename, options )`

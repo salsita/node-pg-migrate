@@ -28,8 +28,39 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER TABLE "myschema"."distributors" RENAME TO "myschema"."suppliers";'
+          'ALTER TABLE "myschema"."distributors" RENAME TO "suppliers";'
         );
+      });
+
+      it.each([
+        ['suppliers'],
+        [{ name: 'suppliers' }],
+        [{ name: 'suppliers', schema: 'myschema' }],
+      ])('should preserve the schema when reversing to %j', (newName) => {
+        expect(
+          renameTableFn.reverse(
+            { name: 'distributors', schema: 'myschema' },
+            newName
+          )
+        ).toBe('ALTER TABLE "myschema"."suppliers" RENAME TO "distributors";');
+      });
+
+      it('should reject a change of schema in either direction', () => {
+        const from = { name: 'distributors', schema: 'myschema' };
+        const to = { name: 'suppliers', schema: 'other' };
+
+        expect(() => renameTableFn(from, to)).toThrow('schema');
+        expect(() => renameTableFn.reverse(from, to)).toThrow('schema');
+        expect(() => renameTableFn('distributors', to)).toThrow('schema');
+      });
+
+      it('should escape schema and table names when reversing', () => {
+        expect(
+          renameTableFn.reverse(
+            { name: 'old"table', schema: 'my"schema' },
+            'new"table'
+          )
+        ).toBe('ALTER TABLE "my""schema"."new""table" RENAME TO "old""table";');
       });
 
       describe('reverse', () => {
