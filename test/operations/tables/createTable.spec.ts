@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { PgType } from '../../../src';
 import { createTable } from '../../../src/operations/tables';
-import { options1, options2 } from '../../presetMigrationOptions';
+import {
+  options1,
+  options1Pretty,
+  options2,
+} from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('tables', () => {
@@ -12,11 +16,10 @@ describe('operations', () => {
         expect(createTableFn).toBeTypeOf('function');
       });
 
-      it('should return sql statement', () => {
-        const statement = createTableFn('films', {});
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE TABLE "films" (\n  \n);');
+      it('should throw an error for empty columns', () => {
+        expect(() => createTableFn('films', {})).toThrow(
+          new Error('No columns provided for createTable')
+        );
       });
 
       it('should return sql statement with tableOptions', () => {
@@ -42,29 +45,41 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
+          `CREATE TABLE "films" ("code" char(5) PRIMARY KEY, "title" varchar(40) NOT NULL, "did" integer NOT NULL, "date_prod" date, "kind" varchar(10), "len" interval hour to minute);`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = createTable(options1Pretty)('films', {
+          code: {
+            type: 'char(5)',
+            primaryKey: true,
+          },
+          title: {
+            type: 'varchar(40)',
+            notNull: true,
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
           `CREATE TABLE "films" (
   "code" char(5) PRIMARY KEY,
-  "title" varchar(40) NOT NULL,
-  "did" integer NOT NULL,
-  "date_prod" date,
-  "kind" varchar(10),
-  "len" interval hour to minute
+  "title" varchar(40) NOT NULL
 );`
         );
       });
 
-      // TODO @Shinigami92 2024-03-12: This should throw an error when columns are empty
-      it('should return sql statement with schema', () => {
-        const statement = createTableFn(
-          {
-            name: 'films',
-            schema: 'myschema',
-          },
-          {}
-        );
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE TABLE "myschema"."films" (\n  \n);');
+      it('should throw an error for empty columns with schema', () => {
+        expect(() =>
+          createTableFn(
+            {
+              name: 'films',
+              schema: 'myschema',
+            },
+            {}
+          )
+        ).toThrow(new Error('No columns provided for createTable'));
       });
 
       it.each([
@@ -77,9 +92,7 @@ describe('operations', () => {
             { idColumn: 'serial' },
             undefined,
           ],
-          `CREATE TABLE "mySchema"."myTableName" (
-  "idColumn" serial
-);`,
+          `CREATE TABLE "mySchema"."myTableName" ("idColumn" serial);`,
         ],
         [
           'should use schemas 2',
@@ -89,26 +102,20 @@ describe('operations', () => {
             { idColumn: 'serial' },
             undefined,
           ],
-          `CREATE TABLE "my_schema"."my_table_name" (
-  "id_column" serial
-);`,
+          `CREATE TABLE "my_schema"."my_table_name" ("id_column" serial);`,
         ],
         // should work with shorthands
         [
           'should work with shorthands 1',
           options1,
           ['myTableName', { idColumn: 'id' }, undefined],
-          `CREATE TABLE "myTableName" (
-  "idColumn" serial PRIMARY KEY
-);`,
+          `CREATE TABLE "myTableName" ("idColumn" serial PRIMARY KEY);`,
         ],
         [
           'should work with shorthands 2',
           options2,
           ['myTableName', { idColumn: 'id' }, undefined],
-          `CREATE TABLE "my_table_name" (
-  "id_column" serial PRIMARY KEY
-);`,
+          `CREATE TABLE "my_table_name" ("id_column" serial PRIMARY KEY);`,
         ],
         // should use custom shorthands
         [
@@ -121,9 +128,7 @@ describe('operations', () => {
             },
           },
           ['myTableName', { idColumn: 'idTest' }, undefined],
-          `CREATE TABLE "myTableName" (
-  "idColumn" uuid PRIMARY KEY
-);`,
+          `CREATE TABLE "myTableName" ("idColumn" uuid PRIMARY KEY);`,
         ],
         [
           'should use custom shorthands 2',
@@ -135,9 +140,7 @@ describe('operations', () => {
             },
           },
           ['myTableName', { idColumn: 'idTest' }, undefined],
-          `CREATE TABLE "my_table_name" (
-  "id_column" uuid PRIMARY KEY
-);`,
+          `CREATE TABLE "my_table_name" ("id_column" uuid PRIMARY KEY);`,
         ],
         // should use schemas with foreign keys
         [
@@ -153,9 +156,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "myTableName" (
-  "parentId" integer REFERENCES "schemaA"."tableB"
-);`,
+          `CREATE TABLE "myTableName" ("parentId" integer REFERENCES "schemaA"."tableB");`,
         ],
         [
           'should use schemas with foreign keys 2',
@@ -170,9 +171,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES "schema_a"."table_b"
-);`,
+          `CREATE TABLE "my_table_name" ("parent_id" integer REFERENCES "schema_a"."table_b");`,
         ],
         // should match clause can be used for foreign keys
         [
@@ -189,9 +188,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "myTableName" (
-  "parentId" integer REFERENCES "schemaA"."tableB" MATCH SIMPLE
-);`,
+          `CREATE TABLE "myTableName" ("parentId" integer REFERENCES "schemaA"."tableB" MATCH SIMPLE);`,
         ],
         [
           'should match clause can be used for foreign keys 2',
@@ -207,9 +204,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES "schema_a"."table_b" MATCH SIMPLE
-);`,
+          `CREATE TABLE "my_table_name" ("parent_id" integer REFERENCES "schema_a"."table_b" MATCH SIMPLE);`,
         ],
         // should check defining column can be used for foreign keys
         [
@@ -225,9 +220,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "myTableName" (
-  "parentId" integer REFERENCES schemaA.tableB(idColumn)
-);`,
+          `CREATE TABLE "myTableName" ("parentId" integer REFERENCES schemaA.tableB(idColumn));`,
         ],
         [
           'should check defining column can be used for foreign keys 2',
@@ -242,9 +235,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "my_table_name" (
-  "parent_id" integer REFERENCES schemaA.tableB(idColumn)
-);`,
+          `CREATE TABLE "my_table_name" ("parent_id" integer REFERENCES schemaA.tableB(idColumn));`,
         ],
         // should include multi-column primary key
         [
@@ -258,11 +249,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "mySchema"."myTableName" (
-  "colA" integer,
-  "colB" varchar,
-  CONSTRAINT "myTableName_pkey" PRIMARY KEY ("colA", "colB")
-);`,
+          `CREATE TABLE "mySchema"."myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_pkey" PRIMARY KEY ("colA", "colB"));`,
         ],
         [
           'should include multi-column primary key 2',
@@ -275,11 +262,7 @@ describe('operations', () => {
             },
             undefined,
           ],
-          `CREATE TABLE "my_schema"."my_table_name" (
-  "col_a" integer,
-  "col_b" varchar,
-  CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("col_a", "col_b")
-);`,
+          `CREATE TABLE "my_schema"."my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_pkey" PRIMARY KEY ("col_a", "col_b"));`,
         ],
         // should check table references work correctly
         [
@@ -299,11 +282,7 @@ describe('operations', () => {
               },
             },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer,
-  "colB" varchar,
-  CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B)
-);`,
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B));`,
         ],
         [
           'should check table references work correctly 2',
@@ -322,11 +301,26 @@ describe('operations', () => {
               },
             },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer,
-  "col_b" varchar,
-  CONSTRAINT "my_table_name_fk_col_a_col_b" FOREIGN KEY ("col_a", "col_b") REFERENCES otherTable (A, B)
-);`,
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_fk_col_a_col_b" FOREIGN KEY ("col_a", "col_b") REFERENCES otherTable (A, B));`,
+        ],
+        [
+          'should check table references work correctly for name objects',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            {
+              constraints: {
+                foreignKeys: [
+                  {
+                    columns: [{ name: 'colA' }, { name: 'colB' }],
+                    references: 'otherTable (A, B)',
+                  },
+                ],
+              },
+            },
+          ],
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_fk_colA_colB" FOREIGN KEY ("colA", "colB") REFERENCES otherTable (A, B));`,
         ],
         // should check table unique constraint work correctly
         [
@@ -337,11 +331,7 @@ describe('operations', () => {
             { colA: { type: 'integer' }, colB: { type: 'varchar' } },
             { constraints: { unique: ['colA', 'colB'] } },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer,
-  "colB" varchar,
-  CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB")
-);`,
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"));`,
         ],
         [
           'should check table unique constraint work correctly 2',
@@ -351,11 +341,7 @@ describe('operations', () => {
             { colA: { type: 'integer' }, colB: { type: 'varchar' } },
             { constraints: { unique: ['colA', 'colB'] } },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer,
-  "col_b" varchar,
-  CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b")
-);`,
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"));`,
         ],
         // should check table unique constraint work correctly for string
         [
@@ -366,11 +352,7 @@ describe('operations', () => {
             { colA: { type: 'integer' }, colB: { type: 'varchar' } },
             { constraints: { unique: 'colA' } },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer,
-  "colB" varchar,
-  CONSTRAINT "myTableName_uniq_colA" UNIQUE ("colA")
-);`,
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_uniq_colA" UNIQUE ("colA"));`,
         ],
         [
           'should check table unique constraint work correctly for string 2',
@@ -380,11 +362,28 @@ describe('operations', () => {
             { colA: { type: 'integer' }, colB: { type: 'varchar' } },
             { constraints: { unique: 'colA' } },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer,
-  "col_b" varchar,
-  CONSTRAINT "my_table_name_uniq_col_a" UNIQUE ("col_a")
-);`,
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_uniq_col_a" UNIQUE ("col_a"));`,
+        ],
+        // should check table unique constraint work correctly for name objects
+        [
+          'should check table unique constraint work correctly for name objects 1',
+          options1,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            { constraints: { unique: [{ name: 'colA' }, { name: 'colB' }] } },
+          ],
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"));`,
+        ],
+        [
+          'should check table unique constraint work correctly for name objects 2',
+          options2,
+          [
+            'myTableName',
+            { colA: { type: 'integer' }, colB: { type: 'varchar' } },
+            { constraints: { unique: [{ name: 'colA' }, { name: 'colB' }] } },
+          ],
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"));`,
         ],
         // should check table unique constraint work correctly for array of arrays
         [
@@ -401,13 +400,7 @@ describe('operations', () => {
               constraints: { unique: [['colA', 'colB'], 'colC'] },
             },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer,
-  "colB" varchar,
-  "colC" varchar,
-  CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"),
-  CONSTRAINT "myTableName_uniq_colC" UNIQUE ("colC")
-);`,
+          `CREATE TABLE "myTableName" ("colA" integer, "colB" varchar, "colC" varchar, CONSTRAINT "myTableName_uniq_colA_colB" UNIQUE ("colA", "colB"), CONSTRAINT "myTableName_uniq_colC" UNIQUE ("colC"));`,
         ],
         [
           'should check table unique constraint work correctly for array of arrays 2',
@@ -423,13 +416,7 @@ describe('operations', () => {
               constraints: { unique: [['colA', 'colB'], 'colC'] },
             },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer,
-  "col_b" varchar,
-  "col_c" varchar,
-  CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"),
-  CONSTRAINT "my_table_name_uniq_col_c" UNIQUE ("col_c")
-);`,
+          `CREATE TABLE "my_table_name" ("col_a" integer, "col_b" varchar, "col_c" varchar, CONSTRAINT "my_table_name_uniq_col_a_col_b" UNIQUE ("col_a", "col_b"), CONSTRAINT "my_table_name_uniq_col_c" UNIQUE ("col_c"));`,
         ],
         // should create comments on foreign keys
         [
@@ -448,10 +435,7 @@ describe('operations', () => {
               },
             },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer,
-  CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable"
-);
+          `CREATE TABLE "myTableName" ("colA" integer, CONSTRAINT "myTableName_fk_colA" FOREIGN KEY ("colA") REFERENCES "otherTable");
 COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$example comment$pga$;`,
         ],
         [
@@ -470,10 +454,7 @@ COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$example com
               },
             },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer,
-  CONSTRAINT "my_table_name_fk_col_a" FOREIGN KEY ("col_a") REFERENCES "other_table"
-);
+          `CREATE TABLE "my_table_name" ("col_a" integer, CONSTRAINT "my_table_name_fk_col_a" FOREIGN KEY ("col_a") REFERENCES "other_table");
 COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$example comment$pga$;`,
         ],
         // should create comments on column foreign keys
@@ -496,10 +477,7 @@ COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$exampl
               },
             },
           ],
-          `CREATE TABLE "myTableName" (
-  "colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a),
-  "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo"
-);
+          `CREATE TABLE "myTableName" ("colA" integer CONSTRAINT "myTableName_fk_colA" REFERENCES otherTable (a), "colB" integer CONSTRAINT "fkColB" REFERENCES "otherTableTwo");
 COMMENT ON CONSTRAINT "myTableName_fk_colA" ON "myTableName" IS $pga$fk a comment$pga$;
 COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pga$fk b comment$pga$;`,
         ],
@@ -522,10 +500,7 @@ COMMENT ON CONSTRAINT "fkColB" ON "myTableName" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "my_table_name" (
-  "col_a" integer CONSTRAINT "my_table_name_fk_col_a" REFERENCES otherTable (a),
-  "col_b" integer CONSTRAINT "fk_col_b" REFERENCES "other_table_two"
-);
+          `CREATE TABLE "my_table_name" ("col_a" integer CONSTRAINT "my_table_name_fk_col_a" REFERENCES otherTable (a), "col_b" integer CONSTRAINT "fk_col_b" REFERENCES "other_table_two");
 COMMENT ON CONSTRAINT "my_table_name_fk_col_a" ON "my_table_name" IS $pga$fk a comment$pga$;
 COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
         ],
@@ -547,11 +522,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "events" (
-  "id" serial,
-  "created_at" timestamp,
-  "data" jsonb
-) PARTITION BY RANGE ("created_at");`,
+          `CREATE TABLE "events" ("id" serial, "created_at" timestamp, "data" jsonb) PARTITION BY RANGE ("created_at");`,
         ],
         [
           'should support LIST partitioning with multiple columns',
@@ -571,12 +542,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "metrics" (
-  "id" serial,
-  "region" text,
-  "category" text,
-  "value" numeric
-) PARTITION BY LIST ("region", "category");`,
+          `CREATE TABLE "metrics" ("id" serial, "region" text, "category" text, "value" numeric) PARTITION BY LIST ("region", "category");`,
         ],
         [
           'should support HASH partitioning with operator class',
@@ -595,11 +561,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "users" (
-  "id" uuid,
-  "email" text,
-  "name" text
-) PARTITION BY HASH ("id" hash_extension.uuid_ops);`,
+          `CREATE TABLE "users" ("id" uuid, "email" text, "name" text) PARTITION BY HASH ("id" hash_extension.uuid_ops);`,
         ],
         [
           'should support partitioning with INHERITS',
@@ -618,10 +580,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "child_events" (
-  "id" serial,
-  "created_at" timestamp
-) INHERITS ("parent_events") PARTITION BY RANGE ("created_at");`,
+          `CREATE TABLE "child_events" ("id" serial, "created_at" timestamp) INHERITS ("parent_events") PARTITION BY RANGE ("created_at");`,
         ],
         [
           'should handle snake case naming with partitioning',
@@ -640,11 +599,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "user_metrics" (
-  "user_id" uuid,
-  "event_type" text,
-  "created_at" timestamp
-) PARTITION BY LIST ("event_type");`,
+          `CREATE TABLE "user_metrics" ("user_id" uuid, "event_type" text, "created_at" timestamp) PARTITION BY LIST ("event_type");`,
         ],
         [
           'should support partitioning with collation',
@@ -663,11 +618,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
               },
             },
           ],
-          `CREATE TABLE "posts" (
-  "id" serial,
-  "title" text,
-  "language" text
-) PARTITION BY LIST ("language" COLLATE en_US);`,
+          `CREATE TABLE "posts" ("id" serial, "title" text, "language" text) PARTITION BY LIST ("language" COLLATE en_US);`,
         ],
       ] as const)(
         '%s',
@@ -744,10 +695,7 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `CREATE TABLE "arrays" (
-  "tags" text ARRAY,
-  "scores" integer ARRAY[${arrayDimension}]
-);`
+          `CREATE TABLE "arrays" ("tags" text ARRAY, "scores" integer ARRAY[${arrayDimension}]);`
         );
       });
 
@@ -761,6 +709,17 @@ COMMENT ON CONSTRAINT "fk_col_b" ON "my_table_name" IS $pga$fk b comment$pga$;`,
 
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe('DROP TABLE "films";');
+        });
+
+        it('should return sql statement with drop options', () => {
+          const statement = createTableFn.reverse(
+            'films',
+            {},
+            { ifExists: true, cascade: true }
+          );
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe('DROP TABLE IF EXISTS "films" CASCADE;');
         });
       });
     });

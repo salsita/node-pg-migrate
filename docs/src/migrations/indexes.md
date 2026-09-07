@@ -83,3 +83,30 @@ pgm.createIndex('table', [
 | `concurrently` | `boolean` | drop this index concurrently |
 | `ifExists`     | `boolean` | default false                |
 | `cascade`      | `boolean` | default false                |
+
+## Operation: `renameIndex`
+
+#### `pgm.renameIndex( name, newName )`
+
+> [!IMPORTANT]
+> Rename an index - [postgres docs](http://www.postgresql.org/docs/current/static/sql-alterindex.html)
+>
+> Reverse Operation: same operation in opposite direction
+
+### Arguments
+
+| Name      | Type                      | Description                 |
+| --------- | ------------------------- | --------------------------- |
+| `name`    | [Name](/migrations/#type) | name of the index to rename |
+| `newName` | [Name](/migrations/#type) | new name for the index      |
+
+### Examples
+
+::: code-group
+
+```ts
+pgm.renameIndex('index_name', 'new_index_name');
+//expected output: ALTER INDEX index_name RENAME TO new_index_name;
+```
+
+:::

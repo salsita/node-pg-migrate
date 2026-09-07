@@ -1,3 +1,6 @@
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ */
 export const up = (pgm) =>
   pgm.db
     .query("INSERT INTO t1(string) VALUES ('something') RETURNING id;")

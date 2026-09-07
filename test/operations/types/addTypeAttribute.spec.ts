@@ -21,6 +21,17 @@ describe('operations', () => {
         );
       });
 
+      it('should ignore attributeOptions, because they only affect the reverse', () => {
+        const statement = addTypeAttributeFn('compfoo', 'f3', PgType.INT, {
+          ifExists: true,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'ALTER TYPE "compfoo" ADD ATTRIBUTE "f3" integer;'
+        );
+      });
+
       it('should return sql statement with schema', () => {
         const statement = addTypeAttributeFn(
           { name: 'compfoo', schema: 'myschema' },
@@ -48,6 +59,20 @@ describe('operations', () => {
 
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe('ALTER TYPE "compfoo" DROP ATTRIBUTE "f3";');
+        });
+
+        it('should return sql statement with attributeOptions', () => {
+          const statement = addTypeAttributeFn.reverse(
+            'compfoo',
+            'f3',
+            PgType.INT,
+            { ifExists: true }
+          );
+
+          expect(statement).toBeTypeOf('string');
+          expect(statement).toBe(
+            'ALTER TYPE "compfoo" DROP ATTRIBUTE "f3" IF EXISTS;'
+          );
         });
       });
     });

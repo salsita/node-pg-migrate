@@ -11,12 +11,10 @@ describe('operations', () => {
         expect(createMaterializedViewFn).toBeTypeOf('function');
       });
 
-      // TODO @Shinigami92 2024-04-02: This should throw an error
-      it.todo('should return sql statement', () => {
-        const statement = createMaterializedViewFn('order_summary', {}, '');
-
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('CREATE MATERIALIZED VIEW "order_summary" AS ;');
+      it('should throw an error for an empty definition', () => {
+        expect(() => createMaterializedViewFn('order_summary', {}, '')).toThrow(
+          new Error('No definition provided for createMaterializedView')
+        );
       });
 
       it('should return sql statement with materializedViewOptions', () => {

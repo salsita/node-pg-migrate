@@ -2,7 +2,7 @@ import type { FunctionParamType } from '../operations/functions';
 import type { Type } from '../operations/generalTypes';
 import type { ColumnDefinition, ColumnDefinitions } from '../operations/tables';
 
-const TYPE_ADAPTERS = Object.freeze({
+const TYPE_ADAPTERS: Readonly<Record<string, string>> = Object.freeze({
   int: 'integer',
   string: 'text',
   float: 'real',
@@ -17,9 +17,7 @@ const DEFAULT_TYPE_SHORTHANDS: Readonly<ColumnDefinitions> = Object.freeze({
 
 // some convenience adapters -- see above
 export function applyTypeAdapters(type: string): string {
-  return type in TYPE_ADAPTERS
-    ? TYPE_ADAPTERS[type as keyof typeof TYPE_ADAPTERS]
-    : type;
+  return Object.hasOwn(TYPE_ADAPTERS, type) ? TYPE_ADAPTERS[type] : type;
 }
 
 function toType(type: string | Readonly<ColumnDefinition>): ColumnDefinition {
@@ -47,10 +45,11 @@ export function applyType(
 
   let ext: ColumnDefinition | null = null;
   const types: string[] = [options.type];
+  let lastType = options.type;
 
-  while (typeShorthands[types[types.length - 1]]) {
+  while (typeShorthands[lastType]) {
     ext = {
-      ...toType(typeShorthands[types[types.length - 1]]),
+      ...toType(typeShorthands[lastType]),
       ...(ext === null ? {} : removeType(ext)),
     };
 
@@ -60,6 +59,7 @@ export function applyType(
       );
     } else {
       types.push(ext.type);
+      lastType = ext.type;
     }
   }
 

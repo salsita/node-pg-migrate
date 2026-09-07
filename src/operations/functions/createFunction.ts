@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { escapeValue, formatParams } from '../../utils';
+import { escapeValue, formatParams, formatSeparator } from '../../utils';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
 import type { DropFunctionOptions } from './dropFunction';
 import { dropFunction } from './dropFunction';
@@ -82,11 +82,10 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
     const replaceStr = replace ? ' OR REPLACE' : '';
     const paramsStr = formatParams(functionParams, mOptions);
     const functionNameStr = mOptions.literal(functionName);
+    const nl = formatSeparator(mOptions.pretty, '  ');
+    const optionsStr = options.join(nl);
 
-    return `CREATE${replaceStr} FUNCTION ${functionNameStr}${paramsStr}
-  RETURNS ${returns}
-  AS ${escapeValue(definition)}
-  ${options.join('\n  ')};`;
+    return `CREATE${replaceStr} FUNCTION ${functionNameStr}${paramsStr}${nl}RETURNS ${returns}${nl}AS ${escapeValue(definition)}${nl}${optionsStr};`;
   };
 
   _create.reverse = dropFunction(mOptions);

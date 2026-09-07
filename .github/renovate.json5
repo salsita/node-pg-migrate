@@ -37,6 +37,10 @@
       "minimumReleaseAge": null
     },
     {
+      "groupName": "pnpm",
+      "matchPackageNames": ["pnpm"]
+    },
+    {
       "groupName": "dotenv",
       "matchPackageNames": ["dotenv", "dotenv-expand"],
       "minimumReleaseAge": "7 days"
@@ -63,6 +67,17 @@
     {
       "groupName": "doc-dependencies",
       "matchPackageNames": ["@algolia/client-search", "vitepress"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^package\\.json$/"],
+      "matchStrings": [
+        "\"devEngines\"\\s*:\\s*\\{\\s*\"packageManager\"\\s*:\\s*\\{[^}]*?\"name\"\\s*:\\s*\"(?<depName>[^\"]+)\"[^}]*?\"version\"\\s*:\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "npm",
+      "depTypeTemplate": "devEngines"
     }
   ],
   "vulnerabilityAlerts": {

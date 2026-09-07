@@ -39,6 +39,20 @@ export function isNameObject(
 }
 
 /**
+ * Extracts the plain (unescaped) identifier string from a {@link Name}.
+ *
+ * Useful for building derived names (e.g. default constraint or index names)
+ * where the raw string is needed instead of an escaped identifier.
+ */
+export function getNameString(name: Name): string {
+  if (isNameObject(name)) {
+    return name.name;
+  }
+
+  return typeof name === 'string' ? name : name.value;
+}
+
+/**
  * Type guard for schema-qualified {@link Name} objects.
  */
 export function isSchemaNameObject(

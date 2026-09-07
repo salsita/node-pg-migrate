@@ -1,9 +1,9 @@
 {
   "name": "node-pg-migrate",
-  "version": "9.0.0-alpha.11",
+  "version": "10.0.0-alpha.2",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
-    "clean": "git clean -fdx --exclude .claude",
+    "clean": "git clean -fdx --exclude .claude --exclude local",
     "build": "tsdown",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -65,12 +65,8 @@
       "default": "./bin/*.js"
     },
     ".": {
-      "types": "./dist/bundle/index.d.ts",
-      "default": "./dist/bundle/index.js"
-    },
-    "./*": {
-      "types": "./dist/legacy/*.d.ts",
-      "default": "./dist/legacy/*.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -86,44 +82,50 @@
     "templates"
   ],
   "dependencies": {
+    "commander": "~15.0.0",
     "glob": "~13.0.0",
-    "jiti": "~2.7.0",
-    "yargs": "~18.0.0"
+    "jiti": "~2.7.0"
   },
   "devDependencies": {
-    "@testcontainers/postgresql": "11.14.0",
+    "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
-    "@types/node": "20.19.39",
-    "@types/pg": "8.20.0",
-    "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.1.7",
-    "@vitest/ui": "4.1.7",
-    "config": "4.4.1",
+    "@types/node": "26.4.1",
+    "@types/pg": "8.23.1",
+    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/ui": "4.1.11",
+    "config": "5.0.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
     "node-pg-migrate": "file:.",
-    "npm-run-all2": "8.0.4",
-    "oxfmt": "0.50.0",
-    "oxlint": "1.65.0",
-    "oxlint-tsgolint": "0.23.0",
-    "pg": "8.20.0",
-    "testcontainers": "11.14.0",
-    "tsdown": "0.21.10",
-    "typescript": "6.0.3",
-    "vitepress": "1.6.4",
-    "vitest": "4.1.7"
+    "npm-run-all2": "9.0.3",
+    "oxfmt": "0.66.0",
+    "oxlint": "1.81.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "pg": "8.23.0",
+    "testcontainers": "12.1.0",
+    "tsdown": "0.22.14",
+    "typescript": "7.0.2",
+    "vitepress": "2.0.0-alpha.19",
+    "vitest": "4.1.11"
   },
   "peerDependencies": {
-    "@types/pg": ">=6.0.0 <9.0.0",
-    "pg": ">=4.3.0 <9.0.0"
+    "@types/pg": ">=7.0.0 <9.0.0",
+    "pg": ">=7.0.2 <9.0.0"
   },
   "peerDependenciesMeta": {
     "@types/pg": {
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.34.1",
+  "packageManager": "pnpm@11.25.0",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.12.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.25.0",
+      "onFail": "download"
+    }
   }
 }

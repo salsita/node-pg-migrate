@@ -8,5 +8,5 @@
  * @returns quoted identifier safe for use as a PostgreSQL identifier
  */
 export function quote(str: string): string {
-  return `"${str.replace(/"/g, '""')}"`;
+  return `"${str.replaceAll('"', '""')}"`;
 }

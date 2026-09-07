@@ -26,7 +26,7 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
       if (typeof param === 'object' && param !== null) {
         const copy = { ...param };
         delete copy.default;
-        return copy as FunctionParam;
+        return copy;
       }
 
       return param;

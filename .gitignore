@@ -102,3 +102,7 @@ yarn.lock
 
 # AI
 .claude/
+
+# local scratch
+local/
+tmp/

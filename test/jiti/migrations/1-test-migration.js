@@ -1,4 +1,4 @@
-import { MigrationBuilder } from '../../../dist/bundle';
+import { MigrationBuilder } from '../../../dist';
 
 export const shorthands = undefined;
 

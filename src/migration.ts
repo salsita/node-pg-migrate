@@ -1,9 +1,9 @@
 import { glob } from 'glob';
 import { createReadStream, createWriteStream, existsSync } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
-import { basename, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
-import type { QueryResult } from 'pg';
+import { fileURLToPath } from 'node:url';
 import type { DBConnection } from './db';
 import type { Logger } from './logger';
 import { MigrationBuilder } from './migrationBuilder';
@@ -22,6 +22,17 @@ import {
  * It is responsible for storing the name of the file and knowing how to execute
  * the up and down migrations defined in the file.
  */
+
+/**
+ * Resolve the root directory of this package (the directory containing its
+ * `package.json`, next to the shipped `templates/` folder). Uses the package's
+ * own name so it is independent of how deep the built module is nested.
+ */
+function getPackageRootDir(): string {
+  return dirname(
+    fileURLToPath(import.meta.resolve('node-pg-migrate/package.json'))
+  );
+}
 
 export type MigrationAction = (
   pgm: MigrationBuilder,
@@ -154,9 +165,8 @@ async function getLastSuffix(
 ): Promise<string | undefined> {
   try {
     const files = await getMigrationFilePaths(dir, { ignorePattern });
-    return files.length > 0
-      ? getSuffixFromFileName(files[files.length - 1])
-      : undefined;
+    const lastFile = files.at(-1);
+    return lastFile === undefined ? undefined : getSuffixFromFileName(lastFile);
   } catch {
     return undefined;
   }
@@ -192,7 +202,7 @@ export class Migration implements RunMigration {
     if (filenameFormat === FilenameFormat.index) {
       const filePaths = await getMigrationFilePaths(directory, {
         ignorePattern,
-        useGlob: /\*/.test(directory) || /\*/.test(ignorePattern || ''),
+        useGlob: directory.includes('*') || (ignorePattern || '').includes('*'),
       });
 
       // Get the minimum last found prefix as the total number of matching files
@@ -225,7 +235,7 @@ export class Migration implements RunMigration {
     }
 
     return filenameFormat === FilenameFormat.utc
-      ? new Date().toISOString().replace(/\D/g, '')
+      ? new Date().toISOString().replaceAll(/\D/g, '')
       : Date.now().toString();
   }
 
@@ -252,9 +262,10 @@ export class Migration implements RunMigration {
       'templateFileName' in options
         ? resolve(cwd(), options.templateFileName)
         : join(
-            import.meta.dirname,
-            '..',
-            '..',
+            // Resolve the bundled templates relative to the package root rather
+            // than a hard-coded number of `..` segments, so it keeps working
+            // regardless of where the built output lands (dist/, bin/, …).
+            getPackageRootDir(),
             'templates',
             `migration-template.${await resolveSuffix(directory, options)}`
           );
@@ -346,13 +357,11 @@ export class Migration implements RunMigration {
     action: MigrationAction,
     pgm: MigrationBuilder
   ): Promise<unknown> {
-    if (action.length === 2) {
-      await new Promise<void>((resolve) => {
-        action(pgm, resolve);
-      });
-    } else {
-      await action(pgm);
-    }
+    await (action.length === 2
+      ? new Promise<void>((resolve) => {
+          void action(pgm, resolve);
+        })
+      : action(pgm));
 
     const sqlSteps = pgm.getSqlSteps();
 
@@ -373,7 +382,11 @@ export class Migration implements RunMigration {
       );
     }
 
-    if (typeof this.logger.debug === 'function') {
+    if (this.options.dryRun) {
+      // Printing the SQL is the whole point of a dry run, so it must not depend on
+      // `verbose` - `logger.debug` is stripped when that is off.
+      this.logger.info(`${sqlSteps.join('\n')}\n`);
+    } else if (typeof this.logger.debug === 'function') {
       this.logger.debug(`${sqlSteps.join('\n')}\n\n`);
     }
 
@@ -398,7 +411,7 @@ export class Migration implements RunMigration {
     }
 
     if (typeof action !== 'function') {
-      throw new Error(
+      throw new TypeError(
         `Unknown value for direction: ${direction}. Is the migration ${this.name} exporting a '${direction}' function?`
       );
     }
@@ -411,7 +424,8 @@ export class Migration implements RunMigration {
       this.db,
       this.typeShorthands,
       Boolean(this.options.decamelize),
-      this.logger
+      this.logger,
+      Boolean(this.options.pretty)
     );
     const action = this._getAction(direction);
 
@@ -423,7 +437,14 @@ export class Migration implements RunMigration {
     return this._apply(action, pgm);
   }
 
-  markAsRun(direction: MigrationDirection): Promise<QueryResult> {
-    return this.db.query(this._getMarkAsRun(this._getAction(direction)));
+  async markAsRun(direction: MigrationDirection): Promise<void> {
+    const sql = this._getMarkAsRun(this._getAction(direction));
+
+    if (this.options.dryRun) {
+      this.logger.info(`${sql}\n`);
+      return;
+    }
+
+    await this.db.query(sql);
   }
 }

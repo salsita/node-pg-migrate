@@ -1,5 +1,6 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import {
+  formatBlock,
   formatLines,
   formatPartitionColumns,
   intersection,
@@ -66,6 +67,10 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
       ...(like ? [parseLike(like, mOptions.literal)] : []),
     ];
 
+    if (tableDefinition.length === 0) {
+      throw new Error('No columns provided for createTable');
+    }
+
     if (temporary && unlogged) {
       throw new Error('TEMPORARY and UNLOGGED cannot be used together.');
     }
@@ -83,9 +88,13 @@ export function createTable(mOptions: MigrationOptions): CreateTable {
 
     const tableNameStr = mOptions.literal(tableName);
 
-    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (
-${formatLines(tableDefinition)}
-)${inheritsStr}${partitionStr};`;
+    const tableDefinitionStr = formatLines(
+      tableDefinition,
+      '  ',
+      ',',
+      mOptions.pretty
+    );
+    const createTableQuery = `CREATE${temporaryStr}${unloggedStr} TABLE${ifNotExistsStr} ${tableNameStr} (${formatBlock(tableDefinitionStr, mOptions.pretty)})${inheritsStr}${partitionStr};`;
     const comments = [...columnComments, ...constraintComments];
 
     if (comment !== undefined) {
@@ -95,7 +104,8 @@ ${formatLines(tableDefinition)}
     return `${createTableQuery}${comments.length > 0 ? `\n${comments.join('\n')}` : ''}`;
   };
 
-  _create.reverse = dropTable(mOptions);
+  _create.reverse = (tableName, columns, options) =>
+    dropTable(mOptions)(tableName, options);
 
   return _create;
 }

@@ -317,6 +317,15 @@ export class MigrationBuilder {
   public readonly addIndex: (...args: Parameters<indexes.CreateIndex>) => void;
 
   /**
+   * Rename an index.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-alterindex.html
+   */
+  public readonly renameIndex: (
+    ...args: Parameters<indexes.RenameIndex>
+  ) => void;
+
+  /**
    * Define a new database role.
    *
    * @see https://www.postgresql.org/docs/current/sql-createrole.html
@@ -815,7 +824,8 @@ export class MigrationBuilder {
     db: DB,
     typeShorthands: ColumnDefinitions | undefined,
     shouldDecamelize: boolean,
-    logger: Logger
+    logger: Logger,
+    pretty: boolean = false
   ) {
     this._steps = [];
     this._REVERSE_MODE = false;
@@ -847,6 +857,7 @@ export class MigrationBuilder {
       schemalize: createSchemalize({ shouldDecamelize, shouldQuote: false }),
       literal: createSchemalize({ shouldDecamelize, shouldQuote: true }),
       logger,
+      pretty,
     };
 
     // Defines the methods that are accessible via pgm in each migrations there
@@ -886,6 +897,7 @@ export class MigrationBuilder {
     this.createIndex = wrap(indexes.createIndex(options));
     this.dropIndex = wrap(indexes.dropIndex(options));
     this.addIndex = this.createIndex;
+    this.renameIndex = wrap(indexes.renameIndex(options));
 
     this.createRole = wrap(roles.createRole(options));
     this.dropRole = wrap(roles.dropRole(options));
@@ -977,10 +989,14 @@ export class MigrationBuilder {
         return operation(...args);
       };
 
+    // `db.query` and `db.select` are standalone closures created by `db()`,
+    // not bound methods, so unbinding them here is safe.
+    /* oxlint-disable typescript/unbound-method */
     this.db = {
       query: wrapDB(db.query),
       select: wrapDB(db.select),
     };
+    /* oxlint-enable typescript/unbound-method */
   }
 
   /**

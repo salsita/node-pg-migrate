@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [".claude/**", "CHANGELOG.md"],
   "singleQuote": true,
   "trailingComma": "es5",
   "printWidth": 80,
@@ -14,7 +15,6 @@
     "order": "asc",
     "ignoreCase": true
   },
-  "ignorePatterns": ["CHANGELOG.md"],
   "overrides": [
     {
       "files": ["*.json5"],

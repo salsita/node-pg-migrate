@@ -6,6 +6,7 @@ export const options1: MigrationOptions = {
   schemalize: createSchemalize({ shouldDecamelize: false, shouldQuote: false }),
   literal: createSchemalize({ shouldDecamelize: false, shouldQuote: true }),
   logger: console,
+  pretty: false,
 };
 
 export const options2: MigrationOptions = {
@@ -13,4 +14,15 @@ export const options2: MigrationOptions = {
   schemalize: createSchemalize({ shouldDecamelize: true, shouldQuote: false }),
   literal: createSchemalize({ shouldDecamelize: true, shouldQuote: true }),
   logger: console,
+  pretty: false,
+};
+
+export const options1Pretty: MigrationOptions = {
+  ...options1,
+  pretty: true,
+};
+
+export const options2Pretty: MigrationOptions = {
+  ...options2,
+  pretty: true,
 };

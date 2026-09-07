@@ -50,7 +50,6 @@ export interface DBConnection extends DB {
 
   connected: () => boolean;
 
-  // oxlint-disable-next-line typescript/explicit-module-boundary-types
   addBeforeCloseListener: (listener: any) => number;
 
   close(): Promise<void>;
@@ -58,24 +57,39 @@ export interface DBConnection extends DB {
 
 type ConnectionStatus = 'DISCONNECTED' | 'CONNECTED' | 'ERROR' | 'EXTERNAL';
 
+function isClientBase(
+  connection: ClientBase | string | ClientConfig
+): connection is ClientBase {
+  return (
+    typeof connection === 'object' &&
+    'query' in connection &&
+    typeof connection.query === 'function'
+  );
+}
+
 export function db(
   connection: ClientBase | string | ClientConfig,
   logger: Logger = console
 ): DBConnection {
-  const isExternalClient =
-    typeof connection === 'object' &&
-    'query' in connection &&
-    typeof connection.query === 'function';
+  // A client we create ourselves is also ours to close again, while an
+  // externally provided one stays under the caller's control.
+  let ownClient: Client | undefined;
+  let client: ClientBase;
 
-  const client: Client = isExternalClient
-    ? (connection as Client)
-    : new pg.Client(connection as string | ClientConfig);
+  if (isClientBase(connection)) {
+    client = connection;
+  } else {
+    ownClient = new pg.Client(connection);
+    client = ownClient;
+  }
+
+  const isExternalClient = ownClient === undefined;
 
   let connectionStatus: ConnectionStatus = isExternalClient
     ? 'EXTERNAL'
     : 'DISCONNECTED';
 
-  const beforeCloseListeners: any[] = [];
+  const beforeCloseListeners: Array<() => unknown> = [];
 
   const connected: DBConnection['connected'] = () =>
     connectionStatus === 'CONNECTED' || connectionStatus === 'EXTERNAL';
@@ -148,7 +162,11 @@ ${error}
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[]
   ) => {
-    const { rows } = await query(queryTextOrConfig, values);
+    const { rows }: { rows: unknown[] } = await query(
+      queryTextOrConfig,
+      values
+    );
+
     return rows;
   };
 
@@ -157,8 +175,12 @@ ${error}
     queryTextOrConfig: string | QueryConfig | QueryArrayConfig,
     values?: any[]
   ) => {
-    const rows = await select(queryTextOrConfig, values);
-    return rows.map((r: { [key: string]: any }) => r[columnName]);
+    const rows: Array<Record<string, unknown>> = await select(
+      queryTextOrConfig,
+      values
+    );
+
+    return rows.map((r) => r[columnName]);
   };
 
   return {
@@ -170,7 +192,7 @@ ${error}
     connected,
     addBeforeCloseListener: (listener) => beforeCloseListeners.push(listener),
     close: async () => {
-      await beforeCloseListeners.reduce(
+      await beforeCloseListeners.reduce<Promise<unknown>>(
         (promise, listener) =>
           promise.then(listener).catch((error: any) => {
             logger.error(error.stack || error);
@@ -179,7 +201,7 @@ ${error}
       );
       if (!isExternalClient) {
         connectionStatus = 'DISCONNECTED';
-        client.end();
+        await ownClient?.end();
       }
     },
   };

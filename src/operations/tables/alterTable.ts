@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { Name } from '../generalTypes';
 
 export interface AlterTableOptions {
@@ -32,8 +32,14 @@ export function alterTable(mOptions: MigrationOptions): AlterTable {
       throw new Error('No table options provided for alterTable');
     }
 
-    return `ALTER TABLE ${mOptions.literal(tableName)}
-  ${formatLines(alterDefinition)};`;
+    const alterDefinitionStr = formatLines(
+      alterDefinition,
+      '  ',
+      ',',
+      mOptions.pretty
+    );
+
+    return `ALTER TABLE ${mOptions.literal(tableName)}${formatSeparator(mOptions.pretty, '  ')}${alterDefinitionStr};`;
   };
 
   return _alter;

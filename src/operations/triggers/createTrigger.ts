@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { escapeValue, toArray } from '../../utils';
+import { escapeValue, formatSeparator, toArray } from '../../utils';
 import type { FunctionOptions } from '../functions';
 import { createFunction, dropFunction } from '../functions';
 import type { DropOptions, Name, Reversible, Value } from '../generalTypes';
@@ -76,25 +76,26 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       );
     }
 
+    const nl = formatSeparator(mOptions.pretty, '  ');
     const defferStr = constraint
-      ? `${deferrable ? `DEFERRABLE INITIALLY ${deferred ? 'DEFERRED' : 'IMMEDIATE'}` : 'NOT DEFERRABLE'}\n  `
+      ? `${deferrable ? `DEFERRABLE INITIALLY ${deferred ? 'DEFERRED' : 'IMMEDIATE'}` : 'NOT DEFERRABLE'}${nl}`
       : '';
-    const conditionClause = condition ? `WHEN (${condition})\n  ` : '';
+    const conditionClause = condition ? `WHEN (${condition})${nl}` : '';
     const constraintStr = constraint ? ' CONSTRAINT' : '';
     const paramsStr = functionParams.map(escapeValue).join(', ');
     const triggerNameStr = mOptions.literal(triggerName);
     const tableNameStr = mOptions.literal(tableName);
     const functionNameStr = mOptions.literal(functionName);
 
-    const triggerSQL = `CREATE${constraintStr} TRIGGER ${triggerNameStr}
-  ${when} ${operations} ON ${tableNameStr}
-  ${defferStr}FOR EACH ${level}
-  ${conditionClause}EXECUTE PROCEDURE ${functionNameStr}(${paramsStr});`;
+    const triggerSQL = `CREATE${constraintStr} TRIGGER ${triggerNameStr}${nl}${when} ${operations} ON ${tableNameStr}${nl}${defferStr}FOR EACH ${level}${nl}${conditionClause}EXECUTE PROCEDURE ${functionNameStr}(${paramsStr});`;
 
     const fnSQL = definition
       ? `${createFunction(mOptions)(
           functionName,
           [],
+          // Passing a `definition` selects the `CreateTriggerFn2` overload,
+          // which is the one that also carries the function options.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
           { ...(triggerOptions as FunctionOptions), returns: 'trigger' },
           definition
         )}\n`

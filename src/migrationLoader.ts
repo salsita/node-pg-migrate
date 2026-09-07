@@ -173,6 +173,180 @@ export function createLegacySqlMigrationLoader(): MigrationLoader {
   return loader;
 }
 
+/*****************************************
+ * New SQL migration loading behaviour.
+ *****************************************/
+
+// Helper types
+
+/**
+ * A parsed SQL file is a file that has been parsed and contains the id, direction and file path.
+ * An intermediate step before the migration unit is created.
+ */
+interface ParsedSqlFile {
+  id: string;
+  direction: 'up' | 'down' | 'none';
+  filePath: string;
+}
+/**
+ * A SQL group is a group of SQL files associated by significant part of the filename.
+ */
+interface SqlGroup {
+  id: string;
+  up?: string;
+  down?: string;
+  single?: string;
+}
+
+/**
+ * Parses a SQL file and returns the parsed file.
+ * @param filePath - The file path to parse.
+ * @returns The parsed file.
+ */
+function parseSqlFile(filePath: string): ParsedSqlFile {
+  const name = basename(filePath, '.sql');
+
+  if (name.endsWith('.up')) {
+    return {
+      id: name.slice(0, -3),
+      direction: 'up',
+      filePath,
+    };
+  }
+
+  if (name.endsWith('.down')) {
+    return {
+      id: name.slice(0, -5),
+      direction: 'down',
+      filePath,
+    };
+  }
+
+  return {
+    id: name,
+    direction: 'none',
+    filePath,
+  };
+}
+
+/**
+ * Groups the SQL files by their significant part of the filename.
+ * @param filePaths - The file paths to group.
+ * @returns An array of SQL groups.
+ *
+ * Throws an error if the files are not properly paired.
+ *
+ */
+function groupSqlFiles(filePaths: string[]): SqlGroup[] {
+  const groups = new Map<string, SqlGroup>();
+  for (const filePath of filePaths) {
+    const parsed = parseSqlFile(filePath);
+
+    if (!groups.has(parsed.id)) {
+      groups.set(parsed.id, { id: parsed.id });
+    }
+
+    const group = groups.get(parsed.id);
+    if (!group) {
+      throw new Error(`No group found for ${parsed.id}`);
+    }
+
+    if (parsed.direction === 'up') {
+      if (group.up) {
+        throw new Error(`Duplicate .up.sql for ${parsed.id}`);
+      }
+      group.up = parsed.filePath;
+    } else if (parsed.direction === 'down') {
+      if (group.down) {
+        throw new Error(`Duplicate .down.sql for ${parsed.id}`);
+      }
+      group.down = parsed.filePath;
+    } else {
+      if (group.single) {
+        throw new Error(`Duplicate .sql for ${parsed.id}`);
+      }
+      group.single = parsed.filePath;
+    }
+  }
+
+  for (const [id, group] of groups) {
+    if (group.single && (group.up || group.down)) {
+      throw new Error(
+        `Conflicting SQL migration files for ${id}: cannot mix .sql with .up/.down`
+      );
+    }
+
+    if (group.down && !group.up) {
+      throw new Error(`Found .down.sql without matching .up.sql for ${id}`);
+    }
+  }
+
+  return [...groups.values()];
+}
+
+/**
+ * Returns the group id for a SQL group.
+ *
+ * Compatibility: when using the new grouped SQL loader (`loader: "sql"`),
+ * ids are normalized so that switching representations doesn't double-track
+ * migrations. Concretely, `.up.sql` / `.down.sql` map to the equivalent
+ * `.sql` id (e.g. `001_init.up.sql` -> `001_init.sql`).
+ *
+ * @param group - The SQL file group to get the id for.
+ * @returns The group id.
+ */
+function sqlGroupId(group: SqlGroup): string {
+  const filePath = group.single ?? group.up ?? group.down;
+  if (!filePath) {
+    throw new Error(`No SQL file found for group ${group.id}`);
+  }
+
+  return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
+}
+
+/**
+ * Performs the actual reading of a SQL file group and returns the migration unit.
+ * @param group - The SQL file group to read.
+ * @returns The migration unit.
+ */
+async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
+  let actions: MigrationBuilderActions;
+
+  if (group.single) {
+    actions = await sqlMigration(group.single);
+  } else {
+    if (!group.up) {
+      // Since a down migration without an up migration is a deviation from expected behaviour, we throw an error.
+      throw new Error(`Missing .up.sql for ${group.id}`);
+    }
+
+    const upSql = await readFile(group.up, 'utf8');
+
+    const downSql = group.down ? await readFile(group.down, 'utf8') : undefined;
+    actions = {
+      up: (pgm) => {
+        pgm.sql(upSql);
+      },
+      down: downSql
+        ? (pgm) => {
+            pgm.sql(downSql);
+          }
+        : undefined,
+      shorthands: {},
+    };
+  }
+
+  const filePaths = [group.single ?? group.up, group.down].filter(
+    (p): p is string => Boolean(p)
+  );
+
+  return {
+    id: sqlGroupId(group),
+    filePaths: filePaths,
+    actions: actions,
+  };
+}
+
 /**
  * Creates a SQL migration loader that loads migrations from the file paths using the new SQL migration loading behaviour.
  * While it handles the legacy format, it does add new behaviour that may be unwanted in existing usage so it has been
@@ -184,7 +358,7 @@ export function createSqlMigrationLoader(): MigrationLoader {
   const loader: MigrationLoader = async (filePaths: string[]) => {
     const groups = groupSqlFiles(filePaths);
     const migrationUnits = await Promise.all(
-      groups.map(async (group) => await readSqlFileGroup(group))
+      groups.map((group) => readSqlFileGroup(group))
     );
     return migrationUnits;
   };
@@ -337,166 +511,4 @@ export async function loadMigrationUnits(
     compareMigrationFileNames(basename(a.id), basename(b.id), config.logger)
   );
   return sortedMigrationUnits;
-}
-
-/*****************************************
- * New SQL migration loading behaviour.
- *****************************************/
-
-// Helper types
-
-/**
- * A parsed SQL file is a file that has been parsed and contains the id, direction and file path.
- * An intermediate step before the migration unit is created.
- */
-interface ParsedSqlFile {
-  id: string;
-  direction: 'up' | 'down' | 'none';
-  filePath: string;
-}
-/**
- * A SQL group is a group of SQL files associated by significant part of the filename.
- */
-interface SqlGroup {
-  id: string;
-  up?: string;
-  down?: string;
-  single?: string;
-}
-
-/**
- * Parses a SQL file and returns the parsed file.
- * @param filePath - The file path to parse.
- * @returns The parsed file.
- */
-function parseSqlFile(filePath: string): ParsedSqlFile {
-  const name = basename(filePath, '.sql');
-
-  if (name.endsWith('.up')) {
-    return {
-      id: name.slice(0, -3),
-      direction: 'up',
-      filePath,
-    };
-  }
-
-  if (name.endsWith('.down')) {
-    return {
-      id: name.slice(0, -5),
-      direction: 'down',
-      filePath,
-    };
-  }
-
-  return {
-    id: name,
-    direction: 'none',
-    filePath,
-  };
-}
-
-/**
- * Groups the SQL files by their significant part of the filename.
- * @param filePaths - The file paths to group.
- * @returns An array of SQL groups.
- *
- * Throws an error if the files are not properly paired.
- *
- */
-function groupSqlFiles(filePaths: string[]): SqlGroup[] {
-  const groups = new Map<string, SqlGroup>();
-  for (const filePath of filePaths) {
-    const parsed = parseSqlFile(filePath);
-
-    if (!groups.has(parsed.id)) {
-      groups.set(parsed.id, { id: parsed.id });
-    }
-
-    const group = groups.get(parsed.id);
-    if (!group) {
-      throw new Error(`No group found for ${parsed.id}`);
-    }
-
-    if (parsed.direction === 'up') {
-      if (group.up) throw new Error(`Duplicate .up.sql for ${parsed.id}`);
-      group.up = parsed.filePath;
-    } else if (parsed.direction === 'down') {
-      if (group.down) throw new Error(`Duplicate .down.sql for ${parsed.id}`);
-      group.down = parsed.filePath;
-    } else {
-      if (group.single) throw new Error(`Duplicate .sql for ${parsed.id}`);
-      group.single = parsed.filePath;
-    }
-  }
-
-  for (const [id, group] of groups) {
-    if (group.single && (group.up || group.down)) {
-      throw new Error(
-        `Conflicting SQL migration files for ${id}: cannot mix .sql with .up/.down`
-      );
-    }
-
-    if (group.down && !group.up) {
-      throw new Error(`Found .down.sql without matching .up.sql for ${id}`);
-    }
-  }
-
-  return [...groups.values()];
-}
-
-/**
- * Returns the group id for a SQL group.
- *
- * Compatibility: when using the new grouped SQL loader (`loader: "sql"`),
- * ids are normalized so that switching representations doesn't double-track
- * migrations. Concretely, `.up.sql` / `.down.sql` map to the equivalent
- * `.sql` id (e.g. `001_init.up.sql` -> `001_init.sql`).
- *
- * @param group - The SQL file group to get the id for.
- * @returns The group id.
- */
-function sqlGroupId(group: SqlGroup): string {
-  const filePath = group.single ?? group.up ?? group.down;
-  if (!filePath) {
-    throw new Error(`No SQL file found for group ${group.id}`);
-  }
-
-  return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
-}
-
-/**
- * Performs the actual reading of a SQL file group and returns the migration unit.
- * @param group - The SQL file group to read.
- * @returns The migration unit.
- */
-async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
-  let actions: MigrationBuilderActions;
-
-  if (group.single) {
-    actions = await sqlMigration(group.single);
-  } else {
-    if (!group.up) {
-      // Since a down migration without an up migration is a deviation from expected behaviour, we throw an error.
-      throw new Error(`Missing .up.sql for ${group.id}`);
-    }
-
-    const upSql = await readFile(group.up, 'utf8');
-
-    const downSql = group.down ? await readFile(group.down, 'utf8') : undefined;
-    actions = {
-      up: (pgm) => pgm.sql(upSql),
-      down: downSql ? (pgm) => pgm.sql(downSql) : undefined,
-      shorthands: {},
-    };
-  }
-
-  const filePaths = [group.single ?? group.up, group.down].filter(
-    (p): p is string => Boolean(p)
-  );
-
-  return {
-    id: sqlGroupId(group),
-    filePaths: filePaths,
-    actions: actions,
-  };
 }

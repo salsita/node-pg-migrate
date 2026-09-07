@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alterTable } from '../../../src/operations/tables';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('tables', () => {
@@ -23,6 +23,17 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER TABLE "distributors" ENABLE ROW LEVEL SECURITY;`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = alterTable(options1Pretty)('distributors', {
+          levelSecurity: 'ENABLE',
+        });
+
+        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(`ALTER TABLE "distributors"
     ENABLE ROW LEVEL SECURITY;`);
       });
@@ -33,8 +44,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "my_table"
-    SET LOGGED;`);
+        expect(statement).toBe(`ALTER TABLE "my_table" SET LOGGED;`);
       });
 
       it('should generate SQL for SET UNLOGGED', () => {
@@ -43,8 +53,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "my_table"
-    SET UNLOGGED;`);
+        expect(statement).toBe(`ALTER TABLE "my_table" SET UNLOGGED;`);
       });
     });
   });

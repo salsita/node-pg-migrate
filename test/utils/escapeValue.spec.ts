@@ -59,6 +59,36 @@ describe('utils', () => {
       expect(actual).toBe('ARRAY[[$pga$a$pga$],[$pga$b$pga$]]');
     });
 
+    it('should parse deeply nested array to ARRAY constructor syntax string', () => {
+      const value = [
+        [[1], [2]],
+        [[3], [4]],
+      ];
+
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('ARRAY[[[1],[2]],[[3],[4]]]');
+    });
+
+    it('should keep the ARRAY substring inside escaped strings', () => {
+      const value = ['ARRAY_A', 'ARRAY_B'];
+
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('ARRAY[$pga$ARRAY_A$pga$,$pga$ARRAY_B$pga$]');
+    });
+
+    it('should keep the ARRAY substring inside nested escaped strings', () => {
+      const value = [['an ARRAY of things']];
+
+      const actual = escapeValue(value);
+
+      expect(actual).toBeTypeOf('string');
+      expect(actual).toBe('ARRAY[[$pga$an ARRAY of things$pga$]]');
+    });
+
     it('should parse PgLiteral to unescaped string', () => {
       const input = '@l|<e';
       const value = PgLiteral.create(input);

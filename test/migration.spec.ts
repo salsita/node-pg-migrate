@@ -3,7 +3,7 @@ import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
-import type { Logger } from '../src/logger';
+import type { LogFn, Logger } from '../src/logger';
 import {
   FilenameFormat,
   getMigrationFilePaths,
@@ -25,9 +25,9 @@ describe('migration', () => {
   const dbMock = {} as DBConnection;
 
   const logger: Logger = {
-    info: () => null,
-    warn: () => null,
-    error: () => null,
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
   };
 
   const options = { migrationsTable } as RunnerOption;
@@ -46,7 +46,7 @@ describe('migration', () => {
       const filePaths = await getMigrationFilePaths(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(97);
+      expect(filePaths.length).toMatchInlineSnapshot(`98`);
       expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -67,7 +67,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(72);
+      expect(filePaths.length).toMatchInlineSnapshot(`73`);
 
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
@@ -83,7 +83,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(110);
+      expect(filePaths.length).toMatchInlineSnapshot(`111`);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -103,7 +103,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths).toHaveLength(109);
+      expect(filePaths.length).toMatchInlineSnapshot(`110`);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -133,7 +133,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      expect(nextPrefix).toEqual('098');
+      expect(nextPrefix).toMatchInlineSnapshot(`"099"`);
     });
 
     it('should fail to get the next index with invalid filenames', async () => {
@@ -155,7 +155,9 @@ describe('migration', () => {
     });
 
     it('should get a normalized UTC as a prefix', async () => {
-      const now = Number.parseInt(new Date().toISOString().replace(/\D/g, ''));
+      const now = Number.parseInt(
+        new Date().toISOString().replaceAll(/\D/g, '')
+      );
 
       const dir = 'test/migrations/**';
       const prefix = await Migration.getFilePrefix('utc', dir);
@@ -270,9 +272,9 @@ describe('migration', () => {
       );
 
       expect(() => {
-        migration.apply(direction);
+        void migration.apply(direction);
       }).toThrow(
-        new Error(
+        new TypeError(
           `Unknown value for direction: ${direction}. Is the migration ${invalidMigrationName} exporting a '${direction}' function?`
         )
       );
@@ -333,6 +335,61 @@ describe('migration', () => {
         expect.stringMatching(`DELETE FROM "public"."${migrationsTable}"`)
       );
       expect(queryMock).toHaveBeenNthCalledWith(4, 'COMMIT;');
+    });
+  });
+
+  describe('self.markAsRun', () => {
+    it('should call db.query on normal operations', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        options,
+        {},
+        logger
+      );
+
+      await migration.markAsRun('up');
+
+      expect(queryMock).toHaveBeenCalledExactlyOnceWith(
+        expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
+      );
+    });
+
+    it('should not call db.query on --dry-run', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        { ...options, dryRun: true },
+        {},
+        logger
+      );
+
+      await migration.markAsRun('up');
+
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`INSERT INTO "public"."${migrationsTable}"`)
+      );
+    });
+
+    it('should not delete the migration row on --dry-run', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        { ...options, dryRun: true },
+        {},
+        logger
+      );
+
+      await migration.markAsRun('down');
+
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`DELETE FROM "public"."${migrationsTable}"`)
+      );
     });
   });
 });

@@ -3,7 +3,7 @@ import { applyType, escapeValue, makeComment, toArray } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type { IfNotExistsOption, Name, Value } from '../generalTypes';
-import { isNameObject } from '../generalTypes';
+import { getNameString } from '../generalTypes';
 import type { SequenceOptions } from '../sequences';
 import { parseSequenceOptions } from '../sequences';
 
@@ -265,12 +265,14 @@ export function parseColumns(
       if (references) {
         const name =
           referencesConstraintName ||
-          (referencesConstraintComment ? `${tableName}_fk_${columnName}` : '');
+          (referencesConstraintComment
+            ? `${getNameString(tableName)}_fk_${columnName}`
+            : '');
         const constraintName = name
           ? `CONSTRAINT ${mOptions.literal(name)} `
           : '';
         constraints.push(
-          `${constraintName}${parseReferences(options as ReferencesOptions, mOptions.literal)}`
+          `${constraintName}${parseReferences({ ...options, references }, mOptions.literal)}`
         );
 
         if (referencesConstraintComment) {
@@ -340,7 +342,7 @@ export function parseConstraints(
     comment,
   }: ConstraintOptions = options;
 
-  const tableName = isNameObject(table) ? table.name : table;
+  const tableName = getNameString(table);
 
   let constraints: string[] = [];
   const comments: string[] = [];
@@ -363,11 +365,16 @@ export function parseConstraints(
       Array.isArray(uniqueSet)
     );
 
+    // `unique` accepts a single column, a column set, or a list of column sets,
+    // which the element type cannot express once the sets are nested.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     for (const uniqueSet of (isArrayOfArrays
       ? uniqueArray
       : [uniqueArray]) as Array<Name | Name[]>) {
       const cols = toArray(uniqueSet);
-      const name = literal(optionName || `${tableName}_uniq_${cols.join('_')}`);
+      const name = literal(
+        optionName || `${tableName}_uniq_${cols.map(getNameString).join('_')}`
+      );
 
       constraints.push(
         `CONSTRAINT ${name} UNIQUE (${cols.map(literal).join(', ')})`
@@ -391,7 +398,7 @@ export function parseConstraints(
       const name = literal(
         referencesConstraintName ||
           optionName ||
-          `${tableName}_fk_${cols.join('_')}`
+          `${tableName}_fk_${cols.map(getNameString).join('_')}`
       );
       const key = cols.map(literal).join(', ');
       const referencesStr = parseReferences(fk, literal);

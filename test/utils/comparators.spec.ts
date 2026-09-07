@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Logger } from '../../src/logger';
+import type { LogFn, Logger } from '../../src/logger';
 import {
   compareFileNamesByTimestamp,
   compareMigrationFileNames,
@@ -30,10 +30,10 @@ describe('localeCompareStringsNumerically', () => {
 
 describe('compareFileNamesByTimestamp', () => {
   const logger: Logger = {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
+    debug: vi.fn<LogFn>(),
   };
 
   it('compares by numeric prefix (index / timestamp modes)', () => {
@@ -56,10 +56,10 @@ describe('compareFileNamesByTimestamp', () => {
 
 describe('compareMigrationFileNames', () => {
   const logger: Logger = {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
+    debug: vi.fn<LogFn>(),
   };
 
   it('orders by numeric prefix when they differ', () => {

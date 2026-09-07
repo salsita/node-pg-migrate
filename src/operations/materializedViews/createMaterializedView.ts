@@ -29,6 +29,10 @@ export function createMaterializedView(
   mOptions: MigrationOptions
 ): CreateMaterializedView {
   const _create: CreateMaterializedView = (viewName, options, definition) => {
+    if (!definition) {
+      throw new Error('No definition provided for createMaterializedView');
+    }
+
     const {
       ifNotExists = false,
       columns = [],

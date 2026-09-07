@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -40,13 +40,13 @@ jobs:
     name: 'Config 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -73,7 +73,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -108,13 +108,13 @@ jobs:
     name: 'Config 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -139,7 +139,7 @@ jobs:
           EOF
 
       - name: Integration Test for URL object config
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -149,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -174,13 +174,13 @@ jobs:
     name: 'Dotenv Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -198,7 +198,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -208,7 +208,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -233,13 +233,13 @@ jobs:
     name: 'Dotenv Expand Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -260,7 +260,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -270,7 +270,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -296,13 +296,13 @@ jobs:
     name: 'Password 1 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -314,7 +314,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:123456abcdefghABCDEFGH~\`\!$%^\&*-_=+{}[]\(\)\<\>,.\;:\"\'\|\\@localhost:5432/integration_test
 
@@ -326,7 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -351,13 +351,13 @@ jobs:
     name: 'Password 2 Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -384,7 +384,7 @@ jobs:
           EOF
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
 
       - name: Postgres logs
         if: always()
@@ -394,7 +394,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -419,13 +419,13 @@ jobs:
     name: 'Env Vars Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -437,7 +437,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations --timestamps
+        run: pnpm run migrate up -m test/migrations && pnpm run migrate down 0 -m test/migrations
         env:
           PGHOST: localhost
           PGUSER: ubuntu
@@ -452,7 +452,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -477,13 +477,13 @@ jobs:
     name: 'Schema Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -495,7 +495,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -s myschema --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema -m test/migrations --timestamps
+        run: pnpm run migrate up -s myschema --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
@@ -508,7 +508,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -533,13 +533,13 @@ jobs:
     name: 'Schemas Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -551,7 +551,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations --timestamps
+        run: pnpm run migrate up -s myschema public --create-schema -m test/migrations && pnpm run migrate down 0 -s myschema public -m test/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
           SCHEMA: myschema
@@ -564,7 +564,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -589,13 +589,13 @@ jobs:
     name: 'TypeScript Migration Test with jiti: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -607,7 +607,7 @@ jobs:
         run: pnpm run build
 
       - name: Integration Test
-        run: pnpm run migrate up -m test/ts/migrations && pnpm run migrate down 0 -m test/ts/migrations --timestamps
+        run: pnpm run migrate up -m test/ts/migrations && pnpm run migrate down 0 -m test/ts/migrations
         env:
           DATABASE_URL: postgres://ubuntu:ubuntu@localhost:5432/integration_test
 
@@ -618,7 +618,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -643,13 +643,13 @@ jobs:
     name: 'TypeScript Customrunner Url Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -673,7 +673,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -698,13 +698,13 @@ jobs:
     name: 'TypeScript Customrunner Client Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'
@@ -728,7 +728,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version: [22]
+        node_version: [24]
         postgres_version: [18]
       fail-fast: false
     timeout-minutes: 10
@@ -753,13 +753,13 @@ jobs:
     name: 'TypeScript Customrunner undef count Test: pg-${{ matrix.postgres_version }}, node-${{ matrix.node_version }}, ubuntu-latest'
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node_version }}
           cache: 'pnpm'

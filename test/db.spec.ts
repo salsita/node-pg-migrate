@@ -3,7 +3,7 @@ import { Client } from 'pg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DBConnection } from '../src/db';
 import { db as Db } from '../src/db';
-import type { Logger } from '../src/logger';
+import type { LogFn, Logger } from '../src/logger';
 
 type MockClient = {
   connect: (cb: (err?: Error | null) => void) => void;
@@ -40,18 +40,18 @@ vi.mock('pg', () => {
 
 describe('db', () => {
   const log: Logger = {
-    debug: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
+    debug: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
   };
 
   describe('constructor', () => {
     let db: DBConnection;
 
-    afterEach(() => {
+    afterEach(async () => {
       if (db) {
-        db.close();
+        await db.close();
       }
     });
 
@@ -81,14 +81,16 @@ describe('db', () => {
       db = Db(undefined, log);
     });
 
-    afterEach(() => {
-      db.close();
+    afterEach(async () => {
+      await db.close();
 
       vi.clearAllMocks();
     });
 
     it('should call client.connect if this is the first query', async () => {
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn();
+      });
 
       await db.query('query');
 
@@ -114,9 +116,9 @@ describe('db', () => {
     it('should not call client.query if client.connect fails', async () => {
       const error = 'error';
 
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) =>
-        fn(new Error(error))
-      );
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn(new Error(error));
+      });
 
       await expect(() => db.query('query')).rejects.toThrow(error);
       expect(hoisted.client.query).not.toHaveBeenCalled();
@@ -125,7 +127,9 @@ describe('db', () => {
     it('should resolve promise if query throws no error', async () => {
       const result = 'result';
 
-      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => fn());
+      vi.spyOn(hoisted.client, 'connect').mockImplementation((fn) => {
+        fn();
+      });
       vi.spyOn(hoisted.client, 'query').mockResolvedValue(result);
 
       await expect(db.query('query')).resolves.toBe(result);

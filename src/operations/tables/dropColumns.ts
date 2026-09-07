@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { DropOptions, Name } from '../generalTypes';
 
 export type DropColumnsOptions = DropOptions;
@@ -27,8 +27,9 @@ export function dropColumns(mOptions: MigrationOptions): DropColumns {
       .map(mOptions.literal)
       .map((column) => `DROP ${ifExistsStr}${column}${cascadeStr}`);
 
-    return `ALTER TABLE ${mOptions.literal(tableName)}
-${formatLines(lines)};`;
+    const linesStr = formatLines(lines, '  ', ',', mOptions.pretty);
+
+    return `ALTER TABLE ${mOptions.literal(tableName)}${formatSeparator(mOptions.pretty)}${linesStr};`;
   };
 
   return _drop;

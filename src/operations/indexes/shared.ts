@@ -2,7 +2,11 @@ import type { MigrationOptions } from '../../migrationOptions';
 import { isPgLiteral } from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { Name } from '../generalTypes';
-import { isNameObject, isSchemaNameObject } from '../generalTypes';
+import {
+  getNameString,
+  isNameObject,
+  isSchemaNameObject,
+} from '../generalTypes';
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
@@ -37,7 +41,9 @@ export function generateIndexName(
 
   const cols = columns
     .map((col, idx) => {
-      if (isIndexColumn(col)) return schemalize(col.name);
+      if (isIndexColumn(col)) {
+        return schemalize(col.name);
+      }
 
       if (isPgLiteral(col)) {
         const literalValue = 'value' in col ? col.value : String(col);
@@ -56,7 +62,7 @@ export function generateIndexName(
         schema: table.schema,
         name: `${table.name}_${cols}${uniq}_index`,
       }
-    : `${table}_${cols}${uniq}_index`;
+    : `${getNameString(table)}_${cols}${uniq}_index`;
 }
 
 export function generateColumnString(
@@ -75,7 +81,7 @@ export function generateColumnString(
 
   // Expressions need parentheses in index definitions, unless they're already
   // wrapped (we consider any expression ending with ')' as already wrapped).
-  const alreadyWrapped = /\)$/.test(name);
+  const alreadyWrapped = name.endsWith(')');
   return alreadyWrapped ? name : `(${name})`;
 }
 
@@ -86,7 +92,7 @@ export function generateColumnsString(
   return columns
     .map((column) => {
       if (typeof column === 'string' || isPgLiteral(column)) {
-        return generateColumnString(column as unknown as Name, mOptions);
+        return generateColumnString(column, mOptions);
       }
 
       return [

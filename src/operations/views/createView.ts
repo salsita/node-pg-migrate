@@ -30,6 +30,10 @@ export type CreateView = Reversible<CreateViewFn>;
 
 export function createView(mOptions: MigrationOptions): CreateView {
   const _create: CreateView = (viewName, viewOptions, definition) => {
+    if (!definition) {
+      throw new Error('No definition provided for createView');
+    }
+
     const {
       temporary = false,
       replace = false,

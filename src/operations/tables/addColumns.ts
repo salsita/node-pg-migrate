@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines } from '../../utils';
+import { formatLines, formatSeparator } from '../../utils';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import type { DropColumnsOptions } from './dropColumns';
 import { dropColumns } from './dropColumns';
@@ -23,9 +23,14 @@ export function addColumns(mOptions: MigrationOptions): AddColumns {
     const { columns: columnLines, comments: columnComments = [] } =
       parseColumns(tableName, columns, mOptions);
     const ifNotExistsStr = ifNotExists ? 'IF NOT EXISTS ' : '';
-    const columnsStr = formatLines(columnLines, `  ADD ${ifNotExistsStr}`);
+    const columnsStr = formatLines(
+      columnLines,
+      `  ADD ${ifNotExistsStr}`,
+      ',',
+      mOptions.pretty
+    );
     const tableNameStr = mOptions.literal(tableName);
-    const alterTableQuery = `ALTER TABLE ${tableNameStr}\n${columnsStr};`;
+    const alterTableQuery = `ALTER TABLE ${tableNameStr}${formatSeparator(mOptions.pretty)}${columnsStr};`;
     const columnCommentsStr =
       columnComments.length > 0 ? `\n${columnComments.join('\n')}` : '';
 

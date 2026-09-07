@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createFunction } from '../../../src/operations/functions';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('functions', () => {
@@ -13,6 +13,23 @@ describe('operations', () => {
 
       it('should return sql statement', () => {
         const statement = createFunctionFn(
+          'add',
+          ['integer', 'integer'],
+          {
+            returns: 'integer',
+            language: 'SQL',
+          },
+          'SELECT $1 + $2;'
+        );
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE FUNCTION "add"(integer, integer) RETURNS integer AS $pga$SELECT $1 + $2;$pga$ VOLATILE LANGUAGE SQL;`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = createFunction(options1Pretty)(
           'add',
           ['integer', 'integer'],
           {
@@ -49,14 +66,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `CREATE OR REPLACE FUNCTION "add"(integer, integer)
-  RETURNS integer
-  AS $pga$SELECT $1 + $2;$pga$
-  VOLATILE
-  LANGUAGE SQL
-  WINDOW
-  RETURNS NULL ON NULL INPUT
-  PARALLEL UNSAFE;`
+          `CREATE OR REPLACE FUNCTION "add"(integer, integer) RETURNS integer AS $pga$SELECT $1 + $2;$pga$ VOLATILE LANGUAGE SQL WINDOW RETURNS NULL ON NULL INPUT PARALLEL UNSAFE;`
         );
       });
 
@@ -85,9 +95,7 @@ END;
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `CREATE FUNCTION "check_password"("uname" text, "pass" text)
-  RETURNS boolean
-  AS $pga$
+          `CREATE FUNCTION "check_password"("uname" text, "pass" text) RETURNS boolean AS $pga$
 DECLARE passed BOOLEAN;
 BEGIN
   SELECT (pwd = $2) INTO passed
@@ -95,10 +103,7 @@ BEGIN
   WHERE username = $1;
   RETURN passed;
 END;
-$pga$
-  VOLATILE
-  LANGUAGE plpgsql
-  SECURITY DEFINER;`
+$pga$ VOLATILE LANGUAGE plpgsql SECURITY DEFINER;`
         );
       });
 
@@ -122,14 +127,9 @@ $pga$
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `CREATE FUNCTION "example_function"()
-  RETURNS void
-  AS $pga$
+          `CREATE FUNCTION "example_function"() RETURNS void AS $pga$
 -- SQL here
-$pga$
-  VOLATILE
-  LANGUAGE plpgsql
-  SET "search_path" TO '';`
+$pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
         );
       });
 

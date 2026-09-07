@@ -1,4 +1,5 @@
 import type { Name } from '../operations/generalTypes';
+import { getNameString } from '../operations/generalTypes';
 import { decamelize } from './decamelize';
 import { identity } from './identity';
 import { isPgLiteral } from './PgLiteral';
@@ -81,6 +82,9 @@ export function createSchemalize(
       return transform(value);
     }
 
-    return transform(String(value));
+    // Remaining shapes are objects: a name object without a name, or a literal-like
+    // object that did not pass the `isPgLiteral` check. Extract the plain identifier
+    // instead of relying on default object stringification.
+    return transform(getNameString(value));
   };
 }

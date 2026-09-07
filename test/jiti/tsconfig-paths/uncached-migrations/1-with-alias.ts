@@ -1,8 +1,5 @@
 import { columns, tableName } from '@helpers/columns';
-import type {
-  ColumnDefinitions,
-  MigrationBuilder,
-} from '../../../../dist/bundle';
+import type { ColumnDefinitions, MigrationBuilder } from '../../../../dist';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 

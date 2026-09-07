@@ -2,7 +2,7 @@
 
 ## Operation: `createType`
 
-### `pgm.createType( type_name, values )`
+### `pgm.createType( type_name, values, type_options )`
 
 > [!IMPORTANT]
 > Create a new data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-createtype.html)
@@ -10,23 +10,42 @@
 
 ### Arguments
 
-| Name        | Type                        | Description                                                              |
-| ----------- | --------------------------- | ------------------------------------------------------------------------ |
-| `type_name` | [Name](/migrations/#type)   | name of the new type                                                     |
-| `values`    | `array[string]` or `object` | possible values for an enum type or names and types for a composite type |
+| Name           | Type                        | Description                                                              |
+| -------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `type_name`    | [Name](/migrations/#type)   | name of the new type                                                     |
+| `values`       | `array[string]` or `object` | possible values for an enum type or names and types for a composite type |
+| `type_options` | `object`                    | Check below for available options                                        |
+
+### Options
+
+`CREATE TYPE` itself takes no options - these are forwarded to the reverse
+operation (`dropType`) when the migration is rolled back.
+
+| Option     | Type      | Description                  |
+| ---------- | --------- | ---------------------------- |
+| `ifExists` | `boolean` | drops type only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects |
 
 ## Reverse Operation: `dropType`
 
-#### `pgm.dropType( type_name )`
+#### `pgm.dropType( type_name, drop_options )`
 
 > [!IMPORTANT]
 > Drop a custom data type - [postgres docs](http://www.postgresql.org/docs/current/static/sql-droptype.html)
 
 ### Arguments
 
-| Name        | Type                      | Description              |
-| ----------- | ------------------------- | ------------------------ |
-| `type_name` | [Name](/migrations/#type) | name of the type to drop |
+| Name           | Type                      | Description                       |
+| -------------- | ------------------------- | --------------------------------- |
+| `type_name`    | [Name](/migrations/#type) | name of the type to drop          |
+| `drop_options` | `object`                  | Check below for available options |
+
+### Options
+
+| Option     | Type      | Description                  |
+| ---------- | --------- | ---------------------------- |
+| `ifExists` | `boolean` | drops type only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects |
 
 ## Operation: `alterType`
 
@@ -44,7 +63,7 @@
 
 ## Operation: `alterType`
 
-#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type )`
+#### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type, attribute_options )`
 
 > [!IMPORTANT]
 > Add attribute to an existing data
@@ -52,11 +71,21 @@
 
 ### Arguments
 
-| Name             | Type                      | Description                  |
-| ---------------- | ------------------------- | ---------------------------- |
-| `type_name`      | [Name](/migrations/#type) | name of the type             |
-| `attribute_name` | `string`                  | name of the attribute to add |
-| `attribute_type` | `string`                  | type of the attribute to add |
+| Name                | Type                      | Description                       |
+| ------------------- | ------------------------- | --------------------------------- |
+| `type_name`         | [Name](/migrations/#type) | name of the type                  |
+| `attribute_name`    | `string`                  | name of the attribute to add      |
+| `attribute_type`    | `string`                  | type of the attribute to add      |
+| `attribute_options` | `object`                  | Check below for available options |
+
+### Options
+
+`ADD ATTRIBUTE` itself takes no options - these are forwarded to the reverse
+operation (`dropTypeAttribute`) when the migration is rolled back.
+
+| Option     | Type      | Description                       |
+| ---------- | --------- | --------------------------------- |
+| `ifExists` | `boolean` | drops attribute only if it exists |
 
 ## Reverse Operation: `dropTypeAttribute`
 

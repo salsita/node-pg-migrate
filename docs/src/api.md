@@ -3,6 +3,34 @@
 Alongside command line, you can use `node-pg-migrate` also programmatically. It exports runner function,
 which takes options argument with the following structure (similar to [command line arguments](cli.md#configuration)):
 
+## Example
+
+For a directory structure of
+
+```
+.
+├── migrations
+│   ├── 00_init.sql
+│   └── 01_foobar.sql
+└── run_migrations.js
+```
+
+this will run migrations from `migrations/` directory:
+
+```javascript
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { runner } from 'node-pg-migrate';
+
+await runner({
+  databaseUrl: process.env.DATABASE_URL,
+  dir: `${import.meta.dirname}/migrations`,
+  migrationsTable: 'pgmigrations',
+  direction: 'up',
+  verbose: true,
+});
+```
+
 ## Options
 
 > [!NOTE]
@@ -30,11 +58,12 @@ which takes options argument with the following structure (similar to [command l
 | `lockValue`                 | `number`                                    | Value to use for the lock                                                                                                                                                                                                                                                                               |
 | `advisoryLockMode`          | `fail or wait`                              | Controls behavior when the migration advisory lock is already held by another process. Use `fail` to throw immediately or `wait` to block until the lock becomes available ( defaults to `fail` )                                                                                                       |
 | `fake`                      | `boolean`                                   | Mark migrations as run without actually performing them (use with caution!)                                                                                                                                                                                                                             |
-| `dryRun`                    | `boolean`                                   |                                                                                                                                                                                                                                                                                                         |
+| `dryRun`                    | `boolean`                                   | Print the SQL that would be run without applying anything. Runs inside a read-only transaction, so nothing is created, recorded or written, and no advisory lock is taken. See [Dry Runs](cli#dry-runs)                                                                                                 |
 | `log`                       | `function`                                  | Redirect log messages to this function, rather than `console`                                                                                                                                                                                                                                           |
 | `logger`                    | `object with debug/info/warn/error methods` | Redirect messages to this logger object, rather than `console`                                                                                                                                                                                                                                          |
 | `verbose`                   | `boolean`                                   | Print all debug messages like DB queries run (if you switch it on, it will disable `logger.debug` method)                                                                                                                                                                                               |
 | `decamelize`                | `boolean`                                   | Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names                                                                                                                                                                            |
+| `pretty`                    | `boolean`                                   | Formats the generated SQL statements with linebreaks and indentation for better readability. When `false` (the default), each statement is emitted as a single line                                                                                                                                     |
 | `migrationLoaderStrategies` | `MigrationLoaderStrategy[]`                 | Allows custom loading strategies based on file extensions. If omitted, default behavior is used. See [Migration Loading Strategies](migration-loading-strategies).                                                                                                                                      |
 
 ### MigrationLoaderStrategy

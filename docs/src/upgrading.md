@@ -1,0 +1,198 @@
+# Upgrading
+
+This page documents the changes you need to be aware of when upgrading between
+major versions of `node-pg-migrate`.
+
+## From v9 to v10
+
+### Breaking changes
+
+#### The CLI now uses subcommands
+
+The command-line parser was rewritten around idiomatic subcommands. Options now
+belong to the command they apply to and must be passed **after** the command:
+
+```bash
+node-pg-migrate up --pretty -m migrations # [!code ++]
+node-pg-migrate --pretty up -m migrations # [!code --]
+```
+
+Each command has its own help (`node-pg-migrate up --help`,
+`node-pg-migrate create --help`, …). The `migration-file-language` (`-j`),
+`migration-filename-format` and `template-file-name` options are only valid on
+the `create` command.
+
+If you previously used a package.json script that placed options before the
+command, move the options after it:
+
+```jsonc
+{
+  "scripts": {
+    "migrate": "node-pg-migrate -j ts", // [!code --]
+    "migrate": "node-pg-migrate", // [!code ++]
+  },
+}
+```
+
+```bash
+npm run migrate create my-migration -j ts
+```
+
+The version flag is `-i`/`--version` (unchanged), and the minimum supported
+Node.js version is now `>=22.12.0`.
+
+#### SQL statements are now single-line by default
+
+The generated SQL statements are now emitted on a **single line by default**.
+Previously, statements were always formatted across multiple lines with
+indentation.
+
+This is purely cosmetic — the SQL is semantically identical — but it changes the
+output you see in logs, dry runs, and `MigrationBuilder.getSql()`. If you snapshot
+or assert on the generated SQL, update those expectations accordingly.
+
+To restore the previous multi-line formatting, enable the new `pretty` option:
+
+```bash
+node-pg-migrate up --pretty
+```
+
+```jsonc
+{
+  "pretty": true,
+}
+```
+
+Or, when using the programmatic API, pass `pretty: true` to `runner()`.
+
+#### `--dry-run` no longer writes to the database
+
+`--dry-run` used to suppress only the _generated_ SQL. Everything else still ran for real:
+it created the migrations schema and the migrations table, `--fake --dry-run` inserted into
+(or deleted from) the migrations table, and any statement a migration issued itself through
+`pgm.db.query(...)` was executed - including destructive ones.
+
+A dry run now runs inside a read-only transaction (`BEGIN; SET TRANSACTION READ ONLY;`), so
+the database refuses every write. In practice:
+
+- the migrations schema and table are no longer created - if you relied on
+  `up --dry-run` to provision them, run a real migration instead;
+- `--fake --dry-run` prints the `INSERT`/`DELETE` and records nothing;
+- a migration that writes through `pgm.db.query(...)` now **fails** under `--dry-run`
+  instead of silently applying its changes;
+- no advisory lock is taken, so a dry run can no longer block (or be blocked by) a real
+  migration.
+
+On CockroachDB, `autocommit_before_ddl` is turned off for the session first, because v25 and
+newer would otherwise commit DDL out of the transaction. If that cannot be guaranteed, the
+dry run refuses to start rather than proceed.
+
+`Migration.markAsRun()` now resolves to `void` instead of the `pg` `QueryResult`; it does not
+query at all during a dry run.
+
+See [Dry Runs](cli#dry-runs) for the full behavior and its limitations.
+
+## From v8 to v9
+
+`v9` is a **bridge release**: it modernizes the internals (new TypeScript
+loader, pluggable loader strategies, stricter validation, Ox-based toolchain)
+while staying friendly to the same runtimes as `v8`.
+
+The **minimum Node.js version is unchanged** (`>=20.11.0`), and the package
+remains **ESM-only** (as it already was in `v8`).
+
+### Breaking changes
+
+#### TypeScript / modern JS is now loaded via `jiti`
+
+TypeScript and mixed-extension migrations are now handled out of the box by
+[jiti](https://github.com/unjs/jiti), which ships as a dependency. You no longer
+need to install and wire up `ts-node`, `tsx`, or Babel yourself.
+
+As a result, the following CLI flags have been **removed**:
+
+- `--ts-node`
+- `--tsx`
+- `--tsconfig`
+
+Update your `package.json` scripts accordingly:
+
+```jsonc
+{
+  "scripts": {
+    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts", // [!code --]
+    "migrate": "node-pg-migrate -j ts", // [!code ++]
+  },
+}
+```
+
+If you relied on Babel (`babel-node`, `babel-core/register`) to transpile
+migrations, that setup is no longer required — remove it and let `jiti` handle
+transpilation.
+
+If you used `--tsconfig` to resolve `tsconfig.json` path aliases, use the new
+`--tsconfig-paths` flag instead. Pass `true` to auto-discover `tsconfig.json`,
+or a path to a specific file:
+
+```bash
+node-pg-migrate up -j ts --tsconfig-paths true
+node-pg-migrate up -j ts --tsconfig-paths ./config/tsconfig.json
+```
+
+See the [TypeScript FAQ](./faq/typescript) for the full setup.
+
+#### Stricter input validation
+
+Several operations that previously accepted empty options — silently producing
+invalid or no-op SQL — now **throw an error early** instead. Review any calls
+that may pass no options:
+
+| Operation       | Now throws when                    |
+| --------------- | ---------------------------------- |
+| `addConstraint` | no constraint options are provided |
+| `alterPolicy`   | no policy options are provided     |
+| `alterSequence` | no sequence options are provided   |
+| `alterTable`    | no table options are provided      |
+
+If one of these throws after upgrading, it is surfacing a migration that was
+already generating invalid SQL — fix the call by passing the intended options.
+
+#### `indexMethod` is now typed as `string` (TypeScript only)
+
+In the operator-family helpers (`createOperatorFamily`, `addToOperatorFamily`,
+`renameOperatorClass`, `dropOperatorFamily`, …), the `indexMethod` parameter is
+now typed as `string` instead of `Name`. This is a type-level change only; the
+generated SQL is identical. If you passed an object `Name` (e.g.
+`{ schema, name }`) for the index method, pass the plain method name string
+(e.g. `'gist'`, `'btree'`) instead.
+
+#### `StringIdGenerator` removed (internal utility)
+
+The internal `StringIdGenerator` class was replaced by a generator function.
+This was never part of the public root export; the change only affects code that
+reached into the `node-pg-migrate/utils` subpath to import it directly.
+
+#### Bundled dependency bumps
+
+Internal dependencies were upgraded — `yargs` `17 → 18` and `glob` `11 → 13`.
+These are used internally and require no changes for typical usage, but are worth
+noting if you extend the CLI or rely on glob-based ignore patterns.
+
+### Notable new features
+
+None of these require action, but they may simplify your setup:
+
+- **Migration loader strategies + grouped SQL migrations** — pluggable control
+  over how migration files are discovered and grouped. See
+  [Migration Loading Strategies](./migration-loading-strategies).
+- **Index-based filename naming strategy** — an alternative to timestamp-based
+  filenames.
+- **More `create` file extensions** — in addition to `js`, `ts`, and `sql`, the
+  `create` command now supports `cjs`, `mjs`, `cts`, and `mts`.
+- **Advisory lock mode** — control what happens when the migration advisory lock
+  is already held, via `--advisory-lock-mode fail | wait`.
+- **`renameIndex`** operation.
+- **`createIndex` `nulls` option** and **`PgLiteral` support in index
+  expressions**.
+- **Array column type option** for column definitions.
+- **`dropConstraint` `ifExists` / table guard** for idempotent retries.

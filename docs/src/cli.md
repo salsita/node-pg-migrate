@@ -61,6 +61,13 @@ More on that below.
 
 ## Available Commands
 
+`node-pg-migrate` uses subcommands. Each command exposes only its relevant
+options and has its own help output, e.g. `node-pg-migrate up --help` or
+`node-pg-migrate create --help`. Options must be passed _after_ the command
+(for example `node-pg-migrate up 2 -m migrations`).
+
+You can print the installed version with `node-pg-migrate --version` (alias `-i`).
+
 | Command                                   |                                                       Description                                                       |
 | ----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------: |
 | `node-pg-migrate create {migration-name}` | creates a new migration file with a timestamp prepended to the name you provide. Dashes replace spaces and underscores. |
@@ -71,40 +78,76 @@ More on that below.
 | `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
 | `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
 
+## Dry Runs
+
+`node-pg-migrate up --dry-run` prints the SQL a real run would execute and applies none of
+it. The whole session runs inside a read-only transaction
+(`BEGIN; SET TRANSACTION READ ONLY;`), so the guarantee is enforced by the database rather
+than by `node-pg-migrate` itself:
+
+- the migrations schema and the migrations table are **not** created - a missing table is
+  reported as `> Would create migrations table ...`;
+- `--fake --dry-run` prints the `INSERT`/`DELETE` it would run and records nothing;
+- `--create-schema` and `--create-migrations-schema` report `> Would create schema ...`;
+- no [advisory lock](#configuration) is taken, so a dry run can never block a deployment;
+- a statement a migration issues itself - `pgm.db.query(...)` - is refused by the server.
+
+Reading the database still works, so `pgm.db.select(...)` inside a migration behaves as
+usual.
+
+### Limitations
+
+A dry run prints; it does not validate. Because nothing is applied, a migration cannot see
+what an earlier pending migration would have created:
+
+- a migration that reads schema or data produced by an earlier migration of the same run
+  will fail;
+- a migration that writes through `pgm.db.query(...)` fails with a message pointing at that
+  write - the read-only transaction refuses it;
+- `redo --dry-run` prints the `down` migrations and then reports `No migrations to run!` for
+  the `up` half, because the `down` half was never applied.
+
 ## Configuration
 
 > [!TIP]
-> See all by running `node-pg-migrate --help`.
+> See all options for a command by running its help, e.g. `node-pg-migrate up --help`.
 >
 > Most of the configuration options can be also specified in the [config](https://www.npmjs.com/package/config) file.
 
-You can adjust defaults by passing arguments to `node-pg-migrate`:
+You can adjust defaults by passing arguments to the command. The
+`migration-file-language`, `migration-filename-format` and `template-file-name`
+options are only available on the `create` command; the remaining options below
+apply to the `up`, `down` and `redo` commands:
 
-| Argument                    | Aliases | Default                                        | Description                                                                                                                                                                                                                                                                             |
-| --------------------------- | ------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config-file`               | `f`     | `undefined`                                    | The file with migration JSON config                                                                                                                                                                                                                                                     |
-| `config-value`              |         | `db`                                           | Name of config section with db options                                                                                                                                                                                                                                                  |
-| `schema`                    | `s`     | `public`                                       | The schema(s) on which migration will be run, used to set `search_path`                                                                                                                                                                                                                 |
-| `create-schema`             |         | `false`                                        | Create the configured schema if it doesn't exist                                                                                                                                                                                                                                        |
-| `database-url-var`          | `d`     | `DATABASE_URL`                                 | Name of env variable with database url string                                                                                                                                                                                                                                           |
-| `migrations-dir`            | `m`     | `migrations`                                   | The directory containing your migration files. This path is resolved from `cwd()`. Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns   |
-| `use-glob`                  |         | `false`                                        | Use [glob](https://www.npmjs.com/package/glob) to find migration files. This will use `--migrations-dir` _and_ `--ignore-pattern` to glob-search for migration files.                                                                                                                   |
-| `migrations-schema`         |         | same value as `schema`                         | The schema storing table which migrations have been run                                                                                                                                                                                                                                 |
-| `create-migrations-schema`  |         | `false`                                        | Create the configured migrations schema if it doesn't exist                                                                                                                                                                                                                             |
-| `migrations-table`          | `t`     | `pgmigrations`                                 | The table storing which migrations have been run                                                                                                                                                                                                                                        |
-| `ignore-pattern`            |         | `undefined`                                    | Regex pattern for file names to ignore (ignores files starting with `.` by default). Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns |
-| `migration-filename-format` |         | `timestamp`                                    | Choose prefix of file, `utc` (`20200605075829074`), `timestamp` (`1591343909074`), or `index` (`0012`)                                                                                                                                                                                  |
-| `migration-file-language`   | `j`     | `js` or `ts` if there's a `tsconfig.json` file | Language of the migration file to create (`js`, `ts`, `sql`, `cjs`, `mjs`, `cts`, `mts`)                                                                                                                                                                                                |
-| `template-file-name`        |         | `undefined`                                    | Utilize a custom migration template file with language inferred from its extension. The file should export the up method, accepting a MigrationBuilder instance.                                                                                                                        |
-| `envPath`                   |         | `same level where it's invoked`                | Retrieve the path to a .env file. This feature proves handy when dealing with nested projects or when referencing a global .env file.                                                                                                                                                   |
-| `timestamp`                 |         | `false`                                        | Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)                                                                                                                            |
-| `check-order`               |         | `true`                                         | Check order of migrations before running them, to switch it off supply `--no-check-order`                                                                                                                                                                                               |
-| `single-transaction`        |         | `true`                                         | Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back, to switch it off supply `--no-single-transaction`                                                                                                                    |
-| `no-lock`                   |         | `false`                                        | Disables locking mechanism and checks                                                                                                                                                                                                                                                   |
-| `fake`                      |         | `false`                                        | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
-| `decamelize`                |         | `false`                                        | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
-| `verbose`                   |         | `true`                                         | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
-| `reject-unauthorized`       |         | `undefined`                                    | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| Argument                    | Aliases | Default                         | Description                                                                                                                                                                                                                                                                             |
+| --------------------------- | ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config-file`               | `f`     | `undefined`                     | The file with migration JSON config                                                                                                                                                                                                                                                     |
+| `config-value`              |         | `db`                            | Name of config section with db options                                                                                                                                                                                                                                                  |
+| `schema`                    | `s`     | `public`                        | The schema(s) on which migration will be run, used to set `search_path`                                                                                                                                                                                                                 |
+| `create-schema`             |         | `false`                         | Create the configured schema if it doesn't exist                                                                                                                                                                                                                                        |
+| `database-url-var`          | `d`     | `DATABASE_URL`                  | Name of env variable with database url string                                                                                                                                                                                                                                           |
+| `migrations-dir`            | `m`     | `migrations`                    | The directory containing your migration files. This path is resolved from `cwd()`. Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns   |
+| `use-glob`                  |         | `false`                         | Use [glob](https://www.npmjs.com/package/glob) to find migration files. This will use `--migrations-dir` _and_ `--ignore-pattern` to glob-search for migration files.                                                                                                                   |
+| `migrations-schema`         |         | same value as `schema`          | The schema storing table which migrations have been run                                                                                                                                                                                                                                 |
+| `create-migrations-schema`  |         | `false`                         | Create the configured migrations schema if it doesn't exist                                                                                                                                                                                                                             |
+| `migrations-table`          | `t`     | `pgmigrations`                  | The table storing which migrations have been run                                                                                                                                                                                                                                        |
+| `ignore-pattern`            |         | `undefined`                     | Regex pattern for file names to ignore (ignores files starting with `.` by default). Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns |
+| `migration-filename-format` |         | `timestamp`                     | Choose prefix of file, `utc` (`20200605075829074`), `timestamp` (`1591343909074`), or `index` (`0012`)                                                                                                                                                                                  |
+| `migration-file-language`   | `j`     | `js`                            | Language of the migration file to create (`js`, `ts`, `sql`, `cjs`, `mjs`, `cts`, `mts`)                                                                                                                                                                                                |
+| `template-file-name`        |         | `undefined`                     | Utilize a custom migration template file with language inferred from its extension. The file should export the up method, accepting a MigrationBuilder instance.                                                                                                                        |
+| `envPath`                   |         | `same level where it's invoked` | Retrieve the path to a .env file. This feature proves handy when dealing with nested projects or when referencing a global .env file.                                                                                                                                                   |
+| `timestamp`                 |         | `false`                         | Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)                                                                                                                            |
+| `check-order`               |         | `true`                          | Check order of migrations before running them, to switch it off supply `--no-check-order`                                                                                                                                                                                               |
+| `single-transaction`        |         | `true`                          | Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back, to switch it off supply `--no-single-transaction`                                                                                                                    |
+| `no-lock`                   |         | `false`                         | Disables locking mechanism and checks                                                                                                                                                                                                                                                   |
+| `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
+| `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
+| `dry-run`                   |         | `false`                         | Print the SQL that would run without applying anything, [see](#dry-runs)                                                                                                                                                                                                                |
+| `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
+| `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
+| `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
+| `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
 from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE) other
@@ -139,6 +182,7 @@ Other available options are:
   "check-order": true,
   "verbose": true,
   "decamelize": false,
+  "pretty": false,
   "tsconfig-paths": "./tsconfig.json",
 }
 ```
@@ -160,5 +204,5 @@ For example with a config like:
 }
 ```
 
-The command `node-pg-migrate --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
+The command `node-pg-migrate up --config-file=migrations.config.js --config-value=prod` will apply the `prod` configuration.
 There are no constraints on how you name your configuration groups.

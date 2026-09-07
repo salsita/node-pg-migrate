@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PgType } from '../../../src';
 import { addColumns } from '../../../src/operations/tables';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('columns', () => {
@@ -25,9 +25,29 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD "status" varchar(30) DEFAULT $pga$old$pga$, ADD "mtime" timestamp with time zone DEFAULT $pga$now()$pga$;`
+        );
+      });
+
+      it('should format the statement across multiple lines when pretty is enabled', () => {
+        const statement = addColumns(options1Pretty)('transactions', {
+          status: {
+            type: 'varchar(30)',
+            default: 'old',
+          },
+          mtime: {
+            type: PgType.TIMESTAMP_WITH_TIME_ZONE,
+            default: 'now()',
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER TABLE "transactions"
   ADD "status" varchar(30) DEFAULT $pga$old$pga$,
-  ADD "mtime" timestamp with time zone DEFAULT $pga$now()$pga$;`);
+  ADD "mtime" timestamp with time zone DEFAULT $pga$now()$pga$;`
+        );
       });
 
       it('should return sql statement with columnOptions', () => {
@@ -45,8 +65,9 @@ describe('operations', () => {
         );
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD IF NOT EXISTS "status" varchar(30) DEFAULT $pga$old$pga$;`);
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD IF NOT EXISTS "status" varchar(30) DEFAULT $pga$old$pga$;`
+        );
       });
 
       it('should return sql statement with schema', () => {
@@ -59,8 +80,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER TABLE "myschema"."distributors"
-  ADD "status" varchar;`
+          `ALTER TABLE "myschema"."distributors" ADD "status" varchar;`
         );
       });
 
@@ -73,8 +93,9 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD "tags" text ARRAY;`);
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD "tags" text ARRAY;`
+        );
       });
 
       it('should pass numeric array dimensions through to SQL', () => {
@@ -88,8 +109,9 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD "scores" integer ARRAY[${arrayDimension}];`);
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD "scores" integer ARRAY[${arrayDimension}];`
+        );
       });
 
       it('should support array option for different column types', () => {
@@ -105,9 +127,9 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD "ids" uuid ARRAY,
-  ADD "aliases" varchar(30) ARRAY;`);
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD "ids" uuid ARRAY, ADD "aliases" varchar(30) ARRAY;`
+        );
       });
 
       it('should keep string-based array type declarations unchanged', () => {
@@ -118,8 +140,7 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD "tags" text[];`);
+        expect(statement).toBe(`ALTER TABLE "transactions" ADD "tags" text[];`);
       });
 
       it('should ignore false array option', () => {
@@ -131,8 +152,9 @@ describe('operations', () => {
         });
 
         expect(statement).toBeTypeOf('string');
-        expect(statement).toBe(`ALTER TABLE "transactions"
-  ADD "description" text;`);
+        expect(statement).toBe(
+          `ALTER TABLE "transactions" ADD "description" text;`
+        );
       });
 
       describe('reverse', () => {
@@ -149,8 +171,7 @@ describe('operations', () => {
           });
 
           expect(statement).toBeTypeOf('string');
-          expect(statement).toBe(`ALTER TABLE "transactions"
-  DROP "status";`);
+          expect(statement).toBe(`ALTER TABLE "transactions" DROP "status";`);
         });
       });
     });

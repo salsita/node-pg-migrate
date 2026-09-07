@@ -20,6 +20,9 @@ export const INTEGRATION_TIMEOUT = Number(
 /**
  * Promisified version of Node.js `child_process.exec` for running shell commands asynchronously.
  */
+// `exec` returns a `ChildProcess` instead of `void`, which is the documented
+// Node.js signature `promisify` is designed to consume.
+// oxlint-disable-next-line typescript/strict-void-return
 export const exec = promisify(processExec);
 
 /**
@@ -70,7 +73,7 @@ export async function setupPostgresDatabase(
   containerImage: string,
   databaseName: string = 'node_pg_migrate'
 ): Promise<StartedPostgreSqlContainer> {
-  return await new PostgreSqlContainer(containerImage)
+  return new PostgreSqlContainer(containerImage)
     .withUsername('ubuntu')
     .withPassword('ubuntu')
     .withDatabase(databaseName)
@@ -106,6 +109,44 @@ async function execSql(
       cause: res.stderr || res.stdout,
     });
   }
+}
+
+/**
+ * Runs a `SELECT` on the provided PostgreSQL container and returns the values of the first
+ * column, one per row.
+ *
+ * @param pgContainer The PostgreSQL container instance to query.
+ * @param sql The `SELECT` statement to run.
+ *
+ * @returns The values of the first column of every returned row.
+ *
+ * @throws Throws an error if the query fails.
+ */
+export async function psqlSelect(
+  pgContainer: StartedPostgreSqlContainer,
+  sql: string
+): Promise<string[]> {
+  const res = await pgContainer.exec([
+    'psql',
+    '-U',
+    pgContainer.getUsername(),
+    '-d',
+    pgContainer.getDatabase(),
+    '-At',
+    '-c',
+    sql,
+  ]);
+
+  if (res.exitCode !== 0) {
+    throw new Error(`Failed to execute SQL command: ${sql}`, {
+      cause: res.stderr || res.stdout,
+    });
+  }
+
+  return res.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 /**
