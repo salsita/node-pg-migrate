@@ -16,6 +16,7 @@ import {
   getNumericPrefix,
   getSuffixFromFileName,
 } from './utils';
+import { shouldGenerateTypescript } from './utils/shouldGenerateTs';
 /*
  * A new Migration is instantiated for each migration file.
  *
@@ -70,7 +71,7 @@ export type CreateOptions = {
 
 const SEPARATOR = '_';
 
-const existsTsConfig = existsSync('./tsconfig.json');
+const shouldGenerateTs = shouldGenerateTypescript();
 
 interface LoadMigrationFilesOptions {
   /**
@@ -172,7 +173,7 @@ async function getLastSuffix(
   }
 }
 
-const lastSuff = existsTsConfig ? 'ts' : 'js';
+const lastSuff = shouldGenerateTs ? 'ts' : 'js';
 
 async function resolveSuffix(
   directory: string,
