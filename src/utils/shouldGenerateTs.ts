@@ -15,7 +15,7 @@ export function shouldGenerateTypescript(): boolean {
     (() => {
       const pureFile = readFileSync('./tsconfig.json', 'utf-8');
 
-      const refined = pureFile.replace(
+      const refined = pureFile.replaceAll(
         /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g,
         (m, g) => (g ? '' : m)
       );
