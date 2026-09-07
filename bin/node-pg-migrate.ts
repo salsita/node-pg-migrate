@@ -10,7 +10,6 @@ import {
   runner as migrationRunner,
   PG_MIGRATE_LOCK_ID,
 } from 'node-pg-migrate';
-import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { format } from 'node:util';
@@ -21,6 +20,7 @@ import type ConnectionParametersType from 'pg/lib/connection-parameters';
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import yargs from 'yargs/yargs';
 import type { FilenameFormat } from '../src/migration';
+import { shouldGenerateTypescript } from '../src/utils/shouldGenerateTs';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
@@ -269,7 +269,7 @@ if (dotenv) {
   }
 }
 
-const existsTsConfig = existsSync('./tsconfig.json');
+const shouldGenerateTs = shouldGenerateTypescript();
 
 let MIGRATIONS_DIR = argv[migrationsDirArg];
 let USE_GLOB = argv[useGlobArg];
@@ -512,7 +512,7 @@ const action = argv._.shift();
 // defaults
 MIGRATIONS_DIR ??= join(cwd(), 'migrations');
 USE_GLOB ??= false;
-MIGRATIONS_FILE_LANGUAGE ??= existsTsConfig ? 'ts' : 'js';
+MIGRATIONS_FILE_LANGUAGE ??= shouldGenerateTs ? 'ts' : 'js';
 MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
 MIGRATIONS_TABLE ??= 'pgmigrations';
 SCHEMA ??= ['public'];
