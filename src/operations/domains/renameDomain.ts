@@ -1,5 +1,6 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import type { Name, Reversible } from '../generalTypes';
+import { isNameObject, isSchemaNameObject } from '../generalTypes';
 
 export type RenameDomainFn = (
   oldDomainName: Name,
@@ -9,15 +10,25 @@ export type RenameDomainFn = (
 export type RenameDomain = Reversible<RenameDomainFn>;
 
 export function renameDomain(mOptions: MigrationOptions): RenameDomain {
-  const _rename: RenameDomain = (domainName, newDomainName) => {
-    const domainNameStr = mOptions.literal(domainName);
-    const newDomainNameStr = mOptions.literal(newDomainName);
+  const rename = (source: Name, newName: Name, reverse = false): string => {
+    const schema = isSchemaNameObject(source) ? source.schema : undefined;
+    if (isSchemaNameObject(newName) && newName.schema !== schema) {
+      throw new Error('renameDomain cannot change the schema of a domain');
+    }
 
-    return `ALTER DOMAIN ${domainNameStr} RENAME TO ${newDomainNameStr};`;
+    const oldName = isNameObject(source) ? source.name : source;
+    const destination = isNameObject(newName) ? newName.name : newName;
+    const newNameStr = mOptions.literal(destination);
+    const sourceStr = reverse
+      ? (schema ? `${mOptions.literal(schema)}.` : '') + newNameStr
+      : mOptions.literal(source);
+    const destinationStr = reverse ? mOptions.literal(oldName) : newNameStr;
+
+    return `ALTER DOMAIN ${sourceStr} RENAME TO ${destinationStr};`;
   };
 
-  _rename.reverse = (domainName, newDomainName) =>
-    _rename(newDomainName, domainName);
+  const _rename: RenameDomain = (source, newName) => rename(source, newName);
+  _rename.reverse = (source, newName) => rename(source, newName, true);
 
   return _rename;
 }

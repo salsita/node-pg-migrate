@@ -1,4 +1,5 @@
 > Migrating files:
+> - 099_schema_qualified_renames
 > - 098_rename_index
 > - 097_drop_constraint_if_table_exists
 > - 096_expression_index
@@ -97,6 +98,30 @@
 > - 003_promise
 > - 002_callback
 > - 001_noop
+### MIGRATION 099_schema_qualified_renames (DOWN) ###
+ALTER INDEX "object_rename_schema"."new_index" RENAME TO "middle_index";
+ALTER INDEX "object_rename_schema"."middle_index" RENAME TO "old_index";
+DROP INDEX "object_rename_schema"."old_index";
+DROP TABLE "object_rename_schema"."indexed_table";
+ALTER SEQUENCE "object_rename_schema"."new_sequence" RENAME TO "middle_sequence";
+ALTER SEQUENCE "object_rename_schema"."middle_sequence" RENAME TO "old_sequence";
+DROP SEQUENCE "object_rename_schema"."old_sequence";
+ALTER MATERIALIZED VIEW "object_rename_schema"."new_materialized_view" RENAME TO "middle_materialized_view";
+ALTER MATERIALIZED VIEW "object_rename_schema"."middle_materialized_view" RENAME TO "old_materialized_view";
+DROP MATERIALIZED VIEW "object_rename_schema"."old_materialized_view";
+ALTER VIEW "object_rename_schema"."new_view" RENAME TO "middle_view";
+ALTER VIEW "object_rename_schema"."middle_view" RENAME TO "old_view";
+DROP VIEW "object_rename_schema"."old_view";
+ALTER DOMAIN "object_rename_schema"."new_domain" RENAME TO "middle_domain";
+ALTER DOMAIN "object_rename_schema"."middle_domain" RENAME TO "old_domain";
+DROP DOMAIN "object_rename_schema"."old_domain";
+ALTER TYPE "object_rename_schema"."new_type" RENAME TO "middle_type";
+ALTER TYPE "object_rename_schema"."middle_type" RENAME TO "old_type";
+DROP TYPE "object_rename_schema"."old_type";
+DROP SCHEMA "object_rename_schema";
+DELETE FROM "public"."pgmigrations" WHERE name='099_schema_qualified_renames';
+
+
 ### MIGRATION 098_rename_index (DOWN) ###
 ALTER INDEX "quxfoo" RENAME TO "idxfoo";
 DROP INDEX "idxfoo";

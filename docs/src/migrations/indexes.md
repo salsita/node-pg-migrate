@@ -110,3 +110,17 @@ pgm.renameIndex('index_name', 'new_index_name');
 ```
 
 :::
+
+The destination name is unqualified in the generated SQL. A destination object
+may repeat the source schema, but cannot specify a different schema. When a
+destination schema is provided, use the object form for the source name too;
+the schema cannot be inferred from a string name or the database search path.
+Automatic reversal preserves the source schema.
+
+An undefined schema is treated as omitted. Explicit schemas are compared before
+decamelization, including empty strings: an empty destination schema is rejected
+when the source schema is omitted or nonempty; matching empty schemas remain
+unqualified.
+
+Renaming an index does not move it to another schema. PostgreSQL does not provide
+`ALTER INDEX ... SET SCHEMA`; indexes follow their table when it changes schema.

@@ -61,6 +61,20 @@ operation (`dropType`) when the migration is rolled back.
 | `type_name`     | [Name](/migrations/#type) | name of the type to rename |
 | `new_type_name` | [Name](/migrations/#type) | name of the new type       |
 
+The destination name is unqualified in the generated SQL. A destination object
+may repeat the source schema, but cannot specify a different schema. When a
+destination schema is provided, use the object form for the source name too;
+the schema cannot be inferred from a string name or the database search path.
+Automatic reversal preserves the source schema.
+
+An undefined schema is treated as omitted. Explicit schemas are compared before
+decamelization, including empty strings: an empty destination schema is rejected
+when the source schema is omitted or nonempty; matching empty schemas remain
+unqualified.
+
+Moving a type between schemas requires separate SQL and an explicit down
+migration to reverse that move.
+
 ## Operation: `alterType`
 
 #### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type, attribute_options )`
