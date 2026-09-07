@@ -49,9 +49,26 @@ describe('operations', () => {
         const from = { name: 'distributors', schema: 'myschema' };
         const to = { name: 'suppliers', schema: 'other' };
 
-        expect(() => renameTableFn(from, to)).toThrow('schema');
-        expect(() => renameTableFn.reverse(from, to)).toThrow('schema');
-        expect(() => renameTableFn('distributors', to)).toThrow('schema');
+        expect(() => renameTableFn(from, to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+        expect(() => renameTableFn.reverse(from, to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+        expect(() => renameTableFn('distributors', to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+      });
+
+      it('should reject an explicitly empty destination schema', () => {
+        const from = { schema: 'myschema', name: 'distributors' };
+        const to = { schema: '', name: 'suppliers' };
+        const error = new Error(
+          'renameTable cannot change the schema of a table'
+        );
+
+        expect(() => renameTableFn(from, to)).toThrow(error);
+        expect(() => renameTableFn.reverse(from, to)).toThrow(error);
       });
 
       it('should escape schema and table names when reversing', () => {

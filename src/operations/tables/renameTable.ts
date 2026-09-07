@@ -1,6 +1,6 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import type { Name, Reversible } from '../generalTypes';
-import { isNameObject } from '../generalTypes';
+import { isNameObject, isSchemaNameObject } from '../generalTypes';
 
 export type RenameTableFn = (tableName: Name, newtableName: Name) => string;
 
@@ -8,8 +8,8 @@ export type RenameTable = Reversible<RenameTableFn>;
 
 export function renameTable(mOptions: MigrationOptions): RenameTable {
   const rename = (tableName: Name, newName: Name, reverse = false): string => {
-    const schema = isNameObject(tableName) ? tableName.schema : undefined;
-    if (isNameObject(newName) && newName.schema && newName.schema !== schema) {
+    const schema = isSchemaNameObject(tableName) ? tableName.schema : undefined;
+    if (isSchemaNameObject(newName) && newName.schema !== schema) {
       throw new Error('renameTable cannot change the schema of a table');
     }
 
