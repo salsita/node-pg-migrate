@@ -1,5 +1,5 @@
 import { glob } from 'glob';
-import { createReadStream, createWriteStream, existsSync } from 'node:fs';
+import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
