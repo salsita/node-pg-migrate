@@ -617,6 +617,10 @@ DELETE FROM "public"."pgmigrations" WHERE name='007_table_rename_test';
 
 
 ### MIGRATION 006_table_rename (DOWN) ###
+ALTER TABLE "rename_schema"."renamed" RENAME TO "intermediate";
+ALTER TABLE "rename_schema"."intermediate" RENAME TO "original";
+DROP TABLE "rename_schema"."original";
+DROP SCHEMA "rename_schema";
 ALTER TABLE "t2r" RENAME TO "t2";
 DELETE FROM "public"."pgmigrations" WHERE name='006_table_rename';
 

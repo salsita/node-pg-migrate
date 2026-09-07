@@ -28,8 +28,56 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER TABLE "myschema"."distributors" RENAME TO "myschema"."suppliers";'
+          'ALTER TABLE "myschema"."distributors" RENAME TO "suppliers";'
         );
+      });
+
+      it.each([
+        ['suppliers'],
+        [{ name: 'suppliers' }],
+        [{ name: 'suppliers', schema: 'myschema' }],
+      ])('should preserve the schema when reversing to %j', (newName) => {
+        expect(
+          renameTableFn.reverse(
+            { name: 'distributors', schema: 'myschema' },
+            newName
+          )
+        ).toBe('ALTER TABLE "myschema"."suppliers" RENAME TO "distributors";');
+      });
+
+      it('should reject a change of schema in either direction', () => {
+        const from = { name: 'distributors', schema: 'myschema' };
+        const to = { name: 'suppliers', schema: 'other' };
+
+        expect(() => renameTableFn(from, to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+        expect(() => renameTableFn.reverse(from, to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+        expect(() => renameTableFn('distributors', to)).toThrow(
+          new Error('renameTable cannot change the schema of a table')
+        );
+      });
+
+      it('should reject an explicitly empty destination schema', () => {
+        const from = { schema: 'myschema', name: 'distributors' };
+        const to = { schema: '', name: 'suppliers' };
+        const error = new Error(
+          'renameTable cannot change the schema of a table'
+        );
+
+        expect(() => renameTableFn(from, to)).toThrow(error);
+        expect(() => renameTableFn.reverse(from, to)).toThrow(error);
+      });
+
+      it('should escape schema and table names when reversing', () => {
+        expect(
+          renameTableFn.reverse(
+            { name: 'old"table', schema: 'my"schema' },
+            'new"table'
+          )
+        ).toBe('ALTER TABLE "my""schema"."new""table" RENAME TO "old""table";');
       });
 
       describe('reverse', () => {

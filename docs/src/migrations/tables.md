@@ -71,6 +71,15 @@
 | `tablename`     | [Name](/migrations/#type) | name of the table to rename |
 | `new_tablename` | [Name](/migrations/#type) | new name of the table       |
 
+Renaming preserves the table’s schema, including during automatic reversal. If
+`new_tablename` specifies a schema, it must match the schema in `tablename`.
+When specifying a destination schema, use the object form for `tablename` too;
+the schema cannot be inferred from a string table name or the database search path.
+
+To move a table between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER TABLE "old_schema"."my_table" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
+
 ## Operation: `alterTable`
 
 #### `pgm.alterTable( tablename, options )`
