@@ -61,19 +61,18 @@ operation (`dropType`) when the migration is rolled back.
 | `type_name`     | [Name](/migrations/#type) | name of the type to rename |
 | `new_type_name` | [Name](/migrations/#type) | name of the new type       |
 
-The destination name is unqualified in the generated SQL. A destination object
-may repeat the source schema, but cannot specify a different schema. When a
-destination schema is provided, use the object form for the source name too;
+The destination name is unqualified in the generated SQL. If a destination object
+specifies a schema, it must match the source schema. Use `{ schema, name }` for
+schema-qualified names so automatic reversal preserves the source schema;
 the schema cannot be inferred from a string name or the database search path.
-Automatic reversal preserves the source schema.
 
-An undefined schema is treated as omitted. Explicit schemas are compared before
-decamelization, including empty strings: an empty destination schema is rejected
-when the source schema is omitted or nonempty; matching empty schemas remain
-unqualified.
+Qualified `PgLiteral` names can produce invalid SQL, including during automatic
+reversal. Use structured name objects instead, or use `pgm.sql` with explicit SQL
+in both your up and down migrations.
 
-Moving a type between schemas requires separate SQL and an explicit down
-migration to reverse that move.
+To move a type between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER TYPE "old_schema"."my_type" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
 
 ## Operation: `alterType`
 
