@@ -117,7 +117,7 @@ CREATE TABLE "my_schema"."my_table_name" ("id" serial);
 ### Type
 
 ```ts
-type Name = string | { schema: string; name: string };
+type Name = string | { schema?: string; name: string } | PgLiteralValue;
 ```
 
 ## Renaming and schemas

@@ -49,6 +49,11 @@ export function createRenameOperation(
   const resolveNames = (source: Name, destination: Name) => {
     const oldName = nameParts(source, 'source');
     const newName = nameParts(destination, 'destination');
+    if (newName.schemaSql && !oldName.schemaSql) {
+      throw new Error(
+        `${operation} cannot infer the source schema; use { schema, name } for the source`
+      );
+    }
     if (newName.schemaSql && newName.schemaSql !== oldName.schemaSql) {
       throw new Error(`${operation} cannot change the schema of ${label}`);
     }

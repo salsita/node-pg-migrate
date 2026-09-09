@@ -97,27 +97,35 @@ describe('operations', () => {
         }
       );
 
-      it.each([
-        [
-          { schema: 'app', name: 'old' },
-          { schema: 'other', name: 'new' },
-        ],
-        ['old', { schema: 'app', name: 'new' }],
-        [
-          { schema: '', name: 'old' },
-          { schema: 'app', name: 'new' },
-        ],
-        [
-          { schema: undefined, name: 'old' },
-          { schema: 'app', name: 'new' },
-        ],
-        [PgLiteral.create('old'), { schema: 'app', name: 'new' }],
-      ] satisfies Array<[Name, Name]>)(
-        'rejects incompatible schemas: %j -> %j',
-        (source, destination) => {
-          expect(() => rename(source, destination)).toThrow(
-            new Error(`${operation} cannot change the schema of ${label}`)
+      it('rejects different explicit schemas', () => {
+        const pgm = builder();
+        pgm[operation]('existing', 'renamed');
+        const before = pgm.getSqlSteps();
+        expect(() => {
+          pgm[operation](
+            { schema: 'app', name: 'old' },
+            { schema: 'other', name: 'new' }
           );
+        }).toThrow(
+          new Error(`${operation} cannot change the schema of ${label}`)
+        );
+        expect(pgm.getSqlSteps()).toEqual(before);
+      });
+
+      it.each([...unqualifiedSources, PgLiteral.create('old')])(
+        'explains how to specify the unknown source schema for %j',
+        (source) => {
+          const pgm = builder();
+          pgm[operation]('existing', 'renamed');
+          const before = pgm.getSqlSteps();
+          expect(() => {
+            pgm[operation](source, { schema: 'app', name: 'new' });
+          }).toThrow(
+            new Error(
+              `${operation} cannot infer the source schema; use { schema, name } for the source`
+            )
+          );
+          expect(pgm.getSqlSteps()).toEqual(before);
         }
       );
 
