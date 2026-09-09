@@ -89,7 +89,20 @@ sequence.
 
 ### Arguments
 
-| Name                | Type     | Description                                   |
-| ------------------- | -------- | --------------------------------------------- |
-| `old_sequence_name` | `string` | old [Name](/migrations/#type) of the sequence |
-| `new_sequence_name` | `string` | new [Name](/migrations/#type) of the sequence |
+| Name                | Type                      | Description              |
+| ------------------- | ------------------------- | ------------------------ |
+| `old_sequence_name` | [Name](/migrations/#type) | Old name of the sequence |
+| `new_sequence_name` | [Name](/migrations/#type) | New name of the sequence |
+
+The destination name is unqualified in the generated SQL. If a destination object
+specifies a schema, it must match the source schema. Use `{ schema, name }` for
+schema-qualified names so automatic reversal preserves the source schema;
+the schema cannot be inferred from a string name or the database search path.
+
+Qualified `PgLiteral` names can produce invalid SQL, including during automatic
+reversal. Use structured name objects instead, or use `pgm.sql` with explicit SQL
+in both your up and down migrations.
+
+To move a sequence between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER SEQUENCE "old_schema"."my_sequence" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
