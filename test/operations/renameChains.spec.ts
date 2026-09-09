@@ -3,7 +3,7 @@ import type { PgLiteralValue } from '../../src';
 import { MigrationBuilder, PgLiteral } from '../../src';
 import type { Name } from '../../src/operations/generalTypes';
 
-const operations = [
+const simpleOperations = [
   ['renameTable', 'TABLE', 'a table'],
   ['renameType', 'TYPE', 'a type'],
   ['renameDomain', 'DOMAIN', 'a domain'],
@@ -12,6 +12,51 @@ const operations = [
   ['renameSequence', 'SEQUENCE', 'a sequence'],
   ['renameIndex', 'INDEX', 'an index'],
 ] as const;
+
+const operations: Array<{
+  operation: string;
+  keyword: string;
+  label: string;
+  sourceSuffix: string;
+  invoke: (pgm: MigrationBuilder, source: Name, destination: Name) => void;
+}> = [
+  ...simpleOperations.map(([operation, keyword, label]) => ({
+    operation,
+    keyword,
+    label,
+    sourceSuffix: '',
+    invoke: (pgm: MigrationBuilder, source: Name, destination: Name) => {
+      pgm[operation](source, destination);
+    },
+  })),
+  {
+    operation: 'renameFunction',
+    keyword: 'FUNCTION',
+    label: 'a function',
+    sourceSuffix: '(integer)',
+    invoke: (pgm, source, destination) => {
+      pgm.renameFunction(source, ['integer'], destination);
+    },
+  },
+  {
+    operation: 'renameOperatorClass',
+    keyword: 'OPERATOR CLASS',
+    label: 'an operator class',
+    sourceSuffix: ' USING btree',
+    invoke: (pgm, source, destination) => {
+      pgm.renameOperatorClass(source, 'btree', destination);
+    },
+  },
+  {
+    operation: 'renameOperatorFamily',
+    keyword: 'OPERATOR FAMILY',
+    label: 'an operator family',
+    sourceSuffix: ' USING hash',
+    invoke: (pgm, source, destination) => {
+      pgm.renameOperatorFamily(source, 'hash', destination);
+    },
+  },
+];
 
 const unqualifiedSources: Name[] = [
   'old',
@@ -27,7 +72,8 @@ const unqualifiedDestinations: Name[] = [
 ];
 
 describe('operations', () => {
-  describe.each(operations)('%s schemas', (operation, keyword, label) => {
+  describe.each(operations)('$operation schemas', (entry) => {
+    const { operation, keyword, label, sourceSuffix, invoke } = entry;
     describe.each(['up', 'down'] as const)('%s', (direction) => {
       function builder(decamelize = false): MigrationBuilder {
         const pgm = new MigrationBuilder(
@@ -44,26 +90,27 @@ describe('operations', () => {
 
       function rename(source: Name, destination: Name, decamelize = false) {
         const pgm = builder(decamelize);
-        pgm[operation](source, destination);
+        invoke(pgm, source, destination);
         return pgm.getSqlSteps();
       }
 
       it('preserves schema and rename-chain order', () => {
         const pgm = builder();
-        pgm[operation]({ schema: 'app', name: 'old' }, 'middle');
-        pgm[operation](
+        invoke(pgm, { schema: 'app', name: 'old' }, 'middle');
+        invoke(
+          pgm,
           { schema: 'app', name: 'middle' },
           { schema: 'app', name: 'new' }
         );
         expect(pgm.getSqlSteps()).toEqual(
           direction === 'down'
             ? [
-                `ALTER ${keyword} "app"."new" RENAME TO "middle";`,
-                `ALTER ${keyword} "app"."middle" RENAME TO "old";`,
+                `ALTER ${keyword} "app"."new"${sourceSuffix} RENAME TO "middle";`,
+                `ALTER ${keyword} "app"."middle"${sourceSuffix} RENAME TO "old";`,
               ]
             : [
-                `ALTER ${keyword} "app"."old" RENAME TO "middle";`,
-                `ALTER ${keyword} "app"."middle" RENAME TO "new";`,
+                `ALTER ${keyword} "app"."old"${sourceSuffix} RENAME TO "middle";`,
+                `ALTER ${keyword} "app"."middle"${sourceSuffix} RENAME TO "new";`,
               ]
         );
       });
@@ -73,8 +120,8 @@ describe('operations', () => {
         (destination) => {
           expect(rename({ schema: 'app', name: 'old' }, destination)).toEqual([
             direction === 'down'
-              ? `ALTER ${keyword} "app"."new" RENAME TO "old";`
-              : `ALTER ${keyword} "app"."old" RENAME TO "new";`,
+              ? `ALTER ${keyword} "app"."new"${sourceSuffix} RENAME TO "old";`
+              : `ALTER ${keyword} "app"."old"${sourceSuffix} RENAME TO "new";`,
           ]);
         }
       );
@@ -91,18 +138,19 @@ describe('operations', () => {
         ({ source, destination }) => {
           expect(rename(source, destination)).toEqual([
             direction === 'down'
-              ? `ALTER ${keyword} "new" RENAME TO "old";`
-              : `ALTER ${keyword} "old" RENAME TO "new";`,
+              ? `ALTER ${keyword} "new"${sourceSuffix} RENAME TO "old";`
+              : `ALTER ${keyword} "old"${sourceSuffix} RENAME TO "new";`,
           ]);
         }
       );
 
       it('rejects different explicit schemas', () => {
         const pgm = builder();
-        pgm[operation]('existing', 'renamed');
+        invoke(pgm, 'existing', 'renamed');
         const before = pgm.getSqlSteps();
         expect(() => {
-          pgm[operation](
+          invoke(
+            pgm,
             { schema: 'app', name: 'old' },
             { schema: 'other', name: 'new' }
           );
@@ -116,10 +164,10 @@ describe('operations', () => {
         'explains how to specify the unknown source schema for %j',
         (source) => {
           const pgm = builder();
-          pgm[operation]('existing', 'renamed');
+          invoke(pgm, 'existing', 'renamed');
           const before = pgm.getSqlSteps();
           expect(() => {
-            pgm[operation](source, { schema: 'app', name: 'new' });
+            invoke(pgm, source, { schema: 'app', name: 'new' });
           }).toThrow(
             new Error(
               `${operation} cannot infer the source schema; use { schema, name } for the source`
@@ -144,8 +192,8 @@ describe('operations', () => {
             )
           ).toEqual([
             direction === 'down'
-              ? `ALTER ${keyword} "app_schema"."new_name" RENAME TO "old_name";`
-              : `ALTER ${keyword} "app_schema"."old_name" RENAME TO "new_name";`,
+              ? `ALTER ${keyword} "app_schema"."new_name"${sourceSuffix} RENAME TO "old_name";`
+              : `ALTER ${keyword} "app_schema"."old_name"${sourceSuffix} RENAME TO "new_name";`,
           ]);
         }
       );
@@ -173,8 +221,8 @@ describe('operations', () => {
           rename({ schema: 'my"schema', name: 'old"name' }, 'new"name')
         ).toEqual([
           direction === 'down'
-            ? `ALTER ${keyword} "my""schema"."new""name" RENAME TO "old""name";`
-            : `ALTER ${keyword} "my""schema"."old""name" RENAME TO "new""name";`,
+            ? `ALTER ${keyword} "my""schema"."new""name"${sourceSuffix} RENAME TO "old""name";`
+            : `ALTER ${keyword} "my""schema"."old""name"${sourceSuffix} RENAME TO "new""name";`,
         ]);
       });
 
@@ -195,15 +243,15 @@ describe('operations', () => {
           const literal = PgLiteral.create(raw);
           expect(rename(literal, 'newName', true)).toEqual([
             direction === 'down'
-              ? `ALTER ${keyword} "new_name" RENAME TO ${raw};`
-              : `ALTER ${keyword} ${raw} RENAME TO "new_name";`,
+              ? `ALTER ${keyword} "new_name"${sourceSuffix} RENAME TO ${raw};`
+              : `ALTER ${keyword} ${raw}${sourceSuffix} RENAME TO "new_name";`,
           ]);
           expect(
             rename({ schema: 'appSchema', name: 'oldName' }, literal, true)
           ).toEqual([
             direction === 'down'
-              ? `ALTER ${keyword} "app_schema".${raw} RENAME TO "old_name";`
-              : `ALTER ${keyword} "app_schema"."old_name" RENAME TO ${raw};`,
+              ? `ALTER ${keyword} "app_schema".${raw}${sourceSuffix} RENAME TO "old_name";`
+              : `ALTER ${keyword} "app_schema"."old_name"${sourceSuffix} RENAME TO ${raw};`,
           ]);
         }
       );
@@ -237,8 +285,8 @@ describe('operations', () => {
         };
         expect(rename('old', literal)).toEqual([
           direction === 'down'
-            ? `ALTER ${keyword} "Raw.Name" RENAME TO "old";`
-            : `ALTER ${keyword} "old" RENAME TO "Raw.Name";`,
+            ? `ALTER ${keyword} "Raw.Name"${sourceSuffix} RENAME TO "old";`
+            : `ALTER ${keyword} "old"${sourceSuffix} RENAME TO "Raw.Name";`,
         ]);
       });
 
@@ -263,10 +311,10 @@ describe('operations', () => {
         '"nul\0name"',
       ])('rejects unsupported raw name %j before adding a SQL step', (raw) => {
         const pgm = builder();
-        pgm[operation]('existing', 'renamed');
+        invoke(pgm, 'existing', 'renamed');
         const before = pgm.getSqlSteps();
         expect(() => {
-          pgm[operation](PgLiteral.create(raw), 'new');
+          invoke(pgm, PgLiteral.create(raw), 'new');
         }).toThrow(
           new Error(
             `${operation} requires a single unqualified identifier for a PgLiteral source; use { schema, name } for schema-qualified names`
@@ -274,7 +322,7 @@ describe('operations', () => {
         );
         expect(pgm.getSqlSteps()).toEqual(before);
         expect(() => {
-          pgm[operation]({ schema: 'app', name: 'old' }, PgLiteral.create(raw));
+          invoke(pgm, { schema: 'app', name: 'old' }, PgLiteral.create(raw));
         }).toThrow(
           new Error(
             `${operation} requires a single unqualified identifier for a PgLiteral destination; use { schema, name } for schema-qualified names`
