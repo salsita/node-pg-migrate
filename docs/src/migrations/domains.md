@@ -85,14 +85,9 @@
 | `old_domain_name` | [Name](/migrations/#type) | Old name of the domain |
 | `new_domain_name` | [Name](/migrations/#type) | New name of the domain |
 
-The destination name is unqualified in the generated SQL. If a destination object
-specifies a schema, it must match the source schema. Use `{ schema, name }` for
-schema-qualified names so automatic reversal preserves the source schema;
-the schema cannot be inferred from a string name or the database search path.
-
-Qualified `PgLiteral` names can produce invalid SQL, including during automatic
-reversal. Use structured name objects instead, or use `pgm.sql` with explicit SQL
-in both your up and down migrations.
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
 
 To move a domain between schemas, use SQL explicitly, for example
 `pgm.sql('ALTER DOMAIN "old_schema"."my_domain" SET SCHEMA "new_schema"')`.
