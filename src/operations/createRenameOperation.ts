@@ -3,7 +3,11 @@ import { isPgLiteral } from '../utils/PgLiteral';
 import type { Name, Reversible } from './generalTypes';
 import { isNameObject, isSchemaNameObject } from './generalTypes';
 
-type RenameFn = (source: Name, destination: Name) => string;
+type RenameFn = (
+  source: Name,
+  destination: Name,
+  sourceSuffix?: string
+) => string;
 
 interface RenameOptions {
   operation: string;
@@ -64,20 +68,20 @@ export function createRenameOperation(
     };
   };
 
-  const rename: RenameFn = (source, destination) => {
+  const rename: RenameFn = (source, destination, sourceSuffix = '') => {
     const { schemaSql, oldNameSql, newNameSql } = resolveNames(
       source,
       destination
     );
-    return `ALTER ${keyword} ${qualify(schemaSql, oldNameSql)} RENAME TO ${newNameSql};`;
+    return `ALTER ${keyword} ${qualify(schemaSql, oldNameSql)}${sourceSuffix} RENAME TO ${newNameSql};`;
   };
 
-  const reverse: RenameFn = (source, destination) => {
+  const reverse: RenameFn = (source, destination, sourceSuffix = '') => {
     const { schemaSql, oldNameSql, newNameSql } = resolveNames(
       source,
       destination
     );
-    return `ALTER ${keyword} ${qualify(schemaSql, newNameSql)} RENAME TO ${oldNameSql};`;
+    return `ALTER ${keyword} ${qualify(schemaSql, newNameSql)}${sourceSuffix} RENAME TO ${oldNameSql};`;
   };
 
   return Object.assign(rename, { reverse });
