@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatParams } from '../../utils';
+import { formatFunctionIdentityParams } from '../../utils/formatParams';
 import { createRenameOperation } from '../createRenameOperation';
 import type { Name, Reversible } from '../generalTypes';
 import type { FunctionParam } from './shared';
@@ -18,7 +18,7 @@ export function renameFunction(mOptions: MigrationOptions): RenameFunction {
       operation: 'renameFunction',
       keyword: 'FUNCTION',
       label: 'a function',
-      sourceSuffix: formatParams(functionParams, mOptions),
+      sourceSuffix: formatFunctionIdentityParams(functionParams, mOptions),
     });
 
   const _rename: RenameFunction = (

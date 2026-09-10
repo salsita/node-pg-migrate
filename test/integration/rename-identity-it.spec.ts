@@ -155,6 +155,92 @@ const scenarios: Array<{
   },
 ];
 
+const functionsWithDefaults: Array<{
+  title: string;
+  params: FunctionParam[];
+  returns: string;
+  expected: unknown;
+}> = [
+  {
+    title: 'named IN parameter',
+    params: [{ mode: 'IN', name: 'inputValue', type: 'integer', default: 1 }],
+    returns: 'integer',
+    expected: 1,
+  },
+  {
+    title: 'zero',
+    params: [{ type: 'int', default: 0 }],
+    returns: 'integer',
+    expected: 0,
+  },
+  {
+    title: 'false',
+    params: [{ type: 'bool', default: false }],
+    returns: 'boolean',
+    expected: false,
+  },
+  {
+    title: 'empty string',
+    params: [{ type: 'string', default: '' }],
+    returns: 'text',
+    expected: '',
+  },
+  {
+    title: 'null',
+    params: [{ type: 'integer', default: null }],
+    returns: 'integer',
+    expected: null,
+  },
+  {
+    title: 'literal expression',
+    params: [{ type: 'integer', default: PgLiteral.create('1 + 2') }],
+    returns: 'integer',
+    expected: 3,
+  },
+  {
+    title: 'string shorthand',
+    params: ['inherited'],
+    returns: 'integer',
+    expected: 2,
+  },
+  {
+    title: 'nested object shorthand',
+    params: [{ type: 'nested', name: 'inputValue' }],
+    returns: 'integer',
+    expected: 2,
+  },
+  {
+    title: 'INOUT parameter',
+    params: [
+      { mode: 'INOUT', name: 'inputValue', type: 'integer', default: 1 },
+    ],
+    returns: 'integer',
+    expected: 1,
+  },
+  {
+    title: 'OUT with input default',
+    params: [
+      { mode: 'IN', name: 'inputValue', type: 'integer', default: 1 },
+      { mode: 'OUT', name: 'resultValue', type: 'integer' },
+    ],
+    returns: 'integer',
+    expected: 1,
+  },
+  {
+    title: 'VARIADIC parameter',
+    params: [
+      {
+        mode: 'VARIADIC',
+        name: 'inputValues',
+        type: 'integer[]',
+        default: PgLiteral.create('ARRAY[1, 2]'),
+      },
+    ],
+    returns: 'integer[]',
+    expected: [1, 2],
+  },
+];
+
 describe.each(PG_VERSIONS)(
   'schema-aware rename identities (PG %s)',
   { timeout: INTEGRATION_TIMEOUT },
@@ -335,6 +421,107 @@ describe.each(PG_VERSIONS)(
             expect(await objects('decoy_schema')).toEqual(decoys);
           }
         );
+      }
+    );
+
+    it.each(functionsWithDefaults)(
+      'preserves stored defaults and overloads through a rename chain: $title',
+      async ({ params, returns, expected }) => {
+        const typeShorthands = {
+          inherited: { type: 'int', default: 2 },
+          nested: 'inherited',
+        };
+        const builder = () =>
+          new MigrationBuilder(db(client), typeShorthands, true, console);
+        await client.query('SET LOCAL search_path TO decoy_schema, app_schema');
+
+        const creation = builder();
+        creation.createFunction(
+          { schema: 'appSchema', name: 'oldName' },
+          params,
+          { language: 'sql', returns },
+          'SELECT $1'
+        );
+        for (const sql of creation.getSqlSteps()) {
+          await client.query(sql);
+        }
+
+        const otherIdentity = returns === 'text' ? 'integer' : 'text';
+        for (const name of ['old_name', 'middle_name', 'new_name']) {
+          await client.query(
+            `CREATE FUNCTION decoy_schema.${quote(name)}(${returns}) RETURNS integer LANGUAGE SQL AS 'SELECT 9'`
+          );
+          await client.query(
+            `CREATE FUNCTION app_schema.${quote(name)}(${otherIdentity}) RETURNS integer LANGUAGE SQL AS 'SELECT 8'`
+          );
+        }
+
+        async function catalog() {
+          return (
+            await client.query<{
+              schema: string;
+              name: string;
+              oid: string;
+              identity: string;
+              defaults: string | null;
+              defaultCount: number;
+            }>(`SELECT n.nspname AS schema, p.proname AS name, p.oid::text AS oid,
+              pg_catalog.oidvectortypes(p.proargtypes) AS identity,
+              pg_catalog.pg_get_expr(p.proargdefaults, 0) AS defaults,
+              p.pronargdefaults AS "defaultCount"
+            FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname IN ('app_schema', 'decoy_schema') ORDER BY p.oid`)
+          ).rows;
+        }
+
+        const before = await catalog();
+        const target = before.find(
+          (row) =>
+            row.schema === 'app_schema' &&
+            row.name === 'old_name' &&
+            row.identity === returns
+        );
+        expect(before).toHaveLength(7);
+        expect(target?.defaultCount).toBe(1);
+        expect(target?.defaults).toBeTypeOf('string');
+
+        function migrate(pgm: MigrationBuilder) {
+          pgm.renameFunction({ schema: 'appSchema', name: 'oldName' }, params, {
+            schema: 'app_schema',
+            name: 'middleName',
+          });
+          pgm.renameFunction(
+            { schema: 'app_schema', name: 'middleName' },
+            params,
+            'newName'
+          );
+        }
+
+        const up = builder();
+        migrate(up);
+        for (const sql of up.getSqlSteps()) {
+          await client.query(sql);
+        }
+        expect(await catalog()).toEqual(
+          before.map((row) =>
+            row.oid === target?.oid ? { ...row, name: 'new_name' } : row
+          )
+        );
+        expect(
+          (await client.query('SELECT app_schema.new_name() AS value')).rows[0]
+            .value
+        ).toEqual(expected);
+
+        const down = builder().enableReverseMode();
+        migrate(down);
+        for (const sql of down.getSqlSteps()) {
+          await client.query(sql);
+        }
+        expect(await catalog()).toEqual(before);
+        expect(
+          (await client.query('SELECT app_schema.old_name() AS value')).rows[0]
+            .value
+        ).toEqual(expected);
       }
     );
   }

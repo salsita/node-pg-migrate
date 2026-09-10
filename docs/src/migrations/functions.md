@@ -83,6 +83,12 @@ normalization, automatic reversal, and supported `PgLiteral` names.
 The function parameters identify the overload and are preserved during reversal.
 Use `[]` for a function with no parameters; include the input argument types to
 select an overloaded function.
+Parameter objects may be reused from `createFunction`: their `default` values,
+including defaults supplied by type shorthands, are omitted from rename SQL.
+Argument modes, names, and types are preserved. Renaming does not change the
+function's stored defaults; `createFunction` continues to emit them.
+String parameters and object `type` fields must describe argument types without
+inline `DEFAULT` clauses.
 
 ```javascript
 pgm.renameFunction({ schema: 'app', name: 'old_function' }, ['integer'], {

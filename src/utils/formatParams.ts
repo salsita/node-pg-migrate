@@ -3,7 +3,8 @@ import type { MigrationOptions } from '../migrationOptions';
 import type { FunctionParam } from '../operations/functions';
 
 function formatParam(
-  mOptions: MigrationOptions
+  mOptions: MigrationOptions,
+  includeDefaults: boolean
 ): (param: FunctionParam) => string {
   return (param) => {
     const {
@@ -27,7 +28,7 @@ function formatParam(
       options.push(type);
     }
 
-    if (defaultValue !== undefined) {
+    if (includeDefaults && defaultValue !== undefined) {
       options.push(`DEFAULT ${escapeValue(defaultValue)}`);
     }
 
@@ -39,5 +40,13 @@ export function formatParams(
   params: ReadonlyArray<FunctionParam>,
   mOptions: MigrationOptions
 ): string {
-  return `(${params.map(formatParam(mOptions)).join(', ')})`;
+  return `(${params.map(formatParam(mOptions, true)).join(', ')})`;
+}
+
+/** Format a function identity without defaults, including shorthand defaults. */
+export function formatFunctionIdentityParams(
+  params: ReadonlyArray<FunctionParam>,
+  mOptions: MigrationOptions
+): string {
+  return `(${params.map(formatParam(mOptions, false)).join(', ')})`;
 }
