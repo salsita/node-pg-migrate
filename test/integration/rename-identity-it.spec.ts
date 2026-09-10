@@ -25,6 +25,7 @@ const operations: Array<{
   operation: 'renameFunction' | 'renameOperatorClass' | 'renameOperatorFamily';
   identity: string;
   otherIdentity: string;
+  indexMethod?: string;
   params?: FunctionParam[];
 }> = [
   {
@@ -67,6 +68,18 @@ const operations: Array<{
     operation: 'renameOperatorFamily',
     identity: 'hash',
     otherIdentity: 'btree',
+  },
+  {
+    operation: 'renameOperatorClass',
+    identity: 'Custom.Method',
+    otherIdentity: 'hash',
+    indexMethod: '"Custom.Method"',
+  },
+  {
+    operation: 'renameOperatorFamily',
+    identity: 'Custom.Method',
+    otherIdentity: 'hash',
+    indexMethod: '"Custom.Method"',
   },
 ];
 
@@ -180,18 +193,23 @@ describe.each(PG_VERSIONS)(
 
     describe.each(operations)(
       '$operation ($identity)',
-      ({ operation, identity, otherIdentity, params }) => {
+      ({ operation, identity, otherIdentity, params, indexMethod }) => {
         const rename: Rename = (pgm, source, destination) => {
           if (operation === 'renameFunction') {
             pgm.renameFunction(source, params ?? [], destination);
           } else {
-            pgm[operation](source, identity, destination);
+            pgm[operation](source, indexMethod ?? identity, destination);
           }
         };
 
         it.each(scenarios)(
           '$title',
           async ({ original, final, qualified, migrate }) => {
+            if (indexMethod) {
+              await client.query(
+                'CREATE ACCESS METHOD "Custom.Method" TYPE INDEX HANDLER pg_catalog.bthandler'
+              );
+            }
             // Qualified calls must bypass the first search-path entry. Other
             // overloads/access methods must also survive every rename unchanged.
             await client.query(
@@ -212,7 +230,7 @@ describe.each(PG_VERSIONS)(
                 );
               } else if (operation === 'renameOperatorFamily') {
                 await client.query(
-                  `CREATE OPERATOR FAMILY ${qualifiedName} USING ${objectIdentity}`
+                  `CREATE OPERATOR FAMILY ${qualifiedName} USING ${quote(objectIdentity)}`
                 );
               } else {
                 const definition =
@@ -225,7 +243,7 @@ describe.each(PG_VERSIONS)(
                  OPERATOR 5 pg_catalog.> (integer, integer),
                  FUNCTION 1 pg_catalog.btint4cmp(integer, integer)`;
                 await client.query(
-                  `CREATE OPERATOR CLASS ${qualifiedName} FOR TYPE integer USING ${objectIdentity} AS ${definition}`
+                  `CREATE OPERATOR CLASS ${qualifiedName} FOR TYPE integer USING ${quote(objectIdentity)} AS ${definition}`
                 );
               }
             }

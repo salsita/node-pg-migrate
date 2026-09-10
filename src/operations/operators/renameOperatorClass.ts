@@ -1,6 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { createRenameOperation } from '../createRenameOperation';
 import type { Name, Reversible } from '../generalTypes';
+import { formatIndexMethod } from './formatIndexMethod';
 
 export type RenameOperatorClassFn = (
   oldOperatorClassName: Name,
@@ -18,7 +19,7 @@ export function renameOperatorClass(
       operation: 'renameOperatorClass',
       keyword: 'OPERATOR CLASS',
       label: 'an operator class',
-      sourceSuffix: ` USING ${indexMethod}`,
+      sourceSuffix: formatIndexMethod(indexMethod, 'renameOperatorClass'),
     });
 
   const _rename: RenameOperatorClass = (

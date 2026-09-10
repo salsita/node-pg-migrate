@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../migrationOptions';
+import { isSingleIdentifier } from '../utils/isSingleIdentifier';
 import { isPgLiteral } from '../utils/PgLiteral';
 import type { Name, Reversible } from './generalTypes';
 import { isNameObject, isSchemaNameObject } from './generalTypes';
@@ -12,12 +13,6 @@ interface RenameOptions {
   sourceSuffix?: string;
 }
 
-// A single ordinary or double-quoted PostgreSQL identifier, with optional SQL
-// whitespace. Dots and doubled quotes inside a quoted identifier are content.
-// Raw SQL expressions, qualifications and U& escape syntax require explicit SQL.
-const SINGLE_IDENTIFIER =
-  /^[ \t\r\n\f\v]*(?:[A-Za-z_\u0080-\u{10FFFF}][A-Za-z0-9_$\u0080-\u{10FFFF}]*|"(?:[^"]|"")+")[ \t\r\n\f\v]*$/u;
-
 function qualify(schemaSql: string | undefined, nameSql: string): string {
   return schemaSql ? `${schemaSql}.${nameSql}` : nameSql;
 }
@@ -30,7 +25,7 @@ export function createRenameOperation(
   const nameParts = (value: Name, position: 'source' | 'destination') => {
     if (isPgLiteral(value)) {
       const nameSql = mOptions.literal(value);
-      if (nameSql.includes('\0') || !SINGLE_IDENTIFIER.test(nameSql)) {
+      if (!isSingleIdentifier(nameSql)) {
         throw new Error(
           `${operation} requires a single unqualified identifier for a PgLiteral ${position}; use { schema, name } for schema-qualified names`
         );
