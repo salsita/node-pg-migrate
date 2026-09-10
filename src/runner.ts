@@ -7,7 +7,11 @@ import { getMigrationFilePaths, Migration } from './migration';
 import type { MigrationLoaderConfig } from './migrationLoader';
 import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
-import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+import {
+  getMigrationTableName,
+  getMigrationTableSchema,
+  getSchemas,
+} from './utils';
 
 type AdvisoryLockMode = 'fail' | 'wait';
 
@@ -376,13 +380,7 @@ async function ensureMigrationsTable(
   try {
     const schema = getMigrationTableSchema(options);
     const { migrationsTable } = options;
-    const fullTableName = createSchemalize({
-      shouldDecamelize: Boolean(options.decamelize),
-      shouldQuote: true,
-    })({
-      schema,
-      name: migrationsTable,
-    });
+    const fullTableName = getMigrationTableName(options);
 
     if (await migrationsTableExists(db, options)) {
       const primaryKeyConstraints = await db.select(
@@ -410,19 +408,9 @@ async function getRunMigrations(
   db: DBConnection,
   options: RunnerOption
 ): Promise<string[]> {
-  const schema = getMigrationTableSchema(options);
-  const { migrationsTable } = options;
-  const fullTableName = createSchemalize({
-    shouldDecamelize: Boolean(options.decamelize),
-    shouldQuote: true,
-  })({
-    schema,
-    name: migrationsTable,
-  });
-
   return db.column(
     nameColumn,
-    `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
+    `SELECT ${nameColumn} FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
   );
 }
 
@@ -602,7 +590,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
 
       if (!hasMigrationsTable) {
         logger.info(
-          `> Would create migrations table "${getMigrationTableSchema(options)}"."${options.migrationsTable}"`
+          `> Would create migrations table ${getMigrationTableName(options)}`
         );
       }
     } else {
