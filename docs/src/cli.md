@@ -107,6 +107,45 @@ what an earlier pending migration would have created:
 - `redo --dry-run` prints the `down` migrations and then reports `No migrations to run!` for
   the `up` half, because the `down` half was never applied.
 
+## Migration History
+
+Each run records the migrations it applies in the migrations table: `migrations-table`
+(`pgmigrations`) in `migrations-schema`, which defaults to the first `schema`, which defaults to
+`public`. That location only comes from configuration, so before creating anything a run checks
+that the history really is there.
+
+When the migrations table is missing or empty, but a table of that name in another schema of
+the database already records migrations, the run is refused rather than starting the history
+over: replaying every migration either fails half-way (`relation "…" does not exist`) or
+silently duplicates objects into the wrong schema. A refused run creates nothing - not the
+migrations table, and not the schemas `--create-schema` asks for. This is what happens when:
+
+- the history and your objects live in a schema your role's own `search_path` points at (so
+  `psql` finds everything), but `--schema` is not given and the run falls back to `public`;
+- `--schema` was used on earlier runs and has since been dropped;
+- a `--schema` list was reordered: the migrations table follows its first entry.
+
+The error names the table it found and the option that points the run at it, such as
+`--schema app`. Where a run looks for another history depends on how it was configured:
+
+| Configuration                                   | Looks for another history in                    |
+| ----------------------------------------------- | ----------------------------------------------- |
+| `migrations-schema`                             | nowhere: the location is taken at its word      |
+| `schema` (on the command line or in the config) | the other schemas of that list                  |
+| neither                                         | every schema, since `public` is only a fallback |
+
+So one schema per tenant keeps working - `up -s tenant_a` and `up -s tenant_b` each keep their
+own history. To start a new history on purpose next to an existing one, name its location:
+`--schema public` rather than relying on the default, or `--migrations-schema` to pin it.
+
+A migrations table in another schema that the connected role cannot read counts as a history.
+The run's own migrations table is looked up in the system catalogs, so a role without
+privileges on it gets the database's permissions error rather than an attempt to create it
+again.
+
+`migrations-table`, `migrations-schema` and `schema` name the objects exactly: `decamelize`
+does not apply to them.
+
 ## Configuration
 
 > [!TIP]
@@ -128,7 +167,7 @@ apply to the `up`, `down` and `redo` commands:
 | `database-url-var`          | `d`     | `DATABASE_URL`                  | Name of env variable with database url string                                                                                                                                                                                                                                           |
 | `migrations-dir`            | `m`     | `migrations`                    | The directory containing your migration files. This path is resolved from `cwd()`. Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns   |
 | `use-glob`                  |         | `false`                         | Use [glob](https://www.npmjs.com/package/glob) to find migration files. This will use `--migrations-dir` _and_ `--ignore-pattern` to glob-search for migration files.                                                                                                                   |
-| `migrations-schema`         |         | same value as `schema`          | The schema storing table which migrations have been run                                                                                                                                                                                                                                 |
+| `migrations-schema`         |         | same value as `schema`          | The schema storing table which migrations have been run, [see](#migration-history)                                                                                                                                                                                                      |
 | `create-migrations-schema`  |         | `false`                         | Create the configured migrations schema if it doesn't exist                                                                                                                                                                                                                             |
 | `migrations-table`          | `t`     | `pgmigrations`                  | The table storing which migrations have been run                                                                                                                                                                                                                                        |
 | `ignore-pattern`            |         | `undefined`                     | Regex pattern for file names to ignore (ignores files starting with `.` by default). Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns |
@@ -143,7 +182,7 @@ apply to the `up`, `down` and `redo` commands:
 | `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
 | `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
 | `dry-run`                   |         | `false`                         | Print the SQL that would run without applying anything, [see](#dry-runs)                                                                                                                                                                                                                |
-| `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names                                                                                                                                                                                                                                            |
+| `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names used in migrations (not on `migrations-table`, `migrations-schema` or `schema`)                                                                                                                                                            |
 | `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
 | `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
