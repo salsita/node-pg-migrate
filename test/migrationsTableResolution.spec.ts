@@ -1,4 +1,4 @@
-import type { ClientBase } from 'pg';
+import type { ClientBase, QueryConfig } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { RunnerOption } from '../src';
 import { runner } from '../src';
@@ -16,10 +16,11 @@ import { runner } from '../src';
  *
  * The suite is in two halves:
  *
- * - `current behaviour` records the facts, so a fix has to acknowledge what it
- *   changes. These pass.
+ * - `contract` pins behaviour the fix must keep, including the documented
+ *   `public` default. These pass today and must keep passing.
  * - `expected behaviour` states what should happen instead. These FAIL, and are
- *   meant to - they are the bug. Fixing #894 turns them green.
+ *   meant to - they are the bug. Fixing #894 turns them green. They assert
+ *   invariants rather than particular SQL, so any correct fix satisfies them.
  */
 
 interface MockOptions {
@@ -34,17 +35,27 @@ interface MockOptions {
   migrationsTableExists?: boolean;
 }
 
+interface RecordedQuery {
+  text: string;
+  values: unknown[];
+}
+
 function createMockClient(options: MockOptions = {}): {
   dbClient: ClientBase;
-  queries: string[];
+  queries: RecordedQuery[];
 } {
   const { runNames = [], migrationsTableExists = false } = options;
 
-  const queries: string[] = [];
+  const queries: RecordedQuery[] = [];
 
   const dbClient = {
-    query: vi.fn((query: string) => {
-      queries.push(query);
+    query: vi.fn((config: string | QueryConfig, values?: unknown[]) => {
+      const query = typeof config === 'string' ? config : config.text;
+      queries.push({
+        text: query,
+        values:
+          values ?? (typeof config === 'string' ? [] : (config.values ?? [])),
+      });
 
       if (query.startsWith('SELECT pg_try_advisory_lock')) {
         return Promise.resolve({ rows: [{ lockObtained: true }] });
@@ -89,7 +100,7 @@ function noop(): void {
 
 async function runUp(
   options: Partial<RunnerOption> & MockOptions = {}
-): Promise<string[]> {
+): Promise<RecordedQuery[]> {
   const { runNames, migrationsTableExists, ...runnerOptions } = options;
   const { dbClient, queries } = createMockClient({
     runNames,
@@ -109,92 +120,58 @@ async function runUp(
   return queries;
 }
 
-function findQuery(queries: string[], prefix: string): string | undefined {
-  return queries.find((query) => query.startsWith(prefix));
+function findQuery(
+  queries: RecordedQuery[],
+  prefix: string
+): string | undefined {
+  return queries.find(({ text }) => text.startsWith(prefix))?.text;
 }
 
 /**
- * The statements that address the bookkeeping table, in the order they run.
+ * The schema of the first statement that addresses the migrations table.
  */
-const BOOKKEEPING_STATEMENT =
-  /^(?:CREATE TABLE|INSERT INTO|DELETE FROM|SELECT name FROM|ALTER TABLE) "(?<schema>[^"]+)"\."(?<table>[^"]+)"/;
-
-/**
- * The raw value the existence probe interpolates into `information_schema`.
- */
-const PROBE_IDENTIFIERS =
-  /table_schema = '(?<schema>[^']+)' AND table_name = '(?<table>[^']+)'/;
-
-/**
- * Every distinct spelling of the bookkeeping table used across one run,
- * including the one the existence probe looks for.
- */
-function migrationsTableNames(queries: string[]): string[] {
-  const names = new Set<string>();
-
-  for (const query of queries) {
-    const statement = BOOKKEEPING_STATEMENT.exec(query);
-    if (statement?.groups) {
-      names.add(statement.groups.table);
-    }
-
-    const probe = PROBE_IDENTIFIERS.exec(query);
-    if (probe?.groups) {
-      names.add(probe.groups.table);
-    }
-  }
-
-  return [...names].toSorted();
-}
-
-/**
- * Every distinct schema one run treats as "the schema", across `CREATE SCHEMA`,
- * `SET search_path` and the bookkeeping statements.
- */
-function schemaNames(queries: string[]): string[] {
-  const names = new Set<string>();
-
-  for (const query of queries) {
-    const created = /^CREATE SCHEMA IF NOT EXISTS "([^"]+)"/.exec(query);
-    if (created) {
-      names.add(created[1]);
-    }
-
-    const searchPath = /^SET search_path TO (.+)$/.exec(query);
-    if (searchPath) {
-      for (const [, schema] of searchPath[1].matchAll(/"([^"]+)"/g)) {
-        names.add(schema);
-      }
-    }
-
-    const statement = BOOKKEEPING_STATEMENT.exec(query);
-    if (statement?.groups) {
-      names.add(statement.groups.schema);
-    }
-  }
-
-  return [...names].toSorted();
-}
-
-function migrationsTableSchema(queries: string[]): string | undefined {
-  for (const query of queries) {
-    const statement = BOOKKEEPING_STATEMENT.exec(query);
-    if (statement?.groups) {
-      return statement.groups.schema;
+function migrationsTableSchema(queries: RecordedQuery[]): string | undefined {
+  for (const { text } of queries) {
+    const statement =
+      /^(?:CREATE TABLE|INSERT INTO|DELETE FROM|SELECT name FROM|ALTER TABLE) "([^"]+)"\."[^"]+"/.exec(
+        text
+      );
+    if (statement) {
+      return statement[1];
     }
   }
 
   return undefined;
 }
 
+/**
+ * Which of the given spellings of one identifier a run used anywhere, in the
+ * SQL text or in bound parameters. Independent of how the SQL is shaped, so it
+ * holds for any implementation.
+ */
+function spellingsUsed(
+  queries: RecordedQuery[],
+  spellings: ReadonlyArray<string>
+): string[] {
+  const haystack = queries
+    .map(({ text, values }) => `${text}\n${JSON.stringify(values)}`)
+    .join('\n');
+
+  return spellings.filter((spelling) =>
+    new RegExp(`(?<![\\w$])${spelling}(?![\\w$])`).test(haystack)
+  );
+}
+
 describe('migrations table resolution', () => {
-  describe('current behaviour', () => {
+  describe('contract', () => {
     it('should force the session search_path when a schema is configured', async () => {
       // `src/cli/config.ts` does `SCHEMA ??= ['public']`, so the CLI hands this
       // in on every single run, whether or not the user mentioned a schema.
       const queries = await runUp({ schema: ['public'] });
 
-      expect(queries).toContain('SET search_path TO "public"');
+      expect(findQuery(queries, 'SET search_path')).toBe(
+        'SET search_path TO "public"'
+      );
     });
 
     it('should leave the session search_path alone when no schema is configured', async () => {
@@ -203,21 +180,20 @@ describe('migrations table resolution', () => {
       expect(findQuery(queries, 'SET search_path')).toBeUndefined();
     });
 
-    it('should pin the migrations table to public when no schema is configured', async () => {
+    it('should keep the migrations table in public when no schema is configured', async () => {
       const queries = await runUp();
 
-      // `getMigrationTableSchema` falls back to `getSchemas(undefined)[0]`, so
-      // the bookkeeping table is qualified with `public` even though the
-      // migration DDL is left to resolve through the session search_path.
-      expect(queries).toContain(
-        'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id'
-      );
+      // Documented: `schema` defaults to `public`, and `migrationsSchema` to
+      // the same value as `schema`.
+      expect(migrationsTableSchema(queries)).toBe('public');
     });
 
     it('should put the migrations table in the first configured schema', async () => {
       const queries = await runUp({ schema: ['app', 'public'] });
 
-      expect(queries).toContain('SET search_path TO "app", "public"');
+      expect(findQuery(queries, 'SET search_path')).toBe(
+        'SET search_path TO "app", "public"'
+      );
       expect(migrationsTableSchema(queries)).toBe('app');
     });
 
@@ -227,25 +203,20 @@ describe('migrations table resolution', () => {
         migrationsSchema: 'meta',
       });
 
-      expect(queries).toContain('SET search_path TO "app"');
+      expect(findQuery(queries, 'SET search_path')).toBe(
+        'SET search_path TO "app"'
+      );
       expect(migrationsTableSchema(queries)).toBe('meta');
     });
 
-    it('should replay every migration when the bookkeeping table comes back empty', async () => {
-      const queries = await runUp({
-        migrationsTableExists: true,
-        runNames: [],
-      });
+    it('should run every migration against a new database', async () => {
+      const queries = await runUp();
 
-      // Correct for a genuinely new database. The problem is that a
-      // misresolved table is indistinguishable from one: nothing checks
-      // whether the objects already exist, or whether a populated
-      // `pgmigrations` lives elsewhere in the database.
       expect(findQuery(queries, 'CREATE TABLE "users"')).toBeDefined();
       expect(findQuery(queries, 'ALTER TABLE "users"')).toBeDefined();
     });
 
-    it('should skip migrations the bookkeeping table already records', async () => {
+    it('should skip migrations the migrations table already records', async () => {
       const queries = await runUp({
         migrationsTableExists: true,
         runNames: ['001_create_users', '002_add_contract_id'],
@@ -263,15 +234,17 @@ describe('migrations table resolution', () => {
         decamelize: true,
       });
 
-      // Three separate spellings today: the existence probe interpolates the
-      // raw option value, `ensureMigrationsTable` and the read-back go
-      // through `createSchemalize` (which decamelizes), and
-      // `Migration._getMarkAsRun` quotes the raw value by hand. The run
-      // creates one table and then writes to another.
-      expect(migrationsTableNames(queries)).toStrictEqual(['pg_migrations']);
+      // Two spellings today: the existence probe interpolates the raw option
+      // value and `Migration._getMarkAsRun` quotes it by hand, while
+      // `ensureMigrationsTable` and the read-back go through
+      // `createSchemalize`, which decamelizes it. The run creates one table and
+      // then writes to another. Either spelling is fine, as long as it is one.
+      expect(
+        spellingsUsed(queries, ['pgMigrations', 'pg_migrations'])
+      ).toHaveLength(1);
     });
 
-    it('should use one schema for both the search_path and the migrations table', async () => {
+    it('should use one schema name for the search_path and the migrations table', async () => {
       const queries = await runUp({
         schema: ['myApp'],
         createSchema: true,
@@ -279,34 +252,22 @@ describe('migrations table resolution', () => {
       });
 
       // `runner` writes the schema verbatim into `CREATE SCHEMA` and
-      // `SET search_path`, while `getMigrationTableSchema` decamelizes it.
-      // The run creates "myApp" and then targets "my_app".
-      expect(schemaNames(queries)).toStrictEqual(['myApp']);
+      // `SET search_path`, while `getMigrationTableSchema` feeds it through
+      // `createSchemalize`, which decamelizes it. The run creates "myApp" and
+      // then targets "my_app".
+      expect(spellingsUsed(queries, ['myApp', 'my_app'])).toHaveLength(1);
     });
 
-    it('should keep the migrations table in one place when the schema list is reordered', async () => {
-      const forwards = await runUp({ schema: ['app', 'public'] });
-      const backwards = await runUp({ schema: ['public', 'app'] });
-
-      // `['app', 'public']` and `['public', 'app']` describe the same set of
-      // schemas, but `getMigrationTableSchema` takes the first entry, so the
-      // bookkeeping table moves and the next run replays everything into the
-      // other schema.
-      expect(migrationsTableSchema(backwards)).toBe(
-        migrationsTableSchema(forwards)
-      );
-    });
-
-    it('should detect the migrations table regardless of the role privileges', async () => {
+    it('should not look the migrations table up through information_schema', async () => {
       const queries = await runUp();
 
-      const probe = findQuery(queries, 'SELECT table_name FROM');
-
-      // `information_schema.tables` only lists tables the connected role
-      // holds a privilege on, so a role with no grant on an existing
-      // `pgmigrations` is told the table is missing and the runner tries to
-      // create it. `pg_catalog` / `to_regclass` answer regardless of grants.
-      expect(probe).not.toContain('information_schema');
+      // `information_schema` only lists objects the connected role holds a
+      // privilege on, so a role without a grant on an existing migrations table
+      // is told it is missing, and the runner tries to create it again.
+      // `pg_catalog` answers regardless of grants.
+      expect(
+        queries.filter(({ text }) => text.includes('information_schema'))
+      ).toStrictEqual([]);
     });
   });
 });
