@@ -13,33 +13,26 @@ export type RenameOperatorFamily = Reversible<RenameOperatorFamilyFn>;
 export function renameOperatorFamily(
   mOptions: MigrationOptions
 ): RenameOperatorFamily {
-  const rename = createRenameOperation(mOptions, {
-    operation: 'renameOperatorFamily',
-    keyword: 'OPERATOR FAMILY',
-    label: 'an operator family',
-  });
+  const rename = (indexMethod: string) =>
+    createRenameOperation(mOptions, {
+      operation: 'renameOperatorFamily',
+      keyword: 'OPERATOR FAMILY',
+      label: 'an operator family',
+      sourceSuffix: ` USING ${indexMethod}`,
+    });
 
   const _rename: RenameOperatorFamily = (
     oldOperatorFamilyName,
     indexMethod,
     newOperatorFamilyName
-  ) =>
-    rename(
-      oldOperatorFamilyName,
-      newOperatorFamilyName,
-      ` USING ${indexMethod}`
-    );
+  ) => rename(indexMethod)(oldOperatorFamilyName, newOperatorFamilyName);
 
   _rename.reverse = (
     oldOperatorFamilyName,
     indexMethod,
     newOperatorFamilyName
   ) =>
-    rename.reverse(
-      oldOperatorFamilyName,
-      newOperatorFamilyName,
-      ` USING ${indexMethod}`
-    );
+    rename(indexMethod).reverse(oldOperatorFamilyName, newOperatorFamilyName);
 
   return _rename;
 }

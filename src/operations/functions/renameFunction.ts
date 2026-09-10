@@ -13,29 +13,22 @@ export type RenameFunctionFn = (
 export type RenameFunction = Reversible<RenameFunctionFn>;
 
 export function renameFunction(mOptions: MigrationOptions): RenameFunction {
-  const rename = createRenameOperation(mOptions, {
-    operation: 'renameFunction',
-    keyword: 'FUNCTION',
-    label: 'a function',
-  });
+  const rename = (functionParams: FunctionParam[]) =>
+    createRenameOperation(mOptions, {
+      operation: 'renameFunction',
+      keyword: 'FUNCTION',
+      label: 'a function',
+      sourceSuffix: formatParams(functionParams, mOptions),
+    });
 
   const _rename: RenameFunction = (
     oldFunctionName,
     functionParams = [],
     newFunctionName
-  ) =>
-    rename(
-      oldFunctionName,
-      newFunctionName,
-      formatParams(functionParams, mOptions)
-    );
+  ) => rename(functionParams)(oldFunctionName, newFunctionName);
 
   _rename.reverse = (oldFunctionName, functionParams = [], newFunctionName) =>
-    rename.reverse(
-      oldFunctionName,
-      newFunctionName,
-      formatParams(functionParams, mOptions)
-    );
+    rename(functionParams).reverse(oldFunctionName, newFunctionName);
 
   return _rename;
 }

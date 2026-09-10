@@ -3,16 +3,13 @@ import { isPgLiteral } from '../utils/PgLiteral';
 import type { Name, Reversible } from './generalTypes';
 import { isNameObject, isSchemaNameObject } from './generalTypes';
 
-type RenameFn = (
-  source: Name,
-  destination: Name,
-  sourceSuffix?: string
-) => string;
+type RenameFn = (source: Name, destination: Name) => string;
 
 interface RenameOptions {
   operation: string;
   keyword: string;
   label: string;
+  sourceSuffix?: string;
 }
 
 // A single ordinary or double-quoted PostgreSQL identifier, with optional SQL
@@ -28,7 +25,7 @@ function qualify(schemaSql: string | undefined, nameSql: string): string {
 /** Creates the reversible pair for an object renamed within its schema. */
 export function createRenameOperation(
   mOptions: MigrationOptions,
-  { operation, keyword, label }: RenameOptions
+  { operation, keyword, label, sourceSuffix = '' }: RenameOptions
 ): Reversible<RenameFn> {
   const nameParts = (value: Name, position: 'source' | 'destination') => {
     if (isPgLiteral(value)) {
@@ -68,7 +65,7 @@ export function createRenameOperation(
     };
   };
 
-  const rename: RenameFn = (source, destination, sourceSuffix = '') => {
+  const rename: RenameFn = (source, destination) => {
     const { schemaSql, oldNameSql, newNameSql } = resolveNames(
       source,
       destination
@@ -76,7 +73,7 @@ export function createRenameOperation(
     return `ALTER ${keyword} ${qualify(schemaSql, oldNameSql)}${sourceSuffix} RENAME TO ${newNameSql};`;
   };
 
-  const reverse: RenameFn = (source, destination, sourceSuffix = '') => {
+  const reverse: RenameFn = (source, destination) => {
     const { schemaSql, oldNameSql, newNameSql } = resolveNames(
       source,
       destination
