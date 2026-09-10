@@ -2,6 +2,9 @@ import type { ClientBase } from 'pg';
 import type { Mock } from 'vitest';
 import { describe, expect, it, vi } from 'vitest';
 import { runner } from '../src';
+import type { LogFn } from '../src/logger';
+import type { RunMigration } from '../src/migration';
+import type { RunnerOptionConfig } from '../src/runner';
 
 // The catalog lookups the runner makes. Schema and table names are passed as parameters, so
 // the text is the same wherever the migrations table lives.
@@ -10,6 +13,9 @@ const MIGRATIONS_TABLE_EXISTS =
 
 const MIGRATIONS_TABLE_PRIMARY_KEY =
   "SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname = $2)";
+
+const OTHER_MIGRATIONS_TABLES =
+  "SELECT n.nspname AS \"schema\", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS \"readable\" FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = $3 AND NOT a.attisdropped) ORDER BY n.nspname";
 
 describe('runner', () => {
   it('should return a function', () => {
@@ -56,6 +62,12 @@ describe('runner', () => {
           case MIGRATIONS_TABLE_EXISTS: {
             return Promise.resolve({
               rows: [], // no migration table
+            });
+          }
+
+          case OTHER_MIGRATIONS_TABLES: {
+            return Promise.resolve({
+              rows: [], // no migration history in another schema either
             });
           }
 
@@ -225,6 +237,12 @@ describe('runner', () => {
           });
         }
 
+        case OTHER_MIGRATIONS_TABLES: {
+          return Promise.resolve({
+            rows: [], // no migration history in another schema either
+          });
+        }
+
         default: {
           return Promise.resolve({ rows: [{}] }); // bypass other queries
         }
@@ -274,6 +292,12 @@ describe('runner', () => {
         case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
           return Promise.resolve({
             rows: [], // no migrations executed
+          });
+        }
+
+        case OTHER_MIGRATIONS_TABLES: {
+          return Promise.resolve({
+            rows: [], // no migration history in another schema either
           });
         }
 
@@ -376,6 +400,10 @@ describe('runner', () => {
 
         if (query === MIGRATIONS_TABLE_EXISTS) {
           return Promise.resolve({ rows: migrationsTableExists ? [{}] : [] });
+        }
+
+        if (query === OTHER_MIGRATIONS_TABLES) {
+          return Promise.resolve({ rows: [] });
         }
 
         if (query.startsWith('SELECT name FROM ')) {
@@ -610,6 +638,295 @@ describe('runner', () => {
       ).rejects.toThrow(
         'This migration writes to the database directly (e.g. through `pgm.db.query(...)`), which a dry run refuses'
       );
+    });
+  });
+
+  describe('migration history', () => {
+    interface MigrationsTable {
+      /**
+       * Names of the migrations the table records.
+       */
+      runNames?: string[];
+      readable?: boolean;
+    }
+
+    /**
+     * A client for a database holding the given migrations tables, keyed by schema. It answers
+     * the runner's own bookkeeping queries and accepts everything else.
+     */
+    function createDbClient(tables: Record<string, MigrationsTable> = {}): {
+      dbClient: ClientBase;
+      queryMock: Mock;
+    } {
+      const tableIn = (query: string, pattern: RegExp): MigrationsTable =>
+        tables[pattern.exec(query)?.[1] ?? ''] ?? {};
+
+      const queryMock = vi.fn((query: string, values?: string[]) => {
+        if (query === MIGRATIONS_TABLE_EXISTS) {
+          return Promise.resolve({
+            rows: Object.hasOwn(tables, String(values?.[1])) ? [{}] : [],
+          });
+        }
+
+        if (query === OTHER_MIGRATIONS_TABLES) {
+          return Promise.resolve({
+            rows: Object.entries(tables)
+              .filter(([schema]) => schema !== values?.[1])
+              .map(([schema, { readable = true }]) => ({ schema, readable })),
+          });
+        }
+
+        if (query.endsWith(' LIMIT 1')) {
+          const { runNames = [] } = tableIn(query, /^SELECT 1 FROM "([^"]+)"/);
+
+          return Promise.resolve({
+            rows: runNames.slice(0, 1).map(() => ({})),
+          });
+        }
+
+        if (query.startsWith('SELECT name FROM ')) {
+          const { runNames = [] } = tableIn(
+            query,
+            /^SELECT name FROM "([^"]+)"/
+          );
+
+          return Promise.resolve({ rows: runNames.map((name) => ({ name })) });
+        }
+
+        if (query.startsWith('SELECT pg_try_advisory_lock')) {
+          return Promise.resolve({ rows: [{ lockObtained: true }] });
+        }
+
+        if (query.startsWith('SELECT pg_advisory_unlock')) {
+          return Promise.resolve({ rows: [{ lockReleased: true }] });
+        }
+
+        return Promise.resolve({ rows: [{}] });
+      });
+
+      return {
+        dbClient: { query: queryMock } as unknown as ClientBase,
+        queryMock,
+      };
+    }
+
+    function executedQueries(queryMock: Mock): string[] {
+      return queryMock.mock.calls.map((call) => String(call[0]));
+    }
+
+    function run(
+      dbClient: ClientBase,
+      options: Partial<RunnerOptionConfig> = {}
+    ): Promise<RunMigration[]> {
+      return runner({
+        dbClient,
+        migrationsTable: 'pgmigrations',
+        dir: 'test/cockroach',
+        direction: 'up',
+        logger: {
+          info: vi.fn<LogFn>(),
+          warn: vi.fn<LogFn>(),
+          error: vi.fn<LogFn>(),
+        },
+        ...options,
+      });
+    }
+
+    /**
+     * A refused run stops before it creates, records or applies anything - before it even sets
+     * the `search_path`.
+     */
+    function expectNoWrites(queryMock: Mock): void {
+      expect(
+        executedQueries(queryMock).filter((query) =>
+          /^(CREATE|ALTER|INSERT|DELETE|SET search_path)/.test(query)
+        )
+      ).toEqual([]);
+    }
+
+    const history: MigrationsTable = { runNames: ['004_table'] };
+
+    it('should carry on from the history where the run expects it, without looking elsewhere', async () => {
+      const { dbClient, queryMock } = createDbClient({
+        public: history,
+        app: history,
+      });
+
+      await expect(run(dbClient)).resolves.toHaveLength(11);
+
+      expect(executedQueries(queryMock)).not.toContain(OTHER_MIGRATIONS_TABLES);
+    });
+
+    it('should start a new history when the database has none', async () => {
+      const { dbClient, queryMock } = createDbClient();
+
+      await expect(run(dbClient)).resolves.toHaveLength(12);
+
+      expect(queryMock).toHaveBeenCalledWith(OTHER_MIGRATIONS_TABLES, [
+        'pgmigrations',
+        'public',
+        'run_on',
+      ]);
+      expect(executedQueries(queryMock)).toContain(
+        'CREATE TABLE "public"."pgmigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
+      );
+    });
+
+    it('should refuse to start over when no schema was given and another schema holds the history', async () => {
+      const { dbClient, queryMock } = createDbClient({ app: history });
+
+      await expect(run(dbClient)).rejects.toThrow(
+        new Error(
+          'Refusing to run: the migrations table "public"."pgmigrations" does not exist, but "app"."pgmigrations" already records migrations. Carrying on would start the history over and could apply migrations that have already run. No schema was configured, so "public" is only the fallback. To continue that history, pass `--schema app` (or `--migrations-schema app` if only the migrations table lives there); to start a new one in "public", pass `--schema public`.'
+        )
+      );
+
+      expectNoWrites(queryMock);
+    });
+
+    it('should refuse the same way when the migrations table exists but is empty', async () => {
+      const { dbClient, queryMock } = createDbClient({
+        public: { runNames: [] },
+        app: history,
+      });
+
+      await expect(run(dbClient, { direction: 'down' })).rejects.toThrow(
+        'Refusing to run: the migrations table "public"."pgmigrations" is empty, but "app"."pgmigrations" already records migrations.'
+      );
+
+      expectNoWrites(queryMock);
+    });
+
+    it('should not trust a schema that is only a default the CLI filled in', async () => {
+      const { dbClient, queryMock } = createDbClient({ app: history });
+
+      await expect(
+        run(dbClient, {
+          schema: ['public'],
+          schemaIsDefault: true,
+          createSchema: true,
+          fake: true,
+        })
+      ).rejects.toThrow('No schema was configured');
+
+      // Not even the schema: a refused run leaves the database as it found it.
+      expectNoWrites(queryMock);
+    });
+
+    it('should not count an empty schema list as a choice', async () => {
+      const { dbClient } = createDbClient({ app: history });
+
+      await expect(run(dbClient, { schema: [] })).rejects.toThrow(
+        'No schema was configured'
+      );
+    });
+
+    it('should start a new history in a schema the user chose, as for another tenant', async () => {
+      const { dbClient, queryMock } = createDbClient({ tenant_a: history });
+
+      await expect(
+        run(dbClient, {
+          schema: 'tenant_b',
+          createSchema: true,
+        })
+      ).resolves.toHaveLength(12);
+
+      const queries = executedQueries(queryMock);
+
+      expect(queries).not.toContain(OTHER_MIGRATIONS_TABLES);
+      expect(queries).toContain('CREATE SCHEMA IF NOT EXISTS "tenant_b"');
+      expect(queries).toContain(
+        'CREATE TABLE "tenant_b"."pgmigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
+      );
+    });
+
+    it('should refuse when the history is further down the chosen schema list', async () => {
+      const { dbClient, queryMock } = createDbClient({ app: history });
+
+      await expect(
+        run(dbClient, { schema: ['public', 'app'] })
+      ).rejects.toThrow(
+        'The migrations table follows the first `--schema` entry, and "app" is further down that list. To continue that history, pass `--migrations-schema app` (or list "app" first); to start a new one in "public", pass `--migrations-schema public`.'
+      );
+
+      expectNoWrites(queryMock);
+    });
+
+    it('should leave histories outside the chosen schema list to their own tenants', async () => {
+      const { dbClient } = createDbClient({ tenant_a: history });
+
+      await expect(
+        run(dbClient, { schema: ['tenant_b', 'shared'] })
+      ).resolves.toHaveLength(12);
+    });
+
+    it('should not count an empty table in another schema as a history', async () => {
+      const { dbClient } = createDbClient({ app: { runNames: [] } });
+
+      await expect(run(dbClient)).resolves.toHaveLength(12);
+    });
+
+    it('should refuse when a table in another schema cannot be read', async () => {
+      const { dbClient, queryMock } = createDbClient({
+        app: { ...history, readable: false },
+      });
+
+      await expect(run(dbClient)).rejects.toThrow(
+        'but "app"."pgmigrations" exists and cannot be read by this role.'
+      );
+
+      // Reading it would only fail with a permissions error.
+      expect(executedQueries(queryMock)).not.toContain(
+        'SELECT 1 FROM "app"."pgmigrations" LIMIT 1'
+      );
+    });
+
+    it('should take an explicit migrationsSchema at its word', async () => {
+      const { dbClient, queryMock } = createDbClient({ app: history });
+
+      await expect(
+        run(dbClient, { migrationsSchema: 'meta' })
+      ).resolves.toHaveLength(12);
+
+      expect(executedQueries(queryMock)).not.toContain(OTHER_MIGRATIONS_TABLES);
+    });
+
+    it('should refuse a dry run the same way, and end its read-only transaction', async () => {
+      const { dbClient, queryMock } = createDbClient({ app: history });
+
+      await expect(run(dbClient, { dryRun: true })).rejects.toThrow(
+        'Refusing to run'
+      );
+
+      expect(executedQueries(queryMock).at(-1)).toBe('ROLLBACK');
+    });
+
+    it('should use the configured migrations table and schema names as they are under decamelize', async () => {
+      const { dbClient, queryMock } = createDbClient();
+
+      await run(dbClient, {
+        migrationsTable: 'pgMigrations',
+        schema: 'myApp',
+        createSchema: true,
+        decamelize: true,
+      });
+
+      const queries = executedQueries(queryMock);
+
+      expect(queryMock).toHaveBeenCalledWith(MIGRATIONS_TABLE_EXISTS, [
+        'pgMigrations',
+        'myApp',
+      ]);
+      expect(queries).toContain('CREATE SCHEMA IF NOT EXISTS "myApp"');
+      expect(queries).toContain('SET search_path TO "myApp"');
+      expect(queries).toContain(
+        'CREATE TABLE "myApp"."pgMigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
+      );
+      expect(
+        queries.filter((query) =>
+          query.startsWith('INSERT INTO "myApp"."pgMigrations" (name, run_on)')
+        )
+      ).toHaveLength(12);
     });
   });
 });

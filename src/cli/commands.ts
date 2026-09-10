@@ -159,6 +159,7 @@ export async function runMigration(
       useGlob: config.useGlob,
       ignorePattern: config.ignorePattern,
       schema: config.schema,
+      schemaIsDefault: config.schemaIsDefault,
       createSchema: config.createSchema,
       migrationsSchema: config.migrationsSchema,
       createMigrationsSchema: config.createMigrationsSchema,

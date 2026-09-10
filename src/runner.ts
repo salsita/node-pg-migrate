@@ -11,6 +11,7 @@ import {
   getMigrationTableName,
   getMigrationTableSchema,
   getSchemas,
+  toArray,
 } from './utils';
 
 type AdvisoryLockMode = 'fail' | 'wait';
@@ -34,6 +35,16 @@ export interface RunnerOptionConfig {
    * @default 'public'
    */
   schema?: string | string[];
+
+  /**
+   * Marks `schema` as a fallback filled in by the caller rather than a schema the user chose,
+   * as the CLI does when `--schema` is not given. It still sets the `search_path`, but it does
+   * not vouch for where the migration history lives: if the migrations table is missing or
+   * empty there while another schema already holds one, the run is refused.
+   *
+   * @default false
+   */
+  schemaIsDefault?: boolean;
 
   /**
    * The directory containing your migration files. This path is resolved from `cwd()`.
@@ -381,12 +392,13 @@ async function migrationsTableExists(
 
 async function ensureMigrationsTable(
   db: DBConnection,
-  options: RunnerOption
+  options: RunnerOption,
+  hasMigrationsTable: boolean
 ): Promise<void> {
   try {
     const fullTableName = getMigrationTableName(options);
 
-    if (await migrationsTableExists(db, options)) {
+    if (hasMigrationsTable) {
       const primaryKeyConstraints = await db.select(
         `SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid ${RELATIONS_NAMED} AND n.nspname = $2)`,
         [options.migrationsTable, getMigrationTableSchema(options)]
@@ -417,6 +429,131 @@ async function getRunMigrations(
     nameColumn,
     `SELECT ${nameColumn} FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
   );
+}
+
+/**
+ * Whether the user pointed the run at a schema, rather than it falling back to the default.
+ */
+function isSchemaChosen(options: RunnerOption): boolean {
+  return !options.schemaIsDefault && toArray(options.schema).some(Boolean);
+}
+
+interface MigrationsTableLocation {
+  schema: string;
+
+  /**
+   * Whether the connected role may read the table, and so tell whether it records anything.
+   */
+  readable: boolean;
+}
+
+async function recordsMigrations(
+  db: DBConnection,
+  options: RunnerOption,
+  schema: string
+): Promise<boolean> {
+  const rows = await db.select(
+    `SELECT 1 FROM ${getMigrationTableName(options, schema)} LIMIT 1`
+  );
+
+  return rows.length > 0;
+}
+
+/**
+ * Look for the migration history this run would otherwise ignore: a table named like the
+ * migrations table, in another schema, that already records migrations - or that this role
+ * cannot read, and so might.
+ *
+ * Where to look depends on how the run was pointed at its own table. A `migrationsSchema`
+ * is taken at its word. Without one, the table follows the first `schema`: when the user
+ * chose those schemas, other schemas belong to other tenants and only the rest of the list
+ * is searched (a reordered list moves the table); when the schema is only a fallback, any
+ * schema may hold the history.
+ */
+async function findHistoryElsewhere(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<MigrationsTableLocation | undefined> {
+  if (options.migrationsSchema !== undefined) {
+    return undefined;
+  }
+
+  const schema = getMigrationTableSchema(options);
+  const searched = isSchemaChosen(options)
+    ? getSchemas(options.schema).filter((s) => s !== schema)
+    : undefined;
+
+  if (searched?.length === 0) {
+    return undefined;
+  }
+
+  // Only user schemas, and only tables shaped like a migrations table: an unrelated table
+  // that merely shares a generic name such as `migrations` is not a history.
+  const tables: MigrationsTableLocation[] = await db.select(
+    `SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${RELATIONS_NAMED} AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = $3 AND NOT a.attisdropped) ORDER BY n.nspname`,
+    [options.migrationsTable, schema, runOnColumn]
+  );
+
+  for (const table of tables) {
+    if (
+      (searched?.includes(table.schema) ?? true) &&
+      (!table.readable || (await recordsMigrations(db, options, table.schema)))
+    ) {
+      return table;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Why a run that finds no history where it looks is refused, and which options point it at the
+ * history found elsewhere - or start a new one on purpose.
+ */
+function describeHistoryElsewhere(
+  options: RunnerOption,
+  history: MigrationsTableLocation,
+  hasMigrationsTable: boolean
+): string {
+  const schema = getMigrationTableSchema(options);
+  const found = history.schema;
+  const hint = isSchemaChosen(options)
+    ? `The migrations table follows the first \`--schema\` entry, and "${found}" is further down that list. To continue that history, pass \`--migrations-schema ${found}\` (or list "${found}" first); to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`.`
+    : `No schema was configured, so "${schema}" is only the fallback. To continue that history, pass \`--schema ${found}\` (or \`--migrations-schema ${found}\` if only the migrations table lives there); to start a new one in "${schema}", pass \`--schema ${schema}\`.`;
+
+  return `Refusing to run: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. Carrying on would start the history over and could apply migrations that have already run. ${hint}`;
+}
+
+interface MigrationHistory {
+  hasMigrationsTable: boolean;
+  runNames: string[];
+}
+
+/**
+ * Read which migrations have been run, once it is clear the history really is where the run
+ * looks for it. That place only comes from configuration: when the migrations table there is
+ * missing or empty while another schema holds a history, starting over would replay every
+ * migration - failing half-way (`relation "…" does not exist`) or silently duplicating
+ * objects into the wrong schema. The run is refused instead, before it has created anything.
+ */
+async function readMigrationHistory(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<MigrationHistory> {
+  const hasMigrationsTable = await migrationsTableExists(db, options);
+  const runNames: string[] = hasMigrationsTable
+    ? await getRunMigrations(db, options)
+    : [];
+  const history =
+    runNames.length === 0 ? await findHistoryElsewhere(db, options) : undefined;
+
+  if (history) {
+    throw new Error(
+      describeHistoryElsewhere(options, history, hasMigrationsTable)
+    );
+  }
+
+  return { hasMigrationsTable, runNames };
 }
 
 function getMigrationsToRun(
@@ -572,6 +709,12 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       await lock(db, options.lockValue, options.advisoryLockMode);
     }
 
+    // Before anything is created: a run that is refused must leave the database as it was.
+    const { hasMigrationsTable, runNames } = await readMigrationHistory(
+      db,
+      options
+    );
+
     if (options.schema) {
       const schemas = getSchemas(options.schema);
 
@@ -588,24 +731,17 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       await createSchemas(db, [options.migrationsSchema], dryRun, logger);
     }
 
-    let hasMigrationsTable = true;
-
     if (dryRun) {
-      hasMigrationsTable = await migrationsTableExists(db, options);
-
       if (!hasMigrationsTable) {
         logger.info(
           `> Would create migrations table ${getMigrationTableName(options)}`
         );
       }
     } else {
-      await ensureMigrationsTable(db, options);
+      await ensureMigrationsTable(db, options, hasMigrationsTable);
     }
 
-    const [migrations, runNames] = await Promise.all([
-      loadMigrations(db, options, logger),
-      hasMigrationsTable ? getRunMigrations(db, options) : [],
-    ]);
+    const migrations = await loadMigrations(db, options, logger);
 
     if (options.checkOrder !== false) {
       checkOrder(runNames, migrations);
