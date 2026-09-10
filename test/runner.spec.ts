@@ -3,6 +3,14 @@ import type { Mock } from 'vitest';
 import { describe, expect, it, vi } from 'vitest';
 import { runner } from '../src';
 
+// The catalog lookups the runner makes. Schema and table names are passed as parameters, so
+// the text is the same wherever the migrations table lives.
+const MIGRATIONS_TABLE_EXISTS =
+  "SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname = $2";
+
+const MIGRATIONS_TABLE_PRIMARY_KEY =
+  "SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname = $2)";
+
 describe('runner', () => {
   it('should return a function', () => {
     expect(runner).toBeTypeOf('function');
@@ -45,7 +53,7 @@ describe('runner', () => {
             });
           }
 
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+          case MIGRATIONS_TABLE_EXISTS: {
             return Promise.resolve({
               rows: [], // no migration table
             });
@@ -129,13 +137,13 @@ describe('runner', () => {
             });
           }
 
-          case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+          case MIGRATIONS_TABLE_EXISTS: {
             return Promise.resolve({
               rows: [{}], // migration table exists
             });
           }
 
-          case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+          case MIGRATIONS_TABLE_PRIMARY_KEY: {
             return Promise.resolve({}); // no primary key constraint found
           }
 
@@ -199,13 +207,13 @@ describe('runner', () => {
           return Promise.resolve();
         }
 
-        case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+        case MIGRATIONS_TABLE_EXISTS: {
           return Promise.resolve({
             rows: [{}], // migration table exists
           });
         }
 
-        case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+        case MIGRATIONS_TABLE_PRIMARY_KEY: {
           return Promise.resolve({
             rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
           });
@@ -251,13 +259,13 @@ describe('runner', () => {
           });
         }
 
-        case "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pgmigrations'": {
+        case MIGRATIONS_TABLE_EXISTS: {
           return Promise.resolve({
             rows: [{}], // migration table exists
           });
         }
 
-        case "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public' AND table_name = 'pgmigrations' AND constraint_type = 'PRIMARY KEY'": {
+        case MIGRATIONS_TABLE_PRIMARY_KEY: {
           return Promise.resolve({
             rows: [{ constraint_name: 'pk_constraint' }], // primary key exists
           });
@@ -291,6 +299,40 @@ describe('runner', () => {
       `SELECT pg_try_advisory_lock(${customLockValue}) AS "lockObtained"`,
       undefined
     );
+  });
+
+  it('should look the migrations table up in the system catalogs, passing its names as parameters', async () => {
+    const queryMock = vi.fn((query: string) => {
+      switch (query) {
+        case 'SELECT pg_try_advisory_lock(7241865325823964) AS "lockObtained"': {
+          return Promise.resolve({ rows: [{ lockObtained: true }] });
+        }
+
+        case 'SELECT name FROM "public"."pgmigrations" ORDER BY run_on, id': {
+          return Promise.resolve({ rows: [{ name: '004_table' }] });
+        }
+
+        default: {
+          return Promise.resolve({ rows: [{}] }); // the table and its primary key exist
+        }
+      }
+    });
+
+    await runner({
+      dbClient: { query: queryMock } as unknown as ClientBase,
+      migrationsTable: 'pgmigrations',
+      dir: 'test/cockroach',
+      direction: 'up',
+    });
+
+    expect(queryMock).toHaveBeenCalledWith(MIGRATIONS_TABLE_EXISTS, [
+      'pgmigrations',
+      'public',
+    ]);
+    expect(queryMock).toHaveBeenCalledWith(MIGRATIONS_TABLE_PRIMARY_KEY, [
+      'pgmigrations',
+      'public',
+    ]);
   });
 
   describe('dry run', () => {
@@ -332,11 +374,7 @@ describe('runner', () => {
           );
         }
 
-        // Matched by shape rather than by exact text, so the mock keeps working when the
-        // migrations table lives in another schema.
-        if (
-          query.startsWith('SELECT table_name FROM information_schema.tables')
-        ) {
+        if (query === MIGRATIONS_TABLE_EXISTS) {
           return Promise.resolve({ rows: migrationsTableExists ? [{}] : [] });
         }
 

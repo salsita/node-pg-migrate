@@ -353,6 +353,14 @@ async function createSchemas(
 }
 
 /**
+ * The relations named `$1` that `information_schema.tables` would list, looked up in the
+ * system catalogs instead. `information_schema` only shows objects the connected role holds
+ * privileges on: a role without a grant on an existing migrations table would be told it does
+ * not exist, try to create it and fail with "already exists" rather than a permissions error.
+ */
+const RELATIONS_NAMED = `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f')`;
+
+/**
  * Whether the table storing which migrations have been run already exists.
  *
  * This is a plain `SELECT`, so it is also safe inside the read-only transaction a dry run
@@ -363,11 +371,9 @@ async function migrationsTableExists(
   db: DBConnection,
   options: RunnerOption
 ): Promise<boolean> {
-  const schema = getMigrationTableSchema(options);
-  const { migrationsTable } = options;
-
   const migrationTables = await db.select(
-    `SELECT table_name FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}'`
+    `SELECT 1 ${RELATIONS_NAMED} AND n.nspname = $2`,
+    [options.migrationsTable, getMigrationTableSchema(options)]
   );
 
   return migrationTables?.length === 1;
@@ -378,13 +384,12 @@ async function ensureMigrationsTable(
   options: RunnerOption
 ): Promise<void> {
   try {
-    const schema = getMigrationTableSchema(options);
-    const { migrationsTable } = options;
     const fullTableName = getMigrationTableName(options);
 
     if (await migrationsTableExists(db, options)) {
       const primaryKeyConstraints = await db.select(
-        `SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}' AND constraint_type = 'PRIMARY KEY'`
+        `SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid ${RELATIONS_NAMED} AND n.nspname = $2)`,
+        [options.migrationsTable, getMigrationTableSchema(options)]
       );
 
       if (!primaryKeyConstraints || primaryKeyConstraints.length !== 1) {
