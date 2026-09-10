@@ -3,3 +3,6 @@ allowBuilds:
   esbuild: false
   protobufjs: false
   ssh2: false
+
+minimumReleaseAgeExclude:
+  - oxlint-plugin-organize-imports

@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["import", "oxc", "promise", "typescript", "unicorn", "vitest"],
+  "jsPlugins": ["oxlint-plugin-organize-imports"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -49,6 +50,9 @@
 
     // --- import ---
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+
+    // --- organize-imports ---
+    "organize-imports/organize-imports": "error",
 
     // --- typescript ---
     "typescript/explicit-module-boundary-types": "error",
