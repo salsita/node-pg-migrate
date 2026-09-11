@@ -10,6 +10,14 @@ if (coverageSuite !== 'unit' && coverageSuite !== 'integration') {
   );
 }
 
+// Code the integration suite owns (it needs a real database). The unit report
+// leaves it out so the repo-wide unit thresholds only measure unit-tested code.
+const integrationOwned = [
+  'src/baseline/io/**',
+  'src/baseline/index.ts',
+  'src/introspect/io/**',
+];
+
 // Glob thresholds that match no file yet pass, so each one applies as soon
 // as its files exist (untested files under `src` count as 0% covered).
 const coverageThresholds = {
@@ -21,27 +29,21 @@ const coverageThresholds = {
     statements: 90,
     functions: 90,
     branches: 85,
-    'src/baseline/core/**': {
-      lines: 90,
-      statements: 90,
-      functions: 90,
-      branches: 90,
-    },
+    ...Object.fromEntries(
+      ['src/baseline/core/**', 'src/introspect/core/**', 'src/codegen/**'].map(
+        (glob) => [
+          glob,
+          { lines: 90, statements: 90, functions: 90, branches: 90 },
+        ]
+      )
+    ),
   },
-  integration: {
-    'src/baseline/io/**': {
-      lines: 90,
-      statements: 90,
-      functions: 90,
-      branches: 90,
-    },
-    'src/baseline/index.ts': {
-      lines: 90,
-      statements: 90,
-      functions: 90,
-      branches: 90,
-    },
-  },
+  integration: Object.fromEntries(
+    integrationOwned.map((glob) => [
+      glob,
+      { lines: 90, statements: 90, functions: 90, branches: 90 },
+    ])
+  ),
 };
 
 // Each e2e test spawns the CLI several times against a real Postgres.
@@ -98,6 +100,7 @@ export default defineConfig({
         // (`pnpm run test:coverage:e2e`, coverage/e2e).
         // Cover it once dedicated unit tests are added for src/cli/ in a follow-up PR.
         'src/cli/**',
+        ...(coverageSuite === 'unit' ? integrationOwned : []),
       ],
       reportOnFailure: true,
       thresholds: coverageThresholds[coverageSuite],
