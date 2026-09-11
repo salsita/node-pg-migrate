@@ -33,3 +33,10 @@ export const envPathArg = 'envPath';
 export const advisoryLockModeArg = 'advisory-lock-mode';
 export const tsconfigPathsArg = 'tsconfig-paths';
 export const forceExitArg = 'force-exit';
+
+// Only used by the `baseline` command.
+export const fromFileArg = 'from-file';
+export const pgDumpArg = 'pg-dump';
+export const includeSchemaArg = 'include-schema';
+export const excludeSchemaArg = 'exclude-schema';
+export const lockWaitTimeoutArg = 'lock-wait-timeout';

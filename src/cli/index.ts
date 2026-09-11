@@ -2,6 +2,8 @@
 
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
+import type { BaselineCliOptions } from './baseline';
+import { addBaselineOptions, runBaseline } from './baseline';
 import { runCreate, runMigration } from './commands';
 import type { CliOptions } from './options';
 import { addCreateOptions, addRunnerOptions } from './options';
@@ -68,6 +70,22 @@ addRunnerOptions(
     .argument('[count...]', 'Number of migrations to redo')
 ).action((posArgs: string[], options: CliOptions) =>
   runMigration('redo', posArgs, options)
+);
+
+// `baseline` — write one SQL migration that creates the schema of an existing
+// database, so node-pg-migrate can manage a database it did not create.
+addBaselineOptions(
+  program
+    .command('baseline')
+    .description(
+      'Create a baseline SQL migration from the schema of an existing database (pg_dump --schema-only)'
+    )
+    .argument(
+      '[name...]',
+      'Name of the baseline migration (dashes replace spaces and underscores; defaults to "baseline")'
+    )
+).action((nameArgs: string[], options: BaselineCliOptions) =>
+  runBaseline(nameArgs, options)
 );
 
 // Preserve the previous behavior: invoking the CLI without a command prints the

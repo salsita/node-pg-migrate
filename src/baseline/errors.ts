@@ -1,0 +1,63 @@
+/**
+ * Why `baseline()` refused to write a baseline migration.
+ *
+ * - `INVALID_OPTIONS`: the options are incomplete or contradict each other.
+ * - `MIGRATIONS_EXIST`: the migrations directory already has files.
+ * - `HISTORY_EXISTS`: the migrations table already records migrations.
+ * - `UNSUPPORTED_SERVER`: the server is not PostgreSQL (e.g. CockroachDB).
+ * - `PSQL_META_COMMAND`: the dump has a psql meta-command such as `\connect`.
+ * - `DATA_IN_DUMP`: the dump has table data (`COPY … FROM stdin`).
+ * - `CREATE_DATABASE`: the dump creates a database (`pg_dump --create`).
+ * - `CLEAN_DUMP`: the dump drops objects (`pg_dump --clean`).
+ * - `MIGRATIONS_TABLE_IN_DUMP`: the dump creates the migrations table or its
+ *   sequence.
+ * - `MARKER_COLLISION`: a line of the dump would be read as an up/down
+ *   migration marker.
+ * - `PG_DUMP_NOT_FOUND`: the pg_dump executable could not be found.
+ * - `PG_DUMP_TOO_OLD`: pg_dump is older than the server it would dump.
+ * - `PG_DUMP_FAILED`: pg_dump failed, or its version could not be read.
+ */
+export type BaselineErrorCode =
+  | 'INVALID_OPTIONS'
+  | 'MIGRATIONS_EXIST'
+  | 'HISTORY_EXISTS'
+  | 'UNSUPPORTED_SERVER'
+  | 'PSQL_META_COMMAND'
+  | 'DATA_IN_DUMP'
+  | 'CREATE_DATABASE'
+  | 'CLEAN_DUMP'
+  | 'MIGRATIONS_TABLE_IN_DUMP'
+  | 'MARKER_COLLISION'
+  | 'PG_DUMP_NOT_FOUND'
+  | 'PG_DUMP_TOO_OLD'
+  | 'PG_DUMP_FAILED';
+
+/**
+ * An expected failure of `baseline()`: the options, the database or the dump
+ * are not suitable for a baseline migration.
+ *
+ * The message is written for the user (it says what is wrong and what to do
+ * about it), so the CLI prints nothing else.
+ */
+export class BaselineError extends Error {
+  override readonly name = 'BaselineError';
+
+  /**
+   * What went wrong, for programmatic handling.
+   */
+  readonly code: BaselineErrorCode;
+
+  /**
+   * @param code What went wrong.
+   * @param message What is wrong and what to do about it, for the user.
+   * @param options The underlying error as `cause`, if any.
+   */
+  constructor(
+    code: BaselineErrorCode,
+    message: string,
+    options?: { cause?: unknown }
+  ) {
+    super(message, options);
+    this.code = code;
+  }
+}
