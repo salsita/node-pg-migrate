@@ -1,3 +1,4 @@
+import { setTimeout as sleep } from 'node:timers/promises';
 import type { ClientBase } from 'pg';
 import type { Mock } from 'vitest';
 import { describe, expect, it, vi } from 'vitest';
@@ -929,6 +930,29 @@ describe('runner', () => {
       ).resolves.toHaveLength(12);
 
       expect(historyScans(queryMock)).toEqual([]);
+    });
+
+    it('should report the refusal over migration files that fail to load', async () => {
+      const { dbClient } = createDbClient({ app: history });
+      // A slow database, so the migration files fail to load before the refusal is known.
+      const slowClient = {
+        query: async (query: string, values?: unknown[]) => {
+          await sleep(20);
+          return dbClient.query(query, values);
+        },
+      } as unknown as ClientBase;
+
+      await expect(
+        run(slowClient, { dir: 'test/does-not-exist' })
+      ).rejects.toThrow('Refusing to run');
+    });
+
+    it('should report migration files that fail to load when the history is in place', async () => {
+      const { dbClient } = createDbClient();
+
+      await expect(
+        run(dbClient, { dir: 'test/does-not-exist' })
+      ).rejects.toThrow('Error loading migration files');
     });
 
     it('should refuse a dry run the same way, and end its read-only transaction', async () => {

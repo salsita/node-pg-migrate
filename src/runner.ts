@@ -630,6 +630,32 @@ async function readMigrationHistory(
   return { hasMigrationsTable, runNames };
 }
 
+/**
+ * Read the history and load the migration files together - loading touches no database - but
+ * report the history check's verdict first: a refusal matters more than a migration file that
+ * fails to load.
+ */
+async function readHistoryAndMigrations(
+  db: DBConnection,
+  options: RunnerOption,
+  logger: Logger
+): Promise<[MigrationHistory, Migration[]]> {
+  const [history, migrations] = await Promise.allSettled([
+    readMigrationHistory(db, options),
+    loadMigrations(db, options, logger),
+  ]);
+
+  if (history.status === 'rejected') {
+    throw history.reason;
+  }
+
+  if (migrations.status === 'rejected') {
+    throw migrations.reason;
+  }
+
+  return [history.value, migrations.value];
+}
+
 function getMigrationsToRun(
   options: RunnerOption,
   runNames: string[],
@@ -784,11 +810,8 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
 
     // Before anything is created: a run that is refused must leave the database as it was.
-    // Loading the migration files touches no database, so it overlaps that check.
-    const [{ hasMigrationsTable, runNames }, migrations] = await Promise.all([
-      readMigrationHistory(db, options),
-      loadMigrations(db, options, logger),
-    ]);
+    const [{ hasMigrationsTable, runNames }, migrations] =
+      await readHistoryAndMigrations(db, options, logger);
 
     if (options.schema) {
       const schemas = getSchemas(options.schema);
