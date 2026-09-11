@@ -77,6 +77,53 @@ jobs:
         env:
           PGM_VERSIONS: '14,15,16,17,18' # Postgres versions to test against
 
+  e2e-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node_version: [24]
+      fail-fast: false
+    timeout-minutes: 15
+
+    name: 'Build & E2E Test: node-${{ matrix.node_version }}, ${{ matrix.os }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+        env:
+          PGM_SOURCEMAP: '1' # the e2e coverage report maps the bundles back to src/
+
+      - name: Test
+        run: pnpm run test:coverage:e2e
+        env:
+          PGM_VERSIONS: '14,15,16,17,18' # Postgres versions to test against
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-e2e-${{ github.run_id }}
+          # raw/ holds about 1 MB of V8 coverage per CLI run; lcov.info is the report
+          path: |
+            coverage/e2e
+            !coverage/e2e/raw
+          retention-days: 15
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
