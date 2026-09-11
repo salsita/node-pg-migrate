@@ -89,7 +89,15 @@ sequence.
 
 ### Arguments
 
-| Name                | Type     | Description                                   |
-| ------------------- | -------- | --------------------------------------------- |
-| `old_sequence_name` | `string` | old [Name](/migrations/#type) of the sequence |
-| `new_sequence_name` | `string` | new [Name](/migrations/#type) of the sequence |
+| Name                | Type                      | Description              |
+| ------------------- | ------------------------- | ------------------------ |
+| `old_sequence_name` | [Name](/migrations/#type) | Old name of the sequence |
+| `new_sequence_name` | [Name](/migrations/#type) | New name of the sequence |
+
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
+
+To move a sequence between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER SEQUENCE "old_schema"."my_sequence" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.

@@ -98,7 +98,15 @@
 
 ### Arguments
 
-| Name          | Type     | Description          |
-| ------------- | -------- | -------------------- |
-| `viewName`    | `string` | old name of the view |
-| `newViewName` | `string` | new name of the view |
+| Name          | Type                      | Description          |
+| ------------- | ------------------------- | -------------------- |
+| `viewName`    | [Name](/migrations/#type) | old name of the view |
+| `newViewName` | [Name](/migrations/#type) | new name of the view |
+
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
+
+To move a view between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER VIEW "old_schema"."my_view" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.

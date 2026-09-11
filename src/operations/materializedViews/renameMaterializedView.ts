@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { createRenameOperation } from '../createRenameOperation';
 import type { Name, Reversible } from '../generalTypes';
 
 export type RenameMaterializedViewFn = (
@@ -11,14 +12,9 @@ export type RenameMaterializedView = Reversible<RenameMaterializedViewFn>;
 export function renameMaterializedView(
   mOptions: MigrationOptions
 ): RenameMaterializedView {
-  const _rename: RenameMaterializedView = (viewName, newViewName) => {
-    const viewNameStr = mOptions.literal(viewName);
-    const newViewNameStr = mOptions.literal(newViewName);
-
-    return `ALTER MATERIALIZED VIEW ${viewNameStr} RENAME TO ${newViewNameStr};`;
-  };
-
-  _rename.reverse = (viewName, newViewName) => _rename(newViewName, viewName);
-
-  return _rename;
+  return createRenameOperation(mOptions, {
+    operation: 'renameMaterializedView',
+    keyword: 'MATERIALIZED VIEW',
+    label: 'a materialized view',
+  });
 }

@@ -110,3 +110,10 @@ pgm.renameIndex('index_name', 'new_index_name');
 ```
 
 :::
+
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
+
+Renaming an index does not move it to another schema. PostgreSQL does not provide
+`ALTER INDEX ... SET SCHEMA`; indexes follow their table when it changes schema.

@@ -28,7 +28,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER MATERIALIZED VIEW "myschema"."foo" RENAME TO "myschema"."bar";'
+          'ALTER MATERIALIZED VIEW "myschema"."foo" RENAME TO "bar";'
         );
       });
 

@@ -26,7 +26,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER SEQUENCE "myschema"."serial" RENAME TO "myschema"."serial2";'
+          'ALTER SEQUENCE "myschema"."serial" RENAME TO "serial2";'
         );
       });
 

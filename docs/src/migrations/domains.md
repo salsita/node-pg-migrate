@@ -84,3 +84,11 @@
 | ----------------- | ------------------------- | ---------------------- |
 | `old_domain_name` | [Name](/migrations/#type) | Old name of the domain |
 | `new_domain_name` | [Name](/migrations/#type) | New name of the domain |
+
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
+
+To move a domain between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER DOMAIN "old_schema"."my_domain" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.

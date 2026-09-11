@@ -117,8 +117,47 @@ CREATE TABLE "my_schema"."my_table_name" ("id" serial);
 ### Type
 
 ```ts
-type Name = string | { schema: string; name: string };
+type Name = string | { schema?: string; name: string } | PgLiteralValue;
 ```
+
+## Renaming and schemas
+
+`renameTable`, `renameType`, `renameDomain`, `renameView`,
+`renameMaterializedView`, `renameSequence`, and `renameIndex` preserve the
+source object's schema, including during automatic reversal:
+
+```javascript
+pgm.renameView({ schema: 'app', name: 'old_view' }, 'new_view');
+// up:   ALTER VIEW "app"."old_view" RENAME TO "new_view";
+// down: ALTER VIEW "app"."new_view" RENAME TO "old_view";
+```
+
+An omitted, `undefined`, or empty (`''`) destination schema inherits the source
+schema. An empty source schema is equivalent to omitting it. A nonempty
+destination schema must match the source schema after identifier rendering:
+with `decamelize: true`, for example, `appSchema` and `app_schema` match.
+Use `{ schema, name }` for the source when specifying a destination schema;
+these operations cannot infer a schema from a string name or `search_path`.
+A different schema raises an error. Moving an object between schemas requires
+explicit SQL and a corresponding down migration; see the individual operations
+for examples and restrictions.
+
+`PgLiteral` inputs must contain a single unqualified identifier, either an
+ordinary unquoted identifier or a nonempty double-quoted identifier. Surrounding
+SQL whitespace is allowed. Raw identifiers are neither quoted nor decamelized:
+PostgreSQL folds unquoted names to lower case, while quoted names preserve case.
+Use double quotes for reserved words. Dots and escaped double quotes inside a
+quoted identifier are supported: `pgm.func('"new.name"')` is one name, whereas
+`pgm.func('app.new_name')` is qualified and rejected.
+
+> [!WARNING]
+> Qualified `PgLiteral` sources and destinations now raise an error during SQL
+> generation in both directions. Previously, a qualified source could work going
+> up with a manually written down migration. Replace it with `{ schema, name }`,
+> which uses normal identifier quoting and decamelization, or use `pgm.sql` with
+> explicit SQL in both directions. Other raw forms, including expressions,
+> comments, multiple tokens, and `U&` Unicode escape syntax, are also rejected by
+> these seven rename operations. Other uses of `PgLiteral` are unchanged.
 
 ## Locking
 

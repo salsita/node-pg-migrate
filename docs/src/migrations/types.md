@@ -61,6 +61,14 @@ operation (`dropType`) when the migration is rolled back.
 | `type_name`     | [Name](/migrations/#type) | name of the type to rename |
 | `new_type_name` | [Name](/migrations/#type) | name of the new type       |
 
+Renaming preserves the source schema, including during automatic reversal. See
+[Renaming and schemas](/migrations/#renaming-and-schemas) for destination-schema
+validation and supported `PgLiteral` identifiers.
+
+To move a type between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER TYPE "old_schema"."my_type" SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
+
 ## Operation: `alterType`
 
 #### `pgm.addTypeAttribute( type_name, attribute_name, attribute_type, attribute_options )`

@@ -97,6 +97,7 @@
 > - 096_expression_index
 > - 097_drop_constraint_if_table_exists
 > - 098_rename_index
+> - 099_schema_qualified_renames
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
 
@@ -732,6 +733,30 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_drop_constraint_
 CREATE INDEX "idxfoo" ON "t1" ("nmbr");
 ALTER INDEX "idxfoo" RENAME TO "quxfoo";
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('098_rename_index', NOW());
+
+
+### MIGRATION 099_schema_qualified_renames (UP) ###
+CREATE SCHEMA "object_rename_schema";
+CREATE TYPE "object_rename_schema"."old_type" AS ENUM ($pga$active$pga$);
+ALTER TYPE "object_rename_schema"."old_type" RENAME TO "middle_type";
+ALTER TYPE "object_rename_schema"."middle_type" RENAME TO "new_type";
+CREATE DOMAIN "object_rename_schema"."old_domain" AS integer CHECK (VALUE >= 0);
+ALTER DOMAIN "object_rename_schema"."old_domain" RENAME TO "middle_domain";
+ALTER DOMAIN "object_rename_schema"."middle_domain" RENAME TO "new_domain";
+CREATE VIEW "object_rename_schema"."old_view" AS SELECT 1 AS value;
+ALTER VIEW "object_rename_schema"."old_view" RENAME TO "middle_view";
+ALTER VIEW "object_rename_schema"."middle_view" RENAME TO "new_view";
+CREATE MATERIALIZED VIEW "object_rename_schema"."old_materialized_view" AS SELECT 1 AS value;
+ALTER MATERIALIZED VIEW "object_rename_schema"."old_materialized_view" RENAME TO "middle_materialized_view";
+ALTER MATERIALIZED VIEW "object_rename_schema"."middle_materialized_view" RENAME TO "new_materialized_view";
+CREATE SEQUENCE "object_rename_schema"."old_sequence" START WITH 10;
+ALTER SEQUENCE "object_rename_schema"."old_sequence" RENAME TO "middle_sequence";
+ALTER SEQUENCE "object_rename_schema"."middle_sequence" RENAME TO "new_sequence";
+CREATE TABLE "object_rename_schema"."indexed_table" ("value" integer);
+CREATE INDEX "old_index" ON "object_rename_schema"."indexed_table" ("value");
+ALTER INDEX "object_rename_schema"."old_index" RENAME TO "middle_index";
+ALTER INDEX "object_rename_schema"."middle_index" RENAME TO "new_index";
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('099_schema_qualified_renames', NOW());
 
 
 Migrations complete!

@@ -28,7 +28,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER TYPE "myschema"."electronic_mail" RENAME TO "myschema"."email";'
+          'ALTER TYPE "myschema"."electronic_mail" RENAME TO "email";'
         );
       });
 
