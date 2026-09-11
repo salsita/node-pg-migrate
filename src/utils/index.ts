@@ -12,10 +12,8 @@ export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
 export { formatBlock, formatSeparator } from './formatSql';
-export {
-  getMigrationTableName,
-  getMigrationTableSchema,
-} from './getMigrationTableSchema';
+export { getMigrationTableName } from './getMigrationTableName';
+export { getMigrationTableSchema } from './getMigrationTableSchema';
 export { getSchemas } from './getSchemas';
 export { identity } from './identity';
 export { intersection } from './intersection';
