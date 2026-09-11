@@ -18,6 +18,7 @@
     "test:coverage:unit": "PGM_COVERAGE_SUITE=unit vitest run --project unit --coverage",
     "test:coverage:integration": "PGM_COVERAGE_SUITE=integration vitest run --project integration --coverage",
     "test:coverage:e2e": "PGM_E2E_COVERAGE=1 vitest run --project e2e && node test/e2e/report-coverage.mjs",
+    "bench": "vitest bench --run --project bench",
     "fixtures:capture": "jiti test/fixtures/capture-dumps.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",

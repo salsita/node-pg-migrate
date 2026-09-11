@@ -82,6 +82,15 @@ export default defineConfig({
           fileParallelism: false,
         },
       },
+      {
+        test: {
+          // Benchmarks only (`pnpm run bench`): no tests, no coverage.
+          name: 'bench',
+          environment: 'node',
+          include: [],
+          benchmark: { include: ['test/bench/**/*.bench.ts'] },
+        },
+      },
     ],
     coverage: {
       provider: 'v8',
