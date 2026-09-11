@@ -52,5 +52,56 @@ describe('cli', () => {
         );
       });
     });
+
+    describe('redo', () => {
+      it.each([
+        { given: {}, pinned: 'public' },
+        { given: { schema: ['app', 'public'] }, pinned: 'app' },
+        {
+          given: { schema: ['app'], migrationsSchema: 'meta' },
+          pinned: 'meta',
+        },
+      ])(
+        'should re-apply into the migrations table the down run used ($pinned)',
+        async ({ given, pinned }) => {
+          await runMigration('redo', [], {
+            databaseUrlVar: 'DATABASE_URL',
+            ...given,
+          });
+
+          await vi.waitFor(() => {
+            expect(runnerMock).toHaveBeenCalledTimes(2);
+          });
+          expect(runnerMock).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({ direction: 'down' })
+          );
+          // Reverting can leave that table empty; pinned, the up run does not go looking
+          // for a history in another schema and refuse halfway through the redo.
+          expect(runnerMock).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+              direction: 'up',
+              migrationsSchema: pinned,
+            })
+          );
+        }
+      );
+
+      it('should not re-apply anything when the down run fails', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        const exit = vi
+          .spyOn(process, 'exit')
+          .mockImplementation(() => undefined as never);
+        runnerMock.mockRejectedValueOnce(new Error('down failed'));
+
+        await runMigration('redo', [], { databaseUrlVar: 'DATABASE_URL' });
+
+        await vi.waitFor(() => {
+          expect(exit).toHaveBeenCalledWith(1);
+        });
+        expect(runnerMock).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });

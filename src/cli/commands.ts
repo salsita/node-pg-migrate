@@ -6,6 +6,7 @@ import type { ClientConfig } from 'pg';
 // TODO causes tests to fail when `.js` is removed
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
+import { getMigrationTableSchema } from '../utils';
 import { resolveConfig } from './config';
 import type { CliOptions } from './options';
 
@@ -62,6 +63,19 @@ export async function runCreate(
     });
 
   handleForceExit(options);
+}
+
+/**
+ * `redo` is two runs. The `up` run continues the history the `down` run just used, even when
+ * reverting left its migrations table empty: pinned there, it does not look for a history in
+ * another schema and refuse, which would leave the reverted migrations unapplied.
+ */
+async function redo(down: RunnerOption, up: RunnerOption): Promise<void> {
+  await migrationRunner(down);
+  await migrationRunner({
+    ...up,
+    migrationsSchema: getMigrationTableSchema(down),
+  });
 }
 
 /**
@@ -183,8 +197,9 @@ export async function runMigration(
 
   const promise =
     action === 'redo'
-      ? migrationRunner(buildOptions('down')).then(() =>
-          migrationRunner(buildOptions('up', Number.POSITIVE_INFINITY, false))
+      ? redo(
+          buildOptions('down'),
+          buildOptions('up', Number.POSITIVE_INFINITY, false)
         )
       : migrationRunner(buildOptions(action));
   promise
