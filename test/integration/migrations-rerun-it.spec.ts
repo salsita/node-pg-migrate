@@ -37,11 +37,10 @@ import {
  * - `contract` pins behaviour the fix must keep: the documented defaults, and
  *   the setups that legitimately run the same migrations more than once. These
  *   pass today and must keep passing.
- * - `expected behaviour` states what should happen instead of the replay. These
- *   FAIL, and are meant to - they are the bug. Fixing #894 turns them green.
- *   They accept either outcome a fix may reasonably choose, carrying on from
- *   the existing history or refusing and saying where it is, and reject only
- *   the silent replay.
+ * - `regressions` failed before #894 was fixed, one per route into the
+ *   replay. Most accept either outcome a fix may reasonably choose, carrying on
+ *   from the existing history or refusing and saying where it is, and reject
+ *   only the silent replay.
  */
 
 const MIGRATIONS_DIR = 'test/integration/migrations-rerun';
@@ -134,6 +133,15 @@ describe.each(PG_VERSIONS)(
       );
 
       return rows.map((row) => row.tablename);
+    }
+
+    async function schemaExists(schema: string): Promise<boolean> {
+      const { rows } = await client.query(
+        'SELECT 1 FROM pg_namespace WHERE nspname = $1',
+        [schema]
+      );
+
+      return rows.length > 0;
     }
 
     async function recordedMigrations(
@@ -306,9 +314,28 @@ describe.each(PG_VERSIONS)(
           await adminClient.end();
         }
       });
+
+      it('should carry on from the recorded history once the run is pointed at it', async () => {
+        await seedSchemaOnSearchPath();
+
+        // The options a refused run recommends. For a schema that is only the
+        // default...
+        const bySchema = await runCli(
+          `up -m ${ALTER_ONLY_MIGRATIONS_DIR} --schema app`
+        );
+        expect(bySchema.code).toBe(0);
+        expect(bySchema.stdout).toContain('No migrations to run!');
+
+        // ...and the one named for a schema list whose first entry moved.
+        const byMigrationsSchema = await runCli(
+          `up -m ${ALTER_ONLY_MIGRATIONS_DIR} -s public app --migrations-schema app`
+        );
+        expect(byMigrationsSchema.code).toBe(0);
+        expect(byMigrationsSchema.stdout).toContain('No migrations to run!');
+      });
     });
 
-    describe('expected behaviour', () => {
+    describe('regressions', () => {
       it('should not replay the recorded migration in the reported scenario', async () => {
         await seedSchemaOnSearchPath();
 
@@ -451,6 +478,71 @@ describe.each(PG_VERSIONS)(
           // The role holds grants, so it has to be stripped before it can go.
           await client.query('DROP OWNED BY limited_role');
           await client.query('DROP ROLE limited_role');
+        }
+      });
+
+      it('should not take an empty migrations table left behind for a new history', async () => {
+        const first = await runCli(
+          `up -m ${MIGRATIONS_DIR} -s app --create-schema`
+        );
+        expect(first.code).toBe(0);
+
+        // What the replay in the reported scenario leaves behind: the table is
+        // created before the migrations fail, outside their transaction.
+        await client.query(
+          'CREATE TABLE public.pgmigrations (id serial PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
+        );
+
+        const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+
+        expectHistoryRespected(result, 'app');
+        expect(await recordedMigrations('public')).toStrictEqual([]);
+        expect(await tablesIn('public')).toStrictEqual(['pgmigrations']);
+      });
+
+      it('should create nothing when it refuses, not even the schemas it was asked to create', async () => {
+        const first = await runCli(
+          `up -m ${MIGRATIONS_DIR} -s app public --create-schema`
+        );
+        expect(first.code).toBe(0);
+
+        const result = await runCli(
+          `up -m ${MIGRATIONS_DIR} -s public app extra --create-schema`
+        );
+
+        expectHistoryRespected(result, 'app');
+        expect(await schemaExists('extra')).toBe(false);
+        expect(await tablesIn('public')).toStrictEqual([]);
+      });
+
+      it('should quote the schema names it reads from the catalog', async () => {
+        // A schema any role with CREATE on the database could name. The history
+        // check reads the table it finds with SQL built from that name.
+        const schema = 'x"; DROP TABLE public.canary; --';
+        const quoted = `"${schema.replaceAll('"', '""')}"`;
+
+        await client.query('CREATE TABLE public.canary (id int)');
+        await client.query(`CREATE SCHEMA ${quoted}`);
+
+        try {
+          await client.query(
+            `CREATE TABLE ${quoted}.pgmigrations (id serial PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`
+          );
+          await client.query(
+            `INSERT INTO ${quoted}.pgmigrations (name, run_on) VALUES ('001_create_users', NOW())`
+          );
+
+          const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+
+          // The table was read - it is reported as recording migrations - and
+          // the name stayed an identifier.
+          expect(result.stderr).toContain(
+            `${quoted}."pgmigrations" already records migrations`
+          );
+          expect(await tablesIn('public')).toStrictEqual(['canary']);
+        } finally {
+          // `cleanupDatabase` splices schema names into its own SQL unquoted.
+          await client.query(`DROP SCHEMA ${quoted} CASCADE`);
         }
       });
     });

@@ -18,9 +18,8 @@ import { runner } from '../src';
  *
  * - `contract` pins behaviour the fix must keep, including the documented
  *   `public` default. These pass today and must keep passing.
- * - `expected behaviour` states what should happen instead. These FAIL, and are
- *   meant to - they are the bug. Fixing #894 turns them green. They assert
- *   invariants rather than particular SQL, so any correct fix satisfies them.
+ * - `regressions` failed before #894 was fixed. They assert invariants rather
+ *   than particular SQL, so they hold for any correct implementation.
  */
 
 interface MockOptions {
@@ -221,7 +220,7 @@ describe('migrations table resolution', () => {
     });
   });
 
-  describe('expected behaviour', () => {
+  describe('regressions', () => {
     it('should address the migrations table by one name throughout a run', async () => {
       const queries = await runUp({
         migrationsTable: 'pgMigrations',
