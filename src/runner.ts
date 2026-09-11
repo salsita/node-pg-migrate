@@ -490,7 +490,7 @@ async function findHistoryElsewhere(
   // Only user schemas, and only tables shaped like a migrations table: an unrelated table
   // that merely shares a generic name such as `migrations` is not a history.
   const tables: MigrationsTableLocation[] = await db.select(
-    `SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${RELATIONS_NAMED} AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = $3 AND NOT a.attisdropped) ORDER BY n.nspname`,
+    String.raw`SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${RELATIONS_NAMED} AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = $3 AND NOT a.attisdropped) ORDER BY n.nspname`,
     [options.migrationsTable, schema, runOnColumn]
   );
 
