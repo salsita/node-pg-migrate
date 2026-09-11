@@ -365,15 +365,34 @@ async function createSchemas(
   );
 }
 
+interface QueryParameters {
+  values: unknown[];
+
+  /**
+   * Adds `value` to `values` and returns its placeholder.
+   */
+  bind: (value: unknown) => string;
+}
+
 /**
- * `FROM` and `WHERE` for the relations named `$1` that also meet `conditions`, looked up in
- * the system catalogs. Not in `information_schema`: it only shows objects the connected role
- * holds privileges on, so a role without a grant on an existing migrations table would be told
- * it does not exist, try to create it and fail with "already exists" rather than a permissions
- * error.
+ * The values of a parameterized query. Each placeholder is handed out as its value is bound,
+ * so the numbering always matches, however the conditions using them are ordered.
  */
-function relationsNamed(...conditions: string[]): string {
-  return `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE ${['c.relname = $1', ...conditions].join(' AND ')}`;
+function queryParameters(): QueryParameters {
+  const values: unknown[] = [];
+
+  return { values, bind: (value) => `$${values.push(value)}` };
+}
+
+/**
+ * `FROM` and `WHERE` for the relations named `name` (a placeholder) that also meet
+ * `conditions`, looked up in the system catalogs. Not in `information_schema`: it only shows
+ * objects the connected role holds privileges on, so a role without a grant on an existing
+ * migrations table would be told it does not exist, try to create it and fail with "already
+ * exists" rather than a permissions error.
+ */
+function relationsNamed(name: string, ...conditions: string[]): string {
+  return `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE ${[`c.relname = ${name}`, ...conditions].join(' AND ')}`;
 }
 
 /**
@@ -381,6 +400,20 @@ function relationsNamed(...conditions: string[]): string {
  * foreign tables.
  */
 const LISTED_RELATION_KINDS = "c.relkind IN ('r', 'p', 'v', 'f')";
+
+/**
+ * The run's own migrations table, as `information_schema.tables` would list it.
+ */
+function ownMigrationsTable(
+  options: RunnerOption,
+  { bind }: QueryParameters
+): string {
+  return relationsNamed(
+    bind(options.migrationsTable),
+    LISTED_RELATION_KINDS,
+    `n.nspname = ${bind(getMigrationTableSchema(options))}`
+  );
+}
 
 /**
  * Whether the table storing which migrations have been run already exists.
@@ -393,9 +426,10 @@ async function migrationsTableExists(
   db: DBConnection,
   options: RunnerOption
 ): Promise<boolean> {
+  const parameters = queryParameters();
   const migrationTables = await db.select(
-    `SELECT 1 ${relationsNamed(LISTED_RELATION_KINDS, 'n.nspname = $2')}`,
-    [options.migrationsTable, getMigrationTableSchema(options)]
+    `SELECT 1 ${ownMigrationsTable(options, parameters)}`,
+    parameters.values
   );
 
   return migrationTables?.length === 1;
@@ -410,9 +444,10 @@ async function ensureMigrationsTable(
     const fullTableName = getMigrationTableName(options);
 
     if (hasMigrationsTable) {
+      const parameters = queryParameters();
       const primaryKeyConstraints = await db.select(
-        `SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid ${relationsNamed(LISTED_RELATION_KINDS, 'n.nspname = $2')})`,
-        [options.migrationsTable, getMigrationTableSchema(options)]
+        `SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid ${ownMigrationsTable(options, parameters)})`,
+        parameters.values
       );
 
       if (!primaryKeyConstraints || primaryKeyConstraints.length !== 1) {
@@ -510,29 +545,25 @@ async function findHistoryElsewhere(
     return undefined;
   }
 
+  const parameters = queryParameters();
+  const name = parameters.bind(options.migrationsTable);
   const conditions = [
     // Local tables only: a view is not a history, and a foreign table would be read on another
     // server, failing the run whenever that server is down.
     "c.relkind IN ('r', 'p')",
-    'n.nspname <> $2',
+    `n.nspname <> ${parameters.bind(schema)}`,
     String.raw`n.nspname NOT LIKE 'pg\_%'`,
     "n.nspname NOT IN ('information_schema', 'crdb_internal')",
-    `(SELECT count(*) FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = ANY($3::text[]) AND NOT a.attisdropped) = ${MIGRATIONS_TABLE_COLUMNS.length}`,
-  ];
-  const values: unknown[] = [
-    options.migrationsTable,
-    schema,
-    MIGRATIONS_TABLE_COLUMNS,
+    `(SELECT count(*) FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = ANY(${parameters.bind(MIGRATIONS_TABLE_COLUMNS)}::text[]) AND NOT a.attisdropped) = ${MIGRATIONS_TABLE_COLUMNS.length}`,
   ];
 
   if (searched) {
-    conditions.push('n.nspname = ANY($4::text[])');
-    values.push(searched);
+    conditions.push(`n.nspname = ANY(${parameters.bind(searched)}::text[])`);
   }
 
   const tables: MigrationsTableLocation[] = await db.select(
-    `SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${relationsNamed(...conditions)} ORDER BY n.nspname`,
-    values
+    `SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${relationsNamed(name, ...conditions)} ORDER BY n.nspname`,
+    parameters.values
   );
 
   for (const table of tables) {
