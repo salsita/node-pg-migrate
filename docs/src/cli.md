@@ -114,8 +114,9 @@ Each run records the migrations it applies in the migrations table: `migrations-
 `public`. That location only comes from configuration, so before creating anything a run checks
 that the history really is there.
 
-When the migrations table is missing or empty, but a table of that name in another schema of
-the database already records migrations, the run is refused rather than starting the history
+When the migrations table is missing or empty, but another schema of the database has a table
+of that name - a table with the `id`, `name` and `run_on` columns of a migrations table, not a
+view - that already records migrations, the run is refused rather than starting the history
 over: replaying every migration either fails half-way (`relation "…" does not exist`) or
 silently duplicates objects into the wrong schema. A refused run creates nothing - not the
 migrations table, and not the schemas `--create-schema` asks for. This is what happens when:
@@ -134,9 +135,16 @@ The error names the table it found and the option that points the run at it, suc
 | `schema` (on the command line or in the config) | the other schemas of that list                  |
 | neither                                         | every schema, since `public` is only a fallback |
 
+From the API, a `runner()` call without `schema` counts as neither.
+
 So one schema per tenant keeps working - `up -s tenant_a` and `up -s tenant_b` each keep their
-own history. To start a new history on purpose next to an existing one, name its location:
-`--schema public` rather than relying on the default, or `--migrations-schema` to pin it.
+own history. To start a new history on purpose next to an existing one, pin it with
+`--migrations-schema`, for example `--migrations-schema public`.
+
+`redo` re-applies into the migrations table it has just reverted from, even when that left the
+table empty. Two separate runs cannot tell: after `down 0`, the `up` that follows finds an empty
+migrations table, just like the one a failed replay leaves behind, and is refused while another
+schema holds a history. Pass `--migrations-schema` to start over there.
 
 A migrations table in another schema that the connected role cannot read counts as a history.
 The run's own migrations table is looked up in the system catalogs, so a role without

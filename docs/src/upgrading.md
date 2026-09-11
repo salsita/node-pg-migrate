@@ -106,13 +106,18 @@ and the option that points the run at it:
 - if your objects live in that schema too, pass `--schema <schema>` (`schema` in the API);
 - if only the history lives there, or you reordered a `--schema` list, pass
   `--migrations-schema <schema>` (`migrationsSchema`);
-- to start a new history on purpose, name its schema explicitly instead of relying on the
-  `public` default.
+- to start a new history on purpose, pin it with `--migrations-schema <schema>`
+  (`migrationsSchema`), which unlike `--schema` leaves the `search_path` alone.
 
-One schema per tenant (`--schema tenant_a`, `--schema tenant_b`, …) keeps working unchanged. If
-you call `runner()` with a `schema` your own code fills in as a default, also pass
-`schemaIsDefault: true` so it gets the same protection as the CLI's default. See
-[Migration History](cli#migration-history).
+One schema per tenant (`--schema tenant_a`, `--schema tenant_b`, …) keeps working unchanged, and
+`redo` re-applies into the migrations table it has just reverted from. Two separate runs cannot
+tell, though: after `down 0`, the `up` that follows finds an empty migrations table and is
+refused while another schema holds a history. Pass `--migrations-schema public` to start over.
+
+This applies to `runner()` too. A call without `schema` gets the same check as the CLI's
+default, since `public` is then only a fallback; to start a new history there, pass
+`migrationsSchema: 'public'`. If your own code fills in `schema` as a default, also pass
+`schemaIsDefault: true`. See [Migration History](cli#migration-history).
 
 #### The migrations table is named exactly as configured
 
