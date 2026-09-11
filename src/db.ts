@@ -10,6 +10,7 @@ import type {
 } from 'pg';
 import pg from 'pg';
 import type { Logger } from './logger';
+import { formatQueryError } from './utils';
 
 // This file just manages the database connection and provides a query method
 
@@ -125,34 +126,12 @@ export function db(
     try {
       return await client.query(queryTextOrConfig, values);
     } catch (error: any) {
-      const { message, position }: { message: string; position: number } =
-        error;
-
       const string: string =
         typeof queryTextOrConfig === 'string'
           ? queryTextOrConfig
           : queryTextOrConfig.text;
 
-      if (message && position >= 1) {
-        const endLineWrapIndexOf = string.indexOf('\n', position);
-        const endLineWrapPos =
-          endLineWrapIndexOf >= 0 ? endLineWrapIndexOf : string.length;
-        const stringStart = string.slice(0, endLineWrapPos);
-        const stringEnd = string.slice(endLineWrapPos);
-        const startLineWrapPos = stringStart.lastIndexOf('\n') + 1;
-        const padding = ' '.repeat(position - startLineWrapPos - 1);
-        logger.error(`Error executing:
-${stringStart}
-${padding}^^^^${stringEnd}
-
-${message}
-`);
-      } else {
-        logger.error(`Error executing:
-${string}
-${error}
-`);
-      }
+      logger.error(formatQueryError(string, error));
 
       throw error;
     }
