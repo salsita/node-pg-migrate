@@ -5,9 +5,16 @@ import { constants, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 export {
+  createDatabase,
+  databaseUrl,
+  dumpSchema,
+  ensureRole,
   filterIgnoredLines,
+  loadFixture,
+  loadSql,
   PG_VERSIONS,
   psqlSelect,
+  SCHEMA_FIXTURES,
   setupPostgresDatabase,
 } from '../integration/utils';
 
