@@ -6,6 +6,11 @@ import type { DumpStats } from '../types';
 export const DEFAULT_MAX_LOCKS_PER_TRANSACTION = 64;
 
 /**
+ * The margin added to the locks a transaction needs.
+ */
+const MARGIN = 1.25;
+
+/**
  * Estimates how many relations, and so how many locks, the transaction of a
  * dump creates: tables and materialized views count three times (with their
  * TOAST table and its index), indexes, index-backed constraints, sequences
@@ -13,8 +18,15 @@ export const DEFAULT_MAX_LOCKS_PER_TRANSACTION = 64;
  *
  * @param stats What the dump creates.
  */
-export function estimateRelations(_stats: DumpStats): number {
-  throw new Error('not implemented');
+export function estimateRelations(stats: DumpStats): number {
+  return (
+    3 * stats.tables +
+    3 * stats.materializedViews +
+    stats.indexes +
+    stats.indexBackedConstraints +
+    stats.sequences +
+    stats.views
+  );
 }
 
 /**
@@ -30,9 +42,15 @@ export function estimateRelations(_stats: DumpStats): number {
  * Defaults to `0`.
  */
 export function requiredMaxLocksPerTransaction(
-  _relations: number,
-  _maxConnections?: number,
-  _maxPreparedTransactions?: number
+  relations: number,
+  maxConnections = 100,
+  maxPreparedTransactions = 0
 ): number {
-  throw new Error('not implemented');
+  const slots = Math.max(1, maxConnections + maxPreparedTransactions);
+  const perSlot = Math.ceil((MARGIN * relations) / slots);
+  const rounded =
+    Math.ceil(perSlot / DEFAULT_MAX_LOCKS_PER_TRANSACTION) *
+    DEFAULT_MAX_LOCKS_PER_TRANSACTION;
+
+  return Math.max(DEFAULT_MAX_LOCKS_PER_TRANSACTION, rounded);
 }

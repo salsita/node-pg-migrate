@@ -257,6 +257,18 @@ export interface SanitizeOptions {
    * (defaults to `<migrationsTable>_id_seq` in `migrationsSchema`)
    */
   readonly migrationsSequence?: QualifiedName;
+
+  /**
+   * The schemas the runner may create before the baseline runs, besides
+   * `migrationsSchema` (which it creates with `createMigrationsSchema`):
+   * node-pg-migrate's configured `schema`s (`createSchema`). The dump's
+   * `CREATE SCHEMA <s>;` of one of them, or of `migrationsSchema`, becomes
+   * `CREATE SCHEMA IF NOT EXISTS <s>;`, so the baseline still runs when the
+   * schema already exists.
+   *
+   * @default []
+   */
+  readonly createdSchemas?: ReadonlyArray<string>;
 }
 
 /**
