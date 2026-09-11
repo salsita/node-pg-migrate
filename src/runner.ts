@@ -392,7 +392,9 @@ function queryParameters(): QueryParameters {
  * exists" rather than a permissions error.
  */
 function relationsNamed(name: string, ...conditions: string[]): string {
-  return `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE ${[`c.relname = ${name}`, ...conditions].join(' AND ')}`;
+  const where = [`c.relname = ${name}`, ...conditions].join(' AND ');
+
+  return `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE ${where}`;
 }
 
 /**
