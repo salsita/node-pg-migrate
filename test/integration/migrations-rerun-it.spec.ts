@@ -168,6 +168,20 @@ describe.each(PG_VERSIONS)(
     }
 
     /**
+     * A populated migrations table in `schema`, like another application sharing the database
+     * keeps.
+     */
+    async function seedHistoryIn(schema: string): Promise<void> {
+      await client.query(`CREATE SCHEMA ${schema}`);
+      await client.query(
+        `CREATE TABLE ${schema}.pgmigrations (id serial PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`
+      );
+      await client.query(
+        `INSERT INTO ${schema}.pgmigrations (name, run_on) VALUES ('001_other_app', NOW())`
+      );
+    }
+
+    /**
      * Sets up the reported scenario: a database organised around a non-public
      * schema that the role's own `search_path` points at, with the migration
      * already recorded there. psql and pgAdmin resolve `users` and
@@ -332,6 +346,51 @@ describe.each(PG_VERSIONS)(
         );
         expect(byMigrationsSchema.code).toBe(0);
         expect(byMigrationsSchema.stdout).toContain('No migrations to run!');
+      });
+
+      it('should redo into the migrations table it reverted from, while another schema holds a history', async () => {
+        const first = await runCli(`up 1 -m ${MIGRATIONS_DIR}`);
+        expect(first.code).toBe(0);
+        await seedHistoryIn('other');
+
+        // `down` reverts the only recorded migration and leaves public.pgmigrations empty;
+        // `up` has to re-apply into it rather than refuse over "other".
+        const result = await runCli(`redo -m ${MIGRATIONS_DIR}`);
+
+        expect(result.code).toBe(0);
+        expect(await recordedMigrations('public')).toStrictEqual([
+          '001_create_users',
+          '002_add_contract_id',
+        ]);
+      });
+
+      it('should not take a table that only shares the migrations table name for a history', async () => {
+        await client.query('CREATE SCHEMA reporting');
+        // It has a `run_on` column, but no `name`: not a migrations table, and a run pointed
+        // at it would fail.
+        await client.query(
+          'CREATE TABLE reporting.pgmigrations (id serial PRIMARY KEY, job text, run_on timestamp NOT NULL)'
+        );
+        await client.query(
+          "INSERT INTO reporting.pgmigrations (job, run_on) VALUES ('nightly', NOW())"
+        );
+
+        const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+
+        expect(result.code).toBe(0);
+        expect(await recordedMigrations('public')).toHaveLength(2);
+      });
+
+      it('should not take a view for a history', async () => {
+        await client.query('CREATE SCHEMA archive');
+        await client.query(
+          "CREATE VIEW archive.pgmigrations AS SELECT 1 AS id, '001_create_users'::varchar AS name, NOW()::timestamp AS run_on"
+        );
+
+        const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+
+        expect(result.code).toBe(0);
+        expect(await recordedMigrations('public')).toHaveLength(2);
       });
     });
 
@@ -523,27 +582,87 @@ describe.each(PG_VERSIONS)(
 
         await client.query('CREATE TABLE public.canary (id int)');
         await client.query(`CREATE SCHEMA ${quoted}`);
+        await client.query(
+          `CREATE TABLE ${quoted}.pgmigrations (id serial PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`
+        );
+        await client.query(
+          `INSERT INTO ${quoted}.pgmigrations (name, run_on) VALUES ('001_create_users', NOW())`
+        );
+
+        const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+
+        // The table was read - it is reported as recording migrations - and the
+        // name stayed an identifier.
+        expect(result.stderr).toContain(
+          `${quoted}."pgmigrations" already records migrations`
+        );
+        expect(await tablesIn('public')).toStrictEqual(['canary']);
+      });
+
+      it('should refuse a dry run the same way, without creating anything', async () => {
+        await seedSchemaOnSearchPath();
+
+        const result = await runCli(
+          `up -m ${ALTER_ONLY_MIGRATIONS_DIR} --dry-run`
+        );
+
+        expect(result.code).not.toBe(0);
+        expect(result.stderr).toContain(
+          '"app"."pgmigrations" already records migrations'
+        );
+        expect(await tablesIn('public')).toStrictEqual([]);
+      });
+
+      it('should refuse when the role cannot read the history in another schema', async () => {
+        await seedHistoryIn('secret');
+        await client.query(
+          "CREATE ROLE limited_role LOGIN PASSWORD 'limited_role'"
+        );
 
         try {
           await client.query(
-            `CREATE TABLE ${quoted}.pgmigrations (id serial PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`
-          );
-          await client.query(
-            `INSERT INTO ${quoted}.pgmigrations (name, run_on) VALUES ('001_create_users', NOW())`
+            'GRANT USAGE, CREATE ON SCHEMA public TO limited_role'
           );
 
-          const result = await runCli(`up -m ${MIGRATIONS_DIR}`);
+          const uri = new URL(pgContainer.getConnectionUri());
+          uri.username = 'limited_role';
+          uri.password = 'limited_role';
 
-          // The table was read - it is reported as recording migrations - and
-          // the name stayed an identifier.
+          const result = await runCli(`up -m ${MIGRATIONS_DIR}`, {
+            DATABASE_URL: uri.toString(),
+          });
+
+          // It cannot tell whether that table records anything, and replaying is the
+          // worse mistake.
           expect(result.stderr).toContain(
-            `${quoted}."pgmigrations" already records migrations`
+            '"secret"."pgmigrations" exists and cannot be read by this role'
           );
-          expect(await tablesIn('public')).toStrictEqual(['canary']);
+          expect(await tablesIn('public')).toStrictEqual([]);
         } finally {
-          // `cleanupDatabase` splices schema names into its own SQL unquoted.
-          await client.query(`DROP SCHEMA ${quoted} CASCADE`);
+          await client.query('DROP OWNED BY limited_role');
+          await client.query('DROP ROLE limited_role');
         }
+      });
+
+      it('should refuse to start over after `down 0` while another schema holds a history, until told to', async () => {
+        const first = await runCli(`up -m ${MIGRATIONS_DIR}`);
+        expect(first.code).toBe(0);
+        const reset = await runCli(`down 0 -m ${MIGRATIONS_DIR}`);
+        expect(reset.code).toBe(0);
+        await seedHistoryIn('other');
+
+        // A table emptied by a reset looks just like one a failed replay left behind.
+        const again = await runCli(`up -m ${MIGRATIONS_DIR}`);
+        expect(again.code).not.toBe(0);
+        expect(again.stderr).toContain(
+          'to start a new one in "public", pass `--migrations-schema public`'
+        );
+
+        const told = await runCli(
+          `up -m ${MIGRATIONS_DIR} --migrations-schema public`
+        );
+        expect(told.code).toBe(0);
+        expect(await recordedMigrations('public')).toHaveLength(2);
       });
     });
   }
