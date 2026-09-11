@@ -61,6 +61,7 @@ describe('cli', () => {
           given: { schema: ['app'], migrationsSchema: 'meta' },
           pinned: 'meta',
         },
+        { given: { createMigrationsSchema: true }, pinned: 'public' },
       ])(
         'should re-apply into the migrations table the down run used ($pinned)',
         async ({ given, pinned }) => {
@@ -74,15 +75,20 @@ describe('cli', () => {
           });
           expect(runnerMock).toHaveBeenNthCalledWith(
             1,
-            expect.objectContaining({ direction: 'down' })
+            expect.objectContaining({
+              direction: 'down',
+              createMigrationsSchema: given.createMigrationsSchema,
+            })
           );
           // Reverting can leave that table empty; pinned, the up run does not go looking
-          // for a history in another schema and refuse halfway through the redo.
+          // for a history in another schema and refuse halfway through the redo. Nor does
+          // it create the schema the down run has just used, which needs more privileges.
           expect(runnerMock).toHaveBeenNthCalledWith(
             2,
             expect.objectContaining({
               direction: 'up',
               migrationsSchema: pinned,
+              createMigrationsSchema: false,
             })
           );
         }

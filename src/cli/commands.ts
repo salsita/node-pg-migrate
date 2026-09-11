@@ -69,12 +69,17 @@ export async function runCreate(
  * `redo` is two runs. The `up` run continues the history the `down` run just used, even when
  * reverting left its migrations table empty: pinned there, it does not look for a history in
  * another schema and refuse, which would leave the reverted migrations unapplied.
+ *
+ * Pinning must not also create that schema: the `down` run has just used it, and
+ * `CREATE SCHEMA IF NOT EXISTS` checks for the privilege to create schemas before it checks
+ * whether the schema exists, so a role without it would fail halfway through the redo.
  */
 async function redo(down: RunnerOption, up: RunnerOption): Promise<void> {
   await migrationRunner(down);
   await migrationRunner({
     ...up,
     migrationsSchema: getMigrationTableSchema(down),
+    createMigrationsSchema: false,
   });
 }
 

@@ -364,6 +364,44 @@ describe.each(PG_VERSIONS)(
         ]);
       });
 
+      it('should redo with --create-migrations-schema under a role that cannot create schemas', async () => {
+        await client.query(
+          "CREATE ROLE limited_role LOGIN PASSWORD 'limited_role'"
+        );
+
+        try {
+          // Enough to migrate `public`, not to create schemas: the default since PostgreSQL 15.
+          await client.query(
+            'GRANT USAGE, CREATE ON SCHEMA public TO limited_role'
+          );
+
+          const uri = new URL(pgContainer.getConnectionUri());
+          uri.username = 'limited_role';
+          uri.password = 'limited_role';
+          const env = { DATABASE_URL: uri.toString() };
+
+          const first = await runCli(`up 1 -m ${MIGRATIONS_DIR}`, env);
+          expect(first.code).toBe(0);
+
+          // `CREATE SCHEMA IF NOT EXISTS "public"` would be refused for want of the privilege
+          // to create schemas, even though "public" exists.
+          const result = await runCli(
+            `redo -m ${MIGRATIONS_DIR} --create-migrations-schema`,
+            env
+          );
+
+          expect(result.stderr).not.toContain('permission denied');
+          expect(result.code).toBe(0);
+          expect(await recordedMigrations('public')).toStrictEqual([
+            '001_create_users',
+            '002_add_contract_id',
+          ]);
+        } finally {
+          await client.query('DROP OWNED BY limited_role');
+          await client.query('DROP ROLE limited_role');
+        }
+      });
+
       it('should not take a table that only shares the migrations table name for a history', async () => {
         await client.query('CREATE SCHEMA reporting');
         // It has a `run_on` column, but no `name`: not a migrations table, and a run pointed
