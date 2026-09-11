@@ -30,7 +30,7 @@ interface MockOptions {
   runNames?: string[];
 
   /**
-   * Whether the `information_schema` probe finds the bookkeeping table.
+   * Whether the bookkeeping table exists at the configured location.
    */
   migrationsTableExists?: boolean;
 }
@@ -65,22 +65,16 @@ function createMockClient(options: MockOptions = {}): {
         return Promise.resolve({ rows: [{ lockReleased: true }] });
       }
 
-      if (
-        query.startsWith('SELECT table_name FROM information_schema.tables')
-      ) {
-        return Promise.resolve({
-          rows: migrationsTableExists
-            ? [{ table_name: 'migrations table' }]
-            : [],
-        });
-      }
+      // Catalog lookups. The simulated database holds a single relation: the
+      // bookkeeping table at the configured location, with its primary key,
+      // when `migrationsTableExists`. Lookups that exclude the configured
+      // schema - looking for a history elsewhere - find nothing.
+      if (/\b(?:pg_catalog|information_schema)\./.test(query)) {
+        const looksElsewhere = /\bnspname <> /.test(query);
 
-      if (
-        query.startsWith(
-          'SELECT constraint_name FROM information_schema.table_constraints'
-        )
-      ) {
-        return Promise.resolve({ rows: [{ constraint_name: 'pkey' }] });
+        return Promise.resolve({
+          rows: migrationsTableExists && !looksElsewhere ? [{ found: 1 }] : [],
+        });
       }
 
       if (query.startsWith('SELECT name FROM ')) {
@@ -266,7 +260,7 @@ describe('migrations table resolution', () => {
       // is told it is missing, and the runner tries to create it again.
       // `pg_catalog` answers regardless of grants.
       expect(
-        queries.filter(({ text }) => text.includes('information_schema'))
+        queries.filter(({ text }) => /\binformation_schema\./.test(text))
       ).toStrictEqual([]);
     });
   });
