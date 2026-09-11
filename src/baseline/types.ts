@@ -1,4 +1,5 @@
 import type { ClientBase, ClientConfig } from 'pg';
+import type { Fallback } from '../codegen/fallback';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
 
@@ -104,6 +105,26 @@ export interface BaselineOptions {
    * Redirect messages to this logger object, rather than `console`.
    */
   readonly logger?: Logger;
+
+  /**
+   * The language of the migration: `'sql'` cleans up a pg_dump output, while
+   * `'ts'` and `'js'` (experimental) read the catalogs of the live database
+   * and write `pgm` calls, falling back to `pgm.sql(…)` for what the `pgm`
+   * operations cannot express. `'ts'` and `'js'` need a connection and
+   * cannot be combined with `fromFile`.
+   *
+   * @default 'sql'
+   */
+  readonly format?: 'sql' | 'ts' | 'js';
+
+  /**
+   * With `format` `'ts'` or `'js'`: fail with `UNSUPPORTED_OBJECTS`, listing
+   * every object that would need raw SQL and why, instead of writing a
+   * migration with fallbacks.
+   *
+   * @default false
+   */
+  readonly strict?: boolean;
 }
 
 /**
@@ -150,6 +171,13 @@ export interface BaselineResult {
    * Where the schema came from.
    */
   readonly source: DumpSource;
+
+  /**
+   * With `format` `'ts'` or `'js'`: the objects the migration creates with
+   * raw SQL (`pgm.sql(…)`), in the order of the migration; empty when there
+   * are none. Left out with `format` `'sql'`.
+   */
+  readonly fallbacks?: ReadonlyArray<Fallback>;
 }
 
 /**
