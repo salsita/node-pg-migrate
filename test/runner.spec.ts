@@ -15,7 +15,15 @@ const MIGRATIONS_TABLE_PRIMARY_KEY =
   "SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname = $2)";
 
 const OTHER_MIGRATIONS_TABLES =
-  "SELECT n.nspname AS \"schema\", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS \"readable\" FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p', 'v', 'f') AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND EXISTS (SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = $3 AND NOT a.attisdropped) ORDER BY n.nspname";
+  "SELECT n.nspname AS \"schema\", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS \"readable\" FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relname = $1 AND c.relkind IN ('r', 'p') AND n.nspname <> $2 AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname NOT IN ('information_schema', 'crdb_internal') AND (SELECT count(*) FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = ANY($3::text[]) AND NOT a.attisdropped) = 3 ORDER BY n.nspname";
+
+/**
+ * The same lookup, narrowed to the rest of a chosen schema list.
+ */
+const OTHER_MIGRATIONS_TABLES_IN_LIST = OTHER_MIGRATIONS_TABLES.replace(
+  ' ORDER BY',
+  ' AND n.nspname = ANY($4::text[]) ORDER BY'
+);
 
 describe('runner', () => {
   it('should return a function', () => {
@@ -661,17 +669,26 @@ describe('runner', () => {
       const tableIn = (query: string, pattern: RegExp): MigrationsTable =>
         tables[pattern.exec(query)?.[1] ?? ''] ?? {};
 
-      const queryMock = vi.fn((query: string, values?: string[]) => {
+      const queryMock = vi.fn((query: string, values?: unknown[]) => {
         if (query === MIGRATIONS_TABLE_EXISTS) {
           return Promise.resolve({
             rows: Object.hasOwn(tables, String(values?.[1])) ? [{}] : [],
           });
         }
 
-        if (query === OTHER_MIGRATIONS_TABLES) {
+        if (
+          query === OTHER_MIGRATIONS_TABLES ||
+          query === OTHER_MIGRATIONS_TABLES_IN_LIST
+        ) {
+          const [, ownSchema, , searched] = values ?? [];
+
           return Promise.resolve({
             rows: Object.entries(tables)
-              .filter(([schema]) => schema !== values?.[1])
+              .filter(
+                ([schema]) =>
+                  schema !== ownSchema &&
+                  (!Array.isArray(searched) || searched.includes(schema))
+              )
               .map(([schema, { readable = true }]) => ({ schema, readable })),
           });
         }
@@ -714,6 +731,14 @@ describe('runner', () => {
       return queryMock.mock.calls.map((call) => String(call[0]));
     }
 
+    function historyScans(queryMock: Mock): string[] {
+      return executedQueries(queryMock).filter(
+        (query) =>
+          query === OTHER_MIGRATIONS_TABLES ||
+          query === OTHER_MIGRATIONS_TABLES_IN_LIST
+      );
+    }
+
     function run(
       dbClient: ClientBase,
       options: Partial<RunnerOptionConfig> = {}
@@ -754,7 +779,7 @@ describe('runner', () => {
 
       await expect(run(dbClient)).resolves.toHaveLength(11);
 
-      expect(executedQueries(queryMock)).not.toContain(OTHER_MIGRATIONS_TABLES);
+      expect(historyScans(queryMock)).toEqual([]);
     });
 
     it('should start a new history when the database has none', async () => {
@@ -765,7 +790,7 @@ describe('runner', () => {
       expect(queryMock).toHaveBeenCalledWith(OTHER_MIGRATIONS_TABLES, [
         'pgmigrations',
         'public',
-        'run_on',
+        ['id', 'name', 'run_on'],
       ]);
       expect(executedQueries(queryMock)).toContain(
         'CREATE TABLE "public"."pgmigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
@@ -777,7 +802,7 @@ describe('runner', () => {
 
       await expect(run(dbClient)).rejects.toThrow(
         new Error(
-          'Refusing to run: the migrations table "public"."pgmigrations" does not exist, but "app"."pgmigrations" already records migrations. Carrying on would start the history over and could apply migrations that have already run. No schema was configured, so "public" is only the fallback. To continue that history, pass `--schema app` (or `--migrations-schema app` if only the migrations table lives there); to start a new one in "public", pass `--schema public`.'
+          'Refusing to run: the migrations table "public"."pgmigrations" does not exist, but "app"."pgmigrations" already records migrations. Carrying on would start the history over and could apply migrations that have already run. No schema was configured, so "public" is only the fallback. To continue that history, pass `--schema app` (or `--migrations-schema app` if only the migrations table lives there); to start a new one in "public", pass `--migrations-schema public`. From the API, use the `schema` and `migrationsSchema` options.'
         )
       );
 
@@ -813,6 +838,14 @@ describe('runner', () => {
       expectNoWrites(queryMock);
     });
 
+    it('should treat a run without a schema as a fallback, whatever schemaIsDefault says', async () => {
+      const { dbClient } = createDbClient({ app: history });
+
+      await expect(run(dbClient, { schemaIsDefault: false })).rejects.toThrow(
+        'No schema was configured'
+      );
+    });
+
     it('should not count an empty schema list as a choice', async () => {
       const { dbClient } = createDbClient({ app: history });
 
@@ -833,7 +866,7 @@ describe('runner', () => {
 
       const queries = executedQueries(queryMock);
 
-      expect(queries).not.toContain(OTHER_MIGRATIONS_TABLES);
+      expect(historyScans(queryMock)).toEqual([]);
       expect(queries).toContain('CREATE SCHEMA IF NOT EXISTS "tenant_b"');
       expect(queries).toContain(
         'CREATE TABLE "tenant_b"."pgmigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)'
@@ -849,6 +882,13 @@ describe('runner', () => {
         'The migrations table follows the first `--schema` entry, and "app" is further down that list. To continue that history, pass `--migrations-schema app` (or list "app" first); to start a new one in "public", pass `--migrations-schema public`.'
       );
 
+      // Only the rest of the list is searched, and the database does the narrowing.
+      expect(queryMock).toHaveBeenCalledWith(OTHER_MIGRATIONS_TABLES_IN_LIST, [
+        'pgmigrations',
+        'public',
+        ['id', 'name', 'run_on'],
+        ['app'],
+      ]);
       expectNoWrites(queryMock);
     });
 
@@ -888,7 +928,7 @@ describe('runner', () => {
         run(dbClient, { migrationsSchema: 'meta' })
       ).resolves.toHaveLength(12);
 
-      expect(executedQueries(queryMock)).not.toContain(OTHER_MIGRATIONS_TABLES);
+      expect(historyScans(queryMock)).toEqual([]);
     });
 
     it('should refuse a dry run the same way, and end its read-only transaction', async () => {
