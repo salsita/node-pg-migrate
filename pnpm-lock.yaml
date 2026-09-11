@@ -203,8 +203,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-pnpmfileChecksum: sha256-oCP0J8DobIKOEzGjFCATs7/K2Ajg990BNFq0JFbSyPQ=
-
 importers:
 
   .:
@@ -259,8 +257,8 @@ importers:
         specifier: 1.82.0
         version: 1.82.0(oxlint-tsgolint@7.0.2001)
       oxlint-plugin-organize-imports:
-        specifier: 0.1.0
-        version: 0.1.0(oxlint@1.82.0(oxlint-tsgolint@7.0.2001))
+        specifier: 0.2.0
+        version: 0.2.0(oxlint@1.82.0(oxlint-tsgolint@7.0.2001))(typescript@7.0.2)
       oxlint-tsgolint:
         specifier: 7.0.2001
         version: 7.0.2001
@@ -1949,11 +1947,12 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-plugin-organize-imports@0.1.0:
-    resolution: {integrity: sha512-GE8xOWXPGGhI7rzxvZX1JQVL2Qi8JAWE7L0uN6hoGxMHnsoRSjLmaL72OrJ38a1hJUorufhuK43fh6ha45C5hw==}
+  oxlint-plugin-organize-imports@0.2.0:
+    resolution: {integrity: sha512-fxNjpShM+iMT9HjLIHu+r9hpnh7LaLF7PsqtZFAUl9WWgboyIUU/L7k7m7XLilTrZcyRHWgZJ+w/Gn7ZnI9hig==}
     engines: {node: '>=24'}
     peerDependencies:
       oxlint: ^1.0.0
+      typescript: ^5 || ^6 || ^7
 
   oxlint-tsgolint@7.0.2001:
     resolution: {integrity: sha512-KjK/XLcXr1DSyonKhsuFqJRiuKqcyG9j3LJ8nkOsrLzGvodBPqzHOKauy10asLMDI0sUpvb+1sxlzff3udZvfg==}
@@ -2347,11 +2346,6 @@ packages:
 
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
-
-  typescript@6.0.3:
-    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   typescript@7.0.2:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
@@ -3882,11 +3876,11 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.66.0
       '@oxfmt/binding-win32-x64-msvc': 0.66.0
 
-  oxlint-plugin-organize-imports@0.1.0(oxlint@1.82.0(oxlint-tsgolint@7.0.2001)):
+  oxlint-plugin-organize-imports@0.2.0(oxlint@1.82.0(oxlint-tsgolint@7.0.2001))(typescript@7.0.2):
     dependencies:
       '@oxlint/plugins': 1.82.0
       oxlint: 1.82.0(oxlint-tsgolint@7.0.2001)
-      typescript: 6.0.3
+      typescript: 7.0.2
 
   oxlint-tsgolint@7.0.2001:
     optionalDependencies:
@@ -4352,8 +4346,6 @@ snapshots:
       - vue-tsc
 
   tweetnacl@0.14.5: {}
-
-  typescript@6.0.3: {}
 
   typescript@7.0.2:
     optionalDependencies:
