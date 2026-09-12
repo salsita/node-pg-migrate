@@ -3,16 +3,23 @@ import { defineConfig } from 'vitepress';
 import pkg from '../../package.json';
 
 const repository = 'https://github.com/salsita/node-pg-migrate';
+const base = '/node-pg-migrate/'; // for GitHub Pages
 export default defineConfig({
   title: 'node-pg-migrate',
   description: 'PostgreSQL database migration management tool',
-  base: '/node-pg-migrate/', // for GitHub Pages
+  base,
   srcDir: 'src',
   lastUpdated: true,
   cleanUrls: true,
   metaChunk: true,
 
+  // head entries are not prefixed with `base`
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
+  ],
+
   themeConfig: {
+    // the nav and hero logos come from theme/Layout.vue
     nav: navBarItems(),
     sidebar: sidebar(),
 
