@@ -1,0 +1,15 @@
+diff --git a/dist/node/chunk-B0BRqWJx.js b/dist/node/chunk-B0BRqWJx.js
+index 9a0579c3f7085d65f6df3c25f54abfb469718d0c..fdeead7657bcfffd17dfbf4f04f5b8fb6ce572b7 100644
+--- a/dist/node/chunk-B0BRqWJx.js
++++ b/dist/node/chunk-B0BRqWJx.js
+@@ -28685,7 +28685,9 @@ const themeRE = /(?:^|\/)\.vitepress\/theme\/index\.(m|c)?(j|t)s$/;
+ const startsWithThemeRE = /^@theme(?:\/|$)/;
+ const docsearchRE = /\bdocsearch\b/;
+ const hashRE = /\.([-\w]+)\.js$/;
+-const staticInjectMarkerRE = /\bcreateStaticVNode\((?:(".*")|('.*')), (\d+)\)/g;
++// match exactly one string literal: a greedy `.*` spans several calls on one line and
++// the lean page chunk then drops the code between them
++const staticInjectMarkerRE = /\bcreateStaticVNode\((?:("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')), (\d+)\)/g;
+ const staticStripRE = /['"`]__VP_STATIC_START__[^]*?__VP_STATIC_END__['"`]/g;
+ const staticRestoreRE = /__VP_STATIC_(START|END)__/g;
+ const scriptClientRE = /<script\b[^>]*client\b[^>]*>([^]*?)<\/script>/;

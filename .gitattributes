@@ -1,1 +1,9 @@
 * text eol=lf
+
+# images must not be line-ending normalized
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
