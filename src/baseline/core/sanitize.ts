@@ -13,7 +13,7 @@ import {
   parseQualifiedName,
   toPgDumpPattern,
 } from './identifiers';
-import { codeAt, foldIdentifier, isSpace, skipWhile } from './lexer';
+import { codeAt, foldIdentifier, isSpace, Lexer, skipWhile } from './lexer';
 import type { MarkerMatch } from './markers';
 import { findMigrationMarker } from './markers';
 import { copiesFromStdin, scanTopLevel } from './scan';
@@ -22,6 +22,7 @@ import { Statement } from './statement';
 
 const LINE_FEED = 0x0a;
 const CARRIAGE_RETURN = 0x0d;
+const SEMICOLON = 0x3b;
 const FIRST_NON_ASCII = 0x80;
 
 /**
@@ -84,6 +85,13 @@ class SqlWriter {
    */
   write(text: string): void {
     this.#append(text);
+  }
+
+  /**
+   * The length of everything written so far.
+   */
+  get length(): number {
+    return this.#length;
   }
 
   /**
@@ -151,6 +159,12 @@ interface Context {
    * Whitespace before this offset is dropped with the statement before it.
    */
   keepFrom: number;
+
+  /**
+   * Where the output needs the `;` that the last statement of the dump leaves
+   * out, once that statement is kept (see {@link keepStatement}).
+   */
+  semicolonAt: number | undefined;
 }
 
 /**
@@ -212,6 +226,58 @@ function drop(statement: Statement, context: Context): true {
  */
 function keepSegment(segment: TopLevelSegment, context: Context): void {
   context.output.keep(segment.start, segment.start + segment.text.length);
+}
+
+/**
+ * The offset in the dump right after the last token of a statement that does
+ * not end with `;`, which the last statement of a dump can leave out (psql
+ * runs it all the same); the whitespace and comments after that token are
+ * then part of the statement. `undefined` for a statement that ends with `;`,
+ * as every other statement does.
+ */
+function unterminatedEnd(
+  statement: Statement,
+  dump: string
+): number | undefined {
+  if (statement.end < dump.length) {
+    return undefined;
+  }
+
+  const lexer = new Lexer(statement.text);
+  let end = 0;
+  let semicolon = false;
+  while (lexer.next() !== undefined) {
+    end = lexer.end;
+    semicolon =
+      lexer.kind === 'symbol' &&
+      codeAt(statement.text, lexer.start) === SEMICOLON;
+  }
+
+  return semicolon ? undefined : statement.start + end;
+}
+
+/**
+ * Copies a statement to the output, from `from` (an offset in the dump) to
+ * its end. When the statement leaves out its `;` (see
+ * {@link unterminatedEnd}), it notes where the `;` goes in the output: right
+ * after the text of the statement, before the whitespace and comments after
+ * it. {@link finish} puts it there when restores follow the statement.
+ */
+function keepStatement(
+  statement: Statement,
+  from: number,
+  context: Context
+): void {
+  const textEnd = unterminatedEnd(statement, context.dump);
+  if (textEnd === undefined) {
+    context.output.keep(from, statement.end);
+
+    return;
+  }
+
+  context.output.keep(from, textEnd);
+  context.semicolonAt = context.output.length;
+  context.output.keep(textEnd, statement.end);
 }
 
 /**
@@ -801,7 +867,7 @@ function rewriteSetting(statement: Statement, context: Context): boolean {
   }
 
   context.output.write('SET LOCAL');
-  context.output.keep(statement.start + afterSet, statement.end);
+  keepStatement(statement, statement.start + afterSet, context);
 
   return true;
 }
@@ -876,7 +942,7 @@ function createSchemaIfNotExists(
   const split = statement.start + keyword.end;
   context.output.keep(statement.start, split);
   context.output.write(' IF NOT EXISTS');
-  context.output.keep(split, statement.end);
+  keepStatement(statement, split, context);
 
   return true;
 }
@@ -994,7 +1060,7 @@ function handleStatement(segment: TopLevelSegment, context: Context): void {
   const statement = new Statement(segment);
   if (!STATEMENT_RULES.some((rule) => rule(statement, context))) {
     countObjects(statement, context.stats);
-    keepSegment(segment, context);
+    keepStatement(statement, statement.start, context);
   }
 }
 
@@ -1156,8 +1222,21 @@ function markerCollision(
 }
 
 /**
+ * Puts a `;` at `offset` of a text; returns the text as it is when `offset`
+ * is `undefined`.
+ */
+function insertSemicolon(text: string, offset: number | undefined): string {
+  return offset === undefined
+    ? text
+    : `${text.slice(0, offset)};${text.slice(offset)}`;
+}
+
+/**
  * Checks the output for marker collisions (R10), ends it with one `\n`
- * (R11) and adds the restores of the saved settings (R6).
+ * (R11) and adds the restores of the saved settings (R6). The migration runs
+ * as one query, so a last statement that the dump leaves without `;` gets
+ * one before the restores, which PostgreSQL would read as part of it
+ * otherwise (see {@link keepStatement}).
  */
 function finish(context: Context): SanitizedDump {
   const output = context.output.toString();
@@ -1167,7 +1246,9 @@ function finish(context: Context): SanitizedDump {
   }
 
   const restores = [...context.settings].map((name) => `${restoreOf(name)}\n`);
-  const sql = endWithNewline(output);
+  const sql = endWithNewline(
+    restores.length > 0 ? insertSemicolon(output, context.semicolonAt) : output
+  );
 
   return {
     sql: restores.length > 0 ? `${sql}\n${restores.join('')}` : sql,
@@ -1246,6 +1327,7 @@ function createContext(dump: string, options: SanitizeOptions): Context {
     source: {},
     restrict: undefined,
     keepFrom: 0,
+    semicolonAt: undefined,
   };
 }
 
@@ -1260,7 +1342,8 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  * migrations that run after the baseline in the same transaction.
  * `CREATE SCHEMA` of the migrations schema or of `createdSchemas` becomes
  * `CREATE SCHEMA IF NOT EXISTS`. Everything else is kept byte for byte, and
- * the output ends with one `\n`.
+ * the output ends with one `\n`; a last statement that the dump leaves
+ * without `;` only gets one when the restores follow it.
  *
  * Throws a `BaselineError` when the dump cannot be a baseline: it is not SQL
  * text (a pg_dump custom- or tar-format archive, a compressed file or UTF-16
