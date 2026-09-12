@@ -3,8 +3,10 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 
 const managers = ['npm', 'pnpm', 'yarn', 'bun'] as const;
 const manager = ref<(typeof managers)[number]>('npm');
-// not -D: runner() and pg are runtime dependencies when migrating from app code
-const command = computed(() => `${manager.value} add node-pg-migrate pg`);
+// as in getting-started.md: pg is a runtime dependency, node-pg-migrate a dev one
+const command = computed(
+  () => `${manager.value} add pg && ${manager.value} add -D node-pg-migrate`
+);
 
 const code = ref<HTMLElement>();
 const copied = ref(false);
