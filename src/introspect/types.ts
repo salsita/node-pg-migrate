@@ -1119,6 +1119,13 @@ export interface Table extends CatalogObject {
   readonly inherits: ReadonlyArray<SchemaQualifiedName>;
 
   /**
+   * The composite type of a typed table (`CREATE TABLE … OF <type>`,
+   * `reloftype`), whose attributes are the table's columns. Left out for
+   * other tables.
+   */
+  readonly ofType?: SchemaQualifiedName;
+
+  /**
    * `ENABLE ROW LEVEL SECURITY` (`relrowsecurity`).
    */
   readonly rowLevelSecurity: boolean;
@@ -2603,6 +2610,13 @@ export interface TableRow {
    * one parent is its partitioned table.
    */
   readonly inherits: ReadonlyArray<NameRow>;
+
+  /**
+   * The composite type of a typed table (`reloftype`), null for other
+   * tables. The query always has it; rows built without it are of tables
+   * that are not typed.
+   */
+  readonly ofType?: NameRow | null;
   readonly relrowsecurity: boolean;
   readonly relforcerowsecurity: boolean;
   readonly reloptions: ReadonlyArray<string> | null;

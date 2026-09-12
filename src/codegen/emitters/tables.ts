@@ -412,7 +412,7 @@ function columnText(column: Column): string {
 
 /**
  * The reasons that only concern the `createTable` call, which a partition
- * never uses.
+ * and a typed table never use.
  */
 function createTableReasons(
   table: Table,
@@ -473,6 +473,10 @@ function fallbackReasons(table: Table): string[] {
     reasons.push('partition');
   }
 
+  if (table.ofType !== undefined) {
+    reasons.push('typed table');
+  }
+
   if (table.columns.some((column) => column.generated?.storage === 'VIRTUAL')) {
     reasons.push('virtual generated column');
   }
@@ -505,7 +509,7 @@ function fallbackReasons(table: Table): string[] {
     reasons.push('replica identity');
   }
 
-  if (table.partitionOf === undefined) {
+  if (table.partitionOf === undefined && table.ofType === undefined) {
     reasons.push(...createTableReasons(table, local));
   }
 
@@ -534,14 +538,11 @@ export function serialSequences(
 }
 
 /**
- * The SQL of a column of `CREATE TABLE` (whole-table fallback).
+ * The constraints of a column of `CREATE TABLE` (whole-table fallback): its
+ * default, generation, identity and `NOT NULL`, e.g. `DEFAULT 0 NOT NULL`.
  */
-function columnSql(table: Table, column: Column): string {
-  const parts = [quoteName(column.name), column.type];
-  if (column.collation !== undefined) {
-    parts.push(`COLLATE ${column.collation}`);
-  }
-
+function columnConstraintsSql(table: Table, column: Column): string[] {
+  const parts: string[] = [];
   if (column.default !== undefined) {
     parts.push(`DEFAULT ${column.default}`);
   }
@@ -577,7 +578,32 @@ function columnSql(table: Table, column: Column): string {
     );
   }
 
-  return parts.join(' ');
+  return parts;
+}
+
+/**
+ * The SQL of a column of `CREATE TABLE` (whole-table fallback).
+ */
+function columnSql(table: Table, column: Column): string {
+  return [
+    quoteName(column.name),
+    column.type,
+    ...(column.collation === undefined ? [] : [`COLLATE ${column.collation}`]),
+    ...columnConstraintsSql(table, column),
+  ].join(' ');
+}
+
+/**
+ * The options of a column of a typed table (`WITH OPTIONS …`): its type and
+ * collation are the attribute's of the table's type, so only its
+ * constraints (see {@link columnConstraintsSql}).
+ */
+function typedColumnSql(table: Table, column: Column): string[] {
+  const parts = columnConstraintsSql(table, column);
+
+  return parts.length === 0
+    ? []
+    : [`${quoteName(column.name)} WITH OPTIONS ${parts.join(' ')}`];
 }
 
 /**
@@ -670,7 +696,11 @@ function createTableSql(table: Table): string[] {
   const name = qualifiedName(table);
   const unlogged = table.unlogged ? ' UNLOGGED' : '';
   let create: string;
-  if (table.partitionOf === undefined) {
+  if (table.partitionOf !== undefined) {
+    const options = table.columns.flatMap(partitionColumnSql);
+    const list = options.length === 0 ? '' : ` (${options.join(', ')})`;
+    create = `CREATE${unlogged} TABLE ${name} PARTITION OF ${qualifiedName(table.partitionOf.parent)}${list} ${table.partitionOf.bound}`;
+  } else if (table.ofType === undefined) {
     const columns = localColumns(table).map((column) =>
       columnSql(table, column)
     );
@@ -680,9 +710,11 @@ function createTableSql(table: Table): string[] {
         : ` INHERITS (${table.inherits.map(qualifiedName).join(', ')})`;
     create = `CREATE${unlogged} TABLE ${name} (${columns.join(', ')})${inherits}`;
   } else {
-    const options = table.columns.flatMap(partitionColumnSql);
+    const options = table.columns.flatMap((column) =>
+      typedColumnSql(table, column)
+    );
     const list = options.length === 0 ? '' : ` (${options.join(', ')})`;
-    create = `CREATE${unlogged} TABLE ${name} PARTITION OF ${qualifiedName(table.partitionOf.parent)}${list} ${table.partitionOf.bound}`;
+    create = `CREATE${unlogged} TABLE ${name} OF ${qualifiedName(table.ofType)}${list}`;
   }
 
   const partitionBy =
@@ -823,31 +855,35 @@ function columnCode(table: Table, column: Column): Code {
  *
  * The WHOLE table becomes one fallback, `CREATE TABLE …` built from the
  * model (columns in order, comments included), when it is a partition
- * (`CREATE TABLE … PARTITION OF … FOR VALUES …`), reason `'partition'`; has a
- * virtual generated column, `'virtual generated column'`; storage parameters,
+ * (`CREATE TABLE … PARTITION OF … FOR VALUES …`), reason `'partition'`; is a
+ * typed table (`CREATE TABLE … OF <type> (<column> WITH OPTIONS …)`, which
+ * `createTable` cannot tie to its type), `'typed table'`; has a virtual
+ * generated column, `'virtual generated column'`; storage parameters,
  * `'storage parameters'`; a non-heap access method, `'access method'`;
  * several parents, `'multiple inheritance'`; an identity sequence that is not
  * named `<table>_<column>_seq`, `'identity sequence name'`; a `NOT NULL`
  * constraint whose name is not the default, `'NOT NULL constraint name'`;
  * column statistics, storage, compression or options, `'column settings'`;
  * or a `REPLICA IDENTITY` of `FULL` or `NOTHING`, `'replica identity'`. And,
- * for a table that is not a partition, because of what `createTable` itself
- * cannot write: a partition key with an expression, a collation or an
- * operator class, `'partition key'`; a `NOT NULL` constraint that is `NO
- * INHERIT` or `NOT VALID` (PostgreSQL 18), `'NOT NULL NO INHERIT'` / `'NOT
- * NULL NOT VALID'`; identity options beyond `Number.MAX_SAFE_INTEGER` or
- * equal to `0` (`sequenceGenerated` leaves out falsy values), `'bigint
- * option'` / `'zero option'`; column names that an object would reorder
- * (integer-like names such as `'1'` come first), `'column order'`; no column
- * to list, `'no columns'`; or a column whose name, type, collation, default
- * or expression has a line break (`createTable` writes each column on one
- * line), `'line break'`. With several reasons, they are joined with `', '`.
+ * for a table that is neither a partition nor a typed table, because of what
+ * `createTable` itself cannot write: a partition key with an expression, a
+ * collation or an operator class, `'partition key'`; a `NOT NULL` constraint
+ * that is `NO INHERIT` or `NOT VALID` (PostgreSQL 18), `'NOT NULL NO
+ * INHERIT'` / `'NOT NULL NOT VALID'`; identity options beyond
+ * `Number.MAX_SAFE_INTEGER` or equal to `0` (`sequenceGenerated` leaves out
+ * falsy values), `'bigint option'` / `'zero option'`; column names that an
+ * object would reorder (integer-like names such as `'1'` come first),
+ * `'column order'`; no column to list, `'no columns'`; or a column whose
+ * name, type, collation, default or expression has a line break
+ * (`createTable` writes each column on one line), `'line break'`. With
+ * several reasons, they are joined with `', '`.
  *
  * In a whole-table fallback, a column that would be `serial` keeps its
  * `DEFAULT nextval(…)` (its sequence is created and owned on its own), the
  * columns of a partition get their defaults and `NOT NULL` constraints (with
- * their names) with `WITH OPTIONS`, and column settings and comments follow
- * as `ALTER TABLE` and `COMMENT ON` statements.
+ * their names) with `WITH OPTIONS`, those of a typed table their defaults,
+ * generation, identity and `NOT NULL` with `WITH OPTIONS`, and column
+ * settings and comments follow as `ALTER TABLE` and `COMMENT ON` statements.
  *
  * @param table The table.
  * @param ctx The migration context.

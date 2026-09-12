@@ -498,6 +498,7 @@ const TABLES = `SELECT c.oid, n.nspname AS schema, c.relname AS name,
     JOIN pg_catalog.pg_namespace AS pn ON pn.oid ${EQ} pc.relnamespace
     WHERE i.inhrelid ${EQ} c.oid
   ), '[]'::pg_catalog.json) AS inherits,
+  ${nameJson(TYPES, 'c.reloftype')} AS "ofType",
   c.relrowsecurity,
   c.relforcerowsecurity,
   ${storageParameters('c')} AS reloptions,

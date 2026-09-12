@@ -812,6 +812,7 @@ function tableOf(row: TableRow, columns: ReadonlyArray<Column>): Table {
     ...optional('partitionKey', row.partitionKey),
     ...partitionOfTable(row),
     inherits: row.relispartition ? [] : row.inherits.map(qualifiedName),
+    ...optionalName('ofType', row.ofType ?? null),
     rowLevelSecurity: row.relrowsecurity,
     forceRowLevelSecurity: row.relforcerowsecurity,
     options: row.reloptions ?? [],
@@ -1187,7 +1188,8 @@ function withPartitionIndexes(
  * - A view's `definition` loses its final `;`, and the `check_option` entry
  *   of its `reloptions` becomes `checkOption`.
  * - A partition's parent is its one `inherits` row (`partitionOf.parent`),
- *   so its `inherits` is empty.
+ *   so its `inherits` is empty. A typed table's `ofType` row becomes its
+ *   `ofType`.
  * - `dependencies` are the rows of the `dependencies` query between objects
  *   of the model, as `ObjectRef`s, plus the implicit ones (see
  *   `SchemaModel.dependencies`).
