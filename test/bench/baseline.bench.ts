@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import {
   estimateRelations,
   requiredMaxLocksPerTransaction,
@@ -25,12 +25,23 @@ for (const tables of TABLE_COUNTS) {
   const megabytes = (dump.length / 1_000_000).toFixed(1);
 
   describe(`${COUNT_FORMAT.format(tables)} tables (${megabytes} MB of pg_dump output)`, () => {
-    bench('scanTopLevel', () => {
-      scanTopLevel(dump);
-    });
+    test('scanTopLevel and sanitizeDump', async ({ bench }) => {
+      // What is measured: the whole dump, with every table in it.
+      expect(sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS).stats.tables).toBe(
+        tables
+      );
 
-    bench('sanitizeDump', () => {
-      sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS);
+      await bench.compare(
+        bench('scanTopLevel', () => {
+          scanTopLevel(dump);
+        }),
+        bench('sanitizeDump', () => {
+          sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS);
+        }),
+        // A run of the 5,000 tables takes about a second: 10 samples are
+        // enough, and keep the whole benchmark within the test timeout.
+        { iterations: 10, time: 500 }
+      );
     });
   });
 }
@@ -42,12 +53,18 @@ describe('max_locks_per_transaction estimate', () => {
     DEFAULT_SANITIZE_OPTIONS
   );
 
-  bench(
-    `estimateRelations + requiredMaxLocksPerTransaction (${COUNT_FORMAT.format(largest)} tables)`,
-    () => {
+  test(`estimateRelations + requiredMaxLocksPerTransaction (${COUNT_FORMAT.format(largest)} tables)`, async ({
+    bench,
+  }) => {
+    // What is measured: an estimate above the default of 64.
+    expect(
+      requiredMaxLocksPerTransaction(estimateRelations(stats))
+    ).toBeGreaterThan(64);
+
+    await bench('estimate', () => {
       requiredMaxLocksPerTransaction(estimateRelations(stats));
-    },
-    // Constant time: a short run gives millions of samples already.
-    { time: 50, warmupTime: 10 }
-  );
+    })
+      // Constant time: a short run gives millions of samples already.
+      .run({ time: 50, warmupTime: 10 });
+  });
 });
