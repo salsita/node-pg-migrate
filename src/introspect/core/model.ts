@@ -40,6 +40,8 @@ import type {
   Operator,
   OperatorRow,
   OwnedSequence,
+  PartitionIndex,
+  PartitionIndexRow,
   Policy,
   PolicyRow,
   RangeRow,
@@ -1075,6 +1077,70 @@ function ownedSequences(
 }
 
 /**
+ * The deepest partition level that {@link partitionIndexesOf} sorts by: more
+ * than any real hierarchy has.
+ */
+const DEEPEST_LEVEL = 1_000_000;
+
+/**
+ * The indexes of partitions attached, directly or through the index of a
+ * partitioned partition, to an index of a partitioned table.
+ *
+ * @param index The OID of the index of the partitioned table.
+ * @param attached The rows of the `partitionIndexes` query, by the index they
+ * are attached to.
+ * @param tableNames The name of each table row, by OID.
+ * @returns The indexes, deepest first, then by table and name (see
+ * `Index.partitionIndexes`).
+ */
+function partitionIndexesOf(
+  index: number,
+  attached: ReadonlyMap<number, ReadonlyArray<PartitionIndexRow>>,
+  tableNames: ReadonlyMap<number, SchemaQualifiedName>
+): PartitionIndex[] {
+  const found: PartitionIndex[] = [];
+  const visit = (parent: number, level: number): void => {
+    for (const row of attached.get(parent) ?? []) {
+      const table = tableNames.get(row.relid);
+      if (table !== undefined) {
+        found.push({
+          table,
+          name: row.name,
+          columns: row.columns,
+          definition: row.definition,
+          ...optional('constraintDefinition', row.constraintDefinition),
+          level,
+        });
+      }
+
+      visit(row.oid, level + 1);
+    }
+  };
+  visit(index, 1);
+
+  return sortByKey(found, (partitionIndex) => [
+    oidKey(DEEPEST_LEVEL - partitionIndex.level),
+    partitionIndex.table.schema,
+    partitionIndex.table.name,
+    partitionIndex.name,
+  ]);
+}
+
+/**
+ * A field `partitionIndexes` with the indexes of partitions attached to an
+ * index (see {@link partitionIndexesOf}), left out when there are none.
+ */
+function withPartitionIndexes(
+  index: number,
+  attached: ReadonlyMap<number, ReadonlyArray<PartitionIndexRow>>,
+  tableNames: ReadonlyMap<number, SchemaQualifiedName>
+): Pick<Index, 'partitionIndexes'> {
+  const partitionIndexes = partitionIndexesOf(index, attached, tableNames);
+
+  return partitionIndexes.length === 0 ? {} : { partitionIndexes };
+}
+
+/**
  * Builds the model of a schema from the rows of the introspection queries.
  *
  * - Scope: rows whose `schema` is not in `includeSchemas` (when set) or is in
@@ -1107,6 +1173,11 @@ function ownedSequences(
  *   NULL` rows (`contype = 'n'`) are folded into their column (`conkey`) as
  *   `notNullConstraint`, or into their domain as `notNullConstraintName`;
  *   the CHECK rows of a domain become its `checks`.
+ * - The rows of the `partitionIndexes` query become the `partitionIndexes`
+ *   of the index, or primary key, unique or exclusion constraint
+ *   (`conindid`), that they are attached to, directly or through other such
+ *   rows (their `level`), with the name of their partition from its table
+ *   row; that index or constraint depends on those partitions.
  * - The arguments of a routine come from `argTypes`, `argNames` (`''` is no
  *   name), `argModes` and `argDefaults`, without `TABLE` (`t`) columns;
  *   `proconfig` entries are split at their first `=`.
@@ -1252,16 +1323,48 @@ export function rowsToModel(
       return [object];
     });
 
+  // The indexes of partitions go with the index of their partitioned table,
+  // or of its constraint, which needs their partitions.
+  const attached = groupBy(rows.partitionIndexes ?? [], ({ parent }) => parent);
+  const tableNames = new Map(
+    rows.tables.map((row) => [row.oid, qualifiedName(row)])
+  );
+  const withPartitions = <T extends Index | Constraint>(
+    object: T,
+    index: number
+  ): T => {
+    const partitions = withPartitionIndexes(index, attached, tableNames);
+    for (const { table } of partitions.partitionIndexes ?? []) {
+      const partition = relations.get(tableOids.get(nameKey(table)) ?? 0);
+      if (partition !== undefined) {
+        implicit.push({ from: refOf(object), to: partition.ref });
+      }
+    }
+
+    return { ...object, ...partitions };
+  };
+
   const constraints = sortObjects(
     onRelation(constraintRows.tables, (row, table) => {
       const type = CONSTRAINT_TYPES[row.contype];
+      const constraint =
+        type === null || !row.conislocal
+          ? undefined
+          : constraintOf(row, type, table);
 
-      return type === null || !row.conislocal
-        ? undefined
-        : constraintOf(row, type, table);
+      // Only primary keys, unique and exclusion constraints own their index.
+      return constraint === undefined ||
+        constraint.type === 'check' ||
+        constraint.type === 'foreignKey'
+        ? constraint
+        : withPartitions(constraint, row.conindid);
     })
   );
-  const indexes = sortObjects(onRelation(rows.indexes, indexOf));
+  const indexes = sortObjects(
+    onRelation(rows.indexes, (row, table) =>
+      withPartitions(indexOf(row, table), row.oid)
+    )
+  );
   const triggers = sortObjects(onRelation(rows.triggers, triggerOf));
   const policies = sortObjects(onRelation(rows.policies, policyOf));
   const rules = sortObjects(onRelation(rows.rules, ruleOf));

@@ -1148,6 +1148,52 @@ export interface Table extends CatalogObject {
 }
 
 /**
+ * An index of a partition that is attached to an index of its partitioned
+ * table (`relispartition`), directly or through the index of a partition that
+ * is partitioned itself: the index of the table, or of its primary key, unique
+ * or exclusion constraint, creates it, or attaches the partition's matching
+ * index when the partition already has one.
+ */
+export interface PartitionIndex {
+  /**
+   * The partition.
+   */
+  readonly table: SchemaQualifiedName;
+
+  /**
+   * The name of the index (for the index of a constraint, the name of the
+   * partition's constraint too).
+   */
+  readonly name: string;
+
+  /**
+   * The names of its columns (`pg_attribute` of the index): its key columns,
+   * then its `INCLUDE` columns, the way PostgreSQL named them (e.g. `lower`
+   * or `expr` for an expression). PostgreSQL names the indexes it creates for
+   * partitions after these (see `ChooseIndexName()`).
+   */
+  readonly columns: ReadonlyArray<string>;
+
+  /**
+   * The whole `CREATE [UNIQUE] INDEX` statement, as `pg_get_indexdef(oid)`
+   * writes it (with `ON ONLY` for a partitioned partition).
+   */
+  readonly definition: string;
+
+  /**
+   * For the index of a constraint: the partition's constraint, as
+   * `pg_get_constraintdef(oid)` writes it.
+   */
+  readonly constraintDefinition?: string;
+
+  /**
+   * `1` for an index of a partition of the table, `2` for an index of a
+   * partition of such a partition, and so on.
+   */
+  readonly level: number;
+}
+
+/**
  * A table constraint (`pg_constraint` with `conrelid <> 0`) other than
  * `NOT NULL` (folded into {@link Column.notNullConstraint}) and constraint
  * triggers (`contype = 't'`, which are {@link Trigger}s).
@@ -1220,6 +1266,14 @@ export interface Constraint extends CatalogObject {
    * the constraint.
    */
   readonly indexComment?: string;
+
+  /**
+   * For a primary key, unique or exclusion constraint of a partitioned
+   * table: the indexes of the partitions (with their constraints) attached to
+   * its index (see {@link PartitionIndex}), sorted by `level`, deepest
+   * first, then by table and name. Left out when there are none.
+   */
+  readonly partitionIndexes?: ReadonlyArray<PartitionIndex>;
 }
 
 /**
@@ -1278,7 +1332,8 @@ export type IndexKey =
  *
  * The indexes that partitions get from an index of their partitioned table
  * (`relispartition` indexes) are not in the model either: creating the
- * partitioned index, or attaching a partition, creates them.
+ * partitioned index, or attaching a partition, creates them. They are the
+ * `partitionIndexes` of that index or constraint.
  */
 export interface Index extends CatalogObject {
   readonly kind: 'index';
@@ -1342,6 +1397,13 @@ export interface Index extends CatalogObject {
    * Whether the index is the table's replica identity (`indisreplident`).
    */
   readonly replicaIdentity: boolean;
+
+  /**
+   * For an index of a partitioned table: the indexes of the partitions
+   * attached to it (see {@link PartitionIndex}), sorted by `level`, deepest
+   * first, then by table and name. Left out when there are none.
+   */
+  readonly partitionIndexes?: ReadonlyArray<PartitionIndex>;
 }
 
 /**
@@ -2771,6 +2833,44 @@ export interface IndexRow {
 }
 
 /**
+ * A row of the `partitionIndexes` query: the indexes of partitions that are
+ * attached to an index of their partitioned table (`relispartition`).
+ */
+export interface PartitionIndexRow {
+  readonly oid: number;
+  readonly schema: string;
+  readonly name: string;
+
+  /**
+   * `indrelid`: the `oid` of the partition's row in the `tables` query.
+   */
+  readonly relid: number;
+
+  /**
+   * `pg_inherits.inhparent`: the index it is attached to, a row of the
+   * `indexes` query, the `conindid` of a row of the `constraints` query, or
+   * another row of this query.
+   */
+  readonly parent: number;
+
+  /**
+   * The names of the columns of the index, in order.
+   */
+  readonly columns: ReadonlyArray<string>;
+
+  /**
+   * `pg_get_indexdef(oid)`.
+   */
+  readonly definition: string;
+
+  /**
+   * `pg_get_constraintdef()` of the partition's constraint that the index
+   * backs, if any.
+   */
+  readonly constraintDefinition: string | null;
+}
+
+/**
  * A row of the `views` query: views and materialized views. Their columns
  * are rows of the `columns` query.
  */
@@ -3014,6 +3114,12 @@ export interface CatalogRows {
   readonly columns: ReadonlyArray<ColumnRow>;
   readonly constraints: ReadonlyArray<ConstraintRow>;
   readonly indexes: ReadonlyArray<IndexRow>;
+
+  /**
+   * The indexes of partitions attached to the indexes of their partitioned
+   * tables (none when left out).
+   */
+  readonly partitionIndexes?: ReadonlyArray<PartitionIndexRow>;
   readonly views: ReadonlyArray<ViewRow>;
   readonly triggers: ReadonlyArray<TriggerRow>;
   readonly policies: ReadonlyArray<PolicyRow>;

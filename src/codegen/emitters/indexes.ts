@@ -5,7 +5,8 @@ import { array, object, raw, statement, str } from '../code';
 import { nameCode } from '../names';
 import { qualifiedName, quoteName, terminated } from '../sql';
 import type { EmitContext, Emitted } from '../types';
-import { withStatements } from './fallback';
+import { sqlStatement, withStatements } from './fallback';
+import { namedPartitionIndexes } from './shared';
 
 /**
  * The index methods that `CreateIndexOptions.method` takes.
@@ -118,11 +119,23 @@ function definitionReasons(index: Index): string[] {
  * …`), reason `'CLUSTER ON'` / `'replica identity'`. With several reasons,
  * they are joined with `', '`.
  *
+ * The indexes of partitions attached to an index of a partitioned table
+ * (`partitionIndexes`) come with it, except those whose name is not the one
+ * PostgreSQL would give them: each of those is created first, from its own
+ * definition (without `ONLY`), so that creating the index of the partitioned
+ * table attaches it instead of creating one with another name. That is a
+ * fallback too, reason `'partition index name'`, after the reasons of the
+ * definition and before the others.
+ *
  * @param index The index.
  * @param ctx The migration context.
  */
 export function emitIndex(index: Index, ctx: EmitContext): Emitted {
   const table = qualifiedName(index.table);
+  const before = namedPartitionIndexes(index.partitionIndexes, 'idx').map(
+    (partitionIndex) => definitionSql(partitionIndex.definition)
+  );
+  const beforeReasons = before.length === 0 ? [] : ['partition index name'];
   const after: string[] = [];
   const afterReasons: string[] = [];
   if (index.clustered) {
@@ -141,12 +154,12 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
   if (reasons.length > 0) {
     return withStatements(
       '',
-      [definitionSql(index.definition), ...after],
-      [...reasons, ...afterReasons]
+      [...before, definitionSql(index.definition), ...after],
+      [...reasons, ...beforeReasons, ...afterReasons]
     );
   }
 
-  const code = statement('createIndex', [
+  const create = statement('createIndex', [
     nameCode(index.table, ctx),
     array(index.keys.map(keyCode)),
     object([
@@ -170,5 +183,9 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
     ]),
   ]);
 
-  return withStatements(code, after, afterReasons);
+  return withStatements(
+    [...before.map(sqlStatement), create].join('\n'),
+    after,
+    [...beforeReasons, ...afterReasons]
+  );
 }

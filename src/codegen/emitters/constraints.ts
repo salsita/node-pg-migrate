@@ -4,7 +4,14 @@ import { nameCode } from '../names';
 import { qualifiedName, quoteName } from '../sql';
 import type { EmitContext, Emitted } from '../types';
 import { withStatements } from './fallback';
-import { hasLineBreak } from './shared';
+import type { IndexLabel } from './shared';
+import { hasLineBreak, namedPartitionIndexes } from './shared';
+
+/**
+ * What PostgreSQL names the index of each kind of constraint after.
+ */
+const INDEX_LABELS: Readonly<Partial<Record<Constraint['type'], IndexLabel>>> =
+  { primaryKey: 'pkey', unique: 'key', exclusion: 'excl' };
 
 /**
  * `pgm.addConstraint(table, name, definition)`, the definition as
@@ -18,6 +25,13 @@ import { hasLineBreak } from './shared';
  * would turn into a space: the constraint is added with `pgm.sql('ALTER TABLE
  * … ADD CONSTRAINT …')`, reason `'line break'`.
  *
+ * A primary key, unique or exclusion constraint of a partitioned table comes
+ * with the constraints of its partitions (`partitionIndexes`), except those
+ * whose name is not the one PostgreSQL would give them: each of those is
+ * added to its partition first, with its own definition, so that adding the
+ * constraint of the partitioned table attaches it instead of adding one with
+ * another name.
+ *
  * @param constraint The constraint.
  * @param ctx The migration context.
  */
@@ -27,12 +41,27 @@ export function emitConstraint(
 ): Emitted {
   const table = qualifiedName(constraint.table);
   const name = quoteName(constraint.name);
+  const label = INDEX_LABELS[constraint.type];
+  const partitions =
+    label === undefined
+      ? []
+      : namedPartitionIndexes(constraint.partitionIndexes, label).map(
+          (partitionIndex) => ({
+            table: partitionIndex.table,
+            name: partitionIndex.name,
+            definition:
+              partitionIndex.constraintDefinition ?? constraint.definition,
+          })
+        );
   const reasons: string[] = [];
   const statements: string[] = [];
   const multiline = hasLineBreak(constraint.definition);
   if (multiline) {
     statements.push(
-      `ALTER TABLE ${table} ADD CONSTRAINT ${name} ${constraint.definition};`
+      ...[...partitions, constraint].map(
+        (added) =>
+          `ALTER TABLE ${qualifiedName(added.table)} ADD CONSTRAINT ${quoteName(added.name)} ${added.definition};`
+      )
     );
   }
 
@@ -54,11 +83,15 @@ export function emitConstraint(
 
   const code = multiline
     ? ''
-    : statement('addConstraint', [
-        nameCode(constraint.table, ctx),
-        str(constraint.name),
-        str(constraint.definition),
-      ]);
+    : [...partitions, constraint]
+        .map((added) =>
+          statement('addConstraint', [
+            nameCode(added.table, ctx),
+            str(added.name),
+            str(added.definition),
+          ])
+        )
+        .join('\n');
 
   return withStatements(code, statements, reasons);
 }

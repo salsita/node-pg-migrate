@@ -668,6 +668,32 @@ WHERE NOT ic.relispartition AND ${isUserSchema('n')} AND ${isOwnObject('pg_class
     WHERE co.conindid ${EQ} i.indexrelid AND co.conrelid ${EQ} i.indrelid AND co.contype ${EQ} ANY (${codes(['p', 'u', 'x'])})
   )`;
 
+// The indexes of partitions (`relispartition`), each with the index it is
+// attached to (`inhparent`): an index of the `indexes` query, the index of a
+// constraint, or another such partition index. The names of an index's
+// columns are the ones PostgreSQL gave them, which it names the indexes of
+// partitions after.
+const PARTITION_INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
+  i.indrelid AS relid,
+  inh.inhparent AS parent,
+  ARRAY(
+    SELECT pg_catalog.text(ia.attname)
+    FROM pg_catalog.pg_attribute AS ia
+    WHERE ia.attrelid ${EQ} ic.oid AND ia.attnum ${GT} 0
+    ORDER BY ia.attnum
+  ) AS columns,
+  pg_catalog.pg_get_indexdef(ic.oid) AS definition,
+  (
+    SELECT pg_catalog.pg_get_constraintdef(co.oid)
+    FROM pg_catalog.pg_constraint AS co
+    WHERE co.conindid ${EQ} ic.oid AND co.conrelid ${EQ} i.indrelid AND co.contype ${EQ} ANY (${codes(['p', 'u', 'x'])})
+  ) AS "constraintDefinition"
+FROM pg_catalog.pg_index AS i
+JOIN pg_catalog.pg_class AS ic ON ic.oid ${EQ} i.indexrelid
+JOIN pg_catalog.pg_namespace AS n ON n.oid ${EQ} ic.relnamespace
+JOIN pg_catalog.pg_inherits AS inh ON inh.inhrelid ${EQ} ic.oid
+WHERE ic.relispartition AND ${isUserSchema('n')}`;
+
 const VIEWS = `SELECT c.oid, n.nspname AS schema, c.relname AS name,
   c.relkind,
   pg_catalog.pg_get_viewdef(c.oid) AS definition,
@@ -1002,6 +1028,7 @@ export const QUERIES: Readonly<Record<QueryName, string>> = {
   columns: COLUMNS,
   constraints: CONSTRAINTS,
   indexes: INDEXES,
+  partitionIndexes: PARTITION_INDEXES,
   views: VIEWS,
   triggers: TRIGGERS,
   policies: POLICIES,

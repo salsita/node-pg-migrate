@@ -33,6 +33,7 @@ async function readCatalogs(db: DBConnection): Promise<CatalogRows> {
     columns: await select('columns'),
     constraints: await select('constraints'),
     indexes: await select('indexes'),
+    partitionIndexes: await select('partitionIndexes'),
     views: await select('views'),
     triggers: await select('triggers'),
     policies: await select('policies'),
