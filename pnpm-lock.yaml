@@ -837,9 +837,6 @@ packages:
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
-  '@types/node@26.4.1':
-    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
-
   '@types/node@26.5.1':
     resolution: {integrity: sha512-CzNm2FezW4VR/LjG6yUdiEgLE/rAQ9Slj5gCu/C2VrdcW7I0ahNZ8DRbHT7zOZ6r3ONgd/bsQIeSaoDGrd1C6g==}
 
@@ -2478,9 +2475,6 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@8.3.0:
-    resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
-
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
@@ -3084,13 +3078,13 @@ snapshots:
 
   '@types/docker-modem@3.0.6':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2': 1.15.6
 
   '@types/dockerode@4.0.1':
     dependencies:
       '@types/docker-modem': 3.0.6
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2': 1.15.6
 
   '@types/estree@1.0.9': {}
@@ -3118,10 +3112,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@26.4.1':
-    dependencies:
-      undici-types: 8.3.0
-
   '@types/node@26.5.1':
     dependencies:
       undici-types: 8.9.0
@@ -3134,11 +3124,11 @@ snapshots:
 
   '@types/ssh2-streams@0.1.13':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
 
   '@types/ssh2@0.5.52':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2-streams': 0.1.13
 
   '@types/ssh2@1.15.6':
@@ -4427,7 +4417,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       long: 5.3.2
 
   pump@3.0.4:
@@ -4804,8 +4794,6 @@ snapshots:
       quansync: 1.0.0
 
   undici-types@5.26.5: {}
-
-  undici-types@8.3.0: {}
 
   undici-types@8.9.0: {}
 
