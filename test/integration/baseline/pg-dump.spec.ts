@@ -301,10 +301,14 @@ describe.each(PG_VERSIONS)(
       expect(await listFiles(dir)).toEqual([]);
     });
 
-    it('fails within seconds when another session holds a lock pg_dump needs (PG_DUMP_FAILED)', async () => {
+    it('fails after lockWaitTimeout when another session holds a lock pg_dump needs (PG_DUMP_FAILED)', async () => {
       const url = await widgetsDatabase('locked');
-      const dir = join(await workDir(), 'migrations');
-      const pgDump = await pgDumpShimForTest(container);
+      const work = await workDir();
+      const shim = await recordingShim(
+        work,
+        await pgDumpShimForTest(container)
+      );
+      const dir = join(work, 'migrations');
       const holder = new pg.Client(url);
       await holder.connect();
       try {
@@ -312,27 +316,30 @@ describe.each(PG_VERSIONS)(
         await holder.query(
           'LOCK TABLE public.widgets IN ACCESS EXCLUSIVE MODE'
         );
-        const started = performance.now();
 
         const error = await rejectionOf(
           baseline({
             databaseUrl: url,
             dir,
-            pgDump,
+            pgDump: shim.bin,
             lockWaitTimeout: '1s',
             logger: recordingLogger(),
           })
         );
-        const elapsed = performance.now() - started;
 
         expect(error).toBeInstanceOf(BaselineError);
         const { code, message } = error as BaselineError;
         expect(code).toBe('PG_DUMP_FAILED');
         expect(message).toMatch(/lock/i);
         expect(message).toContain('--lock-wait-timeout');
-        // pg_dump gave up after the 1 s lockWaitTimeout, long before the
-        // default of 10 s.
-        expect(elapsed).toBeLessThan(8000);
+        // pg_dump waited for the 1 s lockWaitTimeout, not the default of 10 s.
+        const dumps = (await shim.calls()).filter(({ argv }) =>
+          argv.includes('--schema-only')
+        );
+        expect(dumps).toHaveLength(1);
+        expect(
+          dumps[0].argv.filter((arg) => arg.startsWith('--lock-wait-timeout'))
+        ).toEqual(['--lock-wait-timeout=1s']);
         expect(await listFiles(dir)).toEqual([]);
       } finally {
         await holder.query('ROLLBACK');
