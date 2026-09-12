@@ -47,8 +47,9 @@ migrations.
 That's it: create your next migration with `node-pg-migrate create …` as usual.
 
 > [!TIP]
-> Forgot `--fake` in step 4? Nothing changed. The baseline stops at the first table that
-> already exists (`… already exists`) and rolls back. Run step 4, then `up` again.
+> Forgot `--fake` in step 4? Your schema is unchanged. The baseline stops at the first object
+> that already exists (`… already exists`) and rolls back. Only node-pg-migrate's own, empty
+> migrations table was created. Run step 4, then `up` again.
 
 ## Variations
 
@@ -69,12 +70,15 @@ Can't run pg_dump where node-pg-migrate runs? Make a schema-only dump wherever y
 pass it with `--from-file`. A database connection is optional then.
 
 ```sh
-pg_dump --schema-only --no-owner --no-privileges -d app > schema.sql
+pg_dump --schema-only --no-owner --no-privileges --no-tablespaces \
+  --no-publications --no-subscriptions --no-security-labels -d app > schema.sql
 node-pg-migrate baseline --from-file schema.sql
 ```
 
-- Use pg_dump's default plain-text format. A custom-format dump (`-Fc`) has to be turned into
-  SQL first with `pg_restore --schema-only --no-owner --no-privileges -f schema.sql app.dump`.
+- Pass the same flags as above: they're the ones `baseline` gives pg_dump itself. Without
+  `--no-tablespaces`, for example, blank servers fail on tablespaces they don't have.
+- Use pg_dump's default plain-text format. Turn a custom-format dump (`-Fc`) into SQL first
+  with `pg_restore` and the same flags, plus `-f schema.sql app.dump`.
 - Don't use `--clean`, `--create` or data. `--from-file -` reads the dump from standard input.
 
 `--format ts` reads a live database, not a file. Load the dump into a scratch database first,
@@ -96,15 +100,15 @@ Names match exactly. Mind the extensions: see [Schemas and Extensions](#schemas-
 
 ## Troubleshooting
 
-| You see                                                        | Do this                                                                                                             |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `pg_dump 16.4 is older than the PostgreSQL 18.1 server`        | Install the client tools of the server's version and pass that pg_dump with `--pg-dump <path>`, or use a dump file. |
-| `Could not run pg_dump: it was not found`                      | Install the PostgreSQL client tools, pass `--pg-dump <path>`, or use a dump file.                                   |
-| `The migrations directory … already has 1 file(s)`             | The baseline is the first migration: write it to an empty directory with `-m`.                                      |
-| `"public"."pgmigrations" already records 3 migration(s)`       | node-pg-migrate already manages this database. It doesn't need a baseline.                                          |
-| `… another session holds a lock on one of them`                | Retry once that session is done, or wait longer with `--lock-wait-timeout 2min`.                                    |
-| `out of shared memory` when a blank database runs the baseline | Raise `max_locks_per_transaction` on that server, see [Large Schemas](#large-schemas).                              |
-| `User has disabled down migration on file: …_baseline.sql`     | Expected: a baseline has no down migration.                                                                         |
+| You see                                                        | Do this                                                                                                                                |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `pg_dump 16.4 is older than the PostgreSQL 18.1 server`        | Install the client tools of the server's version and pass that pg_dump with `--pg-dump <path>`, or use a dump file.                    |
+| `Could not run pg_dump: it was not found`                      | Install the PostgreSQL client tools, pass `--pg-dump <path>`, or use a dump file.                                                      |
+| `The migrations directory … already has 1 file(s)`             | The baseline is the first migration: write it to an empty directory with `-m`, or with `migrations-dir` when your config file sets it. |
+| `"public"."pgmigrations" already records 3 migration(s)`       | node-pg-migrate already manages this database. It doesn't need a baseline.                                                             |
+| `… another session holds a lock on one of them`                | Retry once that session is done, or wait longer with `--lock-wait-timeout 2min`.                                                       |
+| `out of shared memory` when a blank database runs the baseline | Raise `max_locks_per_transaction` on that server, see [Large Schemas](#large-schemas).                                                 |
+| `User has disabled down migration on file: …_baseline.sql`     | Expected: a baseline has no down migration.                                                                                            |
 
 Every refusal is listed under [Error Codes](#error-codes).
 
@@ -112,8 +116,9 @@ Every refusal is listed under [Error Codes](#error-codes).
 
 ### Options
 
-The migration settings from your [configuration](cli#configuration) apply as they do for `up`.
-To run it from code, see [`baseline()`](api#baseline).
+The migration settings from your [configuration](cli#configuration) apply as they do for `up`,
+and like for `up`, values in the configuration file win over `-m`, `-t`, `--migrations-schema`
+and `-s`. To run it from code, see [`baseline()`](api#baseline).
 
 | Option                        | Default              | Description                                                                                   |
 | ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
@@ -245,23 +250,23 @@ well under a second to clean up, and about 30 seconds to run on a blank database
 When `baseline` refuses, it exits with code 1, prints what's wrong and what to do, and writes
 no file. [`baseline()`](api#baseline) throws a `BaselineError` with one of these codes:
 
-| Code                       | When                                                                                  | What to do                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `MIGRATIONS_EXIST`         | The migrations directory already has a file.                                          | Write the baseline to a new or empty directory with `-m`.                                    |
-| `HISTORY_EXISTS`           | The migrations table records migrations.                                              | None needed: node-pg-migrate already manages this database. Check `-t` and the database.     |
-| `UNSUPPORTED_SERVER`       | The server is CockroachDB.                                                            | See [CockroachDB](#cockroachdb).                                                             |
-| `BINARY_DUMP`              | The dump isn't SQL text: a `-Fc` or `-Ft` archive, a compressed file or UTF-16 text.  | Convert it with the `pg_restore` command in the message, decompress it, or save it as UTF-8. |
-| `PSQL_META_COMMAND`        | The dump has a psql command such as `\connect app`.                                   | Dump without `--create`, or take the command out.                                            |
-| `DATA_IN_DUMP`             | The dump has table data.                                                              | Dump with `--schema-only`.                                                                   |
-| `CREATE_DATABASE`          | The dump creates a database.                                                          | Dump without `--create`.                                                                     |
-| `CLEAN_DUMP`               | The dump drops objects.                                                               | Dump without `--clean`.                                                                      |
-| `MIGRATIONS_TABLE_IN_DUMP` | The dump creates the migrations table or its sequence.                                | Dump with the `--exclude-table` the message names.                                           |
-| `MARKER_COLLISION`         | A line would be read as `-- Up Migration` or `-- Down Migration`, e.g. in a function. | Change that line in the database, then run `baseline` again.                                 |
-| `PG_DUMP_NOT_FOUND`        | pg_dump isn't on the `PATH` or at `--pg-dump`.                                        | Install the client tools, pass `--pg-dump <path>`, or use `--from-file`.                     |
-| `PG_DUMP_TOO_OLD`          | pg_dump is older than the server.                                                     | Use a pg_dump of the server's major version or newer.                                        |
-| `PG_DUMP_FAILED`           | pg_dump failed, or couldn't lock a table in time.                                     | Fix what the message quotes. For locks, see [pg_dump](#pg-dump).                             |
-| `INVALID_OPTIONS`          | The options don't work together, e.g. `--format ts` with `--from-file`.               | Fix the options as the message says.                                                         |
-| `UNSUPPORTED_OBJECTS`      | `--format ts` or `js`: objects that can't be written as `pgm` calls, or `--strict`.   | See [TypeScript Output](#typescript-output), or use `--format sql`.                          |
+| Code                       | When                                                                                  | What to do                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `MIGRATIONS_EXIST`         | The migrations directory already has a file.                                          | Write the baseline to a new or empty directory: `-m`, or `migrations-dir` in your config file. |
+| `HISTORY_EXISTS`           | The migrations table records migrations.                                              | None needed: node-pg-migrate already manages this database. Check `-t` and the database.       |
+| `UNSUPPORTED_SERVER`       | The server is CockroachDB.                                                            | See [CockroachDB](#cockroachdb).                                                               |
+| `BINARY_DUMP`              | The dump isn't SQL text: a `-Fc` or `-Ft` archive, a compressed file or UTF-16 text.  | Convert it with the `pg_restore` command in the message, decompress it, or save it as UTF-8.   |
+| `PSQL_META_COMMAND`        | The dump has a psql command such as `\connect app`.                                   | Dump without `--create`, or take the command out.                                              |
+| `DATA_IN_DUMP`             | The dump has table data.                                                              | Dump with `--schema-only`.                                                                     |
+| `CREATE_DATABASE`          | The dump creates a database.                                                          | Dump without `--create`.                                                                       |
+| `CLEAN_DUMP`               | The dump drops objects.                                                               | Dump without `--clean`.                                                                        |
+| `MIGRATIONS_TABLE_IN_DUMP` | The dump creates the migrations table or its sequence.                                | Dump with the `--exclude-table` the message names.                                             |
+| `MARKER_COLLISION`         | A line would be read as `-- Up Migration` or `-- Down Migration`, e.g. in a function. | Change that line in the database, then run `baseline` again.                                   |
+| `PG_DUMP_NOT_FOUND`        | pg_dump isn't on the `PATH` or at `--pg-dump`.                                        | Install the client tools, pass `--pg-dump <path>`, or use `--from-file`.                       |
+| `PG_DUMP_TOO_OLD`          | pg_dump is older than the server.                                                     | Use a pg_dump of the server's major version or newer.                                          |
+| `PG_DUMP_FAILED`           | pg_dump failed, or couldn't lock a table in time.                                     | Fix what the message quotes. For locks, see [pg_dump](#pg-dump).                               |
+| `INVALID_OPTIONS`          | The options don't work together, e.g. `--format ts` with `--from-file`.               | Fix the options as the message says.                                                           |
+| `UNSUPPORTED_OBJECTS`      | `--format ts` or `js`: objects that can't be written as `pgm` calls, or `--strict`.   | See [TypeScript Output](#typescript-output), or use `--format sql`.                            |
 
 ### TypeScript Output <Badge type="warning" text="experimental" /> {#typescript-output}
 
