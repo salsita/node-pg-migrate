@@ -1,4 +1,5 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { existsSync } from 'node:fs';
 import {
   mkdir,
   mkdtemp,
@@ -22,6 +23,7 @@ import type { CliResult } from './utils';
 import {
   createDatabase,
   databaseUrl,
+  loadSql,
   PG_VERSIONS,
   pgDumpShim,
   runCli,
@@ -200,6 +202,76 @@ describe('baseline without a database', () => {
     expect(result.stderr).toContain("'notes.txt/migrations'");
   });
 
+  it.each([
+    [
+      'a connection string',
+      {
+        ...NO_CONNECTION,
+        DATABASE_URL: 'postgres://nobody:s3cret-pw@127.0.0.1:1/nowhere',
+      },
+      'database nowhere',
+    ],
+    [
+      'a connection string without a database',
+      {
+        ...NO_CONNECTION,
+        DATABASE_URL: 'postgres://nobody:s3cret-pw@127.0.0.1:1',
+      },
+      'database the configured database',
+    ],
+    [
+      'the PG* variables',
+      {
+        ...NO_CONNECTION,
+        PGHOST: '127.0.0.1',
+        PGPORT: '1',
+        PGUSER: 'nobody',
+        PGPASSWORD: 's3cret-pw',
+        PGDATABASE: 'nowhere',
+      },
+      'database nowhere',
+    ],
+  ])(
+    'refuses a dump file when the database to check, from %s, cannot be reached, and creates nothing',
+    async (_, env, database) => {
+      const cwd = await tempDir();
+
+      const result = await runCli(
+        ['baseline', '--from-file', CHINOOK_DUMP, '-m', 'migrations'],
+        { cwd, env }
+      );
+
+      expectRefusal(result, ['host 127.0.0.1', database, 'migration history']);
+      expect(result.stderr).not.toContain('s3cret-pw');
+      expect(existsSync(join(cwd, 'migrations'))).toBe(false);
+    }
+  );
+
+  it('numbers the first migration 0001 in a directory that does not exist yet', async () => {
+    const cwd = await tempDir();
+
+    const result = await runCli(
+      [
+        'baseline',
+        '--from-file',
+        CHINOOK_DUMP,
+        '--migration-filename-format',
+        'index',
+        '-m',
+        'db/migrations',
+      ],
+      { cwd, env: NO_CONNECTION }
+    );
+
+    expect(result.code, result.stderr).toBe(0);
+    expect(await filesOf(join(cwd, 'db', 'migrations'))).toEqual([
+      '0001_baseline.sql',
+    ]);
+    expect(result.stdout).toContain(
+      'node-pg-migrate up 0001_baseline --fake -m db/migrations'
+    );
+  });
+
   it('refuses schemas to dump with a dump file', async () => {
     const cwd = await tempDir();
 
@@ -304,6 +376,80 @@ describe.each(PG_VERSIONS)(
 
       expectRefusal(result, [`Could not run ${bin}: `]);
       expect(await filesOf(join(cwd, 'migrations'))).toEqual([]);
+    });
+  }
+);
+
+describe.each(PG_VERSIONS)(
+  'baseline refusing what it finds in the database (PG %s)',
+  (postgresVersion) => {
+    let container: StartedPostgreSqlContainer;
+    let pgDump: string;
+
+    beforeAll(async () => {
+      container = await setupPostgresDatabase(
+        `postgres:${postgresVersion}-alpine`
+      );
+      pgDump = await pgDumpShim(container);
+    });
+
+    afterAll(async () => {
+      await container?.stop();
+      if (pgDump) {
+        await rm(dirname(pgDump), { recursive: true, force: true });
+      }
+    });
+
+    /**
+     * Runs `baseline` with the container's pg_dump against a new database
+     * made with `sql`.
+     *
+     * @param database The name of the new database.
+     * @param sql What to create in it.
+     * @param args More `baseline` arguments.
+     *
+     * @returns The run and its directory.
+     */
+    async function baselineOf(
+      database: string,
+      sql: string,
+      args: ReadonlyArray<string> = []
+    ): Promise<{ readonly result: CliResult; readonly cwd: string }> {
+      await createDatabase(container, database);
+      await loadSql(container, database, sql);
+      const cwd = await tempDir();
+
+      const result = await runCli(
+        ['baseline', '--pg-dump', pgDump, '-m', 'migrations', ...args],
+        { cwd, env: { DATABASE_URL: databaseUrl(container, database) } }
+      );
+
+      return { result, cwd };
+    }
+
+    it('refuses a migrations table that is a view', async () => {
+      const { result, cwd } = await baselineOf(
+        'history_view',
+        "CREATE VIEW public.pgmigrations AS SELECT 1 AS id, 'x'::varchar AS name, now() AS run_on;"
+      );
+
+      expectRefusal(result, [
+        '"public"."pgmigrations"',
+        'view',
+        'not an ordinary or partitioned table',
+      ]);
+      expect(existsSync(join(cwd, 'migrations'))).toBe(false);
+    });
+
+    it('refuses --include-schema names that match no schema, naming each', async () => {
+      const { result, cwd } = await baselineOf(
+        'include_unknown',
+        'CREATE SCHEMA app; CREATE TABLE app.widgets (id integer PRIMARY KEY);',
+        ['--include-schema', 'app', 'App', 'nope']
+      );
+
+      expectRefusal(result, ['App', 'nope', 'do not exist']);
+      expect(existsSync(join(cwd, 'migrations'))).toBe(false);
     });
   }
 );
