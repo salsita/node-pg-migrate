@@ -5,16 +5,6 @@
   "trailingComma": "es5",
   "printWidth": 80,
   "sortPackageJson": false,
-  "sortImports": {
-    "groups": [
-      ["builtin", "external", "internal"],
-      { "newlinesBetween": false },
-      ["parent", "sibling", "index"]
-    ],
-    "newlinesBetween": false,
-    "order": "asc",
-    "ignoreCase": true
-  },
   "overrides": [
     {
       "files": ["*.json5"],
