@@ -4,6 +4,9 @@
  * - `INVALID_OPTIONS`: the options are incomplete or contradict each other.
  * - `MIGRATIONS_EXIST`: the migrations directory already has files.
  * - `HISTORY_EXISTS`: the migrations table already records migrations.
+ * - `INVALID_MIGRATIONS_TABLE`: a relation with the migrations table's name
+ *   exists, but it is not an ordinary or partitioned table (e.g. a view, a
+ *   materialized view or a foreign table), so baseline will not read it.
  * - `UNSUPPORTED_SERVER`: the server is not PostgreSQL (e.g. CockroachDB).
  * - `BINARY_DUMP`: the dump is not SQL text, but a pg_dump custom- or
  *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16
@@ -38,6 +41,7 @@ export type BaselineErrorCode =
   | 'INVALID_OPTIONS'
   | 'MIGRATIONS_EXIST'
   | 'HISTORY_EXISTS'
+  | 'INVALID_MIGRATIONS_TABLE'
   | 'UNSUPPORTED_SERVER'
   | 'BINARY_DUMP'
   | 'NOT_UTF8'
