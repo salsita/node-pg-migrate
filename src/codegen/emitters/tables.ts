@@ -300,9 +300,21 @@ function inheritedColumnChanges(table: Table): InheritedColumnChange[] {
 }
 
 /**
+ * The default that a change sets when it has a line break, which
+ * `alterColumn` writes on one line (turning it into a space, even inside a
+ * string constant): it is set with `ALTER TABLE … SET DEFAULT` instead.
+ */
+function lineBreakDefault(change: InheritedColumnChange): string | undefined {
+  return typeof change.default === 'string' && hasLineBreak(change.default)
+    ? change.default
+    : undefined;
+}
+
+/**
  * The `pgm` calls of a change of a column after `createTable`:
  * `pgm.alterColumn(table, column, { default, notNull })` and
- * `pgm.addConstraint(table, name, 'NOT NULL …')`.
+ * `pgm.addConstraint(table, name, 'NOT NULL …')`; without a default that
+ * has a line break (see {@link lineBreakDefault}).
  */
 function inheritedColumnCode(
   table: Table,
@@ -313,7 +325,10 @@ function inheritedColumnCode(
   let defaultCode: Code | undefined;
   if (change.default === null) {
     defaultCode = raw('null');
-  } else if (change.default !== undefined) {
+  } else if (
+    change.default !== undefined &&
+    lineBreakDefault(change) === undefined
+  ) {
     defaultCode = func(change.default);
   }
 
@@ -893,9 +908,13 @@ function columnCode(table: Table, column: Column): Code {
  * `NOT NULL` constraint of PostgreSQL 18 when `SET NOT NULL` would not give
  * it its name, `NO INHERIT` or `NOT VALID`. A local column only lists
  * `notNull` when the child declares it itself, not when it only inherits it
- * (PostgreSQL 18 records the difference). None of this is a fallback; in a
- * whole-table fallback, and for a partition that has no default where its
- * partitioned table has one, the same changes are `ALTER TABLE` statements.
+ * (PostgreSQL 18 records the difference). None of this is a fallback, except
+ * a default with a line break (`alterColumn` writes it on one line), which
+ * `pgm.sql('ALTER TABLE … ALTER COLUMN … SET DEFAULT …')` sets after the
+ * `pgm` calls, reason `'line break'` (before the reasons of the comments);
+ * in a whole-table fallback, and for a partition that has no default where
+ * its partitioned table has one, the same changes are `ALTER TABLE`
+ * statements.
  *
  * The WHOLE table becomes one fallback, `CREATE TABLE …` built from the
  * model (columns in order, comments included), when it is a partition
@@ -972,17 +991,31 @@ export function emitTable(table: Table, ctx: EmitContext): Emitted {
     ),
     ...(isEmpty(options) ? [] : [options]),
   ]);
-  const changes = inheritedColumnChanges(table).flatMap((change) =>
+  const name = qualifiedName(table);
+  const changes = inheritedColumnChanges(table);
+  const changeCode = changes.flatMap((change) =>
     inheritedColumnCode(table, change, ctx)
   );
+  const defaults = changes.flatMap((change) => {
+    const expression = lineBreakDefault(change);
+
+    return expression === undefined
+      ? []
+      : inheritedColumnSql(name, {
+          column: change.column,
+          default: expression,
+          setNotNull: false,
+        });
+  });
   const inherited = table.columns.filter((column) => !column.local);
-  const columnComments = columnCommentsSql(qualifiedName(table), inherited);
+  const columnComments = columnCommentsSql(name, inherited);
   const sequenceComments = identityCommentsSql(table.columns);
 
   return withStatements(
-    [code, ...changes].join('\n'),
-    [...columnComments, ...sequenceComments],
+    [code, ...changeCode].join('\n'),
+    [...defaults, ...columnComments, ...sequenceComments],
     [
+      ...(defaults.length === 0 ? [] : ['line break']),
       ...(columnComments.length === 0 ? [] : ['comment on column']),
       ...(sequenceComments.length === 0 ? [] : ['comment on sequence']),
     ]
