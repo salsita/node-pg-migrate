@@ -238,9 +238,13 @@ describe.each(PG_VERSIONS)(
       });
 
       const sql = await readFile(result.path, 'utf8');
-      expect(sql).toContain('CREATE TABLE public.widgets');
-      expect(sql).not.toContain('Schema History');
-      expect(sql).not.toContain('old_history');
+      // The header's `--fake` command names the table; the dump after it must not.
+      const header = sql.slice(0, sql.indexOf('\n\n'));
+      const dump = sql.slice(header.length);
+      expect(header).toContain("-t 'Schema History'");
+      expect(dump).toContain('CREATE TABLE public.widgets');
+      expect(dump).not.toContain('Schema History');
+      expect(dump).not.toContain('old_history');
 
       await createDatabase(container, 'renamed_history_rebuilt');
       const ran = await migrateUp(
