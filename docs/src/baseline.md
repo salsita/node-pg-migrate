@@ -70,16 +70,19 @@ Can't run pg_dump where node-pg-migrate runs? Make a schema-only dump wherever y
 pass it with `--from-file`. A database connection is optional then.
 
 ```sh
-pg_dump --schema-only --no-owner --no-privileges --no-tablespaces \
-  --no-publications --no-subscriptions --no-security-labels -d app > schema.sql
+pg_dump --schema-only --no-owner --no-privileges --no-tablespaces --no-publications \
+  --no-subscriptions --no-security-labels --encoding=UTF8 -d app > schema.sql
 node-pg-migrate baseline --from-file schema.sql
 ```
 
-- Pass the same flags as above: they're the ones `baseline` gives pg_dump itself. Without
+- Pass the same flags as above: they're what `baseline` uses itself. Without
   `--no-tablespaces`, for example, blank servers fail on tablespaces they don't have.
 - Use pg_dump's default plain-text format. Turn a custom-format dump (`-Fc`) into SQL first
   with `pg_restore` and the same flags, plus `-f schema.sql app.dump`.
-- Don't use `--clean`, `--create` or data. `--from-file -` reads the dump from standard input.
+- Leave out `--clean`, `--create`, `--sequence-data` and data. `--from-file -` reads the dump
+  from standard input.
+- `baseline` refuses a dump it can't use safely, and says how to make one it can: see
+  [Error Codes](#error-codes).
 
 `--format ts` reads a live database, not a file. Load the dump into a scratch database first,
 then run the baseline against it:
@@ -123,7 +126,7 @@ and `-s`. To run it from code, see [`baseline()`](api#baseline).
 | Option                        | Default              | Description                                                                                   |
 | ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
 | `[name...]`                   | `baseline`           | The migration name. `baseline initial schema` writes `…_initial-schema.sql`, like `create`.   |
-| `-m`, `--migrations-dir`      | `migrations`         | Where to write it. Created if missing; must be empty (files starting with `.` don't count).   |
+| `-m`, `--migrations-dir`      | `migrations`         | Where to write it: an empty directory (files starting with `.` don't count), not a glob.      |
 | `--migration-filename-format` | `timestamp`          | The file name prefix: `timestamp`, `utc` or `index`.                                          |
 | `-t`, `--migrations-table`    | `pgmigrations`       | The migrations table: it must record no migration, and is left out of the baseline.           |
 | `--migrations-schema`         | the first `--schema` | The schema of the migrations table.                                                           |
@@ -132,20 +135,26 @@ and `-s`. To run it from code, see [`baseline()`](api#baseline).
 | `--reject-unauthorized`       | `undefined`          | The SSL `rejectUnauthorized` option, as for `up`.                                             |
 | `--from-file`                 | `undefined`          | Use this `pg_dump --schema-only` output instead of running pg_dump. `-` reads standard input. |
 | `--pg-dump`                   | `pg_dump`            | The pg_dump to run.                                                                           |
-| `--include-schema`            | every schema         | Only dump these schemas.                                                                      |
+| `--include-schema`            | every schema         | Only dump these schemas. A name that matches no schema is refused.                            |
 | `--exclude-schema`            | none                 | Leave these schemas out.                                                                      |
 | `--lock-wait-timeout`         | `10s`                | How long pg_dump waits for a table lock, e.g. `500ms`, `30s`, `2min`.                         |
 | `--format`                    | `sql`                | `sql`, or `ts` or `js` for [`pgm` calls](#typescript-output).                                 |
 | `--strict`                    | `false`              | With `--format ts` or `js`: fail instead of writing raw SQL fallbacks.                        |
 | `-f`, `--config-file`         | `undefined`          | The config file, as for `up`. `--config-value` and `--envPath` work too.                      |
 
+The printed `--fake` command carries `-m`, `-t` and `--migrations-schema` when they aren't the
+defaults. `baseline` can't run with `use-glob` on: it writes into a plain directory.
+
 With `--from-file`, the connection is only used to check for migration history, and
 `--pg-dump`, `--include-schema`, `--exclude-schema` and `--lock-wait-timeout` don't apply:
-pass pg_dump's own options when you make the dump.
+pass pg_dump's own options when you make the dump. If a connection is configured but can't be
+reached, `baseline` stops. To skip the check, run it without a connection, for example with
+`-d` pointing at an unset environment variable.
 
 ### What the Baseline Contains
 
-The schema and nothing else. `baseline` runs:
+The schema and nothing else. `baseline` runs pg_dump like this, with `PGCLIENTENCODING=UTF8`
+and `-c standard_conforming_strings=on` added to your `PGOPTIONS`:
 
 ```sh
 pg_dump --schema-only --no-owner --no-privileges --no-publications --no-subscriptions \
@@ -175,19 +184,21 @@ except for a few lines, and never adds `DROP` statements.
 
 ::: details What changes, and why
 
-| pg_dump writes                                            | The baseline                                       | Why                                                                                                                         |
-| --------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `\restrict <key>` and `\unrestrict <key>`                 | drops them                                         | psql commands (since the August 2025 releases, CVE-2025-8714), not SQL.                                                     |
-| `SELECT pg_catalog.set_config('search_path', '', false);` | drops it                                           | It would empty the search path for the migrations that run after the baseline on the same connection.                       |
-| `SET statement_timeout = 0;` and the other `*_timeout`s   | drops them                                         | Your own timeouts apply. `transaction_timeout` would also fail on PostgreSQL 16 and older.                                  |
-| other `SET`s, e.g. `SET check_function_bodies = false;`   | `SET LOCAL`, and restores the old value at the end | The baseline needs them; the migrations after it get their own settings back.                                               |
-| `COMMENT ON EXTENSION …`                                  | drops it                                           | Only the extension's owner may run it, which often fails on managed PostgreSQL. `CREATE EXTENSION` sets the comment anyway. |
-| `CREATE SCHEMA public;` and its default comment           | drops them                                         | Every database has them.                                                                                                    |
-| `CREATE SCHEMA` of the migrations schema or a `--schema`  | `CREATE SCHEMA IF NOT EXISTS`                      | `up --create-schema` or `--create-migrations-schema` may create it first.                                                   |
+| pg_dump writes                                            | The baseline                                       | Why                                                                                                                                                                                    |
+| --------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `\restrict <key>` and `\unrestrict <key>`                 | drops them                                         | psql commands (since the August 2025 releases, CVE-2025-8714), not SQL.                                                                                                                |
+| `SELECT pg_catalog.set_config('search_path', '', false);` | drops it                                           | It would empty the search path for the migrations that run after the baseline on the same connection.                                                                                  |
+| `SET statement_timeout = 0;` and the other `*_timeout`s   | drops them                                         | Your own timeouts apply. `transaction_timeout` would also fail on PostgreSQL 16 and older.                                                                                             |
+| other `SET`s, e.g. `SET check_function_bodies = false;`   | `SET LOCAL`, and restores the old value at the end | The baseline needs them; the migrations after it get their own settings back. Role changes, a non-UTF-8 `client_encoding` and `standard_conforming_strings = off` are refused instead. |
+| `COMMENT ON EXTENSION …`                                  | drops it                                           | Only the extension's owner may run it, which often fails on managed PostgreSQL. `CREATE EXTENSION` sets the comment anyway.                                                            |
+| `CREATE SCHEMA public;` and its default comment           | drops them                                         | Every database has them.                                                                                                                                                               |
+| `CREATE SCHEMA` of the migrations schema or a `--schema`  | `CREATE SCHEMA IF NOT EXISTS`                      | `up --create-schema` or `--create-migrations-schema` may create it first.                                                                                                              |
 
 :::
 
-Dumps it can't use are refused rather than fixed. See [Error Codes](#error-codes).
+Dumps it can't use are refused rather than fixed: binary or non-UTF-8 files, data (`COPY`,
+`INSERT`, `setval()`), `DROP`s, `CREATE DATABASE`, psql commands, role changes, legacy string
+literals and the migrations table. See [Error Codes](#error-codes).
 
 ### pg_dump
 
@@ -196,11 +207,22 @@ dump a newer server than itself, so `baseline` checks its version first. If your
 the server, install the client tools of the server's major version, or make the dump with a
 pg_dump that matches and use `--from-file`.
 
-The connection reaches pg_dump through its environment (`PGHOST`, `PGPORT`, `PGUSER`,
-`PGPASSWORD`, `PGDATABASE`, `PGSSLMODE`), never its command line, where other users could see
-it. What your connection doesn't set falls back to pg_dump's defaults, such as `~/.pgpass`. An
-`ssl` object in your config becomes `sslmode=verify-full`, or `require` with
-`rejectUnauthorized: false`.
+The connection reaches pg_dump through its environment, never its command line, where other
+users could see it:
+
+- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` and `PGSSLMODE`, plus
+  `PGSSLROOTCERT`, `PGSSLCERT`, `PGSSLKEY` and `PGSSLCRL` from the `sslrootcert`, `sslcert`,
+  `sslkey` and `sslcrl` of a connection string.
+- An `ssl` object in your config becomes `sslmode=verify-full`, or `require` with
+  `rejectUnauthorized: false`. Its certificate contents (`ca`, `cert`, `key`) can't be passed
+  on: use `sslrootcert=` in the URL, or set `PGSSLROOTCERT`.
+- When the connection comes only from the `PG*` variables, they reach pg_dump as they are.
+- `PGCLIENTENCODING=UTF8` and `-c standard_conforming_strings=on` (after your own
+  `PGOPTIONS`), so the dump is UTF-8 with standard string literals.
+- An inherited `PGSERVICE` or `PGSERVICEFILE` is ignored, and so is `PGHOSTADDR` when the
+  connection names a host, so pg_dump dumps the database `baseline` checked.
+
+Anything else falls back to your environment, then to pg_dump's defaults, such as `~/.pgpass`.
 
 **Locks.** pg_dump takes an `ACCESS SHARE` lock on each table it dumps. Reads and writes carry
 on. Only statements that need an `ACCESS EXCLUSIVE` lock wait, such as most `ALTER TABLE`s,
@@ -250,23 +272,27 @@ well under a second to clean up, and about 30 seconds to run on a blank database
 When `baseline` refuses, it exits with code 1, prints what's wrong and what to do, and writes
 no file. [`baseline()`](api#baseline) throws a `BaselineError` with one of these codes:
 
-| Code                       | When                                                                                  | What to do                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `MIGRATIONS_EXIST`         | The migrations directory already has a file.                                          | Write the baseline to a new or empty directory: `-m`, or `migrations-dir` in your config file. |
-| `HISTORY_EXISTS`           | The migrations table records migrations.                                              | None needed: node-pg-migrate already manages this database. Check `-t` and the database.       |
-| `UNSUPPORTED_SERVER`       | The server is CockroachDB.                                                            | See [CockroachDB](#cockroachdb).                                                               |
-| `BINARY_DUMP`              | The dump isn't SQL text: a `-Fc` or `-Ft` archive, a compressed file or UTF-16 text.  | Convert it with the `pg_restore` command in the message, decompress it, or save it as UTF-8.   |
-| `PSQL_META_COMMAND`        | The dump has a psql command such as `\connect app`.                                   | Dump without `--create`, or take the command out.                                              |
-| `DATA_IN_DUMP`             | The dump has table data.                                                              | Dump with `--schema-only`.                                                                     |
-| `CREATE_DATABASE`          | The dump creates a database.                                                          | Dump without `--create`.                                                                       |
-| `CLEAN_DUMP`               | The dump drops objects.                                                               | Dump without `--clean`.                                                                        |
-| `MIGRATIONS_TABLE_IN_DUMP` | The dump creates the migrations table or its sequence.                                | Dump with the `--exclude-table` the message names.                                             |
-| `MARKER_COLLISION`         | A line would be read as `-- Up Migration` or `-- Down Migration`, e.g. in a function. | Change that line in the database, then run `baseline` again.                                   |
-| `PG_DUMP_NOT_FOUND`        | pg_dump isn't on the `PATH` or at `--pg-dump`.                                        | Install the client tools, pass `--pg-dump <path>`, or use `--from-file`.                       |
-| `PG_DUMP_TOO_OLD`          | pg_dump is older than the server.                                                     | Use a pg_dump of the server's major version or newer.                                          |
-| `PG_DUMP_FAILED`           | pg_dump failed, or couldn't lock a table in time.                                     | Fix what the message quotes. For locks, see [pg_dump](#pg-dump).                               |
-| `INVALID_OPTIONS`          | The options don't work together, e.g. `--format ts` with `--from-file`.               | Fix the options as the message says.                                                           |
-| `UNSUPPORTED_OBJECTS`      | `--format ts` or `js`: objects that can't be written as `pgm` calls, or `--strict`.   | See [TypeScript Output](#typescript-output), or use `--format sql`.                            |
+| Code                       | When                                                                                                                                                                                                                           | What to do                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `MIGRATIONS_EXIST`         | The migrations directory already has a file.                                                                                                                                                                                   | Write the baseline to a new or empty directory: `-m`, or `migrations-dir` in your config file.              |
+| `HISTORY_EXISTS`           | The migrations table records migrations.                                                                                                                                                                                       | None needed: node-pg-migrate already manages this database. Check `-t` and the database.                    |
+| `INVALID_MIGRATIONS_TABLE` | Something with the migrations table's name exists, but it's a view or another kind of relation, not a table.                                                                                                                   | Point `-t` and `--migrations-schema` at the real table, or remove that relation. `baseline` never reads it. |
+| `UNSUPPORTED_SERVER`       | The server is CockroachDB.                                                                                                                                                                                                     | See [CockroachDB](#cockroachdb).                                                                            |
+| `BINARY_DUMP`              | The dump isn't SQL text: a `-Fc` or `-Ft` archive, a compressed file or UTF-16 text.                                                                                                                                           | Convert it with the `pg_restore` command in the message, decompress it, or save it as UTF-8.                |
+| `NOT_UTF8`                 | The dump isn't UTF-8 text, or its `SET client_encoding` names another encoding.                                                                                                                                                | Make the dump with `pg_dump --encoding=UTF8`.                                                               |
+| `NON_STANDARD_STRINGS`     | The dump was made with `standard_conforming_strings` off, so its backslashes are escapes.                                                                                                                                      | Make it again with `PGOPTIONS='-c standard_conforming_strings=on' pg_dump …`.                               |
+| `PSQL_META_COMMAND`        | The dump has a psql command such as `\connect app`.                                                                                                                                                                            | Dump without `--create`, or take the command out.                                                           |
+| `DATA_IN_DUMP`             | The dump has table data (`COPY`, `INSERT`) or sequence values (`setval()`).                                                                                                                                                    | Dump with `--schema-only`, and without `--sequence-data`.                                                   |
+| `CREATE_DATABASE`          | The dump creates a database.                                                                                                                                                                                                   | Dump without `--create`.                                                                                    |
+| `CLEAN_DUMP`               | The dump drops objects.                                                                                                                                                                                                        | Dump without `--clean`.                                                                                     |
+| `SET_ROLE_IN_DUMP`         | The dump changes the role that runs the migration (`SET ROLE`, `SET SESSION AUTHORIZATION`).                                                                                                                                   | Dump with `--no-owner`, and convert archives without pg_restore's `--role`.                                 |
+| `MIGRATIONS_TABLE_IN_DUMP` | The dump creates the migrations table or its sequence.                                                                                                                                                                         | Dump with the `--exclude-table` the message names.                                                          |
+| `MARKER_COLLISION`         | A line would be read as `-- Up Migration` or `-- Down Migration`, e.g. in a function.                                                                                                                                          | Change that line in the database, then run `baseline` again.                                                |
+| `PG_DUMP_NOT_FOUND`        | pg_dump isn't on the `PATH` or at `--pg-dump`.                                                                                                                                                                                 | Install the client tools, pass `--pg-dump <path>`, or use `--from-file`.                                    |
+| `PG_DUMP_TOO_OLD`          | pg_dump is older than the server.                                                                                                                                                                                              | Use a pg_dump of the server's major version or newer.                                                       |
+| `PG_DUMP_FAILED`           | pg_dump failed, or couldn't lock a table in time.                                                                                                                                                                              | Fix what the message quotes. For locks, see [pg_dump](#pg-dump).                                            |
+| `INVALID_OPTIONS`          | The options can't work, e.g. `--format ts` with `--from-file`, an `--include-schema` name that doesn't exist, a glob migrations-dir, a `--from-file` path that can't be read, or an unreachable connection with `--from-file`. | Fix what the message says.                                                                                  |
+| `UNSUPPORTED_OBJECTS`      | `--format ts` or `js`: objects that can't be written as `pgm` calls, or `--strict`.                                                                                                                                            | See [TypeScript Output](#typescript-output), or use `--format sql`.                                         |
 
 ### TypeScript Output <Badge type="warning" text="experimental" /> {#typescript-output}
 
@@ -312,9 +338,14 @@ The real file also starts with a header comment, and with two `pgm.sql(…)` cal
   `{ schema, name }`, and column defaults as `pgm.func(…)`, as PostgreSQL stores them.
 - Owners, grants, publications, subscriptions, the migrations table and objects that belong to
   an extension are left out, like in the SQL baseline.
-- Materialized views are created with their data, from the tables as they are when it runs.
-- With `decamelize: true` in your config, `baseline` refuses identifiers that `decamelize`
-  would rename, such as `LegacyCustomer`. Use `--format sql` for that database.
+- Materialized views are created `WITH NO DATA`, like in the SQL baseline: refresh them after
+  the first run.
+- Indexes that aren't valid, such as what a failed `CREATE INDEX CONCURRENTLY` leaves, are left
+  out like pg_dump does. A partitioned table's are kept.
+- With `decamelize: true` in your config, `baseline` refuses names that `decamelize` would
+  rename, such as `LegacyCustomer`: identifiers, constraint names and the settings of a
+  function's `SET` clause (PostgreSQL stores `SET timezone` as `TimeZone`). Use `--format sql`
+  for that database.
 
 **What becomes a `pgm` call:** schemas, extensions, enums and composite types, domains,
 sequences, tables with their columns, identity and generated columns and comments,
@@ -333,24 +364,32 @@ an aggregate); Chinook gets none.
   `storage parameters`, `access method`, `multiple inheritance`, `identity sequence name`,
   `NOT NULL constraint name`, `column settings`, `replica identity`, `partition key`,
   `NOT NULL NO INHERIT`, `NOT NULL NOT VALID`, `bigint option`, `zero option`, `column order`,
-  `no columns`, `line break`. Tables written with `createTable` can still get
-  `comment on column` (a comment on an inherited column) and `comment on sequence` (on an
-  identity sequence).
+  `no columns`, `line break`, `typed table` (`CREATE TABLE … OF type`). Tables written with
+  `createTable` can still get `comment on column` (a comment on an inherited column),
+  `comment on sequence` (on an identity sequence), `line break` (in an inherited column's
+  default) and `comment on constraint` (on a NOT NULL constraint, PostgreSQL 18). A partition
+  whose columns are in another order than its parent's is created on its own and attached,
+  like pg_dump does.
 - **Indexes:** `index method <method>` (not `btree`, `hash`, `gist`, `spgist` or `gin`),
   `operator class`, `collation`, `nulls order`, `storage parameters`, `partition index name`,
-  `CLUSTER ON`, `replica identity`.
+  `CLUSTER ON`, `replica identity`, `invalid index` (a partitioned table's `ON ONLY` index that
+  isn't valid yet), `column settings` (a statistics target on an expression),
+  `partition index settings` and `comment on index` (on the indexes of partitions).
 - **Functions:** `procedure`, `SQL-standard body`, `leakproof`, `cost or rows`, `language c`,
-  `language internal`.
-- **Triggers:** `UPDATE OF columns`, `transition tables`, `firing mode`, `referenced table`.
+  `language internal`, `support function`.
+- **Triggers:** `UPDATE OF columns`, `transition tables`, `firing mode` (also for a partition's
+  copy of a trigger), `referenced table`, `comment on trigger` (on a partition's copy).
 - **Policies:** `restrictive policy`.
 - **Domains:** `several constraints`, `NOT VALID constraint`.
 - **Composite types:** `attribute collation`, `attribute order`.
 - **Sequences:** `unlogged sequence`, `bigint option`, `zero option`.
-- **Views:** `view options`. **Materialized views:** `storage parameters`, `access method`.
+- **Views:** `view options`. **Materialized views:** `storage parameters`, `access method`,
+  `column settings`.
 - **Operators:** `operator schema`, `commutator or negator`.
-- **Constraints:** `CLUSTER ON`, `replica identity`, `line break`.
-- **Always:** range types, collations, aggregates, rules, extended statistics, and comments on
-  anything but tables and columns.
+- **Constraints:** `CLUSTER ON`, `replica identity`, `line break`,
+  `partition index settings`, `comment on index`.
+- **Always:** range types, collations, aggregates, rules, extended statistics, shell types
+  (`CREATE TYPE name;`), and comments on anything but tables and columns.
 
 :::
 
