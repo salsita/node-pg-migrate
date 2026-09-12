@@ -588,6 +588,7 @@ function routineOf(row: FunctionRow): Routine {
     cost: row.procost,
     rows: row.prorows,
     config: (row.proconfig ?? []).map(splitSetting),
+    ...optional('support', row.support),
     definition: row.definition,
   };
 }

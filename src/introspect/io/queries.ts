@@ -397,6 +397,7 @@ const FUNCTIONS = `SELECT p.oid, n.nspname AS schema, p.proname AS name,
   p.prorows,
   p.proretset,
   p.proconfig,
+  ${qualifiedSql(ROUTINES, 'p.prosupport::pg_catalog.oid')} AS support,
   pg_catalog.pg_get_functiondef(p.oid) AS definition,
   ${commentOn('pg_proc', 'p.oid')} AS comment
 FROM pg_catalog.pg_proc AS p

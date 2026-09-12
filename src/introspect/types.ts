@@ -577,6 +577,12 @@ export interface Routine extends CatalogObject {
   readonly config: ReadonlyArray<RoutineSetting>;
 
   /**
+   * The planner support function (`SUPPORT`, `prosupport`) as SQL, e.g.
+   * `'pg_catalog.textlike_support'`, when there is one.
+   */
+  readonly support?: string;
+
+  /**
    * The whole `CREATE OR REPLACE FUNCTION|PROCEDURE` statement, as
    * `pg_get_functiondef()` writes it (no trailing `;`), for the fallback.
    */
@@ -2557,6 +2563,11 @@ export interface FunctionRow {
    * `proconfig`: `name=value` entries.
    */
   readonly proconfig: ReadonlyArray<string> | null;
+
+  /**
+   * `prosupport` as SQL; none when null or left out.
+   */
+  readonly support?: string | null;
 
   /**
    * `pg_get_functiondef(oid)`.

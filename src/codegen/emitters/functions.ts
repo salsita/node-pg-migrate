@@ -165,6 +165,10 @@ function fallbackReasons(routine: Routine): string[] {
     reasons.push('cost or rows');
   }
 
+  if (routine.support !== undefined) {
+    reasons.push('support function');
+  }
+
   if (native) {
     reasons.push(`language ${routine.language}`);
   }
@@ -180,9 +184,9 @@ function fallbackReasons(routine: Routine): string[] {
  * Fallback (`pg_get_functiondef`, `definition`) for a procedure, reason
  * `'procedure'`; a SQL-standard body, `'SQL-standard body'`; `LEAKPROOF`,
  * `'leakproof'`; a `COST` or `ROWS` that is not the default, `'cost or
- * rows'`; a C or internal function, whose body is a symbol rather than
- * source code (`AS 'obj_file', 'link_symbol'`), `'language c'` / `'language
- * internal'`.
+ * rows'`; a planner support function (`SUPPORT`), `'support function'`; a C
+ * or internal function, whose body is a symbol rather than source code (`AS
+ * 'obj_file', 'link_symbol'`), `'language c'` / `'language internal'`.
  *
  * @param routine The function.
  * @param ctx The migration context.
