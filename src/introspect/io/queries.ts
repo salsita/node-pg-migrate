@@ -722,7 +722,7 @@ const VIEWS = `SELECT c.oid, n.nspname AS schema, c.relname AS name,
 ${userRelations(['v', 'm'])}`;
 
 // Internal triggers (those of foreign keys) and partition clones
-// (`tgparentid <> 0`) are left out.
+// (`tgparentid <> 0`, the `partitionTriggers` query) are left out.
 const TRIGGERS = `SELECT t.oid, n.nspname AS schema, t.tgname AS name,
   t.tgrelid AS relid,
   t.tgtype,
@@ -751,6 +751,18 @@ JOIN pg_catalog.pg_proc AS f ON f.oid ${EQ} t.tgfoid
 JOIN pg_catalog.pg_namespace AS fn ON fn.oid ${EQ} f.pronamespace
 WHERE NOT t.tgisinternal AND t.tgparentid ${EQ} ${NO_OID}
   AND ${isUserSchema('n')} AND ${isOwnObject('pg_trigger', 't.oid')}`;
+
+// The clones of triggers on partitions (`tgparentid <> 0`): PostgreSQL 13 and
+// 14 mark them internal (`tgisinternal`), newer servers don't. The clones of
+// internal triggers (those of foreign keys) are among them, but no trigger of
+// the `triggers` query is their parent.
+const PARTITION_TRIGGERS = `SELECT t.oid, t.tgrelid AS relid, t.tgparentid AS parent,
+  t.tgenabled,
+  ${commentOn('pg_trigger', 't.oid')} AS comment
+FROM pg_catalog.pg_trigger AS t
+JOIN pg_catalog.pg_class AS c ON c.oid ${EQ} t.tgrelid
+JOIN pg_catalog.pg_namespace AS n ON n.oid ${EQ} c.relnamespace
+WHERE t.tgparentid ${NE} ${NO_OID} AND ${isUserSchema('n')}`;
 
 const POLICIES = `SELECT p.oid, n.nspname AS schema, p.polname AS name,
   p.polrelid AS relid,
@@ -1050,6 +1062,7 @@ export const QUERIES: Readonly<Record<QueryName, string>> = {
   partitionIndexes: PARTITION_INDEXES,
   views: VIEWS,
   triggers: TRIGGERS,
+  partitionTriggers: PARTITION_TRIGGERS,
   policies: POLICIES,
   rules: RULES,
   statistics: STATISTICS,

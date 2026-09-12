@@ -1,7 +1,11 @@
-import type { FiringMode, Trigger } from '../../introspect/types';
+import type {
+  FiringMode,
+  PartitionTrigger,
+  Trigger,
+} from '../../introspect/types';
 import { array, object, raw, statement, str } from '../code';
 import { nameCode } from '../names';
-import { qualifiedName, quoteName, terminated } from '../sql';
+import { qualifiedName, quoteLiteral, quoteName, terminated } from '../sql';
 import type { EmitContext, Emitted } from '../types';
 import { withStatements } from './fallback';
 
@@ -16,6 +20,56 @@ export const FIRING_ACTIONS: Readonly<
   REPLICA: 'ENABLE REPLICA',
   ALWAYS: 'ENABLE ALWAYS',
 };
+
+/**
+ * The `ALTER TABLE` action that gives a clone of a trigger on a partition any
+ * firing mode, `'ORIGIN'` included.
+ */
+const CLONE_FIRING_ACTIONS: Readonly<Record<FiringMode, string>> = {
+  ORIGIN: 'ENABLE',
+  ...FIRING_ACTIONS,
+};
+
+/**
+ * The statements that give the clones of a trigger on partitions their own
+ * firing mode and comments, which creating the trigger does not give them:
+ * `ALTER TABLE <partition> DISABLE|ENABLE|ENABLE REPLICA|ENABLE ALWAYS
+ * TRIGGER <name>` for a clone that fires unlike the trigger it is a clone of
+ * (the statement also changes the clones below it, so it comes before
+ * theirs), and `COMMENT ON TRIGGER <name> ON <partition>`.
+ */
+function cloneSql(trigger: Trigger): {
+  readonly firing: string[];
+  readonly comments: string[];
+} {
+  const name = quoteName(trigger.name);
+  const firing: string[] = [];
+  const comments: string[] = [];
+  const visit = (
+    clones: ReadonlyArray<PartitionTrigger> | undefined,
+    inherited: FiringMode
+  ): void => {
+    for (const clone of clones ?? []) {
+      const table = qualifiedName(clone.table);
+      if (clone.enabled !== inherited) {
+        firing.push(
+          `ALTER TABLE ${table} ${CLONE_FIRING_ACTIONS[clone.enabled]} TRIGGER ${name};`
+        );
+      }
+
+      if (clone.comment !== undefined) {
+        comments.push(
+          `COMMENT ON TRIGGER ${name} ON ${table} IS ${quoteLiteral(clone.comment)};`
+        );
+      }
+
+      visit(clone.partitionTriggers, clone.enabled);
+    }
+  };
+  visit(trigger.partitionTriggers, trigger.enabled);
+
+  return { firing, comments };
+}
 
 /**
  * Whether a constraint trigger names the table its constraint references
@@ -42,9 +96,12 @@ function hasReferencedTable(trigger: Trigger): boolean {
  * Fallback (`pg_get_triggerdef`, `definition`) for `UPDATE OF` columns,
  * reason `'UPDATE OF columns'`, or transition tables, `'transition tables'`;
  * a trigger that is not enabled normally also gets `ALTER TABLE …
- * DISABLE|ENABLE REPLICA|ENABLE ALWAYS TRIGGER …`, reason `'firing mode'`; a
- * constraint trigger with `FROM <referenced table>`, reason `'referenced
- * table'`, is created with `pg_get_triggerdef` too.
+ * DISABLE|ENABLE REPLICA|ENABLE ALWAYS TRIGGER …`, reason `'firing mode'`,
+ * and so does each clone on a partition (`partitionTriggers`) that fires
+ * unlike the trigger it is a clone of, after it; a constraint trigger with
+ * `FROM <referenced table>`, reason `'referenced table'`, is created with
+ * `pg_get_triggerdef` too. The comments on clones are set last, with
+ * `COMMENT ON TRIGGER … ON <partition>`, reason `'comment on trigger'`.
  *
  * @param trigger The trigger.
  * @param ctx The migration context.
@@ -63,14 +120,24 @@ export function emitTrigger(trigger: Trigger, ctx: EmitContext): Emitted {
   const fromDefinition = reasons.length > 0 || referenced;
   const after: string[] = [];
   if (trigger.enabled !== 'ORIGIN') {
-    reasons.push('firing mode');
     after.push(
       `ALTER TABLE ${qualifiedName(trigger.table)} ${FIRING_ACTIONS[trigger.enabled]} TRIGGER ${quoteName(trigger.name)};`
     );
   }
 
+  const clones = cloneSql(trigger);
+  after.push(...clones.firing);
+  if (trigger.enabled !== 'ORIGIN' || clones.firing.length > 0) {
+    reasons.push('firing mode');
+  }
+
   if (referenced) {
     reasons.push('referenced table');
+  }
+
+  after.push(...clones.comments);
+  if (clones.comments.length > 0) {
+    reasons.push('comment on trigger');
   }
 
   if (fromDefinition) {

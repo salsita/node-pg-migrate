@@ -43,6 +43,7 @@ import type {
   OwnedSequence,
   PartitionIndex,
   PartitionIndexRow,
+  PartitionTrigger,
   Policy,
   PolicyRow,
   RangeRow,
@@ -1262,7 +1263,10 @@ function withPartitionIndexes(
  *   `proconfig` entries are split at their first `=`.
  * - The arguments of a trigger are the zero-terminated parts of `tgargs`,
  *   decoded as UTF-8; its `condition` is taken from `definition` when
- *   `hasCondition`.
+ *   `hasCondition`. The rows of the `partitionTriggers` query become the
+ *   `partitionTriggers` of the trigger they are clones of (or of the clone
+ *   they are clones of), when their partition is among the tables of the
+ *   model; the trigger depends on those partitions.
  * - A view's `definition` loses its final `;`, and the `check_option` entry
  *   of its `reloptions` becomes `checkOption`.
  * - A partition's parent is its one `inherits` row (`partitionOf.parent`),
@@ -1471,7 +1475,41 @@ export function rowsToModel(
       return index;
     })
   );
-  const triggers = sortObjects(onRelation(rows.triggers, triggerOf));
+  // A trigger of a partitioned table goes with its clones on the partitions,
+  // and theirs, which it needs.
+  const cloned = groupBy(rows.partitionTriggers ?? [], ({ parent }) => parent);
+  const clonesOf = (trigger: Trigger, parent: number): PartitionTrigger[] =>
+    sortByKey(
+      (cloned.get(parent) ?? []).flatMap((row): PartitionTrigger[] => {
+        const partition = relations.get(row.relid);
+        if (partition === undefined) {
+          return [];
+        }
+
+        implicit.push({ from: refOf(trigger), to: partition.ref });
+        const below = clonesOf(trigger, row.oid);
+
+        return [
+          {
+            table: partition.name,
+            enabled: FIRING_MODES[row.tgenabled],
+            ...optional('comment', row.comment),
+            ...optional('partitionTriggers', below.length === 0 ? null : below),
+          },
+        ];
+      }),
+      (clone) => [clone.table.schema, clone.table.name]
+    );
+  const triggers = sortObjects(
+    onRelation(rows.triggers, (row, table) => {
+      const trigger = triggerOf(row, table);
+      const clones = clonesOf(trigger, row.oid);
+
+      return clones.length === 0
+        ? trigger
+        : { ...trigger, partitionTriggers: clones };
+    })
+  );
   const policies = sortObjects(onRelation(rows.policies, policyOf));
   const rules = sortObjects(onRelation(rows.rules, ruleOf));
   const statistics = sortObjects(

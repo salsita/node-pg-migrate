@@ -1608,9 +1608,41 @@ export type FiringMode = 'ORIGIN' | 'DISABLED' | 'REPLICA' | 'ALWAYS';
 export type TriggerEvent = 'INSERT' | 'DELETE' | 'UPDATE' | 'TRUNCATE';
 
 /**
+ * A partition's clone of a row trigger of its partitioned table (`pg_trigger`
+ * with `tgparentid <> 0`): creating the trigger creates one with the same
+ * name on each partition, and on the partitions of a partitioned partition
+ * (the clones of its clone).
+ */
+export interface PartitionTrigger {
+  /**
+   * The partition.
+   */
+  readonly table: SchemaQualifiedName;
+
+  /**
+   * Whether it fires (`tgenabled`); a clone gets the firing mode of the
+   * trigger it is a clone of, unless `ALTER TABLE <partition> …
+   * TRIGGER` changed it.
+   */
+  readonly enabled: FiringMode;
+
+  /**
+   * The comment on it (`COMMENT ON TRIGGER … ON <partition>`), when it has
+   * one.
+   */
+  readonly comment?: string;
+
+  /**
+   * Its own clones, on the partitions of a partitioned partition, sorted by
+   * table. Left out when there are none.
+   */
+  readonly partitionTriggers?: ReadonlyArray<PartitionTrigger>;
+}
+
+/**
  * A trigger (`pg_trigger`) that is not internal (`tgisinternal`, e.g. the
  * triggers of foreign keys) and not a partition's clone of a trigger of its
- * partitioned table (`tgparentid <> 0`).
+ * partitioned table (`tgparentid <> 0`, see {@link PartitionTrigger}).
  */
 export interface Trigger extends CatalogObject {
   readonly kind: 'trigger';
@@ -1695,6 +1727,12 @@ export interface Trigger extends CatalogObject {
    * `pg_get_triggerdef(oid)` writes it (no trailing `;`), for the fallback.
    */
   readonly definition: string;
+
+  /**
+   * For a trigger of a partitioned table: its clones on the partitions (see
+   * {@link PartitionTrigger}), sorted by table. Left out when there are none.
+   */
+  readonly partitionTriggers?: ReadonlyArray<PartitionTrigger>;
 }
 
 /**
@@ -1994,8 +2032,9 @@ export interface SchemaModel {
    * and statistics depend on it, a partition on its partitioned table, an
    * inheritance child on its parents, a foreign key on the primary key or
    * unique constraint it references, an index or constraint on the
-   * partitions whose indexes it has (`partitionIndexes`), and an index that
-   * is not valid on every partition below its table.
+   * partitions whose indexes it has (`partitionIndexes`), an index that is
+   * not valid on every partition below its table, and a trigger on the
+   * partitions of its clones (`partitionTriggers`).
    *
    * A sequence's owner is not a dependency (the column's default usually
    * depends on the sequence): it is {@link Sequence.ownedBy}.
@@ -3102,6 +3141,27 @@ export interface TriggerRow {
 }
 
 /**
+ * A row of the `partitionTriggers` query: the clones of triggers on
+ * partitions (`tgparentid <> 0`), whatever `tgisinternal` says.
+ */
+export interface PartitionTriggerRow {
+  readonly oid: number;
+
+  /**
+   * `tgrelid`: the `oid` of the partition's row in the `tables` query.
+   */
+  readonly relid: number;
+
+  /**
+   * `tgparentid`: the trigger it is a clone of, a row of the `triggers`
+   * query or another row of this query.
+   */
+  readonly parent: number;
+  readonly tgenabled: 'O' | 'D' | 'R' | 'A';
+  readonly comment: string | null;
+}
+
+/**
  * A row of the `policies` query.
  */
 export interface PolicyRow {
@@ -3272,6 +3332,11 @@ export interface CatalogRows {
   readonly partitionIndexes?: ReadonlyArray<PartitionIndexRow>;
   readonly views: ReadonlyArray<ViewRow>;
   readonly triggers: ReadonlyArray<TriggerRow>;
+
+  /**
+   * The clones of triggers on partitions (none when left out).
+   */
+  readonly partitionTriggers?: ReadonlyArray<PartitionTriggerRow>;
   readonly policies: ReadonlyArray<PolicyRow>;
   readonly rules: ReadonlyArray<RuleRow>;
   readonly statistics: ReadonlyArray<StatisticsRow>;
