@@ -117,4 +117,16 @@ describe('storageParameters', () => {
       `fillfactor='70', autovacuum_enabled='false', check_option=local, "Odd Name"='x y', bare=''`
     );
   });
+
+  it('writes the namespace of a TOAST parameter apart from its name, like pg_dump', () => {
+    expect(
+      storageParameters([
+        'fillfactor=80',
+        'toast.autovacuum_enabled=false',
+        'toast.autovacuum_vacuum_scale_factor=0.2',
+      ])
+    ).toBe(
+      `fillfactor='80', toast.autovacuum_enabled='false', toast.autovacuum_vacuum_scale_factor='0.2'`
+    );
+  });
 });

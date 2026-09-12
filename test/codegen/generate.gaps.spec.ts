@@ -12,6 +12,7 @@ import {
   makeComposite,
   makeConstraint,
   makeDomain,
+  makeFunction,
   makeMaterializedView,
   makeSequence,
   makeTable,
@@ -36,6 +37,20 @@ const HEADER: HeaderMeta = {
   materializedViews: 0,
   relations: 1,
 };
+
+/**
+ * The text of the header comment of a migration (its first `//` lines), as
+ * one line: a note may be wrapped over several lines.
+ */
+function headerText(content: string): string {
+  const lines = content.split('\n');
+  const end = lines.findIndex((line) => !line.startsWith('//'));
+
+  return lines
+    .slice(0, end === -1 ? lines.length : end)
+    .map((line) => line.slice(2).trim())
+    .join(' ');
+}
 
 function thrownBy(action: () => unknown): unknown {
   try {
@@ -84,14 +99,16 @@ describe('renderMigration', () => {
     );
   });
 
-  it('says that one materialized view is created with data, and never WITH NO DATA', () => {
+  it('says that materialized views are created WITH NO DATA, to refresh after the first run', () => {
     const content = renderMigration([], {
       language: 'ts',
       header: { ...HEADER, materializedViews: 1 },
     });
+    const header = headerText(content);
 
-    expect(content).toContain('// It creates 1 materialized view WITH DATA');
-    expect(content).not.toContain('NO DATA');
+    expect(header).toContain('WITH NO DATA');
+    expect(header).toMatch(/\brefresh\b.*\bafter the first run\b/i);
+    expect(header).not.toContain('WITH DATA');
   });
 
   it('keeps every line of the header a comment when the command has line breaks', () => {
@@ -179,6 +196,58 @@ describe('generateMigration', () => {
          ALTER SEQUENCE ticket_numbers OWNED BY public.tickets.no;`
       )
     );
+  });
+
+  it('creates a serial sequence on its own when a function that a default of its table calls uses it, instead of refusing a cycle', async () => {
+    const sequence = makeSequence('public', 'a_id_seq', {
+      ...defaultSequenceOptions('integer'),
+      ownedBy: { table: { schema: 'public', name: 'a' }, column: 'id' },
+    });
+    const nextCode = makeFunction('public', 'next_code', {
+      returns: 'text',
+      hasSqlBody: true,
+      definition:
+        "CREATE OR REPLACE FUNCTION public.next_code()\n RETURNS text\n LANGUAGE sql\nBEGIN ATOMIC\n SELECT ('C-'::text || nextval('public.a_id_seq'::regclass));\nEND\n",
+    });
+    const table = makeTable('public', 'a', {
+      columns: [
+        serialColumn('a'),
+        makeColumn('v', 'text'),
+        makeColumn('code', 'text', { default: 'public.next_code()' }),
+      ],
+    });
+    // What pg_depend records: the defaults of the table use the sequence and
+    // the function, and the SQL-standard body of the function uses the
+    // sequence.
+    const model = modelOf(
+      [sequence, nextCode, table],
+      [
+        dependsOn(table, sequence),
+        dependsOn(table, nextCode),
+        dependsOn(nextCode, sequence),
+      ]
+    );
+
+    // Writing the column as serial makes the sequence wait for its table, and
+    // so for the function: a cycle, which the schema itself does not have.
+    expect(thrownBy(() => generateMigration(model, OPTIONS))).toBeUndefined();
+
+    const { content } = generateMigration(model, OPTIONS);
+    const sql = canonicalSteps(await runUp(await loadMigration(content, 'ts')));
+    const position = (pattern: RegExp): number =>
+      sql.findIndex((statement) => pattern.test(statement));
+    const created = [
+      position(/^create sequence (public \. )?a_id_seq\b/),
+      position(/^create (or replace )?function (public \. )?next_code\b/),
+      position(/^create table (public \. )?a \(/),
+      position(
+        /^alter sequence (public \. )?a_id_seq owned by (public \. )?a \. id$/
+      ),
+    ];
+
+    expect(created).not.toContain(-1);
+    expect(created).toStrictEqual(created.toSorted((a, b) => a - b));
+    expect(sql[created[2]]).not.toMatch(/\bserial\b/);
   });
 
   it('reports the comments on columns, domain constraints and the indexes of constraints by what they are on', () => {

@@ -125,6 +125,19 @@ describe('emitTable', () => {
            WITH (fillfactor=70, autovacuum_enabled=false);`,
       ],
       [
+        'TOAST storage parameters',
+        'storage parameters',
+        {
+          options: [
+            'toast.autovacuum_enabled=false',
+            'toast.autovacuum_vacuum_scale_factor=0.2',
+          ],
+          columns: [makeColumn('id', 'integer'), makeColumn('doc', 'text')],
+        },
+        `CREATE TABLE "kitchen"."t" ("id" integer, "doc" text)
+           WITH (toast.autovacuum_enabled='false', toast.autovacuum_vacuum_scale_factor='0.2');`,
+      ],
+      [
         'a table access method',
         'access method',
         { accessMethod: 'columnar', columns: [makeColumn('id', 'integer')] },

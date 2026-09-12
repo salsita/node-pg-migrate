@@ -12,8 +12,12 @@ import { emitAndRun } from '../run';
 const DEFINITION =
   ' SELECT id AS customer_id,\n    kitchen.order_count(id) AS order_count\n   FROM kitchen.customers c';
 
+// Materialized views are created unpopulated (WITH NO DATA), like pg_dump and
+// the SQL baseline do: creating one never runs its query, so what the query
+// reads (through functions too) may be created after it.
+
 describe('emitMaterializedView', () => {
-  it('creates a materialized view with pgm.createMaterializedView', () => {
+  it('creates a materialized view WITH NO DATA with pgm.createMaterializedView', () => {
     const result = emitAndRun(
       emitMaterializedView,
       makeMaterializedView('kitchen', 'customer_totals', DEFINITION, {
@@ -26,11 +30,11 @@ describe('emitMaterializedView', () => {
     expect(result.calls).toStrictEqual(['createMaterializedView']);
     expectSql(
       result,
-      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" AS ${DEFINITION};`
+      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" AS ${DEFINITION} WITH NO DATA;`
     );
   });
 
-  it('falls back to CREATE MATERIALIZED VIEW for storage parameters', () => {
+  it('falls back to CREATE MATERIALIZED VIEW … WITH NO DATA for storage parameters', () => {
     const result = emitAndRun(
       emitMaterializedView,
       makeMaterializedView('kitchen', 'customer_totals', DEFINITION, {
@@ -40,13 +44,13 @@ describe('emitMaterializedView', () => {
 
     expectFallback(result, 'storage parameters');
     expect(result.calls).toStrictEqual(['sql']);
-    expectSqlOneOf(result, [
-      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" WITH (autovacuum_enabled=false, fillfactor=90) AS ${DEFINITION};`,
-      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" WITH (autovacuum_enabled=false, fillfactor=90) AS ${DEFINITION} WITH NO DATA;`,
-    ]);
+    expectSql(
+      result,
+      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" WITH (autovacuum_enabled=false, fillfactor=90) AS ${DEFINITION} WITH NO DATA;`
+    );
   });
 
-  it('falls back to CREATE MATERIALIZED VIEW for a table access method', () => {
+  it('falls back to CREATE MATERIALIZED VIEW … WITH NO DATA for a table access method', () => {
     const result = emitAndRun(
       emitMaterializedView,
       makeMaterializedView('kitchen', 'customer_totals', DEFINITION, {
@@ -56,9 +60,24 @@ describe('emitMaterializedView', () => {
 
     expectFallback(result, 'access method');
     expect(result.calls).toStrictEqual(['sql']);
+    expectSql(
+      result,
+      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" USING columnar AS ${DEFINITION} WITH NO DATA;`
+    );
+  });
+
+  it('writes the namespace of a TOAST storage parameter apart from its name, like pg_dump', () => {
+    const result = emitAndRun(
+      emitMaterializedView,
+      makeMaterializedView('kitchen', 'customer_totals', DEFINITION, {
+        options: ['toast.autovacuum_enabled=false'],
+      })
+    );
+
+    expectFallback(result, 'storage parameters');
     expectSqlOneOf(result, [
-      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" USING columnar AS ${DEFINITION};`,
-      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" USING columnar AS ${DEFINITION} WITH NO DATA;`,
+      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" WITH (toast.autovacuum_enabled='false') AS ${DEFINITION} WITH NO DATA;`,
+      `CREATE MATERIALIZED VIEW "kitchen"."customer_totals" WITH (toast.autovacuum_enabled='false') AS ${DEFINITION};`,
     ]);
   });
 });

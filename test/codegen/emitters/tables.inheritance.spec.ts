@@ -7,7 +7,12 @@ import type {
   Table,
 } from '../../../src/introspect/types';
 import { makeColumn, makeTable } from '../../introspect/objects';
-import { expectCode, expectFallback, expectSql } from '../expectations';
+import {
+  expectCode,
+  expectFallback,
+  expectSql,
+  expectSqlOneOf,
+} from '../expectations';
 import { emitAndRun } from '../run';
 
 // `CREATE TABLE … INHERITS` and `… PARTITION OF` give the columns of a child
@@ -201,6 +206,28 @@ describe('emitTable', () => {
       expectCode(result);
       expect(result.calls).toStrictEqual(['createTable']);
       expectSql(result, CREATE_TRUCKS);
+    });
+
+    it('keeps the line break of a default it gives a column it inherits, as a line break fallback', () => {
+      // alterColumn writes its actions on one line, so it would turn the line
+      // break into a space.
+      const setDefault = `SET DEFAULT 'line one\nline two'::text;`;
+      const result = emitAndRun(
+        emitTable,
+        trucks([
+          inherited(
+            'note',
+            { parentNotNull: false },
+            { type: 'text', default: "'line one\nline two'::text" }
+          ),
+        ])
+      );
+
+      expectSqlOneOf(result, [
+        `${CREATE_TRUCKS}\nALTER TABLE "kitchen"."trucks" ALTER COLUMN "note" ${setDefault}`,
+        `${CREATE_TRUCKS}\nALTER TABLE "kitchen"."trucks" ALTER "note" ${setDefault}`,
+      ]);
+      expectFallback(result, 'line break');
     });
 
     it('drops the parent default of a column the child also defines without one', () => {

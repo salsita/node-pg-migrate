@@ -188,7 +188,7 @@ describe('emitMaterializedView', () => {
     expectFallback(result, 'storage parameters', 'access method');
     expectSql(
       result,
-      'CREATE MATERIALIZED VIEW "kitchen"."mv" USING columnar WITH (fillfactor = 90) AS SELECT 1 AS n;'
+      'CREATE MATERIALIZED VIEW "kitchen"."mv" USING columnar WITH (fillfactor = 90) AS SELECT 1 AS n WITH NO DATA;'
     );
   });
 });
