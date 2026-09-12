@@ -77,6 +77,22 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
 | `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
 | `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
+| `node-pg-migrate baseline`                |      writes one migration with the schema of an existing database, see [Adopting an existing database](baseline).       |
+
+## Adopting an Existing Database
+
+`node-pg-migrate baseline` writes one SQL migration that creates the schema of an existing
+database (it runs `pg_dump --schema-only` and cleans up its output), so that node-pg-migrate can
+manage a database it didn't create:
+
+```sh
+node-pg-migrate baseline                           # writes migrations/1789084800000_baseline.sql
+node-pg-migrate up 1789084800000_baseline --fake   # on databases that already have the schema
+node-pg-migrate up                                 # on blank databases
+```
+
+It has its own options, e.g. `--from-file` for a dump you made yourself. See
+[Adopting an Existing Database](baseline) for the whole workflow.
 
 ## Dry Runs
 
@@ -164,7 +180,8 @@ does not apply to them.
 You can adjust defaults by passing arguments to the command. The
 `migration-file-language`, `migration-filename-format` and `template-file-name`
 options are only available on the `create` command; the remaining options below
-apply to the `up`, `down` and `redo` commands:
+apply to the `up`, `down` and `redo` commands (`baseline` has
+[its own](baseline#options)):
 
 | Argument                    | Aliases | Default                         | Description                                                                                                                                                                                                                                                                             |
 | --------------------------- | ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
