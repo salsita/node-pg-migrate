@@ -17,10 +17,12 @@ import { codeAt, foldIdentifier, isSpace, skipWhile } from './lexer';
 import type { MarkerMatch } from './markers';
 import { findMigrationMarker } from './markers';
 import { copiesFromStdin, scanTopLevel } from './scan';
+import type { Token } from './statement';
 import { Statement } from './statement';
 
 const LINE_FEED = 0x0a;
 const CARRIAGE_RETURN = 0x0d;
+const FIRST_NON_ASCII = 0x80;
 
 /**
  * The characters that can follow a statement before the line break that
@@ -518,10 +520,178 @@ function sessionSetting(
 const QUOTES: ReadonlySet<string> = new Set(["'", '"']);
 
 /**
+ * The control characters that a backslash and a letter stand for in an
+ * `E'…'` string.
+ */
+const ESCAPED_LETTERS: ReadonlyMap<string, string> = new Map([
+  ['b', '\b'],
+  ['f', '\f'],
+  ['n', '\n'],
+  ['r', '\r'],
+  ['t', '\t'],
+]);
+
+/**
+ * A numeric escape of an `E'…'` string, after its backslash: octal (`\101`),
+ * hexadecimal (`\x41`) or Unicode (`\u0041` or `\U00000041`).
+ */
+const NUMERIC_ESCAPE =
+  /^(?:[0-7]{1,3}|x[\dA-Fa-f]{1,2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/;
+
+/**
+ * The length of the longest numeric escape after its backslash (`U` and 8
+ * digits).
+ */
+const NUMERIC_ESCAPE_LENGTH = 9;
+
+/**
+ * The text of a `'…'` string or a `"…"` identifier between its quotes, with
+ * its doubled quotes undoubled.
+ */
+function unquote(text: string): string {
+  const quote = text.charAt(0);
+
+  return text.slice(1, -1).replaceAll(quote.repeat(2), quote);
+}
+
+/**
+ * What the escape after a backslash in an `E'…'` string stands for, and the
+ * offset right after it: `\b`, `\f`, `\n`, `\r` and `\t` stand for control
+ * characters, a numeric escape for the character with its code, and a
+ * backslash before any other character for that character. `undefined` when
+ * the string ends right after the backslash, and for a numeric escape of
+ * anything but an ASCII character (NUL, a byte of a UTF-8 sequence, another
+ * Unicode character, or `\u` or `\U` without its digits), which no value of
+ * the checked settings needs.
+ *
+ * @param text The string as written.
+ * @param from The offset right after the backslash.
+ */
+function readEscape(
+  text: string,
+  from: number
+): { readonly value: string; readonly end: number } | undefined {
+  const numeric = NUMERIC_ESCAPE.exec(
+    text.slice(from, from + NUMERIC_ESCAPE_LENGTH)
+  );
+  if (numeric !== null) {
+    const [escape] = numeric;
+    const code = /^\d/.test(escape)
+      ? Number.parseInt(escape, 8)
+      : Number.parseInt(escape.slice(1), 16);
+
+    return code > 0 && code < FIRST_NON_ASCII
+      ? { value: String.fromCodePoint(code), end: from + escape.length }
+      : undefined;
+  }
+
+  const char = text.charAt(from);
+  if (char === '' || char === 'u' || char === 'U') {
+    return undefined;
+  }
+
+  return { value: ESCAPED_LETTERS.get(char) ?? char, end: from + 1 };
+}
+
+/**
+ * The value of an `E'…'` string: a doubled quote stands for a quote, and a
+ * backslash starts an escape (see {@link readEscape}). `undefined` when the
+ * string is not closed or has an escape that cannot be read.
+ *
+ * @param text The string as written, its `E` included.
+ */
+function escapeStringValue(text: string): string | undefined {
+  let value = '';
+  let index = 2;
+  while (index < text.length) {
+    const char = text.charAt(index);
+    if (char === '\\') {
+      const escape = readEscape(text, index + 1);
+      if (escape === undefined) {
+        return undefined;
+      }
+
+      value += escape.value;
+      index = escape.end;
+    } else if (char !== "'") {
+      value += char;
+      index += 1;
+    } else if (text.charAt(index + 1) === "'") {
+      value += char;
+      index += 2;
+    } else {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * The text of a dollar-quoted string (`$$…$$` or `$tag$…$tag$`) between its
+ * delimiters, as it is written. `undefined` when the string is not closed.
+ *
+ * @param text The string as written, its delimiters included.
+ */
+function dollarQuotedValue(text: string): string | undefined {
+  const delimiter = text.slice(0, text.indexOf('$', 1) + 1);
+
+  return text.length >= 2 * delimiter.length && text.endsWith(delimiter)
+    ? text.slice(delimiter.length, -delimiter.length)
+    : undefined;
+}
+
+/**
+ * The text that a string or a quoted identifier spells: that of a `'…'`
+ * string or a `"…"` identifier (see {@link unquote}), of an `E'…'` string
+ * (see {@link escapeStringValue}) or of a dollar-quoted string (see
+ * {@link dollarQuotedValue}). `undefined` for any other token, and for a
+ * string that cannot be read.
+ */
+function quotedValue(token: Token): string | undefined {
+  const first = token.text.charAt(0);
+  if (QUOTES.has(first)) {
+    return unquote(token.text);
+  }
+
+  if (token.kind !== 'string') {
+    return undefined;
+  }
+
+  return first === '$'
+    ? dollarQuotedValue(token.text)
+    : escapeStringValue(token.text);
+}
+
+/**
+ * The `'…'` string or `"…"` identifier that `U&` at `index` starts: when
+ * nothing separates `U`, `&` and the quote, PostgreSQL reads them as one
+ * string or identifier with Unicode escapes. `undefined` when there is none.
+ */
+function unicodeEscaped(
+  statement: Statement,
+  index: number
+): Token | undefined {
+  const prefix = statement.token(index);
+  const ampersand = statement.token(index + 1);
+  const quoted = statement.token(index + 2);
+  const isUnicode =
+    prefix?.folded === 'u' &&
+    ampersand?.text === '&' &&
+    ampersand.start === prefix.end &&
+    quoted?.start === ampersand.end &&
+    QUOTES.has(quoted.text.charAt(0));
+
+  return isUnicode ? quoted : undefined;
+}
+
+/**
  * The value a `SET <name> = <value>` statement gives its setting: a word or
- * a number as it is written, or the text of a `'…'` string or a `"…"`
- * identifier, with its doubled quotes undoubled. `undefined` for `DEFAULT`
- * and for values written any other way (e.g. `E'…'`).
+ * a number as it is written, or the text that a string or a quoted
+ * identifier spells (see {@link quotedValue}), `U&'…'` and `U&"…"` included.
+ * `undefined` for `DEFAULT`, and for a value it cannot read: a `U&` one with
+ * a backslash, which starts a Unicode escape, or with a `UESCAPE` clause,
+ * and a string that {@link quotedValue} cannot read.
  */
 function settingValue(statement: Statement): string | undefined {
   const token = statement.token(3);
@@ -529,15 +699,20 @@ function settingValue(statement: Statement): string | undefined {
     return undefined;
   }
 
+  const unicode = unicodeEscaped(statement, 3);
+  if (unicode !== undefined) {
+    const value = unquote(unicode.text);
+
+    return value.includes('\\') || statement.word(6) === 'uescape'
+      ? undefined
+      : value;
+  }
+
   if (token.kind === 'word' || token.kind === 'number') {
     return token.text;
   }
 
-  const quote = token.text.charAt(0);
-
-  return QUOTES.has(quote)
-    ? token.text.slice(1, -1).replaceAll(quote.repeat(2), quote)
-    : undefined;
+  return quotedValue(token);
 }
 
 /**
@@ -577,7 +752,9 @@ function isUtf8(encoding: string): boolean {
  * it cannot take effect, and the dump must not need it:
  * `standard_conforming_strings` off makes the backslashes in strings escapes,
  * and a `client_encoding` other than UTF-8 means that the dump is in another
- * encoding, while node-pg-migrate reads it as UTF-8.
+ * encoding, while node-pg-migrate reads it as UTF-8. A value that
+ * {@link settingValue} cannot read is not checked: the `SET` is kept for
+ * PostgreSQL to take or refuse.
  */
 function refuseLexicalSetting(statement: Statement, name: string): void {
   const value = settingValue(statement)?.toLowerCase();
