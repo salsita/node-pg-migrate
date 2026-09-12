@@ -1237,10 +1237,12 @@ export interface PartitionIndex {
   readonly level: number;
 
   /**
-   * The index it is attached to (`pg_inherits.inhparent`), from `level` 2 on:
-   * the index of a partitioned partition. Left out at `level` 1, where it is
-   * the index that has these `partitionIndexes` (for a constraint, its index,
-   * which has the constraint's name).
+   * For the indexes of partitions of an index that is not valid (see
+   * {@link Index.valid}), which are attached one at a time: the index it is
+   * attached to (`pg_inherits.inhparent`), from `level` 2 on, the index of a
+   * partitioned partition. Left out at `level` 1, where it is the index that
+   * has these `partitionIndexes`, and for the indexes of partitions of a
+   * valid index or of a constraint, which creating it attaches.
    */
   readonly parent?: SchemaQualifiedName;
 

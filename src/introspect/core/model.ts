@@ -1159,13 +1159,16 @@ const DEEPEST_LEVEL = 1_000_000;
  * @param attached The rows of the `partitionIndexes` query, by the index they
  * are attached to.
  * @param tableNames The name of each table row, by OID.
+ * @param withParents Whether the indexes from level 2 on get the `parent`
+ * they are attached to (for an index that is not valid).
  * @returns The indexes, deepest first, then by table and name (see
  * `Index.partitionIndexes`).
  */
 function partitionIndexesOf(
   index: number,
   attached: ReadonlyMap<number, ReadonlyArray<PartitionIndexRow>>,
-  tableNames: ReadonlyMap<number, SchemaQualifiedName>
+  tableNames: ReadonlyMap<number, SchemaQualifiedName>,
+  withParents: boolean
 ): PartitionIndex[] {
   const found: PartitionIndex[] = [];
   const visit = (
@@ -1183,7 +1186,7 @@ function partitionIndexesOf(
           definition: row.definition,
           ...optional('constraintDefinition', row.constraintDefinition),
           level,
-          ...optional('parent', parentName),
+          ...optional('parent', withParents ? parentName : null),
           ...optional('options', row.reloptions),
           ...optional('clustered', row.indisclustered === true ? true : null),
           ...optional(
@@ -1214,9 +1217,15 @@ function partitionIndexesOf(
 function withPartitionIndexes(
   index: number,
   attached: ReadonlyMap<number, ReadonlyArray<PartitionIndexRow>>,
-  tableNames: ReadonlyMap<number, SchemaQualifiedName>
+  tableNames: ReadonlyMap<number, SchemaQualifiedName>,
+  withParents: boolean
 ): Pick<Index, 'partitionIndexes'> {
-  const partitionIndexes = partitionIndexesOf(index, attached, tableNames);
+  const partitionIndexes = partitionIndexesOf(
+    index,
+    attached,
+    tableNames,
+    withParents
+  );
 
   return partitionIndexes.length === 0 ? {} : { partitionIndexes };
 }
@@ -1259,12 +1268,13 @@ function withPartitionIndexes(
  * - The rows of the `partitionIndexes` query become the `partitionIndexes`
  *   of the index, or primary key, unique or exclusion constraint
  *   (`conindid`), that they are attached to, directly or through other such
- *   rows (their `level`, and from level 2 on the `parent` they are attached
- *   to), with the name of their partition from its table row, and their
- *   storage parameters, clustering, replica identity and comment when they
- *   have them; that index or constraint depends on those partitions. An
- *   index that is not valid (`indisvalid` false) gets `valid: false`, and
- *   depends on every partition below its table.
+ *   rows (their `level`), with the name of their partition from its table
+ *   row, and their storage parameters, clustering, replica identity and
+ *   comment when they have them; that index or constraint depends on those
+ *   partitions. An index that is not valid (`indisvalid` false) gets
+ *   `valid: false`, its partition indexes from level 2 on get the `parent`
+ *   they are attached to, and it depends on every partition below its
+ *   table.
  * - The arguments of a routine come from `argTypes`, `argNames` (`''` is no
  *   name), `argModes` and `argDefaults`, without `TABLE` (`t`) columns;
  *   `proconfig` entries are split at their first `=`.
@@ -1423,11 +1433,19 @@ export function rowsToModel(
   const tableNames = new Map(
     rows.tables.map((row) => [row.oid, qualifiedName(row)])
   );
+  // `withParents` for an index that is not valid, whose partition indexes
+  // are attached one at a time, each to its `parent`.
   const withPartitions = <T extends Index | Constraint>(
     object: T,
-    index: number
+    index: number,
+    withParents = false
   ): T => {
-    const partitions = withPartitionIndexes(index, attached, tableNames);
+    const partitions = withPartitionIndexes(
+      index,
+      attached,
+      tableNames,
+      withParents
+    );
     for (const { table } of partitions.partitionIndexes ?? []) {
       const partition = relations.get(tableOids.get(nameKey(table)) ?? 0);
       if (partition !== undefined) {
@@ -1475,12 +1493,13 @@ export function rowsToModel(
   };
   const indexes = sortObjects(
     onRelation(rows.indexes, (row, table) => {
-      const index = withPartitions(indexOf(row, table), row.oid);
-      if (index.valid === false) {
+      const index = indexOf(row, table);
+      const invalid = index.valid === false;
+      if (invalid) {
         needPartitions(index, table);
       }
 
-      return index;
+      return withPartitions(index, row.oid, invalid);
     })
   );
   // A trigger of a partitioned table goes with its clones on the partitions,
