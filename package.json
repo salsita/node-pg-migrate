@@ -87,6 +87,7 @@
     "jiti": "~2.7.0"
   },
   "devDependencies": {
+    "@shikijs/vitepress-twoslash": "4.4.3",
     "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
     "@types/node": "26.4.1",
@@ -105,6 +106,7 @@
     "testcontainers": "12.1.0",
     "tsdown": "0.22.14",
     "typescript": "7.0.2",
+    "typescript-6": "npm:typescript@6.0.3",
     "vitepress": "2.0.0-alpha.19",
     "vitest": "4.1.11"
   },

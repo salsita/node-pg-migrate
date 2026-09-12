@@ -1,6 +1,8 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+title: node-pg-migrate
+titleTemplate: Database migrations, made for PostgreSQL
 
 hero:
   name: 'node-pg-migrate'
@@ -54,13 +56,30 @@ features:
 
 ## Code in, SQL out
 
-Every `pgm` call compiles to plain SQL. Here is a migration, the exact SQL `node-pg-migrate up --pretty` runs for it, and the `down` it infers because the migration leaves one out.
+Write migrations in TypeScript, JavaScript or plain SQL. In TypeScript and JavaScript every `pgm` call compiles to SQL: the second panel is exactly what `node-pg-migrate up --pretty` runs, plus the `down` it infers because the migration leaves one out. Hover the TypeScript code to see its types.
 
 <div class="home-showcase">
 
 ::: code-group
 
-```js [migrations/1757635200000_create-users.js]
+```ts twoslash [create-users.ts]
+import type { MigrationBuilder } from 'node-pg-migrate';
+
+export async function up(pgm: MigrationBuilder): Promise<void> {
+  pgm.createTable('users', {
+    id: 'id',
+    email: { type: 'text', notNull: true, unique: true },
+    createdAt: {
+      type: 'timestamptz',
+      notNull: true,
+      default: pgm.func('now()'),
+    },
+  });
+  pgm.createIndex('users', 'createdAt');
+}
+```
+
+```js [create-users.js]
 export const up = (pgm) => {
   pgm.createTable('users', {
     id: 'id',
@@ -73,6 +92,20 @@ export const up = (pgm) => {
   });
   pgm.createIndex('users', 'createdAt');
 };
+```
+
+```sql [create-users.sql]
+-- Up Migration
+CREATE TABLE "users" (
+  "id" serial PRIMARY KEY,
+  "email" text UNIQUE NOT NULL,
+  "createdAt" timestamptz DEFAULT now() NOT NULL
+);
+CREATE INDEX "users_createdAt_index" ON "users" ("createdAt");
+
+-- Down Migration
+DROP INDEX "users_createdAt_index";
+DROP TABLE "users";
 ```
 
 :::

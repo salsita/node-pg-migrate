@@ -231,6 +231,11 @@ a:is(:hover, :focus-visible) .npm-logo {
   font-size: 32px;
 }
 
+/* VitePress offsets the # by the 24px h2 padding removed above */
+.VPHome .home-section h2 .header-anchor {
+  top: 0;
+}
+
 .VPHome .home-section > p {
   margin: 0 0 28px;
   max-width: 680px;
@@ -243,15 +248,16 @@ a:is(:hover, :focus-visible) .npm-logo {
   white-space: nowrap;
 }
 
+/* 13px code keeps the longest lines (the TypeScript signature, CREATE INDEX) unscrolled */
 .VPHome .home-showcase {
   display: grid;
   gap: 16px;
+  --vp-code-font-size: 13px;
 }
 
 @media (min-width: 960px) {
   .VPHome .home-showcase {
-    /* the SQL side gets a little more room: its longest line is longer */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   /* both panels as tall as the migration */
