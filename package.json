@@ -74,6 +74,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./baseline/catalogs": {
+      "types": "./dist/baseline/catalogs.d.ts",
+      "default": "./dist/baseline/catalogs.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "dist/index.js",

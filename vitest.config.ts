@@ -15,6 +15,7 @@ if (coverageSuite !== 'unit' && coverageSuite !== 'integration') {
 const integrationOwned = [
   'src/baseline/io/**',
   'src/baseline/index.ts',
+  'src/baseline/catalogs.ts',
   'src/introspect/io/**',
 ];
 

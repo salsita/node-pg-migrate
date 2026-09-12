@@ -2,6 +2,9 @@ import type { ClientBase, ClientConfig } from 'pg';
 import type { Fallback } from '../codegen/fallback';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
+import type { DumpSource } from './source';
+
+export type { DumpSource } from './source';
 
 /**
  * Options of `baseline()`.
@@ -323,29 +326,6 @@ export interface DumpStats {
    * `CREATE MATERIALIZED VIEW` statements.
    */
   readonly materializedViews: number;
-}
-
-/**
- * Where the schema of a baseline came from. Unknown parts are left out.
- */
-export interface DumpSource {
-  /**
-   * The PostgreSQL version of the dumped server, from the dump's
-   * `-- Dumped from database version X` comment or the live server.
-   */
-  readonly serverVersion?: string;
-
-  /**
-   * The version of pg_dump, from the dump's `-- Dumped by pg_dump version Y`
-   * comment or `pg_dump --version`.
-   */
-  readonly pgDumpVersion?: string;
-
-  /**
-   * The base name of the `fromFile` dump, or `'stdin'` when it was read from
-   * standard input.
-   */
-  readonly file?: string;
 }
 
 /**
