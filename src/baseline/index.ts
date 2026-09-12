@@ -1,5 +1,5 @@
 import { relative } from 'node:path';
-import type { ClientBase, ClientConfig } from 'pg';
+import type { ClientBase } from 'pg';
 import { generateMigration } from '../codegen';
 import { db as connect } from '../db';
 import { introspect } from '../introspect/io/introspect';
@@ -24,6 +24,7 @@ import { planBaselineFile, writeBaselineFile } from './io/writeBaseline';
 import type {
   BaselineSettings,
   CatalogPlan,
+  Connection,
   FileDumpPlan,
   PgDumpPlan,
 } from './plan';
@@ -86,7 +87,7 @@ interface Dump {
  * schema that does not exist.
  */
 async function inspectServer(
-  connection: ClientBase | string | ClientConfig,
+  connection: Connection,
   settings: BaselineSettings,
   options: {
     readonly withExtensions: boolean;
@@ -117,9 +118,7 @@ async function inspectServer(
  *
  * @param connection The connection.
  */
-function isClient(
-  connection: ClientBase | string | ClientConfig
-): connection is ClientBase {
+function isClient(connection: Connection): connection is ClientBase {
   return (
     typeof connection === 'object' &&
     'query' in connection &&
@@ -135,7 +134,7 @@ function isClient(
  * @param connection The connection baseline could not reach.
  */
 async function connectionTarget(
-  connection: ClientBase | string | ClientConfig
+  connection: Connection
 ): Promise<{ readonly host: string; readonly database: string }> {
   if (isClient(connection)) {
     return { host: 'the configured host', database: 'the configured database' };
@@ -158,7 +157,7 @@ async function connectionTarget(
  * @param cause The underlying error.
  */
 async function unreachableConnection(
-  connection: ClientBase | string | ClientConfig,
+  connection: Connection,
   cause: unknown
 ): Promise<BaselineError> {
   const { host, database } = await connectionTarget(connection);
@@ -182,7 +181,7 @@ async function unreachableConnection(
  */
 async function readDumpFacts(
   settings: BaselineSettings,
-  connection: ClientBase | string | ClientConfig
+  connection: Connection
 ): Promise<ServerFacts> {
   const quiet: BaselineSettings = {
     ...settings,

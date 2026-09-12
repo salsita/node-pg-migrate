@@ -3,7 +3,12 @@ import type { ClientBase, ClientConfig } from 'pg';
 import { usesCreateFunction } from '../codegen/emitters/functions';
 import { makeObjectName } from '../codegen/sql';
 import type { OutputLanguage } from '../codegen/types';
-import type { SchemaModel } from '../introspect/types';
+import type {
+  DomainType,
+  Routine,
+  SchemaModel,
+  Table,
+} from '../introspect/types';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
 import { decamelize, getSchemas, quote } from '../utils';
@@ -74,6 +79,12 @@ const FORMATS: ReadonlySet<string> = new Set(['sql', 'ts', 'js']);
 const LISTED_IDENTIFIERS = 10;
 
 /**
+ * A database to connect to: a caller-provided client (`dbClient`), or a
+ * connection string or client config (`databaseUrl`).
+ */
+export type Connection = ClientBase | string | ClientConfig;
+
+/**
  * Cleans up an existing pg_dump output.
  */
 export interface FileDumpPlan {
@@ -92,7 +103,7 @@ export interface FileDumpPlan {
   /**
    * The database whose migration history to check, if any.
    */
-  readonly connection?: ClientBase | string | ClientConfig;
+  readonly connection?: Connection;
 }
 
 /**
@@ -131,7 +142,7 @@ export interface CatalogPlan {
   /**
    * The database to read.
    */
-  readonly connection: ClientBase | string | ClientConfig;
+  readonly connection: Connection;
 
   /**
    * Refuse a migration that needs raw SQL (`strict`).
@@ -333,6 +344,68 @@ export function resolveSettings(options: BaselineOptions): BaselineSettings {
 }
 
 /**
+ * The identifiers of a function that `pgm` calls take besides its own schema
+ * and name: the names of its arguments, and the names of the settings that
+ * `createFunction` sets (`set`).
+ *
+ * @param routine The function.
+ */
+function routineIdentifiers(routine: Routine): Array<string | undefined> {
+  const names = routine.arguments.map((argument) => argument.name);
+  if (usesCreateFunction(routine)) {
+    for (const setting of routine.config) {
+      names.push(setting.name);
+    }
+  }
+
+  return names;
+}
+
+/**
+ * The constraint name that `createDomain` gives a domain (`constraintName`):
+ * its `NOT NULL` constraint when it is not named `<domain>_not_null`, or else
+ * its first valid CHECK.
+ *
+ * @param domain The domain.
+ */
+function domainConstraintNames(domain: DomainType): Array<string | undefined> {
+  const names: Array<string | undefined> = [];
+  const notNull = domain.notNullConstraintName;
+  if (notNull !== makeObjectName(domain.name, undefined, 'not_null')) {
+    names.push(notNull);
+  }
+
+  if (!domain.notNull) {
+    names.push(domain.checks.find((check) => check.validated)?.name);
+  }
+
+  return names;
+}
+
+/**
+ * The names of the constraints that `addConstraint` adds to the columns an
+ * inheritance child declares `NOT NULL` itself, when not named
+ * `<table>_<column>_not_null`.
+ *
+ * @param table The table.
+ */
+function localNotNullNames(table: Table): Array<string | undefined> {
+  const names: Array<string | undefined> = [];
+  for (const column of table.columns) {
+    const name = column.notNullConstraint?.name;
+    if (
+      table.partitionOf === undefined &&
+      column.inheritance?.localNotNull === true &&
+      name !== makeObjectName(table.name, column.name, 'not_null')
+    ) {
+      names.push(name);
+    }
+  }
+
+  return names;
+}
+
+/**
  * The identifiers of a model that `pgm` calls take: the schemas and names of
  * its objects, and the names of their columns, attributes and arguments; the
  * constraint name that `createDomain` gives a domain (`constraintName`: its
@@ -349,6 +422,11 @@ function modelIdentifiers(model: SchemaModel): Set<string> {
   const add = (name: string | undefined): void => {
     if (name !== undefined) {
       identifiers.add(name);
+    }
+  };
+  const addAll = (names: ReadonlyArray<string | undefined>): void => {
+    for (const name of names) {
+      add(name);
     }
   };
 
@@ -396,26 +474,11 @@ function modelIdentifiers(model: SchemaModel): Set<string> {
   }
 
   for (const routine of model.functions) {
-    for (const argument of routine.arguments) {
-      add(argument.name);
-    }
-
-    if (usesCreateFunction(routine)) {
-      for (const setting of routine.config) {
-        add(setting.name);
-      }
-    }
+    addAll(routineIdentifiers(routine));
   }
 
   for (const domain of model.domains) {
-    const notNull = domain.notNullConstraintName;
-    if (notNull !== makeObjectName(domain.name, undefined, 'not_null')) {
-      add(notNull);
-    }
-
-    if (!domain.notNull) {
-      add(domain.checks.find((check) => check.validated)?.name);
-    }
+    addAll(domainConstraintNames(domain));
   }
 
   for (const constraint of model.constraints) {
@@ -425,16 +488,7 @@ function modelIdentifiers(model: SchemaModel): Set<string> {
   }
 
   for (const table of model.tables) {
-    for (const column of table.columns) {
-      const name = column.notNullConstraint?.name;
-      if (
-        table.partitionOf === undefined &&
-        column.inheritance?.localNotNull === true &&
-        name !== makeObjectName(table.name, column.name, 'not_null')
-      ) {
-        add(name);
-      }
-    }
+    addAll(localNotNullNames(table));
   }
 
   return identifiers;
