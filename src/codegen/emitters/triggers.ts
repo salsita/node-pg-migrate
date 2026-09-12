@@ -5,7 +5,13 @@ import type {
 } from '../../introspect/types';
 import { array, object, raw, statement, str } from '../code';
 import { nameCode } from '../names';
-import { qualifiedName, quoteLiteral, quoteName, terminated } from '../sql';
+import {
+  qualifiedName,
+  quoteIdentifier,
+  quoteLiteral,
+  quoteName,
+  terminated,
+} from '../sql';
 import type { EmitContext, Emitted } from '../types';
 import { withStatements } from './fallback';
 
@@ -72,6 +78,25 @@ function cloneSql(trigger: Trigger): {
 }
 
 /**
+ * The events of a trigger as `createTrigger`'s `operation` takes them: an
+ * `UPDATE` with columns becomes `UPDATE OF <columns>`, which `createTrigger`
+ * writes as it is, so each column is quoted when it has to be.
+ *
+ * @param trigger The trigger.
+ */
+function operations(trigger: Trigger): string[] {
+  if (trigger.updateOf.length === 0) {
+    return [...trigger.events];
+  }
+
+  const columns = trigger.updateOf.map(quoteIdentifier).join(', ');
+
+  return trigger.events.map((event) =>
+    event === 'UPDATE' ? `UPDATE OF ${columns}` : event
+  );
+}
+
+/**
  * Whether a constraint trigger names the table its constraint references
  * (`FROM <table>`), which `createTrigger` cannot write: `pg_get_triggerdef()`
  * writes it right before `[NOT] DEFERRABLE INITIALLY`.
@@ -91,10 +116,11 @@ function hasReferencedTable(trigger: Trigger): boolean {
 
 /**
  * `pgm.createTrigger(table, name, { when, operation, level, function,
- * functionParams, condition, constraint, deferrable, deferred })`.
+ * functionParams, condition, constraint, deferrable, deferred })`, with
+ * `UPDATE OF <columns>` in `operation` for a trigger on some columns.
  *
- * Fallback (`pg_get_triggerdef`, `definition`) for `UPDATE OF` columns,
- * reason `'UPDATE OF columns'`, or transition tables, `'transition tables'`;
+ * Fallback (`pg_get_triggerdef`, `definition`) for transition tables, reason
+ * `'transition tables'`;
  * a trigger that is not enabled normally also gets `ALTER TABLE …
  * DISABLE|ENABLE REPLICA|ENABLE ALWAYS TRIGGER …`, reason `'firing mode'`,
  * and so does each clone on a partition (`partitionTriggers`) that fires
@@ -108,10 +134,6 @@ function hasReferencedTable(trigger: Trigger): boolean {
  */
 export function emitTrigger(trigger: Trigger, ctx: EmitContext): Emitted {
   const reasons: string[] = [];
-  if (trigger.updateOf.length > 0) {
-    reasons.push('UPDATE OF columns');
-  }
-
   if (trigger.oldTable !== undefined || trigger.newTable !== undefined) {
     reasons.push('transition tables');
   }
@@ -148,17 +170,13 @@ export function emitTrigger(trigger: Trigger, ctx: EmitContext): Emitted {
     );
   }
 
+  const ops = operations(trigger);
   const code = statement('createTrigger', [
     nameCode(trigger.table, ctx),
     str(trigger.name),
     object([
       ['when', str(trigger.timing)],
-      [
-        'operation',
-        trigger.events.length === 1
-          ? str(trigger.events[0])
-          : array(trigger.events.map(str)),
-      ],
+      ['operation', ops.length === 1 ? str(ops[0]) : array(ops.map(str))],
       ['level', str(trigger.level)],
       ['function', nameCode(trigger.function, ctx)],
       [

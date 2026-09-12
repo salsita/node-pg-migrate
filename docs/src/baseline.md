@@ -377,8 +377,9 @@ an aggregate); Chinook gets none.
   `partition index settings` and `comment on index` (on the indexes of partitions).
 - **Functions:** `procedure`, `SQL-standard body`, `leakproof`, `cost or rows`, `language c`,
   `language internal`, `support function`.
-- **Triggers:** `UPDATE OF columns`, `transition tables`, `firing mode` (also for a partition's
-  copy of a trigger), `referenced table`, `comment on trigger` (on a partition's copy).
+- **Triggers:** `transition tables`, `firing mode` (also for a partition's copy of a trigger),
+  `referenced table`, `comment on trigger` (on a partition's copy). A trigger on `UPDATE OF`
+  columns is a `pgm.createTrigger` call with `operation: 'UPDATE OF …'`.
 - **Policies:** `restrictive policy`.
 - **Domains:** `several constraints`, `NOT VALID constraint`.
 - **Composite types:** `attribute collation`, `attribute order`.
