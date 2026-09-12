@@ -102,6 +102,7 @@ yarn.lock
 
 # AI
 .claude/
+.playwright-mcp
 
 # local scratch
 local/
