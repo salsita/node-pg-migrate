@@ -1,5 +1,7 @@
 import { basename } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
+import { usesCreateFunction } from '../codegen/emitters/functions';
+import { makeObjectName } from '../codegen/sql';
 import type { OutputLanguage } from '../codegen/types';
 import type { SchemaModel } from '../introspect/types';
 import type { Logger } from '../logger';
@@ -332,7 +334,13 @@ export function resolveSettings(options: BaselineOptions): BaselineSettings {
 
 /**
  * The identifiers of a model that `pgm` calls take: the schemas and names of
- * its objects, and the names of their columns, attributes and arguments.
+ * its objects, and the names of their columns, attributes and arguments; the
+ * constraint name that `createDomain` gives a domain (`constraintName`: its
+ * `NOT NULL` constraint when it is not named `<domain>_not_null`, or else
+ * its first valid CHECK); the names of the constraints that `addConstraint`
+ * adds to partitions, and to the columns an inheritance child declares `NOT
+ * NULL` itself (when not named `<table>_<column>_not_null`); and the names of
+ * the settings that `createFunction` sets (`set`).
  *
  * @param model The schema of the database.
  */
@@ -391,6 +399,42 @@ function modelIdentifiers(model: SchemaModel): Set<string> {
     for (const argument of routine.arguments) {
       add(argument.name);
     }
+
+    if (usesCreateFunction(routine)) {
+      for (const setting of routine.config) {
+        add(setting.name);
+      }
+    }
+  }
+
+  for (const domain of model.domains) {
+    const notNull = domain.notNullConstraintName;
+    if (notNull !== makeObjectName(domain.name, undefined, 'not_null')) {
+      add(notNull);
+    }
+
+    if (!domain.notNull) {
+      add(domain.checks.find((check) => check.validated)?.name);
+    }
+  }
+
+  for (const constraint of model.constraints) {
+    for (const partitionIndex of constraint.partitionIndexes ?? []) {
+      add(partitionIndex.name);
+    }
+  }
+
+  for (const table of model.tables) {
+    for (const column of table.columns) {
+      const name = column.notNullConstraint?.name;
+      if (
+        table.partitionOf === undefined &&
+        column.inheritance?.localNotNull === true &&
+        name !== makeObjectName(table.name, column.name, 'not_null')
+      ) {
+        add(name);
+      }
+    }
   }
 
   return identifiers;
@@ -399,8 +443,10 @@ function modelIdentifiers(model: SchemaModel): Set<string> {
 /**
  * Refuses a TypeScript or JavaScript baseline when node-pg-migrate
  * decamelizes identifiers (`decamelize`) and would rename some of the
- * database's: the migration would not create the schema as it is (e.g.
- * `LegacyCustomer` would become `legacy_customer`).
+ * database's, among those its `pgm` calls take (see `modelIdentifiers()`):
+ * the migration would not create the schema as it is (e.g. `LegacyCustomer`
+ * would become `legacy_customer`, and a function's `SET TimeZone` would set
+ * `time_zone`).
  *
  * Throws a `BaselineError` with code `INVALID_OPTIONS` that names
  * `decamelize` and such identifiers, sorted (the first ten, then how many

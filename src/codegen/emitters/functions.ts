@@ -177,6 +177,17 @@ function fallbackReasons(routine: Routine): string[] {
 }
 
 /**
+ * Whether {@link emitFunction} creates a routine with `pgm.createFunction`
+ * (and its `SET` clauses with the `set` option), rather than with its
+ * definition as raw SQL.
+ *
+ * @param routine The routine.
+ */
+export function usesCreateFunction(routine: Routine): boolean {
+  return fallbackReasons(routine).length === 0;
+}
+
+/**
  * `pgm.createFunction(name, params, { returns, language, behavior,
  * security, onNull, parallel, window, set }, body)`, argument defaults as
  * `pgm.func(…)`.
