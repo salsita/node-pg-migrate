@@ -14,7 +14,11 @@ import { assertPgDumpCompatible } from './core/version';
 import { getPgDumpVersion, runPgDump } from './io/pgDump';
 import { readDumpFile } from './io/readDump';
 import type { InstalledExtension } from './io/server';
-import { readExtensions, readServerFacts } from './io/server';
+import {
+  assertIncludedSchemasExist,
+  readExtensions,
+  readServerFacts,
+} from './io/server';
 import { planBaselineFile, writeBaselineFile } from './io/writeBaseline';
 import type {
   BaselineSettings,
@@ -74,12 +78,19 @@ interface Dump {
  *
  * @param connection The database.
  * @param settings Where the migrations table is, and the logger.
- * @param withExtensions Whether to list the extensions of the database too.
+ * @param options What else to check and read.
+ * @param options.withExtensions Whether to list the extensions of the
+ * database too.
+ * @param options.includeSchemas `--include-schema`, refused when it names a
+ * schema that does not exist.
  */
 async function inspectServer(
   connection: ClientBase | string | ClientConfig,
   settings: BaselineSettings,
-  withExtensions: boolean
+  options: {
+    readonly withExtensions: boolean;
+    readonly includeSchemas: ReadonlyArray<string>;
+  }
 ): Promise<{
   readonly facts: ServerFacts;
   readonly extensions: ReadonlyArray<InstalledExtension>;
@@ -88,10 +99,11 @@ async function inspectServer(
   try {
     const facts = await readServerFacts(db, settings);
     assertCanBaseline(facts, settings);
+    await assertIncludedSchemasExist(db, options.includeSchemas);
 
     return {
       facts,
-      extensions: withExtensions ? await readExtensions(db) : [],
+      extensions: options.withExtensions ? await readExtensions(db) : [],
     };
   } finally {
     await db.close();
@@ -112,7 +124,12 @@ async function readDump(
   const facts =
     plan.connection === undefined
       ? undefined
-      : (await inspectServer(plan.connection, settings, false)).facts;
+      : (
+          await inspectServer(plan.connection, settings, {
+            withExtensions: false,
+            includeSchemas: [],
+          })
+        ).facts;
 
   return {
     sql: await readDumpFile(plan.path),
@@ -132,11 +149,10 @@ async function dumpDatabase(
   settings: BaselineSettings,
   plan: PgDumpPlan
 ): Promise<Dump> {
-  const { facts, extensions } = await inspectServer(
-    plan.connection,
-    settings,
-    plan.includeSchemas.length + plan.excludeSchemas.length > 0
-  );
+  const { facts, extensions } = await inspectServer(plan.connection, settings, {
+    withExtensions: plan.includeSchemas.length + plan.excludeSchemas.length > 0,
+    includeSchemas: plan.includeSchemas,
+  });
   const env = await toPgEnv(plan.connection);
   const pgDump = await getPgDumpVersion(plan.bin, env);
   assertPgDumpCompatible(pgDump, facts.versionNum, facts.version);
@@ -171,6 +187,7 @@ async function readCatalogs(
   try {
     const facts = await readServerFacts(db, settings);
     assertCanBaseline(facts, settings);
+    await assertIncludedSchemasExist(db, plan.includeSchemas ?? []);
     const model = await introspect(db, {
       includeSchemas: plan.includeSchemas,
       excludeSchemas: plan.excludeSchemas,

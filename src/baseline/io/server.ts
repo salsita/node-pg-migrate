@@ -266,6 +266,47 @@ export async function readServerFacts(
 }
 
 /**
+ * Refuses `includeSchemas` names that match no schema in the database, so
+ * that a typo or pg_dump's case-folding does not silently leave a schema out
+ * of the baseline. Names are matched exactly and case-sensitively against
+ * `pg_namespace.nspname`.
+ *
+ * Throws a `BaselineError` with code `INVALID_OPTIONS` that names every
+ * unknown schema. It only reads the catalogs.
+ *
+ * @param db The database connection.
+ * @param includeSchemas The `--include-schema` names; nothing is checked when
+ * it is empty.
+ */
+export async function assertIncludedSchemasExist(
+  db: DBConnection,
+  includeSchemas: ReadonlyArray<string>
+): Promise<void> {
+  if (includeSchemas.length === 0) {
+    return;
+  }
+
+  const unknown: Array<{ name: string }> = await db.select({
+    text: `SELECT n AS name
+FROM pg_catalog.unnest($1::pg_catalog.text[]) AS n
+WHERE NOT EXISTS (
+  SELECT FROM pg_catalog.pg_namespace AS ns
+  WHERE ns.nspname OPERATOR(pg_catalog.=) n
+)`,
+    values: [[...includeSchemas]],
+  });
+  if (unknown.length === 0) {
+    return;
+  }
+
+  const names = unknown.map((row) => quote(row.name)).join(', ');
+  throw new BaselineError(
+    'INVALID_OPTIONS',
+    `--include-schema names schema(s) that do not exist: ${names}. Names are matched exactly and case-sensitively: check the spelling, or leave --include-schema out to dump every schema.`
+  );
+}
+
+/**
  * Lists the extensions of a database that pg_dump dumps, with their schemas.
  *
  * @param db The database connection.
