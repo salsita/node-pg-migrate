@@ -13,6 +13,10 @@
  *   `INSERT`) or the values of sequences (`setval()`).
  * - `CREATE_DATABASE`: the dump creates a database (`pg_dump --create`).
  * - `CLEAN_DUMP`: the dump drops objects (`pg_dump --clean`).
+ * - `SET_ROLE_IN_DUMP`: the dump changes the role that runs the migration
+ *   (`SET ROLE`, `SET SESSION AUTHORIZATION` or their `RESET`), as pg_dump
+ *   `--use-set-session-authorization` does without `--no-owner`, and
+ *   pg_restore `--role`.
  * - `MIGRATIONS_TABLE_IN_DUMP`: the dump creates the migrations table or its
  *   sequence.
  * - `MARKER_COLLISION`: a line of the dump would be read as an up/down
@@ -34,6 +38,7 @@ export type BaselineErrorCode =
   | 'DATA_IN_DUMP'
   | 'CREATE_DATABASE'
   | 'CLEAN_DUMP'
+  | 'SET_ROLE_IN_DUMP'
   | 'MIGRATIONS_TABLE_IN_DUMP'
   | 'MARKER_COLLISION'
   | 'PG_DUMP_NOT_FOUND'

@@ -444,6 +444,52 @@ function dropSearchPathReset(statement: Statement, context: Context): boolean {
 const SET_SCOPES: ReadonlySet<string> = new Set(['local', 'session']);
 
 /**
+ * The settings behind `SET ROLE` and `SET SESSION AUTHORIZATION`, which can
+ * also be set and reset by name.
+ */
+const ROLE_SETTINGS: ReadonlySet<string> = new Set([
+  'role',
+  'session_authorization',
+]);
+
+/**
+ * Whether the tokens from `index` on name a setting of the role:
+ * `ROLE`, `SESSION AUTHORIZATION`, `role` or `session_authorization`.
+ */
+function namesRole(statement: Statement, index: number): boolean {
+  const name = statement.word(index);
+
+  return (
+    (name !== undefined && ROLE_SETTINGS.has(name)) ||
+    statement.hasWords(index, ['session', 'authorization'])
+  );
+}
+
+/**
+ * R6b: `SET [SESSION|LOCAL] ROLE …`, `SET [SESSION|LOCAL] SESSION
+ * AUTHORIZATION …` and their `RESET` change the role that runs the baseline,
+ * and the role would stay changed after it: for the insert into the
+ * migrations table, and for the migrations after the baseline. pg_dump
+ * writes them with `--use-set-session-authorization` but without
+ * `--no-owner`, and pg_restore with `--role`.
+ */
+function refuseRoleChange(statement: Statement): boolean {
+  const keyword = statement.word(0);
+  const scoped = keyword === 'set' && SET_SCOPES.has(statement.word(1) ?? '');
+  if (
+    (keyword === 'set' || keyword === 'reset') &&
+    (namesRole(statement, 1) || (scoped && namesRole(statement, 2)))
+  ) {
+    throw new BaselineError(
+      'SET_ROLE_IN_DUMP',
+      `line ${statement.line}: the dump changes the role that runs the migration (\`${excerpt(statement.text)}\`), which would also run the migrations after the baseline as that role. Make the dump with --no-owner, and without pg_restore's --role.`
+    );
+  }
+
+  return false;
+}
+
+/**
  * What a `SET <name> = <value>` or `SET <name> TO <value>` statement changes
  * for the session: the setting, folded to lower case, and the offset in the
  * statement right after `SET`. `undefined` for any other statement.
@@ -577,6 +623,7 @@ const STATEMENT_RULES: ReadonlyArray<StatementRule> = [
   refuseDrop,
   refuseMigrationsTable,
   dropSearchPathReset,
+  refuseRoleChange,
   rewriteSetting,
   dropExtensionComment,
   dropPublicSchema,
@@ -951,9 +998,10 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  * Throws a `BaselineError` when the dump cannot be a baseline: it is not SQL
  * text (a pg_dump custom- or tar-format archive, a compressed file or UTF-16
  * text), has a psql meta-command, data (`COPY … FROM stdin`, `INSERT` or
- * `setval()`), `CREATE DATABASE` or `DROP` statements, creates the migrations
- * table or its sequence, or has a line that node-pg-migrate would read as an
- * up/down migration marker.
+ * `setval()`), `CREATE DATABASE` or `DROP` statements, changes the role
+ * (`SET ROLE`, `SET SESSION AUTHORIZATION`), creates the migrations table or
+ * its sequence, or has a line that node-pg-migrate would read as an up/down
+ * migration marker.
  *
  * @param dump The pg_dump output.
  * @param options The migrations table and sequence, which the dump must not
