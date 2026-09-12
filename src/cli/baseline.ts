@@ -8,6 +8,7 @@ import { cwd } from 'node:process';
 import {
   databaseUrlVarArg,
   excludeSchemaArg,
+  formatArg,
   fromFileArg,
   includeSchemaArg,
   lockWaitTimeoutArg,
@@ -18,6 +19,7 @@ import {
   pgDumpArg,
   rejectUnauthorizedArg,
   schemaArg,
+  strictArg,
 } from './args';
 import type { ResolvedConfig } from './config';
 import { resolveConfig } from './config';
@@ -72,6 +74,19 @@ export interface BaselineCliOptions extends Pick<
    * `--lock-wait-timeout`: how long pg_dump waits for table locks.
    */
   lockWaitTimeout?: string;
+
+  /**
+   * `--format`: the language of the migration, `sql` (the default), or the
+   * experimental `ts` and `js`, which read the catalogs instead of running
+   * pg_dump.
+   */
+  format?: 'sql' | 'ts' | 'js';
+
+  /**
+   * `--strict`: with `--format ts|js`, refuse to write a migration that needs
+   * raw SQL.
+   */
+  strict?: boolean;
 }
 
 /**
@@ -150,6 +165,20 @@ export function addBaselineOptions(command: Command): Command {
         `--${lockWaitTimeoutArg} <duration>`,
         'How long pg_dump waits for table locks before it fails (pg_dump --lock-wait-timeout)'
       ).default('10s')
+    )
+    .addOption(
+      new Option(
+        `--${formatArg} <format>`,
+        'The language of the migration: sql cleans up pg_dump output; ts and js (experimental) read the catalogs of the database and write pgm calls'
+      )
+        .choices(['sql', 'ts', 'js'])
+        .default('sql')
+    )
+    .addOption(
+      new Option(
+        `--${strictArg}`,
+        'With --format ts|js: fail, listing every object that needs raw SQL (pgm.sql), instead of writing the migration'
+      )
     );
 
   return addConfigOptions(command);
@@ -213,6 +242,9 @@ export async function runBaseline(
       excludeSchemas: options.excludeSchema,
       lockWaitTimeout: options.lockWaitTimeout,
       filenameFormat: config.migrationsFilenameFormat,
+      format: options.format,
+      strict: options.strict,
+      decamelize: config.decamelize,
       logger: console,
     });
   } catch (error) {

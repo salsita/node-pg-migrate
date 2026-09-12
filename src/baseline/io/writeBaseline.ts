@@ -33,8 +33,20 @@ export async function planBaselineFile(options: {
    * @default 'timestamp'
    */
   readonly filenameFormat?: FilenameFormat;
+
+  /**
+   * The extension of the file, which is the language of the migration.
+   *
+   * @default 'sql'
+   */
+  readonly extension?: 'sql' | 'ts' | 'js';
 }): Promise<{ readonly path: string; readonly migrationName: string }> {
-  const { dir, name, filenameFormat = 'timestamp' } = options;
+  const {
+    dir,
+    name,
+    filenameFormat = 'timestamp',
+    extension = 'sql',
+  } = options;
 
   await mkdir(dir, { recursive: true });
   // Subdirectories count too: with `--use-glob`, the runner finds the
@@ -52,7 +64,7 @@ export async function planBaselineFile(options: {
   const prefix = await Migration.getFilePrefix(filenameFormat, dir);
   const migrationName = `${prefix}_${name}`;
 
-  return { path: resolve(dir, `${migrationName}.sql`), migrationName };
+  return { path: resolve(dir, `${migrationName}.${extension}`), migrationName };
 }
 
 /**

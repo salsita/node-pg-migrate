@@ -1,8 +1,10 @@
 import { basename } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
+import type { OutputLanguage } from '../codegen/types';
+import type { SchemaModel } from '../introspect/types';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
-import { getSchemas, quote } from '../utils';
+import { decamelize, getSchemas, quote } from '../utils';
 import { toPgDumpPattern } from './core/identifiers';
 import {
   DEFAULT_MAX_LOCKS_PER_TRANSACTION,
@@ -58,6 +60,17 @@ const NON_EMPTY_OPTIONS = [
 const UNSAFE_NAME = /[\s/\\]/;
 
 /**
+ * The languages a baseline can be written in (`format`).
+ */
+const FORMATS: ReadonlySet<string> = new Set(['sql', 'ts', 'js']);
+
+/**
+ * How many identifiers the decamelize refusal names before it only counts
+ * the rest.
+ */
+const LISTED_IDENTIFIERS = 10;
+
+/**
  * Cleans up an existing pg_dump output.
  */
 export interface FileDumpPlan {
@@ -101,6 +114,42 @@ export interface PgDumpPlan {
 }
 
 /**
+ * Reads the catalogs of the database and writes `pgm` calls (`format` `ts` or
+ * `js`).
+ */
+export interface CatalogPlan {
+  readonly kind: 'catalogs';
+
+  /**
+   * The language of the migration.
+   */
+  readonly language: OutputLanguage;
+
+  /**
+   * The database to read.
+   */
+  readonly connection: ClientBase | string | ClientConfig;
+
+  /**
+   * Refuse a migration that needs raw SQL (`strict`).
+   */
+  readonly strict: boolean;
+
+  /**
+   * Whether node-pg-migrate decamelizes the identifiers of `pgm` calls, so
+   * that the database's must not change under it (`decamelize`).
+   */
+  readonly decamelize: boolean;
+
+  /**
+   * Only read these schemas; every schema when it is left out.
+   */
+  readonly includeSchemas?: ReadonlyArray<string>;
+
+  readonly excludeSchemas: ReadonlyArray<string>;
+}
+
+/**
  * The options of `baseline()`, checked, with their defaults.
  */
 export interface BaselineSettings {
@@ -119,9 +168,10 @@ export interface BaselineSettings {
   readonly logger: Logger;
 
   /**
-   * Where the schema comes from.
+   * Where the schema comes from: a dump or pg_dump for a SQL migration, the
+   * catalogs for a TypeScript or JavaScript one.
    */
-  readonly dump: FileDumpPlan | PgDumpPlan;
+  readonly dump: FileDumpPlan | PgDumpPlan | CatalogPlan;
 }
 
 /**
@@ -177,6 +227,70 @@ function dumpPlan(options: BaselineOptions): FileDumpPlan | PgDumpPlan {
 }
 
 /**
+ * Reads the catalogs of the database for a TypeScript or JavaScript
+ * migration, which needs a live connection and no dump.
+ *
+ * @param options The options of `baseline()`.
+ * @param language The language of the migration.
+ */
+function catalogPlan(
+  options: BaselineOptions,
+  language: OutputLanguage
+): CatalogPlan {
+  if (options.fromFile !== undefined) {
+    throw invalidOptions(
+      `--format ${language} reads the schema from the catalogs of a live database, so it cannot use a dump: leave out --from-file, or clean up the dump with --format sql.`
+    );
+  }
+
+  const connection = options.dbClient ?? options.databaseUrl;
+  if (connection === undefined) {
+    throw invalidOptions(
+      `--format ${language} reads the schema from the catalogs of a live database: pass a database connection (databaseUrl or dbClient).`
+    );
+  }
+
+  const { includeSchemas = [], excludeSchemas = [] } = options;
+
+  return {
+    kind: 'catalogs',
+    language,
+    connection,
+    strict: options.strict ?? false,
+    decamelize: options.decamelize ?? false,
+    // Like pg_dump, which dumps every schema without --schema.
+    ...(includeSchemas.length === 0 ? {} : { includeSchemas }),
+    excludeSchemas,
+  };
+}
+
+/**
+ * Where the schema comes from, for the language of the migration.
+ *
+ * @param options The options of `baseline()`.
+ */
+function sourcePlan(
+  options: BaselineOptions
+): FileDumpPlan | PgDumpPlan | CatalogPlan {
+  const format = options.format ?? 'sql';
+  if (!FORMATS.has(format)) {
+    throw invalidOptions(`format must be sql, ts or js, not ${format}.`);
+  }
+
+  if (format !== 'sql') {
+    return catalogPlan(options, format);
+  }
+
+  if (options.strict === true) {
+    throw invalidOptions(
+      '--strict only applies to --format ts and --format js, which fall back to raw SQL for what pgm calls cannot express: a --format sql baseline is all SQL.'
+    );
+  }
+
+  return dumpPlan(options);
+}
+
+/**
  * Checks the options of `baseline()` and applies their defaults.
  *
  * Throws a `BaselineError` with code `INVALID_OPTIONS` when they are
@@ -185,12 +299,6 @@ function dumpPlan(options: BaselineOptions): FileDumpPlan | PgDumpPlan {
  * @param options The options of `baseline()`.
  */
 export function resolveSettings(options: BaselineOptions): BaselineSettings {
-  if (options.format !== undefined && options.format !== 'sql') {
-    throw invalidOptions(
-      `format ${options.format} is not supported yet: baseline writes SQL migrations.`
-    );
-  }
-
   const empty = NON_EMPTY_OPTIONS.find((key) => options[key] === '');
   if (empty !== undefined) {
     throw invalidOptions(`${empty} must not be empty.`);
@@ -217,8 +325,132 @@ export function resolveSettings(options: BaselineOptions): BaselineSettings {
     migrationsTable: options.migrationsTable ?? 'pgmigrations',
     createdSchemas: schemas,
     logger: options.logger ?? console,
-    dump: dumpPlan(options),
+    dump: sourcePlan(options),
   };
+}
+
+/**
+ * The identifiers of a model that `pgm` calls take: the schemas and names of
+ * its objects, and the names of their columns, attributes and arguments.
+ *
+ * @param model The schema of the database.
+ */
+function modelIdentifiers(model: SchemaModel): Set<string> {
+  const identifiers = new Set<string>();
+  const add = (name: string | undefined): void => {
+    if (name !== undefined) {
+      identifiers.add(name);
+    }
+  };
+
+  const objects = [
+    ...model.schemas,
+    ...model.extensions,
+    ...model.enums,
+    ...model.composites,
+    ...model.domains,
+    ...model.ranges,
+    ...model.collations,
+    ...model.sequences,
+    ...model.functions,
+    ...model.operators,
+    ...model.aggregates,
+    ...model.tables,
+    ...model.constraints,
+    ...model.indexes,
+    ...model.views,
+    ...model.materializedViews,
+    ...model.triggers,
+    ...model.policies,
+    ...model.rules,
+    ...model.statistics,
+  ];
+  for (const object of objects) {
+    add(object.schema);
+    add(object.name);
+  }
+
+  for (const { columns } of [
+    ...model.tables,
+    ...model.views,
+    ...model.materializedViews,
+  ]) {
+    for (const column of columns) {
+      add(column.name);
+    }
+  }
+
+  for (const composite of model.composites) {
+    for (const attribute of composite.attributes) {
+      add(attribute.name);
+    }
+  }
+
+  for (const routine of model.functions) {
+    for (const argument of routine.arguments) {
+      add(argument.name);
+    }
+  }
+
+  return identifiers;
+}
+
+/**
+ * Refuses a TypeScript or JavaScript baseline when node-pg-migrate
+ * decamelizes identifiers (`decamelize`) and would rename some of the
+ * database's: the migration would not create the schema as it is (e.g.
+ * `LegacyCustomer` would become `legacy_customer`).
+ *
+ * Throws a `BaselineError` with code `INVALID_OPTIONS` that names
+ * `decamelize` and such identifiers, sorted (the first ten, then how many
+ * more).
+ *
+ * @param model The schema of the database.
+ * @param decamelizes Whether node-pg-migrate decamelizes identifiers.
+ */
+export function assertDecamelizeKeepsNames(
+  model: SchemaModel,
+  decamelizes: boolean
+): void {
+  if (!decamelizes) {
+    return;
+  }
+
+  const renamed = [...modelIdentifiers(model)]
+    .filter((name) => decamelize(name) !== name)
+    .toSorted((a, b) => (a < b ? -1 : 1));
+  if (renamed.length === 0) {
+    return;
+  }
+
+  const listed = renamed
+    .slice(0, LISTED_IDENTIFIERS)
+    .map((name) => `${quote(name)} (as ${decamelize(name)})`)
+    .join(', ');
+  const more =
+    renamed.length > LISTED_IDENTIFIERS
+      ? ` and ${renamed.length - LISTED_IDENTIFIERS} more`
+      : '';
+
+  throw invalidOptions(
+    `decamelize is on, and it would rename identifiers of this database when the baseline runs: ${listed}${more}. A baseline must create the schema as it is: turn decamelize off, or write the baseline with --format sql, which decamelize does not change.`
+  );
+}
+
+/**
+ * What the user should know about the objects a TypeScript or JavaScript
+ * baseline creates with raw SQL: one warning with their count, when there
+ * are any.
+ *
+ * @param fallbacks How many objects need raw SQL.
+ * @returns The warnings.
+ */
+export function fallbackWarnings(fallbacks: number): string[] {
+  return fallbacks === 0
+    ? []
+    : [
+        `The migration creates ${fallbacks} object(s) with raw SQL (pgm.sql), each under a "// fallback: <reason>" comment: review them. --strict refuses to write a baseline that needs any.`,
+      ];
 }
 
 /**

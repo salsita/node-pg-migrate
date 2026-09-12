@@ -40,3 +40,5 @@ export const pgDumpArg = 'pg-dump';
 export const includeSchemaArg = 'include-schema';
 export const excludeSchemaArg = 'exclude-schema';
 export const lockWaitTimeoutArg = 'lock-wait-timeout';
+export const formatArg = 'format';
+export const strictArg = 'strict';

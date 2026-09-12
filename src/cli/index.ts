@@ -72,13 +72,13 @@ addRunnerOptions(
   runMigration('redo', posArgs, options)
 );
 
-// `baseline` — write one SQL migration that creates the schema of an existing
+// `baseline` — write one migration that creates the schema of an existing
 // database, so node-pg-migrate can manage a database it did not create.
 addBaselineOptions(
   program
     .command('baseline')
     .description(
-      'Create a baseline SQL migration from the schema of an existing database (pg_dump --schema-only)'
+      'Create a baseline migration from the schema of an existing database: SQL from pg_dump --schema-only, or pgm calls with --format ts|js (experimental)'
     )
     .argument(
       '[name...]',
