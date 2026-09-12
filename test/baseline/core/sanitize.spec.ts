@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it, vi } from 'vitest';
 import { renderHeader } from '../../../src/baseline/core/header';
 import { sanitizeDump } from '../../../src/baseline/core/sanitize';
@@ -171,7 +172,101 @@ function tocStatsOf(dump: string): DumpStats {
   };
 }
 
+/**
+ * A dump saved as UTF-16LE with a byte order mark, the way Windows
+ * PowerShell 5.1's `>` saves it, then read as UTF-8 like `readDumpFile()`
+ * reads every dump.
+ */
+function savedAsUtf16(dump: string): string {
+  return Buffer.concat([
+    Buffer.from([0xff, 0xfe]),
+    Buffer.from(dump, 'utf16le'),
+  ]).toString('utf8');
+}
+
 describe('sanitizeDump', () => {
+  describe('R0: plain SQL text', () => {
+    const pagila = CAPTURED_DUMPS.find((dump) => dump.name === 'pg18/pagila');
+    if (pagila === undefined) {
+      throw new Error('the captured dump pg18/pagila is missing');
+    }
+
+    it('refuses the custom-format archive of custom-format.dump, with the pg_restore command that turns it into SQL', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          readAdversarial('custom-format.dump'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+      expect(messageOf(error)).toContain('custom-format');
+      expect(messageOf(error)).toContain('-Fc');
+      expect(messageOf(error)).toContain(
+        'pg_restore --schema-only --no-owner --no-privileges -f schema.sql'
+      );
+    });
+
+    it('refuses the tar-format archive of tar-format.tar, with the pg_restore command that turns it into SQL', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          readAdversarial('tar-format.tar'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+      expect(messageOf(error)).toContain('tar-format');
+      expect(messageOf(error)).toContain('-Ft');
+      expect(messageOf(error)).toContain(
+        'pg_restore --schema-only --no-owner --no-privileges -f schema.sql'
+      );
+    });
+
+    it('refuses a compressed dump', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          gzipSync(pagila.sql).toString('utf8'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+      expect(messageOf(error)).toMatch(/compressed/i);
+    });
+
+    it('refuses a dump saved as UTF-16', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(savedAsUtf16(pagila.sql), DEFAULT_SANITIZE_OPTIONS)
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+      expect(messageOf(error)).toContain('UTF-16');
+    });
+
+    it('refuses a dump with a NUL byte before looking at its statements', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          'CREATE TABLE public.t (id integer);\n\\connect app\nSELECT 1;\0\n',
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+    });
+
+    it('keeps text in any language, and the character that stands for bytes that are not UTF-8', () => {
+      const dump = "COMMENT ON TABLE public.t IS 'café, 日本語, 🐘 and �';\n";
+
+      expect(sanitize(dump)).toBe(dump);
+    });
+  });
+
   describe('R1: psql meta-commands', () => {
     it('drops the \\restrict line and the \\unrestrict line with the same key', () => {
       expect(

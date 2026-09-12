@@ -4,6 +4,7 @@ import type { ClientBase } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { baseline, BaselineError } from '../../../src';
 import type { BaselineOptions } from '../../../src';
+import { adversarialPath } from '../../baseline/helpers';
 import {
   createDatabase,
   databaseUrl,
@@ -15,6 +16,7 @@ import {
 import {
   listFiles,
   migrateUp,
+  pgDumpArchiveFile,
   pgDumpFile,
   pgDumpShimForTest,
   recordingLogger,
@@ -90,6 +92,27 @@ describe('baseline() refusals before any database work', () => {
     expect((error as BaselineError).code).toBe('INVALID_OPTIONS');
     expect(await listFiles(dir)).toEqual([]);
   });
+
+  it.each(['custom-format.dump', 'tar-format.tar'])(
+    'refuses the pg_dump archive %s instead of writing its bytes (BINARY_DUMP)',
+    async (file) => {
+      const dir = join(await workDir(), 'migrations');
+
+      const error = await rejectionOf(
+        baseline({
+          fromFile: adversarialPath(file),
+          dir,
+          logger: recordingLogger(),
+        })
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      const { code, message } = error as BaselineError;
+      expect(code).toBe('BINARY_DUMP');
+      expect(message).toContain('pg_restore');
+      expect(await listFiles(dir)).toEqual([]);
+    }
+  );
 });
 
 describe.each(PG_VERSIONS)(
@@ -211,5 +234,38 @@ describe.each(PG_VERSIONS)(
       expect(message).toMatch(/exclude/i);
       expect(await listFiles(dir)).toEqual([]);
     });
+
+    it.each(['custom', 'tar'] as const)(
+      'refuses a %s-format archive of this pg_dump (BINARY_DUMP)',
+      async (format) => {
+        const database = `archive_${format}`;
+        await createDatabase(container, database);
+        await loadSql(
+          container,
+          database,
+          'CREATE TABLE public.widgets (id integer PRIMARY KEY, name text NOT NULL);'
+        );
+        const work = await workDir();
+        const fromFile = join(work, `schema.${format}`);
+        await pgDumpArchiveFile(container, database, format, fromFile);
+        const dir = join(work, 'migrations');
+
+        const error = await rejectionOf(
+          baseline({
+            databaseUrl: databaseUrl(container, database),
+            fromFile,
+            dir,
+            logger: recordingLogger(),
+          })
+        );
+
+        expect(error).toBeInstanceOf(BaselineError);
+        const { code, message } = error as BaselineError;
+        expect(code).toBe('BINARY_DUMP');
+        expect(message).toContain(`${format}-format`);
+        expect(message).toContain('pg_restore');
+        expect(await listFiles(dir)).toEqual([]);
+      }
+    );
   }
 );

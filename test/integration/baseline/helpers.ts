@@ -190,6 +190,44 @@ export async function pgDumpFile(
 }
 
 /**
+ * Dumps the schema of a database like {@link pgDumpText}, but as a
+ * custom-format or tar-format archive (`pg_dump --format`), and writes the
+ * archive to a file byte for byte.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database to dump.
+ * @param format The archive format.
+ * @param file Where to write the archive.
+ *
+ * @throws Throws an error with `pg_dump`'s output when it fails.
+ */
+export async function pgDumpArchiveFile(
+  container: StartedPostgreSqlContainer,
+  database: string,
+  format: 'custom' | 'tar',
+  file: string
+): Promise<void> {
+  // `exec` returns the output as text, which would mangle the archive:
+  // base64 carries its bytes through.
+  const res = await container.exec([
+    'sh',
+    '-c',
+    'set -o pipefail; pg_dump -U "$1" -d "$2" --schema-only --no-owner --no-privileges --format="$3" | base64',
+    'sh',
+    container.getUsername(),
+    database,
+    format,
+  ]);
+  if (res.exitCode !== 0) {
+    throw new Error(
+      `pg_dump --format=${format} failed for database "${database}": ${res.stderr || res.stdout}`
+    );
+  }
+
+  await writeFile(file, Buffer.from(res.stdout, 'base64'));
+}
+
+/**
  * A version comment in the header of a pg_dump output.
  */
 export type DumpVersionComment =

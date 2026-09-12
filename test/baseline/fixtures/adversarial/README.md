@@ -1,6 +1,6 @@
 # Adversarial dumps
 
-Small dumps that each exercise one rule of `sanitizeDump` (the R1–R10 rules of
+Small dumps that each exercise one rule of `sanitizeDump` (the R0–R10 rules of
 the baseline contract). Except for `psql-connect.sql`, every file is unedited
 output of `pg_dump` 18.6 from a throwaway database. That's why they keep real
 `\restrict` / `\unrestrict` pairs with random keys and `pg_dump`'s `SET`
@@ -19,13 +19,15 @@ only the named statement is removed and everything else is kept.
 | `copy-data.sql`                       | R2                                                        | `DATA_IN_DUMP` at line 54, `COPY public.notes (id, body) FROM stdin;`. The data ends with `\.` on line 57.                                                                                                                                                                                                                                |
 | `create-database.sql`                 | R3                                                        | `CREATE_DATABASE` at line 26, `CREATE DATABASE app …;`. It comes before the `\connect app` on line 30.                                                                                                                                                                                                                                    |
 | `create-schema-public.sql`            | R8, R8b                                                   | Dropped: line 26, `CREATE SCHEMA public;` (R8) and line 33, `COMMENT ON SCHEMA public IS 'standard public schema';` (R8b: the default comment blank databases already have). The rest is kept.                                                                                                                                            |
+| `custom-format.dump`                  | R0                                                        | `BINARY_DUMP`: a custom-format archive (`PGDMP` header), not SQL. The message gives the `pg_restore` command that turns it into SQL.                                                                                                                                                                                                      |
 | `marker-in-function-body.sql`         | R10                                                       | `MARKER_COLLISION` at line 30, `-- Up Migration`, a line of the body of `public.migration_template()`. Line 33, `-- Down Migration`, matches too.                                                                                                                                                                                         |
 | `migrations-sequence.sql`             | R9                                                        | `MIGRATIONS_TABLE_IN_DUMP` at line 40, `CREATE SEQUENCE public.pgmigrations_id_seq`.                                                                                                                                                                                                                                                      |
 | `migrations-table.sql`                | R9                                                        | `MIGRATIONS_TABLE_IN_DUMP` at line 40, `CREATE TABLE public.pgmigrations (`. Its sequence follows on line 51.                                                                                                                                                                                                                             |
 | `migrations-table-lookalike.sql`      | R9, identifier rules                                      | Kept: neither `app.pgmigrations` (another schema) nor `public."PgMigrations"` (quoted, so not folded to lower case) is the migrations table. With `migrationsSchema: 'app'` it is `MIGRATIONS_TABLE_IN_DUMP` for `app.pgmigrations`. With `migrationsTable: 'PgMigrations'` it is `MIGRATIONS_TABLE_IN_DUMP` for `public."PgMigrations"`. |
 | `psql-connect.sql`                    | R1                                                        | `PSQL_META_COMMAND` at line 23, `\connect app`. The `\restrict` on line 5 and the `\unrestrict` with the same key on line 22 are dropped before it.                                                                                                                                                                                       |
+| `tar-format.tar`                      | R0                                                        | `BINARY_DUMP`: a tar-format archive (`ustar` at byte 257, holding `toc.dat` and `restore.sql`), not SQL. The message gives the `pg_restore` command that turns it into SQL.                                                                                                                                                               |
 
-Every file also starts with the `SET` preamble and
+Every SQL file also starts with the `SET` preamble and
 `SELECT pg_catalog.set_config('search_path', '', false);` (R5, R6).
 
 ## How they were made
@@ -52,6 +54,9 @@ plus the flags below:
   sequence in the dump.
 - `migrations-table-lookalike.sql`: tables like node-pg-migrate's, named
   `public."PgMigrations"` and `app.pgmigrations`.
+- `custom-format.dump` (`--format=custom`) and `tar-format.tar`
+  (`--format=tar`) dump the same `public.notes` table. They are binary,
+  which `.gitattributes` keeps byte for byte.
 - `psql-connect.sql`: `create-database.sql` with its
   `-- Name: app; Type: DATABASE` entry, the `CREATE DATABASE` statement, cut
   out by hand. That leaves the `\connect app` that `--create` writes.

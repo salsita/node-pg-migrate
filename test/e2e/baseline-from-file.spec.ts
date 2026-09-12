@@ -498,6 +498,16 @@ describe.each(PG_VERSIONS)(
         file: 'migrations-table.sql',
         fragments: ['pgmigrations', /exclude/i],
       },
+      {
+        problem: 'the custom format instead of SQL',
+        file: 'custom-format.dump',
+        fragments: ['custom-format', 'pg_restore'],
+      },
+      {
+        problem: 'the tar format instead of SQL',
+        file: 'tar-format.tar',
+        fragments: ['tar-format', 'pg_restore'],
+      },
     ])('refuses a dump with $problem', async ({ file, fragments }) => {
       const database = await newDatabase(container, 'target');
       const cwd = await tempDir();
