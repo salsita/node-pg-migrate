@@ -64,6 +64,11 @@ export function requireDbConnection(config: ResolvedConfig): DbConnection {
  * `database` and `ssl`). `--reject-unauthorized` sets
  * `ssl.rejectUnauthorized`, like it does for `up` and `down`.
  *
+ * A connection made of the libpq environment variables (see
+ * {@link findDbConnection}) leaves `ssl` out: node-postgres then reads
+ * `PGSSLMODE` itself, and pg_dump gets the user's own `PGSSLMODE`,
+ * `PGSSLROOTCERT`, … as they are.
+ *
  * @param connection The database connection.
  * @param rejectUnauthorized `--reject-unauthorized`, when it is given.
  */
@@ -83,7 +88,10 @@ export function baselineConnection(
           user: connection.user,
           password: connection.password,
           database: connection.database,
-          ssl: connection.ssl,
+          ssl:
+            connection instanceof ConnectionParameters
+              ? undefined
+              : connection.ssl,
         };
 
   if (rejectUnauthorized === undefined) {

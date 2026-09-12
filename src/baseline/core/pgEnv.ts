@@ -2,16 +2,27 @@ import type { ClientConfig } from 'pg';
 import { BaselineError } from '../errors';
 
 /**
+ * The SSL settings of a connection string: its `sslmode`, and the files of
+ * its `sslrootcert`, `sslcert`, `sslkey` and `sslcrl` parameters.
+ */
+interface SslSettings {
+  readonly sslmode?: string;
+  readonly sslrootcert?: string;
+  readonly sslcert?: string;
+  readonly sslkey?: string;
+  readonly sslcrl?: string;
+}
+
+/**
  * The connection settings of a connection string, as text; unknown ones are
  * left out.
  */
-interface ConnectionSettings {
+interface ConnectionSettings extends SslSettings {
   readonly host?: string;
   readonly port?: string;
   readonly user?: string;
   readonly password?: string;
   readonly database?: string;
-  readonly sslmode?: string;
 }
 
 /**
@@ -68,6 +79,19 @@ function hostOf(url: URL): string {
 }
 
 /**
+ * The SSL settings of the query parameters of a URL, decoded.
+ */
+function sslOf(params: URLSearchParams): SslSettings {
+  return {
+    sslmode: known(params.get('sslmode')),
+    sslrootcert: known(params.get('sslrootcert')),
+    sslcert: known(params.get('sslcert')),
+    sslkey: known(params.get('sslkey')),
+    sslcrl: known(params.get('sslcrl')),
+  };
+}
+
+/**
  * Parses a connection string the way node-postgres does
  * (`pg-connection-string`): a `postgres://` URL, whose `host`, `port`, `user`
  * and `password` query parameters win over the other parts; a
@@ -83,12 +107,11 @@ function parseConnectionString(connectionString: string): ConnectionSettings {
 
   const url = parseUrl(connectionString);
   const params = url.searchParams;
-  const sslmode = known(params.get('sslmode'));
   if (url.protocol === 'socket:') {
     return {
       host: known(decode(url.pathname, decodeURI)),
       database: known(params.get('db')),
-      sslmode,
+      ...sslOf(params),
     };
   }
 
@@ -98,7 +121,7 @@ function parseConnectionString(connectionString: string): ConnectionSettings {
     user: known(params.get('user')) ?? known(decode(url.username)),
     password: known(params.get('password')) ?? known(decode(url.password)),
     database: known(decode(url.pathname.slice(1), decodeURI)),
-    sslmode,
+    ...sslOf(params),
   };
 }
 
@@ -136,13 +159,17 @@ function sslModeOf(
 
 /**
  * The libpq environment variables (`PGHOST`, `PGPORT`, `PGUSER`,
- * `PGPASSWORD`, `PGDATABASE` and `PGSSLMODE`) that point pg_dump to the
- * database of a node-postgres connection, so that no credential has to appear
- * in pg_dump's arguments.
+ * `PGPASSWORD`, `PGDATABASE` and `PGSSLMODE`, plus `PGSSLROOTCERT`,
+ * `PGSSLCERT`, `PGSSLKEY` and `PGSSLCRL` for the `sslrootcert`, `sslcert`,
+ * `sslkey` and `sslcrl` parameters of a connection string) that point pg_dump
+ * to the database of a node-postgres connection, so that no credential has to
+ * appear in pg_dump's arguments.
  *
  * Like node-postgres, the settings of a connection string win over the other
  * fields of a client config. Settings the connection does not give are left
- * out, so pg_dump falls back to its environment and defaults for them.
+ * out, so pg_dump falls back to its environment and defaults for them. The
+ * certificates and keys of an `ssl` config are not passed on: libpq reads
+ * them from files only.
  *
  * @param connection A connection string (URL) or a client config. A
  * `password` function in the client config is called.
@@ -165,6 +192,10 @@ export async function toPgEnv(
     PGPASSWORD: url.password ?? (await passwordOf(config.password)),
     PGDATABASE: url.database ?? known(config.database),
     PGSSLMODE: sslModeOf(url.sslmode, config.ssl),
+    PGSSLROOTCERT: url.sslrootcert,
+    PGSSLCERT: url.sslcert,
+    PGSSLKEY: url.sslkey,
+    PGSSLCRL: url.sslcrl,
   };
 
   return Object.fromEntries(
@@ -185,6 +216,8 @@ export async function toPgEnv(
  *   ignores services.
  * - An inherited `PGHOSTADDR` is left out when the connection gives a host:
  *   libpq would connect to that address instead.
+ * - node-postgres' `PGSSLMODE=no-verify`, which libpq refuses, becomes the
+ *   `require` it means.
  * - `PGCLIENTENCODING` is `UTF8`, so that the dump is UTF-8 (see
  *   `decodeDump()`) whatever the encoding of the database.
  * - `PGOPTIONS` ends with `-c standard_conforming_strings=on`, which wins
@@ -209,6 +242,9 @@ export function pgDumpEnv(
   }
 
   Object.assign(env, connection);
+  if (env.PGSSLMODE === 'no-verify') {
+    env.PGSSLMODE = 'require';
+  }
 
   return {
     ...env,
