@@ -11,6 +11,7 @@ import { estimateRelations } from './core/locks';
 import { toPgEnv } from './core/pgEnv';
 import { sanitizeDump } from './core/sanitize';
 import { assertPgDumpCompatible } from './core/version';
+import { BaselineError } from './errors';
 import { getPgDumpVersion, runPgDump } from './io/pgDump';
 import { readDumpFile } from './io/readDump';
 import type { InstalledExtension } from './io/server';
@@ -111,8 +112,121 @@ async function inspectServer(
 }
 
 /**
+ * Whether a connection is a caller-provided client, rather than a connection
+ * string or a client config baseline can read a host and database from.
+ *
+ * @param connection The connection.
+ */
+function isClient(
+  connection: ClientBase | string | ClientConfig
+): connection is ClientBase {
+  return (
+    typeof connection === 'object' &&
+    'query' in connection &&
+    typeof connection.query === 'function'
+  );
+}
+
+/**
+ * The host and database a failed connection was trying to reach, for the
+ * refusal of an unreachable `--from-file` connection. Never the password:
+ * `toPgEnv()` keeps it out, and a caller-provided client has none to read.
+ *
+ * @param connection The connection baseline could not reach.
+ */
+async function connectionTarget(
+  connection: ClientBase | string | ClientConfig
+): Promise<{ readonly host: string; readonly database: string }> {
+  if (isClient(connection)) {
+    return { host: 'the configured host', database: 'the configured database' };
+  }
+
+  const env = await toPgEnv(connection);
+
+  return {
+    host: env.PGHOST ?? 'localhost',
+    database: env.PGDATABASE ?? 'the configured database',
+  };
+}
+
+/**
+ * Turns a failed `--from-file` connection into a `BaselineError` whose message
+ * says what happened and how to run without a connection, without leaking the
+ * password or a stack trace.
+ *
+ * @param connection The connection baseline could not reach.
+ * @param cause The underlying error.
+ */
+async function unreachableConnection(
+  connection: ClientBase | string | ClientConfig,
+  cause: unknown
+): Promise<BaselineError> {
+  const { host, database } = await connectionTarget(connection);
+
+  return new BaselineError(
+    'INVALID_OPTIONS',
+    `Could not connect to the database (host ${host}, database ${database}) to check its migration history. With --from-file, the connection is only used to check the migration history: to write the baseline without that check, run baseline with no database connection (for example point -d at an unset environment variable).`,
+    { cause }
+  );
+}
+
+/**
+ * The facts of the database a `--from-file` baseline checks. It silences the
+ * connection's logger so that `db()` does not print the raw connection error
+ * (with its stack) before the refusal: a connection failure becomes a
+ * `BaselineError`, while a `BaselineError` the check itself raised (e.g.
+ * `HISTORY_EXISTS`, `INVALID_MIGRATIONS_TABLE`) passes through unchanged.
+ *
+ * @param settings The settings of the baseline.
+ * @param connection The database to check.
+ */
+async function readDumpFacts(
+  settings: BaselineSettings,
+  connection: ClientBase | string | ClientConfig
+): Promise<ServerFacts> {
+  const quiet: BaselineSettings = {
+    ...settings,
+    logger: {
+      debug: (message) => {
+        settings.logger.debug?.(message);
+      },
+      info: (message) => {
+        settings.logger.info(message);
+      },
+      warn: (message) => {
+        settings.logger.warn(message);
+      },
+      error: () => {
+        // The raw connection error (with its stack) is turned into a
+        // BaselineError below, so it must not reach the logger.
+      },
+    },
+  };
+
+  try {
+    const { facts } = await inspectServer(connection, quiet, {
+      withExtensions: false,
+      includeSchemas: [],
+    });
+
+    return facts;
+  } catch (error) {
+    if (error instanceof BaselineError) {
+      throw error;
+    }
+
+    throw await unreachableConnection(connection, error);
+  }
+}
+
+/**
  * Reads an existing pg_dump output, after checking the database when there is
  * one.
+ *
+ * With a connection that cannot be reached, it refuses with `INVALID_OPTIONS`
+ * (see {@link unreachableConnection}) instead of letting the raw connection
+ * error and its stack through, since `--from-file` is meant for exactly the
+ * case where there is no route to the database.
  *
  * @param settings The settings of the baseline.
  * @param plan The dump file.
@@ -124,12 +238,7 @@ async function readDump(
   const facts =
     plan.connection === undefined
       ? undefined
-      : (
-          await inspectServer(plan.connection, settings, {
-            withExtensions: false,
-            includeSchemas: [],
-          })
-        ).facts;
+      : await readDumpFacts(settings, plan.connection);
 
   return {
     sql: await readDumpFile(plan.path),
