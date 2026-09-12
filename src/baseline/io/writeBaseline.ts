@@ -1,4 +1,8 @@
+import { mkdir, readdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { FilenameFormat } from '../../migration';
+import { Migration } from '../../migration';
+import { BaselineError } from '../errors';
 
 /**
  * Picks the file of a baseline migration: creates `dir` when it is missing,
@@ -12,7 +16,7 @@ import type { FilenameFormat } from '../../migration';
  * @returns The absolute path of the file and the migration name (the file
  * name without its extension).
  */
-export function planBaselineFile(_options: {
+export async function planBaselineFile(options: {
   /**
    * The migrations directory.
    */
@@ -30,7 +34,25 @@ export function planBaselineFile(_options: {
    */
   readonly filenameFormat?: FilenameFormat;
 }): Promise<{ readonly path: string; readonly migrationName: string }> {
-  return Promise.reject(new Error('not implemented'));
+  const { dir, name, filenameFormat = 'timestamp' } = options;
+
+  await mkdir(dir, { recursive: true });
+  // Subdirectories count too: with `--use-glob`, the runner finds the
+  // migrations in them.
+  const files = (await readdir(dir))
+    .filter((file) => !file.startsWith('.'))
+    .toSorted();
+  if (files.length > 0) {
+    throw new BaselineError(
+      'MIGRATIONS_EXIST',
+      `The migrations directory ${dir} already has ${files.length} file(s), starting with ${files[0]}. A baseline is the first migration, for databases without migration history: write it to an empty or new directory.`
+    );
+  }
+
+  const prefix = await Migration.getFilePrefix(filenameFormat, dir);
+  const migrationName = `${prefix}_${name}`;
+
+  return { path: resolve(dir, `${migrationName}.sql`), migrationName };
 }
 
 /**
@@ -40,9 +62,9 @@ export function planBaselineFile(_options: {
  * @param path Where to write.
  * @param content The migration.
  */
-export function writeBaselineFile(
-  _path: string,
-  _content: string
+export async function writeBaselineFile(
+  path: string,
+  content: string
 ): Promise<void> {
-  return Promise.reject(new Error('not implemented'));
+  await writeFile(path, content, { flag: 'wx' });
 }

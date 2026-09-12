@@ -1,4 +1,125 @@
+import { spawn } from 'node:child_process';
+import { parsePgDumpVersion } from '../core/version';
+import { BaselineError } from '../errors';
 import type { PgDumpVersion } from '../types';
+
+/**
+ * How many lines of pg_dump's standard error a `PG_DUMP_FAILED` message
+ * quotes.
+ */
+const STDERR_LINES = 5;
+
+/**
+ * pg_dump 14–18 report an expired `--lock-wait-timeout` as a statement
+ * timeout (or a lock timeout, when the database sets `lock_timeout`) of the
+ * `LOCK TABLE` query that takes the locks of the dumped tables:
+ *
+ * ```text
+ * pg_dump: error: query failed: ERROR:  canceling statement due to statement timeout
+ * pg_dump: detail: Query was: LOCK TABLE public.widgets IN ACCESS SHARE MODE
+ * ```
+ */
+const TIMEOUT = /canceling statement due to (?:statement|lock) timeout/i;
+const LOCK_TABLE = /\bLOCK TABLE\b/i;
+
+/**
+ * The error for a pg_dump that could not be started.
+ *
+ * @param bin The pg_dump executable.
+ * @param error Why it could not be started.
+ */
+function spawnFailure(
+  bin: string,
+  error: NodeJS.ErrnoException
+): BaselineError {
+  return error.code === 'ENOENT'
+    ? new BaselineError(
+        'PG_DUMP_NOT_FOUND',
+        `Could not run ${bin}: it was not found. Install the PostgreSQL client tools (a pg_dump of the server's major version or newer), or pass the pg_dump to run with --pg-dump <path>. You can also run pg_dump --schema-only yourself and pass its output with --from-file <path>.`,
+        { cause: error }
+      )
+    : new BaselineError(
+        'PG_DUMP_FAILED',
+        `Could not run ${bin}: ${error.message}`,
+        { cause: error }
+      );
+}
+
+/**
+ * The error for a pg_dump that did not exit with code 0, with the first lines
+ * it wrote to its standard error.
+ *
+ * @param command What failed, e.g. `pg_dump --version`.
+ * @param code The exit code, or `null` when a signal ended pg_dump.
+ * @param signal The signal that ended pg_dump, if any.
+ * @param stderr What pg_dump wrote to its standard error.
+ */
+function exitFailure(
+  command: string,
+  code: number | null,
+  signal: NodeJS.Signals | null,
+  stderr: string
+): BaselineError {
+  const ended =
+    code === null
+      ? `was stopped by ${String(signal)}`
+      : `exited with code ${code}`;
+  const explanation =
+    TIMEOUT.test(stderr) && LOCK_TABLE.test(stderr)
+      ? ': it could not lock the tables to dump in time, because another session holds a lock on one of them (e.g. a long transaction or a running migration). Retry once that session is done, or give pg_dump more time with --lock-wait-timeout <duration>.'
+      : '.';
+  const lines = stderr
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => line.length > 0)
+    .slice(0, STDERR_LINES);
+
+  return new BaselineError(
+    'PG_DUMP_FAILED',
+    [`${command} ${ended}${explanation}`, ...lines].join('\n')
+  );
+}
+
+/**
+ * Runs pg_dump to its end, and returns what it writes to its standard output
+ * as UTF-8.
+ *
+ * @param bin The pg_dump executable.
+ * @param args The arguments.
+ * @param env Environment variables to add to the current ones.
+ * @param command How a failure names the command, e.g. `pg_dump --version`.
+ */
+function run(
+  bin: string,
+  args: ReadonlyArray<string>,
+  env: Record<string, string>,
+  command: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(bin, args, {
+      env: { ...process.env, ...env },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
+      stdout.push(chunk);
+    });
+    child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
+      stderr.push(chunk);
+    });
+    child.once('error', (error: NodeJS.ErrnoException) => {
+      reject(spawnFailure(bin, error));
+    });
+    child.once('close', (code, signal) => {
+      if (code === 0) {
+        resolve(stdout.join(''));
+      } else {
+        reject(exitFailure(command, code, signal, stderr.join('')));
+      }
+    });
+  });
+}
 
 /**
  * Runs `<bin> --version` and parses what it prints (see
@@ -10,18 +131,30 @@ import type { PgDumpVersion } from '../types';
  * @param bin The pg_dump executable.
  * @param env Environment variables to add to the current ones.
  */
-export function getPgDumpVersion(
-  _bin: string,
-  _env: Record<string, string>
+export async function getPgDumpVersion(
+  bin: string,
+  env: Record<string, string>
 ): Promise<PgDumpVersion> {
-  return Promise.reject(new Error('not implemented'));
+  const stdout = await run(bin, ['--version'], env, `${bin} --version`);
+
+  try {
+    return parsePgDumpVersion(stdout);
+  } catch (error) {
+    // Its message does not say which executable printed that.
+    throw error instanceof BaselineError
+      ? new BaselineError(error.code, `${bin}: ${error.message}`, {
+          cause: error,
+        })
+      : error;
+  }
 }
 
 /**
  * Runs pg_dump and returns what it writes to its standard output.
  *
  * Throws a `BaselineError` with code `PG_DUMP_FAILED` and the first lines of
- * pg_dump's standard error when it exits with a non-zero code.
+ * pg_dump's standard error when it exits with a non-zero code. When it gave
+ * up waiting for a table lock, the message says so.
  *
  * @param bin The pg_dump executable.
  * @param args The arguments (see `buildPgDumpArgs()`).
@@ -29,9 +162,9 @@ export function getPgDumpVersion(
  * `toPgEnv()`).
  */
 export function runPgDump(
-  _bin: string,
-  _args: ReadonlyArray<string>,
-  _env: Record<string, string>
+  bin: string,
+  args: ReadonlyArray<string>,
+  env: Record<string, string>
 ): Promise<string> {
-  return Promise.reject(new Error('not implemented'));
+  return run(bin, args, env, 'pg_dump');
 }
