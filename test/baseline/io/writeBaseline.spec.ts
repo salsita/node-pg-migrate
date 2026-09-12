@@ -1,10 +1,10 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -34,7 +34,7 @@ describe('planBaselineFile', () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it('creates a missing directory and prefixes the name with a timestamp by default', async () => {
+  it('prefixes the name with a timestamp by default without creating the directory', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     const dir = join(root, 'db', 'migrations');
@@ -43,8 +43,20 @@ describe('planBaselineFile', () => {
       migrationName: '1789130096789_baseline',
       path: join(dir, '1789130096789_baseline.sql'),
     });
-    expect(statSync(dir).isDirectory()).toBe(true);
-    expect(readdirSync(dir)).toEqual([]);
+    // Planning never writes: the directory is created only when the file is.
+    expect(existsSync(dir)).toBe(false);
+  });
+
+  it('uses the index prefix for a directory that does not exist yet, without creating it', async () => {
+    const dir = join(root, 'brand', 'new');
+
+    await expect(
+      planBaselineFile({ dir, name: 'baseline', filenameFormat: 'index' })
+    ).resolves.toEqual({
+      migrationName: '0001_baseline',
+      path: join(dir, '0001_baseline.sql'),
+    });
+    expect(existsSync(dir)).toBe(false);
   });
 
   it.each([
@@ -133,6 +145,16 @@ describe('writeBaselineFile', () => {
     const path = join(root, '1789130096789_baseline.sql');
     const content =
       '-- Up Migration\nCREATE DOMAIN public."bıgınt" AS bigint;\n';
+
+    await writeBaselineFile(path, content);
+
+    expect(readFileSync(path, 'utf8')).toBe(content);
+  });
+
+  it('creates the parent directory when it does not exist yet', async () => {
+    const dir = join(root, 'db', 'migrations');
+    const path = join(dir, '1789130096789_baseline.sql');
+    const content = '-- Up Migration\nSELECT 1;\n';
 
     await writeBaselineFile(path, content);
 

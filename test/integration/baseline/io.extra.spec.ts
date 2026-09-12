@@ -1,5 +1,6 @@
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdir, readdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { gzipSync } from 'node:zlib';
@@ -492,6 +493,7 @@ describe('baseline I/O without a server', () => {
       'CockroachDB CCL v25.3.5'
     );
     expect(queries).toEqual([expect.stringMatching(/\bversion\(\)/)]);
-    expect(await readdir(dir)).toEqual([]);
+    // A refused baseline writes nothing, not even the directory.
+    expect(existsSync(dir)).toBe(false);
   });
 });

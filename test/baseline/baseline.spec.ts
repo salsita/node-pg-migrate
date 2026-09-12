@@ -260,7 +260,8 @@ describe('baseline', () => {
 
         expect(error).toBeInstanceOf(BaselineError);
         expect(error).toMatchObject({ code: 'MIGRATIONS_TABLE_IN_DUMP' });
-        expect(readdirSync(dir)).toEqual([]);
+        // A refused baseline writes nothing, not even the directory.
+        expect(existsSync(dir)).toBe(false);
       }
     );
 
@@ -301,7 +302,8 @@ describe('baseline', () => {
 
       expect(error).toBeInstanceOf(BaselineError);
       expect(error).toMatchObject({ code: 'PSQL_META_COMMAND' });
-      expect(readdirSync(dir)).toEqual([]);
+      // A refused baseline writes nothing, not even the directory.
+      expect(existsSync(dir)).toBe(false);
     });
 
     it.each([
