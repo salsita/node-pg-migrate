@@ -56,8 +56,7 @@ function headerLines(language: OutputLanguage, meta: HeaderMeta): string[] {
         ? '1 materialized view'
         : `${COUNT_FORMAT.format(meta.materializedViews)} materialized views`;
     lines.push(
-      `It creates ${views} WITH DATA, filled from the tables as they are when`,
-      '  it runs: refresh them after loading data.'
+      `It creates ${views} WITH NO DATA: refresh ${meta.materializedViews === 1 ? 'it' : 'them'} after the first run.`
     );
   }
 
@@ -100,8 +99,8 @@ function bodyLines(steps: ReadonlyArray<Emitted>): string[] {
  *   `templates/migration-template.js`.
  *
  * The notes say, when they apply, that the materialized views are created
- * with data (from the tables as they are when the migration runs) and how
- * large `max_locks_per_transaction` must be.
+ * `WITH NO DATA` and must be refreshed after the first run, and how large
+ * `max_locks_per_transaction` must be.
  *
  * The output has no timestamps: the same steps and options always give the
  * same file. It ends with a single `\n`.
