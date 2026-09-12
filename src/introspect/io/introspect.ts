@@ -1,6 +1,10 @@
-import type { DBConnection } from '../../db';
 import { rowsToModel } from '../core/model';
-import type { CatalogRows, IntrospectOptions, SchemaModel } from '../types';
+import type {
+  CatalogConnection,
+  CatalogRows,
+  IntrospectOptions,
+  SchemaModel,
+} from '../types';
 import type { QueryName } from './queries';
 import { QUERIES } from './queries';
 
@@ -10,8 +14,8 @@ import { QUERIES } from './queries';
  * @param db The database connection, in the introspection's transaction.
  * @returns The rows of each query.
  */
-async function readCatalogs(db: DBConnection): Promise<CatalogRows> {
-  const select = (name: QueryName): ReturnType<DBConnection['select']> =>
+async function readCatalogs(db: CatalogConnection): Promise<CatalogRows> {
+  const select = (name: QueryName): ReturnType<CatalogConnection['select']> =>
     db.select(QUERIES[name]);
 
   // The object literal evaluates, and so awaits, the queries in the order
@@ -69,7 +73,7 @@ async function readCatalogs(db: DBConnection): Promise<CatalogRows> {
  * @returns The schema of the database.
  */
 export async function introspect(
-  db: DBConnection,
+  db: CatalogConnection,
   options: IntrospectOptions
 ): Promise<SchemaModel> {
   await db.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');

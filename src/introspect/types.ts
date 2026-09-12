@@ -2290,6 +2290,36 @@ export interface IntrospectOptions {
   readonly migrationsSequence?: QualifiedName;
 }
 
+/**
+ * What reading the catalogs needs of a database connection (see
+ * `introspect()` and `readServerFacts()`): a `DBConnection` has it, and so
+ * does any client with a node-postgres-like `query()`, without pg (see
+ * `generateBaselineFromCatalogs()`).
+ *
+ * The statements of a read share a transaction, so they must all run in one
+ * session: a single connection, not a pool.
+ */
+export interface CatalogConnection {
+  /**
+   * Runs a statement whose result is not read, e.g. `BEGIN`.
+   *
+   * @param text The statement.
+   */
+  query(text: string): Promise<unknown>;
+
+  /**
+   * Runs a query.
+   *
+   * @param query The query, or its text and the values of its `$1`, `$2`, …
+   * placeholders.
+   * @returns The rows, one object per row keyed by column name, with the
+   * values parsed the way node-postgres parses them.
+   */
+  select(
+    query: string | { readonly text: string; readonly values: unknown[] }
+  ): Promise<any[]>;
+}
+
 // Catalog rows: what each query of `io/queries.ts` returns, one row type per
 // query. Field names are the (quoted, camelCase) column aliases of the query;
 // catalog codes (`relkind`, `contype`, …) are kept as the catalog stores

@@ -89,6 +89,16 @@ describe('makeObjectName', () => {
     expect(name).toBe(`${'é'.repeat(28)}_id_seq`);
     expect(Buffer.byteLength(name)).toBe(63);
   });
+
+  it('counts 4 bytes for a character outside the BMP and 3 for a lone surrogate, like Buffer.byteLength()', () => {
+    const astral = makeObjectName('😀'.repeat(20), 'id', 'seq');
+    const surrogates = makeObjectName('\uD800'.repeat(30), 'id', 'seq');
+
+    expect(astral).toBe(`${'😀'.repeat(14)}_id_seq`);
+    expect(Buffer.byteLength(astral)).toBe(63);
+    expect(surrogates).toBe(`${'\uD800'.repeat(18)}_id_seq`);
+    expect(Buffer.byteLength(surrogates)).toBe(61);
+  });
 });
 
 describe('defaultMultirangeName', () => {

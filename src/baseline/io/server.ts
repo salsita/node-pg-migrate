@@ -1,5 +1,5 @@
-import type { DBConnection } from '../../db';
-import { quote } from '../../utils';
+import type { CatalogConnection } from '../../introspect/types';
+import { quote } from '../../utils/quote';
 import { parseQualifiedName } from '../core/identifiers';
 import { BaselineError } from '../errors';
 import type { QualifiedName, ServerFacts } from '../types';
@@ -111,7 +111,10 @@ const DEFAULT_MAX_PREPARED_TRANSACTIONS = 0;
  * @param db The database connection.
  * @param table The table, quoted and schema-qualified.
  */
-async function countRows(db: DBConnection, table: string): Promise<number> {
+async function countRows(
+  db: CatalogConnection,
+  table: string
+): Promise<number> {
   const [{ count }]: Array<{ count: string }> = await db.select(
     `SELECT pg_catalog.count(*) AS count FROM ${table}`
   );
@@ -163,7 +166,7 @@ function invalidMigrationsTable(table: string, relkind: string): BaselineError {
  * @param table The relation, quoted and schema-qualified.
  */
 async function assertMigrationsTableKind(
-  db: DBConnection,
+  db: CatalogConnection,
   table: string
 ): Promise<void> {
   const rows: Array<{ relkind: string }> = await db.select({
@@ -203,7 +206,7 @@ async function assertMigrationsTableKind(
  * not an ordinary or partitioned table.
  */
 export async function readServerFacts(
-  db: DBConnection,
+  db: CatalogConnection,
   options: {
     /**
      * The schema storing the table which migrations have been run.
@@ -279,7 +282,7 @@ export async function readServerFacts(
  * it is empty.
  */
 export async function assertIncludedSchemasExist(
-  db: DBConnection,
+  db: CatalogConnection,
   includeSchemas: ReadonlyArray<string>
 ): Promise<void> {
   if (includeSchemas.length === 0) {
@@ -313,7 +316,7 @@ WHERE NOT EXISTS (
  * @returns The extensions, by name.
  */
 export async function readExtensions(
-  db: DBConnection
+  db: CatalogConnection
 ): Promise<InstalledExtension[]> {
   const rows: InstalledExtension[] = await db.select(EXTENSIONS_QUERY);
 

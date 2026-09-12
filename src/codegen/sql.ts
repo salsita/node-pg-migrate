@@ -248,18 +248,33 @@ export function terminated(sql: string): string {
 }
 
 /**
+ * Encodes text as UTF-8, to count its bytes.
+ */
+const UTF8 = new TextEncoder();
+
+/**
+ * The length of `text` in UTF-8, in bytes, like Node.js's
+ * `Buffer.byteLength(text)` but without Node.js, so that the codegen also
+ * runs in browsers: a lone surrogate counts as the 3 bytes of the U+FFFD
+ * that replaces it.
+ */
+function byteLength(text: string): number {
+  return UTF8.encode(text).length;
+}
+
+/**
  * The longest start of `text` that is at most `maxBytes` bytes in UTF-8,
  * without cutting a character (`pg_mbcliplen()`).
  */
 function clipToBytes(text: string, maxBytes: number): string {
-  if (Buffer.byteLength(text) <= maxBytes) {
+  if (byteLength(text) <= maxBytes) {
     return text;
   }
 
   let bytes = 0;
   let end = 0;
   for (const char of text) {
-    bytes += Buffer.byteLength(char);
+    bytes += byteLength(char);
     if (bytes > maxBytes) {
       break;
     }
@@ -289,8 +304,8 @@ export function makeObjectName(
 ): string {
   const overhead = label.length + 1 + (name2 === undefined ? 0 : 1);
   const available = MAX_NAME_BYTES - overhead;
-  let bytes1 = Buffer.byteLength(name1);
-  let bytes2 = name2 === undefined ? 0 : Buffer.byteLength(name2);
+  let bytes1 = byteLength(name1);
+  let bytes2 = name2 === undefined ? 0 : byteLength(name2);
   while (bytes1 + bytes2 > available) {
     if (bytes1 > bytes2) {
       bytes1 -= 1;
