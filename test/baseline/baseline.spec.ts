@@ -303,5 +303,30 @@ describe('baseline', () => {
       expect(error).toMatchObject({ code: 'PSQL_META_COMMAND' });
       expect(readdirSync(dir)).toEqual([]);
     });
+
+    it.each([
+      { file: 'insert-data.sql', code: 'DATA_IN_DUMP' },
+      { file: 'begin-in-atomic-body-with-data.sql', code: 'DATA_IN_DUMP' },
+      {
+        file: 'standard-conforming-strings-off.sql',
+        code: 'NON_STANDARD_STRINGS',
+      },
+      { file: 'latin1-encoding.sql', code: 'NOT_UTF8' },
+      { file: 'set-session-authorization.sql', code: 'SET_ROLE_IN_DUMP' },
+      { file: 'set-role.sql', code: 'SET_ROLE_IN_DUMP' },
+    ])('writes nothing for the dump $file ($code)', async ({ file, code }) => {
+      const dir = join(root, 'migrations');
+      const error = await rejectionOf(
+        baseline({
+          dir,
+          fromFile: adversarialPath(file),
+          logger: recordingLogger(),
+        })
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code });
+      expect(existsSync(dir) ? readdirSync(dir) : []).toEqual([]);
+    });
   });
 });

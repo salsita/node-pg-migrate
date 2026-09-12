@@ -85,16 +85,24 @@ export const CAPTURED_DUMPS: ReadonlyArray<CapturedDump> = DUMP_MAJORS.flatMap(
  */
 export const ADVERSARIAL_FILES: ReadonlyArray<string> = [
   'backslash-line-in-function-body.sql',
+  'begin-in-atomic-body-with-data.sql',
+  'begin-in-atomic-body.sql',
   'clean-dump.sql',
+  'column-inserts-data.sql',
   'comment-on-extension.sql',
   'copy-data.sql',
   'create-database.sql',
   'create-schema-public.sql',
+  'insert-data.sql',
+  'latin1-encoding.sql',
   'marker-in-function-body.sql',
   'migrations-sequence.sql',
   'migrations-table-lookalike.sql',
   'migrations-table.sql',
   'psql-connect.sql',
+  'set-role.sql',
+  'set-session-authorization.sql',
+  'standard-conforming-strings-off.sql',
 ];
 
 /**

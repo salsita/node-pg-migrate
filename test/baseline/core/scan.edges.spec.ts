@@ -51,11 +51,51 @@ describe('scanTopLevel', () => {
         sql: 'CREATE FUNCTION f() RETURNS integer LANGUAGE sql BEGIN /* body */ ATOMIC SELECT 1; END;',
       },
       {
-        name: 'a nested BEGIN … END',
-        sql: 'CREATE PROCEDURE p() LANGUAGE sql BEGIN ATOMIC SELECT 1; BEGIN SELECT 2; END; END;',
+        name: 'a column named begin',
+        sql: 'CREATE FUNCTION f() RETURNS timestamp with time zone LANGUAGE sql BEGIN ATOMIC SELECT s.begin FROM public.shift s ORDER BY s.id LIMIT 1; END;',
+      },
+      {
+        name: 'an unqualified column named begin',
+        sql: 'CREATE FUNCTION f() RETURNS bigint LANGUAGE sql BEGIN ATOMIC SELECT count(*) AS count FROM public.shift WHERE begin IS NULL; END;',
+      },
+      {
+        name: 'a table named begin',
+        sql: 'CREATE FUNCTION f() RETURNS bigint LANGUAGE sql BEGIN ATOMIC SELECT count(*) AS count FROM public.begin; END;',
+      },
+      {
+        name: 'an alias named begin',
+        sql: 'CREATE PROCEDURE p() LANGUAGE sql BEGIN ATOMIC SELECT 1 AS begin; SELECT 2; END;',
+      },
+      {
+        name: 'a call of a function named begin',
+        sql: 'CREATE OR REPLACE FUNCTION f() RETURNS integer LANGUAGE sql BEGIN ATOMIC SELECT public.begin() AS begin; END;',
+      },
+      {
+        name: 'a column named begin inside CASE … END',
+        sql: 'CREATE FUNCTION f() RETURNS integer LANGUAGE sql BEGIN ATOMIC SELECT CASE WHEN s.begin IS NULL THEN 0 ELSE 1 END FROM public.shift s; END;',
+      },
+      {
+        name: 'a column named begin that UPDATE … SET assigns, as pg_dump prints it',
+        sql: 'CREATE PROCEDURE public.start_shifts()\n    LANGUAGE sql\n    BEGIN ATOMIC\n UPDATE public.shift SET begin = now()\n   WHERE (shift.begin IS NULL);\n INSERT INTO public.shift (id, begin)\n   VALUES (1, now());\nEND;',
       },
     ])('keeps $name in one statement', ({ sql }) => {
       expect(statementsOf(`${sql} SELECT 3;`)).toEqual([sql, 'SELECT 3;']);
+    });
+
+    it('ends a body that reads a column named begin at its END, before a psql meta-command and COPY data', () => {
+      const fn =
+        'CREATE FUNCTION public.first_begin() RETURNS timestamp with time zone\n    LANGUAGE sql\n    BEGIN ATOMIC\n SELECT s.begin\n    FROM public.shift s\n   ORDER BY s.id\n  LIMIT 1;\nEND;';
+
+      expect(
+        significant(
+          `${fn}\n\nCOPY public.after_fn (id) FROM stdin;\n42\n\\.\n\n\\unrestrict k3y\n`
+        )
+      ).toEqual([
+        ['statement', fn],
+        ['statement', 'COPY public.after_fn (id) FROM stdin;'],
+        ['copy-data', '\n42\n\\.\n'],
+        ['meta', '\\unrestrict k3y\n'],
+      ]);
     });
 
     it.each([

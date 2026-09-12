@@ -152,6 +152,37 @@ describe('sanitizeDump', () => {
     ])('keeps %j, which reads no data from the dump', (dump) => {
       expect(sanitize(dump)).toBe(dump);
     });
+
+    it.each([
+      'insert into public.t values (1);',
+      'INSERT INTO public.t (a, b) VALUES (1, 2), (3, 4);',
+      'INSERT INTO public.t (a) VALUES (1) ON CONFLICT DO NOTHING;',
+      "SELECT pg_catalog.setval('public.t_id_seq', 42, true);",
+      "select setval('public.t_id_seq', 1, false);",
+      "SELECT pg_catalog.setval('public.t_id_seq', 7);",
+    ])('refuses %j, with its line', (statement) => {
+      const error = refusalOf(
+        `CREATE TABLE public.t (a integer, b integer);\n${statement}\n`
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'DATA_IN_DUMP' });
+      expect(messageOf(error)).toContain('line 2:');
+      expect(messageOf(error)).toContain('--schema-only');
+    });
+
+    it.each([
+      'CREATE RULE r AS\n    ON INSERT TO public.v DO INSTEAD  INSERT INTO public.t (a)\n  VALUES (new.a);',
+      'CREATE RULE r AS\n    ON UPDATE TO public.v DO INSTEAD ( INSERT INTO public.t (a)\n  VALUES (new.a);\n INSERT INTO public.t (a)\n  VALUES (old.a);\n);',
+      'CREATE FUNCTION public.f() RETURNS void\n    LANGUAGE sql\n    AS $$ INSERT INTO public.t VALUES (1) $$;',
+      'CREATE PROCEDURE public.p()\n    LANGUAGE sql\n    BEGIN ATOMIC\n INSERT INTO public.t (a)\n   VALUES (1);\n INSERT INTO public.t (a)\n   VALUES (2);\nEND;',
+      "CREATE FUNCTION public.reset_t_id() RETURNS bigint\n    LANGUAGE sql\n    AS $$ SELECT pg_catalog.setval('public.t_id_seq', 1, false) $$;",
+      "COMMENT ON TABLE public.t IS 'INSERT INTO public.t VALUES (1);';",
+    ])('keeps %j, whose INSERT or setval() only runs later', (statement) => {
+      const dump = `${statement}\n`;
+
+      expect(sanitize(dump)).toBe(dump);
+    });
   });
 
   describe('R4: DROP statements', () => {
@@ -198,7 +229,7 @@ describe('sanitizeDump', () => {
       "SET NAMES 'UTF8';",
       'SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;',
       'SET CONSTRAINTS ALL DEFERRED;',
-      "SET SESSION AUTHORIZATION 'app';",
+      "SET app.role = 'admin';",
       'SET "search_path" = public;',
       'SET;',
     ])('keeps %j, which is not a plain setting', (statement) => {
@@ -223,6 +254,122 @@ describe('sanitizeDump', () => {
       expect(sanitize('SET /* quiet */ client_min_messages = warning;')).toBe(
         `${saveOf('client_min_messages')}\nSET LOCAL /* quiet */ client_min_messages = warning;\n\n${restoreOf('client_min_messages')}\n`
       );
+    });
+
+    it.each([
+      'SET standard_conforming_strings = off;',
+      'SET standard_conforming_strings TO off;',
+      "SET standard_conforming_strings = 'off';",
+      'SET standard_conforming_strings = false;',
+      "SET standard_conforming_strings = 'false';",
+      'SET standard_conforming_strings = 0;',
+      "SET standard_conforming_strings = '0';",
+      'set Standard_Conforming_Strings to OFF;',
+    ])(
+      'refuses %j, whose string literals would not mean the same in the migration',
+      (statement) => {
+        const error = refusalOf(
+          `${statement}\nCREATE TABLE public.t (path text DEFAULT 'C:\\\\data');\n`
+        );
+
+        expect(error).toBeInstanceOf(BaselineError);
+        expect(error).toMatchObject({ code: 'NON_STANDARD_STRINGS' });
+        expect(messageOf(error)).toContain(
+          "PGOPTIONS='-c standard_conforming_strings=on'"
+        );
+      }
+    );
+
+    it.each([
+      'SET standard_conforming_strings = on;',
+      'SET standard_conforming_strings TO on;',
+      "SET standard_conforming_strings = 'on';",
+      'SET standard_conforming_strings = true;',
+    ])('accepts %j, and turns it into SET LOCAL', (statement) => {
+      const sql = sanitize(
+        `${statement}\nCREATE TABLE public.t (id integer);\n`
+      );
+
+      expect(sql).toContain(`SET LOCAL${statement.slice('SET'.length)}`);
+      expect(sql).toContain(restoreOf('standard_conforming_strings'));
+    });
+
+    it.each([
+      "SET client_encoding = 'LATIN1';",
+      "SET client_encoding TO 'WIN1252';",
+      "SET client_encoding = 'SQL_ASCII';",
+      'SET client_encoding = latin1;',
+      "set CLIENT_ENCODING = 'euc_jp';",
+    ])('refuses %j, which is not UTF-8', (statement) => {
+      const error = refusalOf(
+        `${statement}\nCREATE TABLE public.t (id integer);\n`
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'NOT_UTF8' });
+      expect(messageOf(error)).toContain('--encoding=UTF8');
+    });
+
+    it.each([
+      "SET client_encoding = 'UTF8';",
+      "SET client_encoding = 'utf8';",
+      "SET client_encoding = 'UTF-8';",
+      "SET client_encoding TO 'utf-8';",
+      'SET client_encoding = UTF8;',
+    ])('accepts %j, and turns it into SET LOCAL', (statement) => {
+      const sql = sanitize(
+        `${statement}\nCREATE TABLE public.t (id integer);\n`
+      );
+
+      expect(sql).toContain(`SET LOCAL${statement.slice('SET'.length)}`);
+      expect(sql).toContain(restoreOf('client_encoding'));
+    });
+
+    it.each([
+      "CREATE FUNCTION public.f() RETURNS integer\n    LANGUAGE sql\n    SET standard_conforming_strings TO 'off'\n    AS $$ SELECT 1 $$;",
+      "CREATE FUNCTION public.g() RETURNS void\n    LANGUAGE plpgsql\n    AS $$\nBEGIN\n    SET standard_conforming_strings = off;\n    SET client_encoding = 'LATIN1';\nEND;\n$$;",
+      "COMMENT ON TABLE public.t IS 'SET standard_conforming_strings = off; SET client_encoding = ''LATIN1'';';",
+    ])('keeps %j, which is not a top-level SET', (statement) => {
+      const dump = `${statement}\n`;
+
+      expect(sanitize(dump)).toBe(dump);
+    });
+  });
+
+  describe('the role that runs the migration', () => {
+    it.each([
+      "SET SESSION AUTHORIZATION 'app';",
+      'SET SESSION AUTHORIZATION DEFAULT;',
+      'SET SESSION SESSION AUTHORIZATION app;',
+      'SET LOCAL SESSION AUTHORIZATION app;',
+      'set session authorization "App Owner";',
+      'SET ROLE app;',
+      "SET ROLE 'app';",
+      'SET ROLE NONE;',
+      'SET SESSION ROLE app;',
+      'SET LOCAL ROLE app;',
+      'SET role = app;',
+      'SET role TO app;',
+      'RESET ROLE;',
+      'RESET SESSION AUTHORIZATION;',
+      'reset role;',
+    ])('refuses %j', (statement) => {
+      const error = refusalOf(
+        `CREATE TABLE public.t (id integer);\n${statement}\nCREATE TABLE public.u (id integer);\n`
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'SET_ROLE_IN_DUMP' });
+      expect(messageOf(error)).toContain('--no-owner');
+    });
+
+    it.each([
+      'CREATE FUNCTION public.as_app() RETURNS void\n    LANGUAGE plpgsql\n    AS $$\nBEGIN\n    SET ROLE app;\n    RESET ROLE;\nEND;\n$$;',
+      "COMMENT ON TABLE public.t IS 'SET SESSION AUTHORIZATION app; RESET ROLE;';",
+    ])('keeps %j, which is not a top-level role change', (statement) => {
+      const dump = `${statement}\n`;
+
+      expect(sanitize(dump)).toBe(dump);
     });
   });
 
@@ -411,6 +558,55 @@ describe('sanitizeDump', () => {
       expect(sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS).source).toEqual(
         source
       );
+    });
+  });
+
+  describe('BEGIN ATOMIC bodies that use begin as a name', () => {
+    /**
+     * A function as pg_dump prints it, whose body reads a column named
+     * `begin`. It takes lines 1 to 8.
+     */
+    const FIRST_BEGIN =
+      'CREATE FUNCTION public.first_begin() RETURNS timestamp with time zone\n    LANGUAGE sql\n    BEGIN ATOMIC\n SELECT s.begin\n    FROM public.shift s\n   ORDER BY s.id\n  LIMIT 1;\nEND;';
+
+    it.each([
+      {
+        name: 'the migrations table',
+        next: 'CREATE TABLE public.pgmigrations (\n    id integer NOT NULL\n);',
+        code: 'MIGRATIONS_TABLE_IN_DUMP',
+      },
+      {
+        name: 'table data',
+        next: 'COPY public.after_fn (id) FROM stdin;\n42\n\\.',
+        code: 'DATA_IN_DUMP',
+      },
+      {
+        name: 'a DROP statement',
+        next: 'DROP TABLE public.after_fn;',
+        code: 'CLEAN_DUMP',
+      },
+      {
+        name: 'a psql meta-command',
+        next: '\\connect app',
+        code: 'PSQL_META_COMMAND',
+      },
+    ])('refuses $name after the function, with its line', ({ next, code }) => {
+      const error = refusalOf(`${FIRST_BEGIN}\n\n${next}\n`);
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code });
+      expect(messageOf(error)).toContain('line 10:');
+    });
+
+    it('turns a setting after the function into SET LOCAL and drops a timeout', () => {
+      const sql = sanitize(
+        `${FIRST_BEGIN}\n\nSET lock_timeout = 0;\nSET default_table_access_method = heap;\nCREATE TABLE public.after_fn (id integer);\n`
+      );
+
+      expect(sql).toContain(FIRST_BEGIN);
+      expect(sql).not.toMatch(/^SET (?!LOCAL )/m);
+      expect(sql).not.toContain('lock_timeout');
+      expect(sql).toContain('CREATE TABLE public.after_fn (id integer);');
     });
   });
 });

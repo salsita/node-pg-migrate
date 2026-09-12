@@ -366,6 +366,34 @@ describe('sanitizeDump', () => {
 
       expect(sanitize(dump)).toBe(dump);
     });
+
+    it.each(['insert-data.sql', 'column-inserts-data.sql'])(
+      'refuses the INSERT statements of %s, with the line of the first one',
+      (file) => {
+        const error = thrownBy(() =>
+          sanitizeDump(readAdversarial(file), DEFAULT_SANITIZE_OPTIONS)
+        );
+
+        expect(error).toBeInstanceOf(BaselineError);
+        expect(error).toMatchObject({ code: 'DATA_IN_DUMP' });
+        expect(messageOf(error)).toContain('line 54');
+        expect(messageOf(error)).toContain('--schema-only');
+      }
+    );
+
+    it('refuses the setval() that gives a sequence its value from the data, with its line', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          "CREATE SEQUENCE public.notes_id_seq\n    START WITH 1;\n\nSELECT pg_catalog.setval('public.notes_id_seq', 2, true);\n",
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'DATA_IN_DUMP' });
+      expect(messageOf(error)).toContain('line 4');
+      expect(messageOf(error)).toContain('--schema-only');
+    });
   });
 
   describe('R3: CREATE DATABASE', () => {
@@ -446,7 +474,7 @@ describe('sanitizeDump', () => {
 
     it('keeps other SELECTs', () => {
       const dump =
-        "SELECT pg_catalog.setval('public.notes_id_seq', 2, true);\nSELECT 1;\n";
+        "SELECT pg_catalog.current_setting('search_path');\nSELECT 1;\n";
 
       expect(sanitize(dump)).toBe(dump);
     });
@@ -538,6 +566,94 @@ describe('sanitizeDump', () => {
         "ALTER TABLE public.t ALTER COLUMN a SET DEFAULT 0;\nCREATE FUNCTION public.f() RETURNS integer\n    LANGUAGE sql\n    SET search_path TO 'public'\n    AS $$ SELECT 1 $$;\n";
 
       expect(sanitize(dump)).toBe(dump);
+    });
+
+    it('refuses the standard_conforming_strings = off of standard-conforming-strings-off.sql, whose string literals would change meaning, and says how to dump it again', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          readAdversarial('standard-conforming-strings-off.sql'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'NON_STANDARD_STRINGS' });
+      expect(messageOf(error)).toContain('standard_conforming_strings');
+      expect(messageOf(error)).toContain(
+        "PGOPTIONS='-c standard_conforming_strings=on'"
+      );
+    });
+
+    it("refuses the client_encoding = 'LATIN1' of latin1-encoding.sql, which is not UTF-8 text, and says how to dump it again", () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          readAdversarial('latin1-encoding.sql'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'NOT_UTF8' });
+      expect(messageOf(error)).toContain('UTF-8');
+      expect(messageOf(error)).toContain('--encoding=UTF8');
+    });
+  });
+
+  describe('the role that runs the migration', () => {
+    it.each([
+      {
+        file: 'set-session-authorization.sql',
+        statement: "SET SESSION AUTHORIZATION 'app_owner';",
+      },
+      { file: 'set-role.sql', statement: 'SET ROLE app_owner;' },
+    ])(
+      'refuses the $statement of $file, and says to make the dump with --no-owner',
+      ({ file, statement }) => {
+        const dump = readAdversarial(file);
+        const error = thrownBy(() =>
+          sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS)
+        );
+
+        expect(dump.split('\n')).toContain(statement);
+        expect(error).toBeInstanceOf(BaselineError);
+        expect(error).toMatchObject({ code: 'SET_ROLE_IN_DUMP' });
+        expect(messageOf(error)).toMatch(/role/i);
+        expect(messageOf(error)).toContain('--no-owner');
+      }
+    );
+  });
+
+  describe('BEGIN ATOMIC bodies that use begin as a name', () => {
+    const dump = readAdversarial('begin-in-atomic-body.sql');
+    const settings = savedSettingsOf(dump);
+
+    it('drops the \\restrict pair of begin-in-atomic-body.sql and turns every setting into SET LOCAL, after the functions too', () => {
+      const sql = sanitize(dump);
+
+      expect(sql).not.toMatch(/^\\(?:un)?restrict\b/m);
+      expect(sql).not.toMatch(/^SET (?!LOCAL )/m);
+      expect(restoresAtTheEnd(sql, settings)).toBe(true);
+    });
+
+    it('keeps every other line of begin-in-atomic-body.sql byte for byte and in order, and counts its three tables', () => {
+      const { sql, stats } = sanitizeDump(dump, DEFAULT_SANITIZE_OPTIONS);
+
+      expect(originalLinesOf(sql, settings)).toEqual(keptLinesOf(dump));
+      expect(stats.tables).toBe(3);
+    });
+
+    it('refuses the table data of begin-in-atomic-body-with-data.sql, with its line', () => {
+      const error = thrownBy(() =>
+        sanitizeDump(
+          readAdversarial('begin-in-atomic-body-with-data.sql'),
+          DEFAULT_SANITIZE_OPTIONS
+        )
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'DATA_IN_DUMP' });
+      expect(messageOf(error)).toContain('line 116');
+      expect(messageOf(error)).toContain('--schema-only');
     });
   });
 
@@ -775,7 +891,7 @@ describe('sanitizeDump', () => {
 
     it('keeps comments, blank lines, SET LOCAL and other SELECTs byte for byte', () => {
       const dump =
-        "-- a comment\n\n/* a block comment */\nSET LOCAL lock_timeout = '1s';\nSELECT pg_catalog.setval('public.s', 2, true);\n\nCREATE TABLE public.t (\n    id integer\n);\n";
+        "-- a comment\n\n/* a block comment */\nSET LOCAL lock_timeout = '1s';\nSELECT pg_catalog.current_setting('search_path');\n\nCREATE TABLE public.t (\n    id integer\n);\n";
 
       expect(sanitize(dump)).toBe(dump);
     });

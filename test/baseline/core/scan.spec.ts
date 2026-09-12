@@ -661,6 +661,35 @@ describe('scanTopLevel', () => {
       }
     );
 
+    it('ends each function of begin-in-atomic-body.sql, whose bodies use begin as a name, at its own END', () => {
+      const sql = readAdversarial('begin-in-atomic-body.sql');
+      const segments = scanTopLevel(sql);
+
+      expect(
+        segments
+          .filter((segment) => segment.kind === 'meta')
+          .map((segment) => segment.line)
+      ).toEqual([5, 116]);
+      expect(
+        segments
+          .filter(
+            (segment) =>
+              segment.kind === 'statement' &&
+              /^CREATE (?:FUNCTION|TABLE) /.test(segment.text)
+          )
+          .map(({ line, text }) => [line, text.slice(text.lastIndexOf('\n'))])
+      ).toEqual([
+        [26, '\n    RETURN 1;'],
+        [35, '\nEND;'],
+        [50, '\n);'],
+        [59, '\nEND;'],
+        [71, '\n);'],
+        [82, '\nEND;'],
+        [96, '\nEND;'],
+        [107, '\n);'],
+      ]);
+    });
+
     it.each([
       {
         name: 'a function without BEGIN ATOMIC',
