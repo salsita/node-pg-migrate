@@ -128,7 +128,9 @@ function invalidIndexSql(index: Index): string[] {
  * `'collation'`, `'nulls order'` or `'storage parameters'`; so is an index
  * the table is clustered on or uses as its replica identity (the index is
  * created, then `ALTER TABLE … CLUSTER ON …` / `REPLICA IDENTITY USING INDEX
- * …`), reason `'CLUSTER ON'` / `'replica identity'`. With several reasons,
+ * …`), reason `'CLUSTER ON'` / `'replica identity'`, and so is an index with
+ * a statistics target on a key (`ALTER INDEX … ALTER COLUMN <n> SET
+ * STATISTICS …` after it), reason `'column settings'`. With several reasons,
  * they are joined with `', '`.
  *
  * The indexes of partitions attached to an index of a partitioned table
@@ -174,6 +176,18 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
     after.push(
       `ALTER TABLE ${table} REPLICA IDENTITY USING INDEX ${quoteName(index.name)};`
     );
+  }
+
+  const statistics = index.keys.flatMap((key, position) =>
+    key.statisticsTarget === undefined
+      ? []
+      : [
+          `ALTER INDEX ${qualifiedName(index)} ALTER COLUMN ${String(position + 1)} SET STATISTICS ${String(key.statisticsTarget)};`,
+        ]
+  );
+  if (statistics.length > 0) {
+    afterReasons.push('column settings');
+    after.push(...statistics);
   }
 
   // The indexes of partitions made from their own definitions have their

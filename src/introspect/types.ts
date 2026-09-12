@@ -1362,6 +1362,13 @@ export interface IndexKeyBase {
    * ascending order and first in descending order.
    */
   readonly nullsFirst: boolean;
+
+  /**
+   * `ALTER INDEX … ALTER COLUMN <n> SET STATISTICS` (the `attstattarget` of
+   * the key's column of the index), when it is set: only an expression can
+   * have one.
+   */
+  readonly statisticsTarget?: number;
 }
 
 /**
@@ -2901,6 +2908,12 @@ export interface IndexKeyRow {
   readonly collation: string | null;
   readonly descending: boolean;
   readonly nullsFirst: boolean;
+
+  /**
+   * The `attstattarget` of the key's column of the index, when it is set
+   * (not -1 and not null); none when null or left out.
+   */
+  readonly statisticsTarget?: number | null;
 }
 
 /**

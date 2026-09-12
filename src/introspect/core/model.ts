@@ -903,6 +903,7 @@ function indexKeyOf(row: IndexKeyRow): IndexKey {
     ...optional('collation', row.collation),
     descending: row.descending,
     nullsFirst: row.nullsFirst,
+    ...optional('statisticsTarget', row.statisticsTarget),
   };
 
   return row.column === null

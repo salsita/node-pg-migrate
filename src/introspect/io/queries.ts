@@ -588,9 +588,12 @@ function followsKey(text: string): string {
 // like pg_get_indexdef(oid, <key number>, false) does (for a column, its
 // quoted name), but an expression in parentheses unless it is a function
 // call, and a collation or an operator class unqualified in pg_catalog (the
-// search path is empty). The indexes that are not ready or not valid are left
-// out like pg_dump does, except those of partitioned tables (`relkind =
-// 'I'`), which are not valid until every partition has one attached.
+// search path is empty). A key's statistics target is the one of its column
+// of the index (`attstattarget`, -1 up to 16 or null from 17 when it is not
+// set), which only expressions can have. The indexes that are not ready or
+// not valid are left out like pg_dump does, except those of partitioned
+// tables (`relkind = 'I'`), which are not valid until every partition has
+// one attached.
 const INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
   i.indrelid AS relid,
   def.definition,
@@ -603,7 +606,12 @@ const INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
       'opclass', CASE WHEN written.opclass IS NOT NULL AND ${followsKey(`coll.clause, ' ', written.opclass`)} THEN ${qualifiedSql(OPERATOR_CLASSES, 'k.opclass')} END,
       'collation', CASE WHEN coll.clause ${NE} '' THEN ${qualifiedSql(COLLATIONS, 'k.coll_oid')} END,
       'descending', (k.option ${BIT_AND} 1) ${NE} 0,
-      'nullsFirst', (k.option ${BIT_AND} 2) ${NE} 0
+      'nullsFirst', (k.option ${BIT_AND} 2) ${NE} 0,
+      'statisticsTarget', (
+        SELECT CASE WHEN ia.attstattarget ${GE} 0 THEN ia.attstattarget END
+        FROM pg_catalog.pg_attribute AS ia
+        WHERE ia.attrelid ${EQ} i.indexrelid AND ia.attnum ${EQ} pg_catalog.int2(k.position)
+      )
     ) ORDER BY k.position)
     FROM ROWS FROM (
       pg_catalog.unnest(i.indkey),
