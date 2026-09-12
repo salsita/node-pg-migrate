@@ -7,12 +7,16 @@ import { BaselineError } from '../baseline/errors';
 import type { DumpStats } from '../baseline/types';
 import { objectIdentity, orderObjects } from '../introspect/core/order';
 import type {
+  Column,
   Dependency,
   ModelObject,
   ObjectComment,
+  ObjectRef,
   OrderedObject,
   SchemaModel,
+  SchemaQualifiedName,
   Sequence,
+  Table,
   UnsupportedObject,
 } from '../introspect/types';
 import { emitAggregate } from './emitters/aggregates';
@@ -188,27 +192,223 @@ function emitStep(
 }
 
 /**
- * The sequences that `serial` columns create, each with the table that has
- * the column (see `serialSequences()`).
+ * The key of an object in a graph of {@link waitsFor}.
  */
-function serialSequencesOf(model: SchemaModel): Map<Sequence, ModelObject> {
-  const byName = new Map(
-    model.sequences.map((sequence) => [
-      `${sequence.schema} ${sequence.name}`,
-      sequence,
-    ])
+function refKey(ref: ObjectRef): string {
+  return `${ref.kind}:${String(ref.oid)}`;
+}
+
+/**
+ * The key of a schema-qualified name.
+ */
+function nameKey(name: SchemaQualifiedName): string {
+  return `${name.schema} ${name.name}`;
+}
+
+/**
+ * Adds `to` to the keys that `from` has in a graph of keys.
+ */
+function addEdge(
+  graph: Map<string, Set<string>>,
+  from: string,
+  to: string
+): void {
+  const edges = graph.get(from) ?? new Set<string>();
+  edges.add(to);
+  graph.set(from, edges);
+}
+
+/**
+ * What each object waits for, by {@link refKey}, the way `orderObjects()`
+ * orders them: its dependencies, and its table (for the objects of a
+ * table), the table it references (for a foreign key), its partitioned table
+ * (for a partition) or its parents (for an inheritance child).
+ */
+function waitsFor(model: SchemaModel): Map<string, Set<string>> {
+  const relations = new Map(
+    [...model.tables, ...model.views, ...model.materializedViews].map(
+      (relation) => [nameKey(relation), refKey(relation)]
+    )
   );
-  const found = new Map<Sequence, ModelObject>();
+  const graph = new Map<string, Set<string>>();
+  const waitForRelation = (
+    from: ObjectRef,
+    name: SchemaQualifiedName | undefined
+  ): void => {
+    const to = name === undefined ? undefined : relations.get(nameKey(name));
+    if (to !== undefined) {
+      addEdge(graph, refKey(from), to);
+    }
+  };
+
+  for (const { from, to } of model.dependencies) {
+    addEdge(graph, refKey(from), refKey(to));
+  }
+
+  for (const object of [
+    ...model.constraints,
+    ...model.indexes,
+    ...model.triggers,
+    ...model.policies,
+    ...model.rules,
+    ...model.statistics,
+  ]) {
+    waitForRelation(object, object.table);
+  }
+
+  for (const constraint of model.constraints) {
+    waitForRelation(constraint, constraint.references);
+  }
+
   for (const table of model.tables) {
-    for (const name of serialSequences(table)) {
-      const sequence = byName.get(`${name.schema} ${name.name}`);
-      if (sequence !== undefined) {
-        found.set(sequence, table);
+    for (const parent of [table.partitionOf?.parent, ...table.inherits]) {
+      waitForRelation(table, parent);
+    }
+  }
+
+  return graph;
+}
+
+/**
+ * Whether making a sequence wait for a table would make a cycle in a graph
+ * of {@link waitsFor} that has none: whether the table waits, directly or
+ * not, for another object that uses the sequence.
+ *
+ * @param graph What each object waits for.
+ * @param users The objects that use the sequence.
+ * @param table The table.
+ */
+function makesCycle(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  users: ReadonlySet<string>,
+  table: string
+): boolean {
+  const others = new Set(users);
+  others.delete(table);
+  if (others.size === 0) {
+    return false;
+  }
+
+  const seen = new Set([table]);
+  const stack = [table];
+  for (let key = stack.pop(); key !== undefined; key = stack.pop()) {
+    for (const next of graph.get(key) ?? []) {
+      if (others.has(next)) {
+        return true;
+      }
+
+      if (!seen.has(next)) {
+        seen.add(next);
+        stack.push(next);
       }
     }
   }
 
-  return found;
+  return false;
+}
+
+/**
+ * A table whose columns do not own the sequences of `names` (by
+ * {@link nameKey}) any more, so that the table emitter does not make them
+ * `serial`.
+ */
+function withoutOwnedSequences(
+  table: Table,
+  names: ReadonlySet<string>
+): Table {
+  const owns = ({ ownedSequence }: Column): boolean =>
+    ownedSequence !== undefined && names.has(nameKey(ownedSequence.name));
+  if (!table.columns.some(owns)) {
+    return table;
+  }
+
+  return {
+    ...table,
+    columns: table.columns.map((column) => {
+      if (!owns(column)) {
+        return column;
+      }
+
+      const { ownedSequence: _, ...rest } = column;
+
+      return rest;
+    }),
+  };
+}
+
+/**
+ * The `serial` columns of a model (see {@link serialColumnsOf}).
+ */
+interface SerialColumns {
+  /**
+   * The sequences that `serial` columns create, each with the table that
+   * has the column.
+   */
+  readonly sequences: Map<Sequence, ModelObject>;
+
+  /**
+   * The model to emit: the columns that could be `serial` but are not do
+   * not own their sequence (`ownedSequence`), so that the table emitter
+   * does not make them `serial`.
+   */
+  readonly model: SchemaModel;
+}
+
+/**
+ * The columns that are written as `serial`, with the sequences they create
+ * (see `serialSequences()`).
+ *
+ * Such a sequence waits for its table instead of the other way round (see
+ * {@link orderingDependencies}), which would make a cycle when the table
+ * waits, directly or not, for something else that uses the sequence (e.g. a
+ * column default that calls a function whose body uses the sequence): that
+ * column is not `serial` then, and its sequence is created and owned on its
+ * own. The tables are taken in order, each after the sequences of the
+ * `serial` columns before it were made to wait for their tables, so the
+ * steps can always be ordered when the model's dependencies can.
+ */
+function serialColumnsOf(model: SchemaModel): SerialColumns {
+  const byName = new Map(
+    model.sequences.map((sequence) => [nameKey(sequence), sequence])
+  );
+  const graph = waitsFor(model);
+  const users = new Map<string, Set<string>>();
+  for (const { from, to } of model.dependencies) {
+    if (to.kind === 'sequence') {
+      addEdge(users, refKey(to), refKey(from));
+    }
+  }
+
+  const sequences = new Map<Sequence, ModelObject>();
+  const notSerial = new Set<string>();
+  for (const table of model.tables) {
+    const key = refKey(table);
+    for (const name of serialSequences(table)) {
+      const sequence = byName.get(nameKey(name));
+      if (sequence === undefined) {
+        continue;
+      }
+
+      const sequenceKey = refKey(sequence);
+      if (makesCycle(graph, users.get(sequenceKey) ?? new Set(), key)) {
+        notSerial.add(nameKey(name));
+      } else {
+        sequences.set(sequence, table);
+        graph.get(key)?.delete(sequenceKey);
+        addEdge(graph, sequenceKey, key);
+      }
+    }
+  }
+
+  return {
+    sequences,
+    model: {
+      ...model,
+      tables: model.tables.map((table) =>
+        withoutOwnedSequences(table, notSerial)
+      ),
+    },
+  };
 }
 
 /**
@@ -308,9 +508,11 @@ function strictError(
  * its kind (a `serial` column's sequence and its ownership are part of the
  * table, so they are not emitted on their own; for the ordering, such a
  * sequence waits for its table instead of the other way round, so that
- * whatever uses the sequence is created after the table), and renders the
- * file (`renderMigration()`); `stats` counts what the migration creates, and
- * sizes the header's `max_locks_per_transaction` note.
+ * whatever uses the sequence is created after the table, and a column is
+ * only `serial` when that makes no dependency cycle, see
+ * {@link serialColumnsOf}), and renders the file (`renderMigration()`);
+ * `stats` counts what the migration creates, and sizes the header's
+ * `max_locks_per_transaction` note.
  *
  * Throws a `BaselineError` with code `UNSUPPORTED_OBJECTS` when the model has
  * objects that no migration can represent (`model.unsupported`, suggesting
@@ -331,9 +533,9 @@ export function generateMigration(
     throw unsupportedError(model.unsupported, language);
   }
 
-  const serial = serialSequencesOf(model);
+  const { sequences: serial, model: toEmit } = serialColumnsOf(model);
   const steps = orderObjects({
-    ...model,
+    ...toEmit,
     dependencies: orderingDependencies(model, serial),
   });
   const ctx: EmitContext = { defaultSchema: options.defaultSchema, language };
