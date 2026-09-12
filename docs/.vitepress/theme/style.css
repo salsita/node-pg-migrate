@@ -83,10 +83,11 @@ html.dark:root {
     var(--vp-c-brand-3)
   );
 
+  /* a soft halo, so the gaps between the logo's slabs stay visible */
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
-    var(--vp-c-brand-1) 50%,
-    var(--vp-c-brand-3) 50%
+    color-mix(in srgb, var(--vp-c-brand-1) 40%, transparent) 50%,
+    color-mix(in srgb, var(--vp-c-brand-3) 40%, transparent) 50%
   );
   --vp-home-hero-image-filter: blur(44px);
 }
@@ -100,6 +101,60 @@ html.dark:root {
 @media (min-width: 960px) {
   :root {
     --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+/**
+ * Component: Logo
+ * -------------------------------------------------------------------------- */
+
+.site-logo {
+  display: block;
+}
+
+.site-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Hovering the logo, or a link around it, joins the slabs and turns the Node
+ * ring 60deg. Each slab moves by its --join offset, which closes the gaps in
+ * logo.svg (23 above the middle slab, 9 below it) around the center.
+ */
+.site-logo:hover,
+a:is(:hover, :focus-visible) .site-logo {
+  --joined: 1;
+}
+
+.site-logo .slab-top {
+  --join: 16px;
+}
+
+.site-logo .slab-middle {
+  --join: -7px;
+}
+
+.site-logo .slab-bottom {
+  --join: -16px;
+}
+
+.site-logo .slab {
+  transform: translateY(calc(var(--joined, 0) * var(--join, 0px)));
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.site-logo .ring {
+  transform: rotate(calc(var(--joined, 0) * 60deg));
+  transform-origin: center;
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-logo .slab,
+  .site-logo .ring {
+    transition: none;
   }
 }
 
