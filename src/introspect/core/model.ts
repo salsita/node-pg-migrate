@@ -674,6 +674,7 @@ function identityOf(row: ColumnRow): Pick<Column, 'identity'> {
       generation: IDENTITY_GENERATIONS[attidentity],
       sequence: qualifiedName(identitySequence),
       options: sequenceOptionsOf(identitySequence),
+      ...optional('comment', identitySequence.comment),
     },
   };
 }

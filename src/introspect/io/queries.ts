@@ -516,7 +516,7 @@ const COLUMNS = `SELECT a.attrelid AS relid, a.attnum, a.attname AS name,
   a.attidentity,
   a.attgenerated,
   CASE WHEN a.attidentity ${NE} '' THEN (
-    SELECT pg_catalog.json_build_object('schema', sn.nspname, 'name', sc.relname, ${sequenceOptionFields('s')})
+    SELECT pg_catalog.json_build_object('schema', sn.nspname, 'name', sc.relname, ${sequenceOptionFields('s')}, 'comment', ${commentOn('pg_class', 'sc.oid')})
     FROM pg_catalog.pg_depend AS d
     JOIN pg_catalog.pg_class AS sc ON sc.oid ${EQ} d.objid
     JOIN pg_catalog.pg_namespace AS sn ON sn.oid ${EQ} sc.relnamespace

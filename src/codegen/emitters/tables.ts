@@ -650,6 +650,20 @@ function columnCommentsSql(
 }
 
 /**
+ * `COMMENT ON SEQUENCE` for the identity sequence of each column in `columns`
+ * whose sequence has a comment.
+ */
+function identityCommentsSql(columns: ReadonlyArray<Column>): string[] {
+  return columns.flatMap(({ identity }) =>
+    identity?.comment === undefined
+      ? []
+      : [
+          `COMMENT ON SEQUENCE ${qualifiedName(identity.sequence)} IS ${quoteLiteral(identity.comment)};`,
+        ]
+  );
+}
+
+/**
  * The statements of a whole-table fallback.
  */
 function createTableSql(table: Table): string[] {
@@ -711,7 +725,10 @@ function createTableSql(table: Table): string[] {
     );
   }
 
-  statements.push(...columnCommentsSql(name, table.columns));
+  statements.push(
+    ...columnCommentsSql(name, table.columns),
+    ...identityCommentsSql(table.columns)
+  );
 
   return statements;
 }
@@ -787,7 +804,8 @@ function columnCode(table: Table, column: Column): Code {
  * Comments on columns that an inheritance child only inherits (which
  * `createTable` cannot list) are set after it with `pgm.sql('COMMENT ON
  * COLUMN …')`, which makes the step a fallback, reason `'comment on
- * column'`.
+ * column'`; so are comments on identity sequences (`COMMENT ON SEQUENCE`),
+ * reason `'comment on sequence'` (both joined in that order).
  *
  * `CREATE TABLE … INHERITS` gives the columns of a child the default and the
  * `NOT NULL` of its parent's (see `ColumnInheritance`), so a column that has
@@ -873,11 +891,15 @@ export function emitTable(table: Table, ctx: EmitContext): Emitted {
     inheritedColumnCode(table, change, ctx)
   );
   const inherited = table.columns.filter((column) => !column.local);
-  const comments = columnCommentsSql(qualifiedName(table), inherited);
+  const columnComments = columnCommentsSql(qualifiedName(table), inherited);
+  const sequenceComments = identityCommentsSql(table.columns);
 
   return withStatements(
     [code, ...changes].join('\n'),
-    comments,
-    comments.length === 0 ? [] : ['comment on column']
+    [...columnComments, ...sequenceComments],
+    [
+      ...(columnComments.length === 0 ? [] : ['comment on column']),
+      ...(sequenceComments.length === 0 ? [] : ['comment on sequence']),
+    ]
   );
 }

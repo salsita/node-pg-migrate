@@ -858,6 +858,12 @@ export interface ColumnIdentity {
    * The options of the identity sequence.
    */
   readonly options: SequenceOptions;
+
+  /**
+   * The comment on the identity sequence (`COMMENT ON SEQUENCE`), when it
+   * has one.
+   */
+  readonly comment?: string;
 }
 
 /**
@@ -2553,6 +2559,12 @@ export interface TableRow {
 export interface IdentitySequenceRow extends SequenceOptionsRow {
   readonly schema: string;
   readonly name: string;
+
+  /**
+   * The comment on the sequence (`COMMENT ON SEQUENCE`), `null` without
+   * one.
+   */
+  readonly comment?: string | null;
 }
 
 /**
