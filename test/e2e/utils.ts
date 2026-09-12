@@ -3,6 +3,18 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { constants, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { inject } from 'vitest';
+
+declare module 'vitest' {
+  export interface ProvidedContext {
+    /**
+     * Where {@link pgDumpShim} writes its shims: a directory that
+     * `global-setup.ts` makes for the e2e run and removes after it. Only the
+     * e2e project provides it.
+     */
+    readonly pgDumpShimDir?: string;
+  }
+}
 
 export {
   createDatabase,
@@ -143,7 +155,10 @@ function shellQuote(value: string): string {
  * @param options.reportVersion Makes `pg_dump --version` print
  * `pg_dump (PostgreSQL) <reportVersion>` instead, e.g. to fake an old pg_dump.
  *
- * @returns The path of the shim, in a new temporary directory.
+ * @returns The path of the shim, in a new temporary directory. In the e2e
+ * suite, that directory is inside the one `global-setup.ts` removes after the
+ * run, so callers don't need to remove it; elsewhere the caller removes it
+ * (`dirname()` of the path).
  */
 export async function pgDumpShim(
   container: StartedPostgreSqlContainer,
@@ -163,7 +178,9 @@ export async function pgDumpShim(
     `exec docker exec -i -e PGUSER -e PGPASSWORD -e PGDATABASE ${container.getId()} pg_dump "$@"`
   );
 
-  const dir = await mkdtemp(join(tmpdir(), 'pgm-pg-dump-'));
+  const dir = await mkdtemp(
+    join(inject('pgDumpShimDir') ?? tmpdir(), 'pgm-pg-dump-')
+  );
   const path = join(dir, 'pg_dump');
   await writeFile(path, `${lines.join('\n')}\n`, { mode: 0o755 });
 
