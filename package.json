@@ -107,7 +107,7 @@
     "tsdown": "0.22.14",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",
-    "vitepress": "2.0.0-alpha.19",
+    "vitepress": "2.0.0-alpha.20",
     "vitest": "5.0.0"
   },
   "peerDependencies": {
