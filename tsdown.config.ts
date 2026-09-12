@@ -16,7 +16,7 @@ export default defineConfig([
     fixedExtension: false,
     // The CLI self-references the library by package name (see src/cli/config.ts)
     // so the emitted bin/ file resolves it through the `exports` map at runtime.
-    // It lives in devDependencies (`file:.`), which tsdown does not
+    // It lives in devDependencies (`link:.`), which tsdown does not
     // auto-externalize, so keep it out of the bundle explicitly to silence the
     // UNRESOLVED_IMPORT warning.
     deps: { neverBundle: ['node-pg-migrate'] },
