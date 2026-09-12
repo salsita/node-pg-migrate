@@ -34,62 +34,96 @@ function isSpace(char: string | undefined): boolean {
 }
 
 /**
+ * One element of a list setting: the element and the offset right after it.
+ */
+interface ListElement {
+  readonly element: string;
+  readonly end: number;
+}
+
+/**
+ * The offset of the first character at or after `from` that is not a space.
+ */
+function skipSpaces(value: string, from: number): number {
+  let index = from;
+  while (isSpace(value[index])) {
+    index += 1;
+  }
+
+  return index;
+}
+
+/**
+ * Reads the double-quoted element of a list setting whose opening quote is
+ * at `from`, with `""` for `"`. `undefined` when it has no closing quote.
+ */
+function readQuotedElement(
+  value: string,
+  from: number
+): ListElement | undefined {
+  let element = '';
+  let index = from + 1;
+  for (;;) {
+    const close = value.indexOf('"', index);
+    if (close === -1) {
+      return undefined;
+    }
+
+    element += value.slice(index, close);
+    index = close + 1;
+    if (value[index] !== '"') {
+      return { element, end: index };
+    }
+
+    element += '"';
+    index += 1;
+  }
+}
+
+/**
+ * Reads the bare element of a list setting that starts at `from`, up to a
+ * comma or a space. `undefined` when it is empty.
+ */
+function readBareElement(value: string, from: number): ListElement | undefined {
+  let index = from;
+  while (
+    index < value.length &&
+    value[index] !== ',' &&
+    !isSpace(value[index])
+  ) {
+    index += 1;
+  }
+
+  if (index === from) {
+    return undefined;
+  }
+
+  return { element: value.slice(from, index), end: index };
+}
+
+/**
  * Splits the value of a list setting into its elements like PostgreSQL's
  * `SplitGUCList()`: comma-separated, each element double-quoted (with `""`
  * for `"`) or bare. `undefined` when the value is malformed.
  */
 function splitList(value: string): string[] | undefined {
   const elements: string[] = [];
-  let index = 0;
-  const skipSpaces = (): void => {
-    while (isSpace(value[index])) {
-      index += 1;
-    }
-  };
-
-  skipSpaces();
+  let index = skipSpaces(value, 0);
   if (index === value.length) {
     return elements;
   }
 
   for (;;) {
-    let element = '';
-    if (value[index] === '"') {
-      index += 1;
-      for (;;) {
-        const close = value.indexOf('"', index);
-        if (close === -1) {
-          return undefined;
-        }
-
-        element += value.slice(index, close);
-        index = close + 1;
-        if (value[index] !== '"') {
-          break;
-        }
-
-        element += '"';
-        index += 1;
-      }
-    } else {
-      const start = index;
-      while (
-        index < value.length &&
-        value[index] !== ',' &&
-        !isSpace(value[index])
-      ) {
-        index += 1;
-      }
-
-      if (index === start) {
-        return undefined;
-      }
-
-      element = value.slice(start, index);
+    const read =
+      value[index] === '"'
+        ? readQuotedElement(value, index)
+        : readBareElement(value, index);
+    if (read === undefined) {
+      return undefined;
     }
 
-    elements.push(element);
-    skipSpaces();
+    elements.push(read.element);
+    index = skipSpaces(value, read.end);
     if (index === value.length) {
       return elements;
     }
@@ -98,8 +132,7 @@ function splitList(value: string): string[] | undefined {
       return undefined;
     }
 
-    index += 1;
-    skipSpaces();
+    index = skipSpaces(value, index + 1);
   }
 }
 

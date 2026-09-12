@@ -47,7 +47,7 @@ function escapeOf(code: number): string | undefined {
         code === PARAGRAPH_SEPARATOR ||
         (code >= FIRST_SURROGATE && code <= LAST_SURROGATE)
       ) {
-        return `\\u${code.toString(16).padStart(4, '0')}`;
+        return String.raw`\u${code.toString(16).padStart(4, '0')}`;
       }
 
       return undefined;

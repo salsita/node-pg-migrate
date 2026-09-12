@@ -41,10 +41,12 @@ export function emitSequence(sequence: Sequence, ctx: EmitContext): Emitted {
   }
 
   if (reasons.length > 0) {
-    const clauses = sequenceOptionsSql(written);
+    const clauses = sequenceOptionsSql(written)
+      .map((clause) => ` ${clause}`)
+      .join('');
 
     return emitFallback(
-      `CREATE${sequence.unlogged ? ' UNLOGGED' : ''} SEQUENCE ${qualifiedName(sequence)}${clauses.map((clause) => ` ${clause}`).join('')};`,
+      `CREATE${sequence.unlogged ? ' UNLOGGED' : ''} SEQUENCE ${qualifiedName(sequence)}${clauses};`,
       reasons.join(', ')
     );
   }

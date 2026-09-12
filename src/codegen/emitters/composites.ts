@@ -29,10 +29,14 @@ export function emitComposite(type: CompositeType, ctx: EmitContext): Emitted {
   }
 
   if (reasons.length > 0) {
-    const attributes = type.attributes.map(
-      (attribute) =>
-        `${quoteName(attribute.name)} ${attribute.type}${attribute.collation === undefined ? '' : ` COLLATE ${attribute.collation}`}`
-    );
+    const attributes = type.attributes.map((attribute) => {
+      const collation =
+        attribute.collation === undefined
+          ? ''
+          : ` COLLATE ${attribute.collation}`;
+
+      return `${quoteName(attribute.name)} ${attribute.type}${collation}`;
+    });
 
     return emitFallback(
       terminated(

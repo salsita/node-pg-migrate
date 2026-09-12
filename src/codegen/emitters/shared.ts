@@ -93,6 +93,37 @@ function parameterName(option: string): string {
 }
 
 /**
+ * `ALTER INDEX … RESET (…)` for the storage parameters an index of a
+ * partition gets once it is created and doesn't have, then `ALTER INDEX …
+ * SET (…)` for those it has and doesn't get.
+ *
+ * @param index The index, schema-qualified and quoted.
+ * @param own The storage parameters of the index (as stored).
+ * @param given The storage parameters it has once it is created.
+ */
+function storageParameterSettings(
+  index: string,
+  own: ReadonlyArray<string>,
+  given: ReadonlyArray<string>
+): string[] {
+  const settings: string[] = [];
+  const ownNames = new Set(own.map(parameterName));
+  const reset = given.map(parameterName).filter((name) => !ownNames.has(name));
+  if (reset.length > 0) {
+    settings.push(
+      `ALTER INDEX ${index} RESET (${reset.map(quoteIdentifier).join(', ')});`
+    );
+  }
+
+  const set = own.filter((option) => !given.includes(option));
+  if (set.length > 0) {
+    settings.push(`ALTER INDEX ${index} SET (${storageParameters(set)});`);
+  }
+
+  return settings;
+}
+
+/**
  * What the indexes of partitions still need once the index of their
  * partitioned table, or its constraint, has created or attached them, and
  * why:
@@ -126,22 +157,13 @@ export function partitionIndexSettings(
     });
     const table = qualifiedName(partitionIndex.table);
     if (withoutOnly(partitionIndex.definition) === undefined) {
-      const own = partitionIndex.options ?? [];
-      const given = created(partitionIndex);
-      const ownNames = new Set(own.map(parameterName));
-      const reset = given
-        .map(parameterName)
-        .filter((name) => !ownNames.has(name));
-      if (reset.length > 0) {
-        settings.push(
-          `ALTER INDEX ${index} RESET (${reset.map(quoteIdentifier).join(', ')});`
-        );
-      }
-
-      const set = own.filter((option) => !given.includes(option));
-      if (set.length > 0) {
-        settings.push(`ALTER INDEX ${index} SET (${storageParameters(set)});`);
-      }
+      settings.push(
+        ...storageParameterSettings(
+          index,
+          partitionIndex.options ?? [],
+          created(partitionIndex)
+        )
+      );
     }
 
     if (partitionIndex.clustered === true) {

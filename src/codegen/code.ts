@@ -120,10 +120,10 @@ export function object(
     }
   }
 
-  const text =
-    kept.length === 0
-      ? '{}'
-      : `{ ${kept.map(([key, value]) => `${key}: ${value.text}`).join(', ')} }`;
+  const properties = kept
+    .map(([key, value]) => `${key}: ${value.text}`)
+    .join(', ');
+  const text = kept.length === 0 ? '{}' : `{ ${properties} }`;
 
   return { kind: 'object', entries: kept, text };
 }

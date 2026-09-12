@@ -1,5 +1,4 @@
-import type { SchemaQualifiedName } from '../../introspect/types';
-import type { Operator } from '../../introspect/types';
+import type { Operator, SchemaQualifiedName } from '../../introspect/types';
 import type { Code } from '../code';
 import { object, raw, statement, str } from '../code';
 import { nameCode } from '../names';
