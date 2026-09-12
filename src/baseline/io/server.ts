@@ -20,14 +20,13 @@ export interface InstalledExtension {
 }
 
 /**
- * The server's version and lock table settings, and the `relkind` of the
- * relation with the migrations table's name, `null` when there is none. The
- * name is `$1`, quoted and schema-qualified.
+ * The server's version and lock table settings, and whether the migrations
+ * table exists and which sequence its `id` column uses. The table's name is
+ * `$1`, quoted and schema-qualified.
  *
- * It only reads the catalogs: the relation itself is never selected from (so
- * a view's definition, a foreign table's wrapper, etc. never run), and its
- * history is only counted once {@link readHistory} has checked that it is an
- * ordinary or partitioned table.
+ * `pg_get_serial_sequence()` fails for a missing table, so it only runs when
+ * the table exists. (It fails for a missing `id` column too, but the runner
+ * cannot use a migrations table without one either.)
  *
  * The settings stay text: a database may define its own casts from text, and
  * the queries of this file must not run code of the database.
@@ -37,11 +36,20 @@ const FACTS_QUERY = `SELECT
   pg_catalog.current_setting('server_version_num') AS version_num,
   pg_catalog.current_setting('max_connections') AS max_connections,
   pg_catalog.current_setting('max_prepared_transactions') AS max_prepared_transactions,
-  (
-    SELECT c.relkind
-    FROM pg_catalog.pg_class AS c
-    WHERE c.oid OPERATOR(pg_catalog.=) pg_catalog.to_regclass($1)
-  ) AS relkind`;
+  pg_catalog.to_regclass($1) IS NOT NULL AS table_exists,
+  CASE WHEN pg_catalog.to_regclass($1) IS NOT NULL
+    THEN pg_catalog.pg_get_serial_sequence($1, 'id')
+  END AS sequence`;
+
+/**
+ * The `relkind` of the relation with the migrations table's name (`$1`,
+ * quoted and schema-qualified): one row, or none when no relation has that
+ * name. It only reads `pg_class`, never the relation itself, so a view's
+ * definition, a foreign table's wrapper, etc. never run.
+ */
+const RELKIND_QUERY = `SELECT c.relkind
+FROM pg_catalog.pg_class AS c
+WHERE c.oid OPERATOR(pg_catalog.=) pg_catalog.to_regclass($1)`;
 
 /**
  * The `relkind` codes of relations baseline reads as a migrations table: an
@@ -67,18 +75,6 @@ const RELKIND_LABELS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Counts the rows and reads the `id` column's sequence of the migrations
- * table in one query. It only runs once {@link FACTS_QUERY} has shown the
- * relation is an ordinary or partitioned table, so `count(*)` over it runs no
- * code of the database. `pg_get_serial_sequence()` has no column references,
- * so it is allowed alongside the aggregate; it returns `null` when the `id`
- * column has no sequence.
- */
-const HISTORY_QUERY = `SELECT
-  pg_catalog.count(*) AS count,
-  pg_catalog.pg_get_serial_sequence($1, 'id') AS sequence`;
-
-/**
  * The extensions pg_dump would dump: all but the ones created with the
  * database (object IDs below `FirstNormalObjectId`), such as `plpgsql`. The
  * operators are the built-in ones, whatever the search path.
@@ -98,19 +94,7 @@ interface FactsRow {
   readonly version_num: string;
   readonly max_connections: string;
   readonly max_prepared_transactions: string;
-
-  /**
-   * The `relkind` of the relation with the migrations table's name, or `null`
-   * when no relation has it.
-   */
-  readonly relkind: string | null;
-}
-
-/**
- * What {@link HISTORY_QUERY} returns.
- */
-interface HistoryRow {
-  readonly count: string;
+  readonly table_exists: boolean;
   readonly sequence: string | null;
 }
 
@@ -120,6 +104,20 @@ interface HistoryRow {
  */
 const DEFAULT_MAX_CONNECTIONS = 100;
 const DEFAULT_MAX_PREPARED_TRANSACTIONS = 0;
+
+/**
+ * Counts the rows of a table.
+ *
+ * @param db The database connection.
+ * @param table The table, quoted and schema-qualified.
+ */
+async function countRows(db: DBConnection, table: string): Promise<number> {
+  const [{ count }]: Array<{ count: string }> = await db.select(
+    `SELECT pg_catalog.count(*) AS count FROM ${table}`
+  );
+
+  return Number(count);
+}
 
 /**
  * The `migrationsSequence` of the facts, from what `pg_get_serial_sequence()`
@@ -139,35 +137,6 @@ function sequenceOf(sequence: string | null): {
 }
 
 /**
- * The migration history of the migrations table: how many migrations it
- * records and which sequence its `id` column uses. The caller must have
- * checked that the relation is an ordinary or partitioned table, so that
- * `count(*)` over it runs no code of the database.
- *
- * @param db The database connection.
- * @param table The table, quoted and schema-qualified.
- */
-async function readHistory(
-  db: DBConnection,
-  table: string
-): Promise<{
-  readonly migrationsTableExists: true;
-  readonly recordedMigrations: number;
-  readonly migrationsSequence?: QualifiedName;
-}> {
-  const [{ count, sequence }]: HistoryRow[] = await db.select({
-    text: `${HISTORY_QUERY}\nFROM ${table}`,
-    values: [table],
-  });
-
-  return {
-    migrationsTableExists: true,
-    recordedMigrations: Number(count),
-    ...sequenceOf(sequence),
-  };
-}
-
-/**
  * The refusal for a migrations table that exists but is not an ordinary or
  * partitioned table, naming it and its kind (see {@link RELKIND_LABELS}).
  *
@@ -184,6 +153,30 @@ function invalidMigrationsTable(table: string, relkind: string): BaselineError {
 }
 
 /**
+ * Refuses a relation with the migrations table's name that exists but is not
+ * an ordinary or partitioned table, with a `BaselineError` with code
+ * `INVALID_MIGRATIONS_TABLE`. It decides from `pg_class` alone (see
+ * {@link RELKIND_QUERY}), so none of the relation's code runs. A missing
+ * relation passes: it means there is no history.
+ *
+ * @param db The database connection.
+ * @param table The relation, quoted and schema-qualified.
+ */
+async function assertMigrationsTableKind(
+  db: DBConnection,
+  table: string
+): Promise<void> {
+  const rows: Array<{ relkind: string }> = await db.select({
+    text: RELKIND_QUERY,
+    values: [table],
+  });
+  const relkind = rows[0]?.relkind;
+  if (relkind !== undefined && !TABLE_RELKINDS.has(relkind)) {
+    throw invalidMigrationsTable(table, relkind);
+  }
+}
+
+/**
  * Reads what `baseline()` checks before it dumps the schema: the kind and the
  * version of the server, the settings that size its lock table, and the
  * migration history.
@@ -192,16 +185,22 @@ function invalidMigrationsTable(table: string, relkind: string): BaselineError {
  * read-only transaction that it rolls back. On CockroachDB it stops after
  * `SELECT version()`.
  *
- * When a relation with the migrations table's name exists but is not an
- * ordinary or partitioned table (a view, a materialized view, a foreign
- * table, …), it throws a `BaselineError` with code `INVALID_MIGRATIONS_TABLE`
- * without reading it, so none of its code runs.
+ * With `check.requireTable`, which `baseline()` always sets, a relation with
+ * the migrations table's name that exists but is not an ordinary or
+ * partitioned table (a view, a materialized view, a foreign table, …) makes
+ * it throw a `BaselineError` with code `INVALID_MIGRATIONS_TABLE`. That is
+ * decided from `pg_class` first, before any other query names the relation,
+ * so none of its code runs. Without it, whatever relation has that name is
+ * counted as the migrations table.
  *
  * The connection must not be in a transaction already: the rollback would end
  * it.
  *
  * @param db The database connection.
  * @param options Where the migrations table is.
+ * @param check What to check before the history is read.
+ * @param check.requireTable Whether to refuse a migrations relation that is
+ * not an ordinary or partitioned table.
  */
 export async function readServerFacts(
   db: DBConnection,
@@ -215,7 +214,8 @@ export async function readServerFacts(
      * The table storing which migrations have been run.
      */
     readonly migrationsTable: string;
-  }
+  },
+  check: { readonly requireTable?: boolean } = {}
 ): Promise<ServerFacts> {
   const [{ version }]: Array<{ version: string }> = await db.select(
     'SELECT pg_catalog.version() AS version'
@@ -236,21 +236,19 @@ export async function readServerFacts(
 
   await db.query('BEGIN READ ONLY');
   try {
+    // Before anything else names the relation: pg_get_serial_sequence() would
+    // fail on a view without an `id` column, and counting would run its code.
+    if (check.requireTable === true) {
+      await assertMigrationsTableKind(db, table);
+    }
+
     const [facts]: FactsRow[] = await db.select({
       text: FACTS_QUERY,
       values: [table],
     });
-    // A relation with that name exists, but it is not a table: refuse before
-    // counting the history, so none of its code runs (a view's definition, a
-    // foreign table's wrapper, …).
-    if (facts.relkind !== null && !TABLE_RELKINDS.has(facts.relkind)) {
-      throw invalidMigrationsTable(table, facts.relkind);
-    }
-
-    const history =
-      facts.relkind === null
-        ? { migrationsTableExists: false, recordedMigrations: 0 }
-        : await readHistory(db, table);
+    const recordedMigrations = facts.table_exists
+      ? await countRows(db, table)
+      : 0;
 
     return {
       isCockroach: false,
@@ -258,7 +256,9 @@ export async function readServerFacts(
       versionNum: Number(facts.version_num),
       maxConnections: Number(facts.max_connections),
       maxPreparedTransactions: Number(facts.max_prepared_transactions),
-      ...history,
+      migrationsTableExists: facts.table_exists,
+      recordedMigrations,
+      ...sequenceOf(facts.sequence),
     };
   } finally {
     await db.query('ROLLBACK');

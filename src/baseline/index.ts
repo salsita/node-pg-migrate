@@ -98,7 +98,7 @@ async function inspectServer(
 }> {
   const db = connect(connection, settings.logger);
   try {
-    const facts = await readServerFacts(db, settings);
+    const facts = await readServerFacts(db, settings, { requireTable: true });
     assertCanBaseline(facts, settings);
     await assertIncludedSchemasExist(db, options.includeSchemas);
 
@@ -294,7 +294,7 @@ async function readCatalogs(
 ): Promise<{ readonly facts: ServerFacts; readonly model: SchemaModel }> {
   const db = connect(plan.connection, settings.logger);
   try {
-    const facts = await readServerFacts(db, settings);
+    const facts = await readServerFacts(db, settings, { requireTable: true });
     assertCanBaseline(facts, settings);
     await assertIncludedSchemasExist(db, plan.includeSchemas ?? []);
     const model = await introspect(db, {
