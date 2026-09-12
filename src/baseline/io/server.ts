@@ -188,6 +188,11 @@ async function assertMigrationsTableKind(
  * read-only transaction that it rolls back. On CockroachDB it stops after
  * `SELECT version()`.
  *
+ * Its transaction does not pin the rendering settings that `introspect()` does
+ * (`TimeZone`, `DateStyle`, …): it only reads settings as text, names, a
+ * `relkind` and a row count, never an expression the server renders, so
+ * nothing it returns depends on the session.
+ *
  * With `check.requireTable`, which `baseline()` always sets, a relation with
  * the migrations table's name that exists but is not an ordinary or
  * partitioned table (a view, a materialized view, a foreign table, …) makes

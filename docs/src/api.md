@@ -199,7 +199,11 @@ function generateBaselineFromCatalogs(
   `query(text, values?) => Promise<{ rows }>`. It must be one connection, not a pool, and must
   not be in a transaction: each read runs in a transaction of its own, which it rolls back. It is
   never closed. Values have to be parsed the way node-postgres parses them (booleans as booleans,
-  arrays as arrays, `bytea` as bytes); a connected `pg.Client` and a PGlite instance both are.
+  arrays as arrays, `bytea` as bytes); a connected `pg.Client` and a PGlite instance both are. The
+  session's rendering settings don't change what it generates: inside its own transaction it pins
+  `TimeZone` to UTC and `DateStyle`, `IntervalStyle`, `extra_float_digits` and `bytea_output` to
+  the values the migration is written with, so a browser in any time zone gets the same file as a
+  server in UTC. Your session keeps its own values.
 - `options` are the [Baseline Options](#baseline-options) that decide what the migration says —
   `format` (`ts` by default, or `js`), `schema`, `migrationsTable`, `migrationsSchema`,
   `includeSchemas`, `excludeSchemas`, `strict`, `decamelize` — plus `migrationName`, the file

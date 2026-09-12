@@ -336,6 +336,14 @@ The real file also starts with a header comment, and with two `pgm.sql(…)` cal
   and `--include-schema` leaves out casts, which belong to no schema.
 - Names are relative to the first `--schema`. Objects in other schemas are written as
   `{ schema, name }`, and column defaults as `pgm.func(…)`, as PostgreSQL stores them.
+- The same database always gives the same file: timestamps are rendered in UTC and ISO
+  (`'2022-01-01 00:00:00+00'`) regardless of the session's `TimeZone` and `DateStyle`, and so are
+  intervals, floats and bytes (`IntervalStyle`, `extra_float_digits`, `bytea_output`), so two
+  people in two time zones get the same migration. `baseline` pins those settings for its own
+  read-only transaction only, and leaves your session alone. `--format sql` pins less: pg_dump
+  sets `DATESTYLE`, `INTERVALSTYLE` and `extra_float_digits` on its own connection, but not the
+  time zone, so its `timestamptz` literals follow the reader's — they carry their offset, so they
+  still restore to the same instant.
 - Owners, grants, publications, subscriptions, the migrations table and objects that belong to
   an extension are left out, like in the SQL baseline.
 - Materialized views are created `WITH NO DATA`, like in the SQL baseline: refresh them after
