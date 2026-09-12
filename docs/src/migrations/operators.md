@@ -112,6 +112,33 @@
 | `index_method`            | `string`                  | name of the index method of operator class |
 | `new_operator_class_name` | [Name](/migrations/#type) | new name of the operator class             |
 
+See [Renaming and schemas](/migrations/#renaming-and-schemas) for schema
+normalization, automatic reversal, and supported `PgLiteral` names.
+The index access method identifies the operator class and is preserved during
+automatic reversal, including when another access method has the same object name.
+For both operator rename operations, `index_method` must be a string containing
+one unqualified PostgreSQL identifier, such as `'btree'` or `'"Custom.Method"'`.
+Accepted text is used as written, without extra quoting or decamelization.
+
+> [!WARNING]
+> These two renames now reject missing/non-string access methods, qualified names,
+> comments, and other SQL fragments in both directions. Previously valid raw
+> forms such as `'btree /* comment */'` must be replaced with a single identifier
+> when replaying migrations, or handled with explicit `pgm.sql` in both directions.
+
+```javascript
+pgm.renameOperatorClass({ schema: 'app', name: 'old_class' }, 'btree', {
+  schema: 'app',
+  name: 'new_class',
+});
+// up:   ALTER OPERATOR CLASS "app"."old_class" USING btree RENAME TO "new_class";
+// down: ALTER OPERATOR CLASS "app"."new_class" USING btree RENAME TO "old_class";
+```
+
+To move an operator class between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER OPERATOR CLASS "old_schema"."my_class" USING btree SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
+
 ## Operation: `alterOperatorClass`
 
 #### `pgm.createOperatorFamily( operator_family_name, index_method )`
@@ -162,6 +189,25 @@
 | `old_operator_family_name` | [Name](/migrations/#type) | old name of the operator family             |
 | `index_method`             | `string`                  | name of the index method of operator family |
 | `new_operator_family_name` | [Name](/migrations/#type) | new name of the operator family             |
+
+See [Renaming and schemas](/migrations/#renaming-and-schemas) for schema
+normalization, automatic reversal, and supported `PgLiteral` names.
+The index access method identifies the operator family and is preserved during
+automatic reversal, including when another access method has the same object name.
+The same [access-method requirements](#operation-renameoperatorclass) apply here.
+
+```javascript
+pgm.renameOperatorFamily({ schema: 'app', name: 'old_family' }, 'btree', {
+  schema: 'app',
+  name: 'new_family',
+});
+// up:   ALTER OPERATOR FAMILY "app"."old_family" USING btree RENAME TO "new_family";
+// down: ALTER OPERATOR FAMILY "app"."new_family" USING btree RENAME TO "old_family";
+```
+
+To move an operator family between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER OPERATOR FAMILY "old_schema"."my_family" USING btree SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.
 
 ## Operation: `alterOperatorFamily`
 

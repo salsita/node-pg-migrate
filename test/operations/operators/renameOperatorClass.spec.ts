@@ -33,7 +33,30 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER OPERATOR CLASS "myschema"."gist__int_ops" USING gist RENAME TO "myschema"."gist__int_ops_new";'
+          'ALTER OPERATOR CLASS "myschema"."gist__int_ops" USING gist RENAME TO "gist__int_ops_new";'
+        );
+      });
+
+      describe.each(['up', 'down'] as const)('%s identity', (direction) => {
+        const operation =
+          direction === 'down'
+            ? renameOperatorClassFn.reverse
+            : renameOperatorClassFn;
+
+        it.each(['btree', 'hash', '"customMethod"'])(
+          'preserves access method %s',
+          (method) => {
+            expect(
+              operation({ schema: 'app', name: 'old' }, method, {
+                schema: 'app',
+                name: 'new',
+              })
+            ).toBe(
+              direction === 'down'
+                ? `ALTER OPERATOR CLASS "app"."new" USING ${method} RENAME TO "old";`
+                : `ALTER OPERATOR CLASS "app"."old" USING ${method} RENAME TO "new";`
+            );
+          }
         );
       });
 

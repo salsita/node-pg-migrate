@@ -63,7 +63,7 @@ If array of strings, it is interpreted as is, if array of objects:
 | `ifExists` | `boolean` | drops function only if it exists |
 | `cascade`  | `boolean` | drops also dependent objects     |
 
-## Operation: `alterFunction`
+## Operation: `renameFunction`
 
 #### `pgm.renameFunction( old_function_name, function_params, new_function_name )`
 
@@ -77,3 +77,28 @@ If array of strings, it is interpreted as is, if array of objects:
 | `old_function_name` | [Name](/migrations/#type)       | old name of the function   |
 | `function_params`   | `array[string]` `array[object]` | parameters of the function |
 | `new_function_name` | [Name](/migrations/#type)       | new name of the function   |
+
+See [Renaming and schemas](/migrations/#renaming-and-schemas) for schema
+normalization, automatic reversal, and supported `PgLiteral` names.
+The function parameters identify the overload and are preserved during reversal.
+Use `[]` for a function with no parameters; include the input argument types to
+select an overloaded function.
+Parameter objects may be reused from `createFunction`: their `default` values,
+including defaults supplied by type shorthands, are omitted from rename SQL.
+Argument modes, names, and types are preserved. Renaming does not change the
+function's stored defaults; `createFunction` continues to emit them.
+String parameters and object `type` fields must describe argument types without
+inline `DEFAULT` clauses.
+
+```javascript
+pgm.renameFunction({ schema: 'app', name: 'old_function' }, ['integer'], {
+  schema: 'app',
+  name: 'new_function',
+});
+// up:   ALTER FUNCTION "app"."old_function"(integer) RENAME TO "new_function";
+// down: ALTER FUNCTION "app"."new_function"(integer) RENAME TO "old_function";
+```
+
+To move a function between schemas, use SQL explicitly, for example
+`pgm.sql('ALTER FUNCTION "old_schema"."my_function"(integer) SET SCHEMA "new_schema"')`.
+Provide the corresponding SQL in your down migration to reverse that move.

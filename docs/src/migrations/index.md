@@ -123,7 +123,8 @@ type Name = string | { schema?: string; name: string } | PgLiteralValue;
 ## Renaming and schemas
 
 `renameTable`, `renameType`, `renameDomain`, `renameView`,
-`renameMaterializedView`, `renameSequence`, and `renameIndex` preserve the
+`renameMaterializedView`, `renameSequence`, `renameIndex`, `renameFunction`,
+`renameOperatorClass`, and `renameOperatorFamily` preserve the
 source object's schema, including during automatic reversal:
 
 ```javascript
@@ -153,11 +154,12 @@ quoted identifier are supported: `pgm.func('"new.name"')` is one name, whereas
 > [!WARNING]
 > Qualified `PgLiteral` sources and destinations now raise an error during SQL
 > generation in both directions. Previously, a qualified source could work going
-> up with a manually written down migration. Replace it with `{ schema, name }`,
+> up with a manually written down migration, including in already-applied
+> migrations that are replayed on a fresh database. Replace it with `{ schema, name }`,
 > which uses normal identifier quoting and decamelization, or use `pgm.sql` with
 > explicit SQL in both directions. Other raw forms, including expressions,
 > comments, multiple tokens, and `U&` Unicode escape syntax, are also rejected by
-> these seven rename operations. Other uses of `PgLiteral` are unchanged.
+> these ten rename operations. Other uses of `PgLiteral` are unchanged.
 
 ## Locking
 

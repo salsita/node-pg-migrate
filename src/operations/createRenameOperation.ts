@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../migrationOptions';
+import { isSingleIdentifier } from '../utils/isSingleIdentifier';
 import { isPgLiteral } from '../utils/PgLiteral';
 import type { Name, Reversible } from './generalTypes';
 import { isNameObject, isSchemaNameObject } from './generalTypes';
@@ -9,13 +10,8 @@ interface RenameOptions {
   operation: string;
   keyword: string;
   label: string;
+  sourceSuffix?: string;
 }
-
-// A single ordinary or double-quoted PostgreSQL identifier, with optional SQL
-// whitespace. Dots and doubled quotes inside a quoted identifier are content.
-// Raw SQL expressions, qualifications and U& escape syntax require explicit SQL.
-const SINGLE_IDENTIFIER =
-  /^[ \t\r\n\f\v]*(?:[A-Za-z_\u0080-\u{10FFFF}][A-Za-z0-9_$\u0080-\u{10FFFF}]*|"(?:[^"]|"")+")[ \t\r\n\f\v]*$/u;
 
 function qualify(schemaSql: string | undefined, nameSql: string): string {
   return schemaSql ? `${schemaSql}.${nameSql}` : nameSql;
@@ -24,12 +20,12 @@ function qualify(schemaSql: string | undefined, nameSql: string): string {
 /** Creates the reversible pair for an object renamed within its schema. */
 export function createRenameOperation(
   mOptions: MigrationOptions,
-  { operation, keyword, label }: RenameOptions
+  { operation, keyword, label, sourceSuffix = '' }: RenameOptions
 ): Reversible<RenameFn> {
   const nameParts = (value: Name, position: 'source' | 'destination') => {
     if (isPgLiteral(value)) {
       const nameSql = mOptions.literal(value);
-      if (nameSql.includes('\0') || !SINGLE_IDENTIFIER.test(nameSql)) {
+      if (!isSingleIdentifier(nameSql)) {
         throw new Error(
           `${operation} requires a single unqualified identifier for a PgLiteral ${position}; use { schema, name } for schema-qualified names`
         );
@@ -69,7 +65,7 @@ export function createRenameOperation(
       source,
       destination
     );
-    return `ALTER ${keyword} ${qualify(schemaSql, oldNameSql)} RENAME TO ${newNameSql};`;
+    return `ALTER ${keyword} ${qualify(schemaSql, oldNameSql)}${sourceSuffix} RENAME TO ${newNameSql};`;
   };
 
   const reverse: RenameFn = (source, destination) => {
@@ -77,7 +73,7 @@ export function createRenameOperation(
       source,
       destination
     );
-    return `ALTER ${keyword} ${qualify(schemaSql, newNameSql)} RENAME TO ${oldNameSql};`;
+    return `ALTER ${keyword} ${qualify(schemaSql, newNameSql)}${sourceSuffix} RENAME TO ${oldNameSql};`;
   };
 
   return Object.assign(rename, { reverse });

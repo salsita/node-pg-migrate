@@ -1,5 +1,7 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { createRenameOperation } from '../createRenameOperation';
 import type { Name, Reversible } from '../generalTypes';
+import { formatIndexMethod } from './formatIndexMethod';
 
 export type RenameOperatorClassFn = (
   oldOperatorClassName: Name,
@@ -12,19 +14,22 @@ export type RenameOperatorClass = Reversible<RenameOperatorClassFn>;
 export function renameOperatorClass(
   mOptions: MigrationOptions
 ): RenameOperatorClass {
+  const rename = (indexMethod: string) =>
+    createRenameOperation(mOptions, {
+      operation: 'renameOperatorClass',
+      keyword: 'OPERATOR CLASS',
+      label: 'an operator class',
+      sourceSuffix: formatIndexMethod(indexMethod, 'renameOperatorClass'),
+    });
+
   const _rename: RenameOperatorClass = (
     oldOperatorClassName,
     indexMethod,
     newOperatorClassName
-  ) => {
-    const oldOperatorClassNameStr = mOptions.literal(oldOperatorClassName);
-    const newOperatorClassNameStr = mOptions.literal(newOperatorClassName);
-
-    return `ALTER OPERATOR CLASS ${oldOperatorClassNameStr} USING ${indexMethod} RENAME TO ${newOperatorClassNameStr};`;
-  };
+  ) => rename(indexMethod)(oldOperatorClassName, newOperatorClassName);
 
   _rename.reverse = (oldOperatorClassName, indexMethod, newOperatorClassName) =>
-    _rename(newOperatorClassName, indexMethod, oldOperatorClassName);
+    rename(indexMethod).reverse(oldOperatorClassName, newOperatorClassName);
 
   return _rename;
 }
