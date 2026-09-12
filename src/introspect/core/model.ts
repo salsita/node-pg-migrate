@@ -9,6 +9,7 @@ import type {
   Column,
   ColumnGenerated,
   ColumnIdentity,
+  ColumnInheritance,
   ColumnRow,
   CompositeAttribute,
   CompositeRow,
@@ -217,6 +218,21 @@ interface Relation {
 }
 
 /**
+ * The `NOT NULL` constraint of a table column (PostgreSQL 18).
+ */
+interface NotNullRow {
+  /**
+   * The constraint, as the column has it.
+   */
+  readonly constraint: NotNullConstraint;
+
+  /**
+   * Whether the table declares it itself (`conislocal`).
+   */
+  readonly local: boolean;
+}
+
+/**
  * The rows of the `constraints` query, by what they become.
  */
 interface ConstraintRows {
@@ -228,7 +244,7 @@ interface ConstraintRows {
   /**
    * The `NOT NULL` constraints of table columns, by `<relid>:<attnum>`.
    */
-  readonly notNull: ReadonlyMap<string, NotNullConstraint>;
+  readonly notNull: ReadonlyMap<string, NotNullRow>;
 
   /**
    * The other constraints of tables.
@@ -673,17 +689,84 @@ function generatedOf(row: ColumnRow): Pick<Column, 'generated'> {
   };
 }
 
+/**
+ * The default of a column, as the model has it: generated columns have none
+ * (their expression is `generated.expression`).
+ *
+ * @param row The column.
+ * @returns The default, or `null`.
+ */
+function defaultOf(row: ColumnRow): string | null {
+  return row.attgenerated === '' ? row.default : null;
+}
+
+/**
+ * What a column gets from the columns of its table's parents (see
+ * `ColumnInheritance`).
+ *
+ * @param row The column.
+ * @param parents The columns of each parent of its table, in `inherits`
+ * order, with the parent's OID; `undefined` when a parent is not among the
+ * tables of the rows.
+ * @param notNull The `NOT NULL` constraints of table columns, by
+ * `<relid>:<attnum>`.
+ * @returns What the column gets, or `undefined` when it inherits nothing
+ * that the rows show.
+ */
+function columnInheritance(
+  row: ColumnRow,
+  parents:
+    | ReadonlyArray<{
+        readonly oid: number;
+        readonly columns: ReadonlyArray<ColumnRow>;
+      }>
+    | undefined,
+  notNull: ReadonlyMap<string, NotNullRow>
+): ColumnInheritance | undefined {
+  if (row.attinhcount === 0 || parents === undefined) {
+    return undefined;
+  }
+
+  const inherited = parents.flatMap(({ oid, columns }) =>
+    columns
+      .filter((column) => column.name === row.name)
+      .map((column) => ({ oid, column }))
+  );
+  if (inherited.length === 0) {
+    return undefined;
+  }
+
+  const parentDefault = inherited
+    .map(({ column }) => defaultOf(column))
+    .find((expression) => expression !== null);
+  const parentNotNull = inherited.some(
+    ({ oid, column }) =>
+      column.attnotnull &&
+      notNull.get(`${oid}:${column.attnum}`)?.constraint.noInherit !== true
+  );
+
+  return {
+    ...optional('parentDefault', parentDefault),
+    parentNotNull,
+    ...optional(
+      'localNotNull',
+      notNull.get(`${row.relid}:${row.attnum}`)?.local
+    ),
+  };
+}
+
 function columnOf(
   row: ColumnRow,
   notNullConstraint: NotNullConstraint | undefined,
-  ownedSequence: OwnedSequence | undefined
+  ownedSequence: OwnedSequence | undefined,
+  inheritance?: ColumnInheritance
 ): Column {
   return {
     name: row.name,
     type: row.type,
     notNull: row.attnotnull,
     ...optional('notNullConstraint', notNullConstraint),
-    ...optional('default', row.attgenerated === '' ? row.default : null),
+    ...optional('default', defaultOf(row)),
     ...identityOf(row),
     ...generatedOf(row),
     ...optional('ownedSequence', ownedSequence),
@@ -691,6 +774,7 @@ function columnOf(
     ...optional('comment', row.comment),
     local: row.attislocal,
     inheritCount: row.attinhcount,
+    ...optional('inheritance', inheritance),
     ...optional('statisticsTarget', row.statisticsTarget),
     ...optional(
       'storage',
@@ -927,7 +1011,7 @@ function statisticsOf(
  */
 function splitConstraints(rows: ReadonlyArray<ConstraintRow>): ConstraintRows {
   const domainRows: ConstraintRow[] = [];
-  const notNull = new Map<string, NotNullConstraint>();
+  const notNull = new Map<string, NotNullRow>();
   const tables: ConstraintRow[] = [];
   for (const row of rows) {
     const attnum = row.conkey?.at(0);
@@ -937,9 +1021,12 @@ function splitConstraints(rows: ReadonlyArray<ConstraintRow>): ConstraintRows {
       tables.push(row);
     } else if (attnum !== undefined) {
       notNull.set(`${row.relid}:${attnum}`, {
-        name: row.name,
-        noInherit: row.connoinherit,
-        validated: row.convalidated,
+        constraint: {
+          name: row.name,
+          noInherit: row.connoinherit,
+          validated: row.convalidated,
+        },
+        local: row.conislocal,
       });
     }
   }
@@ -1009,7 +1096,12 @@ function ownedSequences(
  * - Columns go to their table, view, materialized view or composite type
  *   (by `relid`), in `attnum` order. The `default` of a generated column is
  *   its `generated.expression`. A column gets `ownedSequence` when exactly one
- *   kept sequence is owned by it.
+ *   kept sequence is owned by it. A column that its table inherits
+ *   (`attinhcount > 0`) gets `inheritance` from the columns of the same name
+ *   of the table's parents (its `inherits` rows, found by name among the
+ *   tables of the rows), unless a parent is not among them: the first
+ *   parent default, whether a parent's column is `NOT NULL` (without `NO
+ *   INHERIT`), and the `conislocal` of its own `NOT NULL` row.
  * - Table constraints that are not local (`conislocal`) are left out. `NOT
  *   NULL` rows (`contype = 'n'`) are folded into their column (`conkey`) as
  *   `notNullConstraint`, or into their domain as `notNullConstraintName`;
@@ -1077,6 +1169,23 @@ export function rowsToModel(
   );
   const owned = ownedSequences(sequences);
 
+  // The parents of a table, for what its columns inherit from theirs: every
+  // table of the rows, in or out of scope.
+  const tableOids = new Map(rows.tables.map((row) => [nameKey(row), row.oid]));
+  const parentsOf = (
+    row: TableRow
+  ):
+    | Array<{ readonly oid: number; readonly columns: ColumnRow[] }>
+    | undefined => {
+    const parents = row.inherits.map((parent) =>
+      tableOids.get(nameKey(parent))
+    );
+
+    return parents.every((oid) => oid !== undefined)
+      ? parents.map((oid) => ({ oid, columns: columnsOf(oid) }))
+      : undefined;
+  };
+
   const tables = sortObjects(
     rows.tables
       .filter(
@@ -1084,18 +1193,22 @@ export function rowsToModel(
           inScope(row.schema) &&
           !(row.schema === migrationsSchema && row.name === migrationsTable)
       )
-      .map((row) =>
-        tableOf(
+      .map((row) => {
+        const parents = parentsOf(row);
+
+        return tableOf(
           row,
           columnsOf(row.oid).map((column) =>
             columnOf(
               column,
-              constraintRows.notNull.get(`${row.oid}:${column.attnum}`),
-              owned.get(columnKey(row.schema, row.name, column.name))
+              constraintRows.notNull.get(`${row.oid}:${column.attnum}`)
+                ?.constraint,
+              owned.get(columnKey(row.schema, row.name, column.name)),
+              columnInheritance(column, parents, constraintRows.notNull)
             )
           )
-        )
-      )
+        );
+      })
   );
   const views = sortObjects(
     rows.views

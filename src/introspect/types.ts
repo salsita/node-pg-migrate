@@ -918,6 +918,35 @@ export interface NotNullConstraint {
 }
 
 /**
+ * What a column of an inheritance child or a partition gets from the columns
+ * of its parents when the table is created (`CREATE TABLE … INHERITS (…)` or
+ * `CREATE TABLE … PARTITION OF …`), before any `ALTER TABLE` of its own: a
+ * child can then set, change or drop its default, and add `NOT NULL`.
+ */
+export interface ColumnInheritance {
+  /**
+   * The default the column gets from its parents: the one of the first parent
+   * (in `inherits` order) whose column has one, as `pg_get_expr()` writes it.
+   * Left out when no parent's column has a default.
+   */
+  readonly parentDefault?: string;
+
+  /**
+   * Whether the column gets `NOT NULL` from its parents: a parent's column is
+   * `NOT NULL`, with a constraint that is not `NO INHERIT` on PostgreSQL 18.
+   */
+  readonly parentNotNull: boolean;
+
+  /**
+   * On PostgreSQL 18, whether the table declares the column's `NOT NULL`
+   * constraint itself (`conislocal`), besides or instead of inheriting it:
+   * `false` for a constraint the column only inherits, which keeps the
+   * parent's name. Left out on older servers and for nullable columns.
+   */
+  readonly localNotNull?: boolean;
+}
+
+/**
  * A column of a table (`pg_attribute`).
  */
 export interface Column {
@@ -991,6 +1020,14 @@ export interface Column {
    * How many parents the column is inherited from (`attinhcount`).
    */
   readonly inheritCount: number;
+
+  /**
+   * What the column gets from the columns of its table's parents (see
+   * {@link ColumnInheritance}), for a column that the table inherits
+   * (`inheritCount > 0`) from parents that are all in the model. Left out
+   * otherwise.
+   */
+  readonly inheritance?: ColumnInheritance;
 
   /**
    * `ALTER COLUMN … SET STATISTICS` (`attstattarget`), when it is set (not

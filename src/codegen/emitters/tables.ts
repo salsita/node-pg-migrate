@@ -1,6 +1,7 @@
 import { parseQualifiedName } from '../../baseline/core/identifiers';
 import type {
   Column,
+  NotNullConstraint,
   SchemaQualifiedName,
   Table,
 } from '../../introspect/types';
@@ -145,16 +146,232 @@ function localColumns(table: Table): Column[] {
 }
 
 /**
- * Whether the `NOT NULL` constraint of a local column has another name than
- * the one PostgreSQL gives it (`<table>_<column>_not_null`).
+ * The `NOT NULL` constraint of a column when the table declares it itself:
+ * not the one a column only inherits (PostgreSQL 18, `localNotNull` false),
+ * which `CREATE TABLE … INHERITS` gives it with its parent's name.
+ */
+function ownNotNull(column: Column): NotNullConstraint | undefined {
+  return column.inheritance?.localNotNull === false
+    ? undefined
+    : column.notNullConstraint;
+}
+
+/**
+ * Whether `CREATE TABLE` writes `NOT NULL` for a column it lists: when the
+ * column is `NOT NULL` and does not only inherit it.
+ */
+function declaresNotNull(column: Column): boolean {
+  return column.notNull && column.inheritance?.localNotNull !== false;
+}
+
+/**
+ * Whether the `NOT NULL` constraint that a table declares for a column has
+ * another name than the one PostgreSQL gives it (`<table>_<column>_not_null`).
  */
 function hasCustomNotNullName(table: Table, column: Column): boolean {
-  const constraint = column.notNullConstraint;
+  const constraint = ownNotNull(column);
 
   return (
     constraint !== undefined &&
     constraint.name !== makeObjectName(table.name, column.name, 'not_null')
   );
+}
+
+/**
+ * A `NOT NULL` constraint as `ADD CONSTRAINT <name>` takes it, e.g. `NOT NULL
+ * "plate" NOT VALID`.
+ */
+function notNullSql(column: Column, constraint: NotNullConstraint): string {
+  return `NOT NULL ${quoteName(column.name)}${constraint.noInherit ? ' NO INHERIT' : ''}${constraint.validated ? '' : ' NOT VALID'}`;
+}
+
+/**
+ * What a column still needs after `CREATE TABLE` gave it what it inherits
+ * from its parents (see `ColumnInheritance`).
+ */
+interface InheritedColumnChange {
+  readonly column: Column;
+
+  /**
+   * The default to set, or `null` to drop the one it inherited; left out
+   * when it has the right one.
+   */
+  readonly default?: string | null;
+
+  /**
+   * `SET NOT NULL`: the table declares the `NOT NULL` of a column it only
+   * inherits.
+   */
+  readonly setNotNull: boolean;
+
+  /**
+   * A `NOT NULL` constraint that `SET NOT NULL` cannot make: one with
+   * another name than `<table>_<column>_not_null`, `NO INHERIT` or `NOT
+   * VALID` (PostgreSQL 18).
+   */
+  readonly addNotNull?: NotNullConstraint;
+}
+
+/**
+ * The `NOT NULL` that a table declares for a column it does not list in
+ * `CREATE TABLE` (see {@link inheritedColumnChange}).
+ */
+function inheritedNotNullChange(
+  table: Table,
+  column: Column,
+  parentNotNull: boolean
+): Pick<InheritedColumnChange, 'setNotNull' | 'addNotNull'> {
+  const constraint = column.notNullConstraint;
+  if (constraint === undefined) {
+    return { setNotNull: column.notNull && !parentNotNull };
+  }
+
+  if (column.inheritance?.localNotNull !== true) {
+    return { setNotNull: false };
+  }
+
+  // SET NOT NULL keeps the name of an inherited constraint, and names a new
+  // one <table>_<column>_not_null.
+  const setNotNull =
+    parentNotNull ||
+    (constraint.name === makeObjectName(table.name, column.name, 'not_null') &&
+      !constraint.noInherit &&
+      constraint.validated);
+
+  return setNotNull ? { setNotNull } : { setNotNull, addNotNull: constraint };
+}
+
+/**
+ * What a column still needs after `CREATE TABLE`, which gives an inherited
+ * column the default and the `NOT NULL` of its parents' columns. `CREATE
+ * TABLE` writes a column's own default and `NOT NULL` when it lists the
+ * column: every column of a partition (`WITH OPTIONS`), the local columns of
+ * an inheritance child. So a column needs its own default when it has none
+ * (dropping the inherited one) or, when it is not listed, another one than
+ * its parents'; and a column that is not listed needs the `NOT NULL` its
+ * table declares itself.
+ *
+ * @param table The table.
+ * @param column One of its columns.
+ * @returns The changes, or `undefined` when there are none.
+ */
+function inheritedColumnChange(
+  table: Table,
+  column: Column
+): InheritedColumnChange | undefined {
+  const { inheritance } = column;
+  if (inheritance === undefined) {
+    return undefined;
+  }
+
+  const listed = table.partitionOf !== undefined || column.local;
+  const created =
+    listed && column.default !== undefined
+      ? column.default
+      : inheritance.parentDefault;
+  const notNull = listed
+    ? { setNotNull: false }
+    : inheritedNotNullChange(table, column, inheritance.parentNotNull);
+  if (
+    created === column.default &&
+    !notNull.setNotNull &&
+    notNull.addNotNull === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    column,
+    ...(created === column.default ? {} : { default: column.default ?? null }),
+    ...notNull,
+  };
+}
+
+/**
+ * The changes of the columns of a table after `CREATE TABLE` (see
+ * {@link inheritedColumnChange}).
+ */
+function inheritedColumnChanges(table: Table): InheritedColumnChange[] {
+  return table.columns.flatMap((column) => {
+    const change = inheritedColumnChange(table, column);
+
+    return change === undefined ? [] : [change];
+  });
+}
+
+/**
+ * The `pgm` calls of a change of a column after `createTable`:
+ * `pgm.alterColumn(table, column, { default, notNull })` and
+ * `pgm.addConstraint(table, name, 'NOT NULL …')`.
+ */
+function inheritedColumnCode(
+  table: Table,
+  change: InheritedColumnChange,
+  ctx: EmitContext
+): string[] {
+  const { column, addNotNull } = change;
+  let defaultCode: Code | undefined;
+  if (change.default === null) {
+    defaultCode = raw('null');
+  } else if (change.default !== undefined) {
+    defaultCode = func(change.default);
+  }
+
+  const options = object([
+    ['default', defaultCode],
+    ['notNull', change.setNotNull ? raw('true') : undefined],
+  ]);
+
+  return [
+    ...(isEmpty(options)
+      ? []
+      : [
+          statement('alterColumn', [
+            nameCode(table, ctx),
+            str(column.name),
+            options,
+          ]),
+        ]),
+    ...(addNotNull === undefined
+      ? []
+      : [
+          statement('addConstraint', [
+            nameCode(table, ctx),
+            str(addNotNull.name),
+            str(notNullSql(column, addNotNull)),
+          ]),
+        ]),
+  ];
+}
+
+/**
+ * The SQL of a change of a column after `CREATE TABLE` (whole-table
+ * fallback).
+ */
+function inheritedColumnSql(
+  name: string,
+  change: InheritedColumnChange
+): string[] {
+  const { column, addNotNull } = change;
+  const alter = `ALTER TABLE ${name} ALTER COLUMN ${quoteName(column.name)}`;
+  const statements: string[] = [];
+  if (change.default === null) {
+    statements.push(`${alter} DROP DEFAULT;`);
+  } else if (change.default !== undefined) {
+    statements.push(`${alter} SET DEFAULT ${change.default};`);
+  }
+
+  if (change.setNotNull) {
+    statements.push(`${alter} SET NOT NULL;`);
+  }
+
+  if (addNotNull !== undefined) {
+    statements.push(
+      `ALTER TABLE ${name} ADD CONSTRAINT ${quoteName(addNotNull.name)} ${notNullSql(column, addNotNull)};`
+    );
+  }
+
+  return statements;
 }
 
 /**
@@ -209,11 +426,11 @@ function createTableReasons(
     reasons.push('partition key');
   }
 
-  if (local.some((column) => column.notNullConstraint?.noInherit === true)) {
+  if (local.some((column) => ownNotNull(column)?.noInherit === true)) {
     reasons.push('NOT NULL NO INHERIT');
   }
 
-  if (local.some((column) => column.notNullConstraint?.validated === false)) {
+  if (local.some((column) => ownNotNull(column)?.validated === false)) {
     reasons.push('NOT NULL NOT VALID');
   }
 
@@ -349,8 +566,8 @@ function columnSql(table: Table, column: Column): string {
     );
   }
 
-  const constraint = column.notNullConstraint;
-  if (column.notNull && constraint?.validated !== false) {
+  const constraint = ownNotNull(column);
+  if (declaresNotNull(column) && constraint?.validated !== false) {
     if (constraint !== undefined && hasCustomNotNullName(table, column)) {
       parts.push(`CONSTRAINT ${quoteName(constraint.name)}`);
     }
@@ -468,15 +685,18 @@ function createTableSql(table: Table): string[] {
       : ` WITH (${storageParameters(table.options)})`;
   const statements = [`${create}${partitionBy}${using}${withOptions};`];
   for (const column of localColumns(table)) {
-    const constraint = column.notNullConstraint;
+    const constraint = ownNotNull(column);
     if (constraint?.validated === false) {
       statements.push(
-        `ALTER TABLE ${name} ADD CONSTRAINT ${quoteName(constraint.name)} NOT NULL ${quoteName(column.name)}${constraint.noInherit ? ' NO INHERIT' : ''} NOT VALID;`
+        `ALTER TABLE ${name} ADD CONSTRAINT ${quoteName(constraint.name)} ${notNullSql(column, constraint)};`
       );
     }
   }
 
   statements.push(
+    ...inheritedColumnChanges(table).flatMap((change) =>
+      inheritedColumnSql(name, change)
+    ),
     ...table.columns.flatMap((column) => columnSettingsSql(name, column))
   );
   if (table.replicaIdentity === 'FULL' || table.replicaIdentity === 'NOTHING') {
@@ -525,7 +745,9 @@ function columnCode(table: Table, column: Column): Code {
     ],
     [
       'notNull',
-      column.notNull && identity === undefined ? raw('true') : undefined,
+      declaresNotNull(column) && identity === undefined
+        ? raw('true')
+        : undefined,
     ],
     [
       'sequenceGenerated',
@@ -566,6 +788,20 @@ function columnCode(table: Table, column: Column): Code {
  * `createTable` cannot list) are set after it with `pgm.sql('COMMENT ON
  * COLUMN …')`, which makes the step a fallback, reason `'comment on
  * column'`.
+ *
+ * `CREATE TABLE … INHERITS` gives the columns of a child the default and the
+ * `NOT NULL` of its parent's (see `ColumnInheritance`), so a column that has
+ * other ones gets them right after `createTable`: `pgm.alterColumn(table,
+ * column, { default, notNull })` sets the default it has instead (`default:
+ * pgm.func(…)`), drops the inherited one it does not have (`default: null`)
+ * or sets the `NOT NULL` that the child declares for a column it only
+ * inherits, and `pgm.addConstraint(table, name, 'NOT NULL …')` adds such a
+ * `NOT NULL` constraint of PostgreSQL 18 when `SET NOT NULL` would not give
+ * it its name, `NO INHERIT` or `NOT VALID`. A local column only lists
+ * `notNull` when the child declares it itself, not when it only inherits it
+ * (PostgreSQL 18 records the difference). None of this is a fallback; in a
+ * whole-table fallback, and for a partition that has no default where its
+ * partitioned table has one, the same changes are `ALTER TABLE` statements.
  *
  * The WHOLE table becomes one fallback, `CREATE TABLE …` built from the
  * model (columns in order, comments included), when it is a partition
@@ -633,11 +869,14 @@ export function emitTable(table: Table, ctx: EmitContext): Emitted {
     ),
     ...(isEmpty(options) ? [] : [options]),
   ]);
+  const changes = inheritedColumnChanges(table).flatMap((change) =>
+    inheritedColumnCode(table, change, ctx)
+  );
   const inherited = table.columns.filter((column) => !column.local);
   const comments = columnCommentsSql(qualifiedName(table), inherited);
 
   return withStatements(
-    code,
+    [code, ...changes].join('\n'),
     comments,
     comments.length === 0 ? [] : ['comment on column']
   );
