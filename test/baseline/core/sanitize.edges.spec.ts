@@ -384,11 +384,11 @@ describe('sanitizeDump', () => {
       }
     );
 
-    it('keeps a SET cut short before its value at the end of the dump as SET LOCAL, for PostgreSQL to refuse', () => {
+    it('keeps a SET cut short before its value at the end of the dump as SET LOCAL, ended before the restore, for PostgreSQL to refuse', () => {
       expect(
         sanitize('CREATE TABLE public.t (id integer);\nSET client_encoding =')
       ).toBe(
-        `CREATE TABLE public.t (id integer);\n${saveOf('client_encoding')}\nSET LOCAL client_encoding =\n\n${restoreOf('client_encoding')}\n`
+        `CREATE TABLE public.t (id integer);\n${saveOf('client_encoding')}\nSET LOCAL client_encoding =;\n\n${restoreOf('client_encoding')}\n`
       );
     });
 
