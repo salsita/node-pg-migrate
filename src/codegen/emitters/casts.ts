@@ -1,4 +1,6 @@
 import type { Cast } from '../../introspect/types';
+import { array, object, raw, statement, str } from '../code';
+import { nameCode } from '../names';
 import type { EmitContext, Emitted } from '../types';
 
 /**
@@ -14,6 +16,23 @@ import type { EmitContext, Emitted } from '../types';
  * @param cast The cast.
  * @param ctx The migration context.
  */
-export function emitCast(_cast: Cast, _ctx: EmitContext): Emitted {
-  throw new Error('not implemented');
+export function emitCast(cast: Cast, ctx: EmitContext): Emitted {
+  const fn = cast.method === 'function' ? cast.function : undefined;
+
+  return {
+    kind: 'code',
+    code: statement('createCast', [
+      str(cast.source),
+      str(cast.target),
+      object([
+        ['functionName', fn === undefined ? undefined : nameCode(fn, ctx)],
+        [
+          'argumentTypes',
+          fn === undefined ? undefined : array(cast.functionArguments.map(str)),
+        ],
+        ['inout', cast.method === 'inout' ? raw('true') : undefined],
+        ['as', cast.context === 'EXPLICIT' ? undefined : str(cast.context)],
+      ]),
+    ]),
+  };
 }

@@ -1,4 +1,5 @@
 import type { Emitted } from '../types';
+import { sqlStatement } from './fallback';
 
 /**
  * The first step (`kind: 'code'`, not a fallback): saves
@@ -12,7 +13,15 @@ import type { Emitted } from '../types';
  * ```
  */
 export function emitPrologue(): Emitted {
-  throw new Error('not implemented');
+  return {
+    kind: 'code',
+    code: [
+      sqlStatement(
+        "SELECT pg_catalog.set_config('node_pg_migrate.check_function_bodies', pg_catalog.current_setting('check_function_bodies'), true);"
+      ),
+      sqlStatement('SET LOCAL check_function_bodies = false;'),
+    ].join('\n'),
+  };
 }
 
 /**
@@ -24,5 +33,10 @@ export function emitPrologue(): Emitted {
  * ```
  */
 export function emitEpilogue(): Emitted {
-  throw new Error('not implemented');
+  return {
+    kind: 'code',
+    code: sqlStatement(
+      "SELECT pg_catalog.set_config('check_function_bodies', pg_catalog.current_setting('node_pg_migrate.check_function_bodies'), true);"
+    ),
+  };
 }

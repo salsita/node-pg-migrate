@@ -1,4 +1,6 @@
 import type { EnumType } from '../../introspect/types';
+import { array, statement, str } from '../code';
+import { nameCode } from '../names';
 import type { EmitContext, Emitted } from '../types';
 
 /**
@@ -8,6 +10,12 @@ import type { EmitContext, Emitted } from '../types';
  * @param type The enum type.
  * @param ctx The migration context.
  */
-export function emitEnum(_type: EnumType, _ctx: EmitContext): Emitted {
-  throw new Error('not implemented');
+export function emitEnum(type: EnumType, ctx: EmitContext): Emitted {
+  return {
+    kind: 'code',
+    code: statement('createType', [
+      nameCode(type, ctx),
+      array(type.labels.map(str)),
+    ]),
+  };
 }

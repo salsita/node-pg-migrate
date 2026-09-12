@@ -1,4 +1,6 @@
 import type { Table } from '../../introspect/types';
+import { object, statement, str } from '../code';
+import { nameCode } from '../names';
 import type { EmitContext, Emitted } from '../types';
 
 /**
@@ -9,9 +11,21 @@ import type { EmitContext, Emitted } from '../types';
  * @param table A table with row-level security enabled or forced.
  * @param ctx The migration context.
  */
-export function emitRowLevelSecurity(
-  _table: Table,
-  _ctx: EmitContext
-): Emitted {
-  throw new Error('not implemented');
+export function emitRowLevelSecurity(table: Table, ctx: EmitContext): Emitted {
+  const levels = [
+    ...(table.rowLevelSecurity ? ['ENABLE'] : []),
+    ...(table.forceRowLevelSecurity ? ['FORCE'] : []),
+  ];
+
+  return {
+    kind: 'code',
+    code: levels
+      .map((level) =>
+        statement('alterTable', [
+          nameCode(table, ctx),
+          object([['levelSecurity', str(level)]]),
+        ])
+      )
+      .join('\n'),
+  };
 }

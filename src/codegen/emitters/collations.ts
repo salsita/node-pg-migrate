@@ -1,5 +1,7 @@
 import type { Collation } from '../../introspect/types';
+import { qualifiedName, quoteLiteral } from '../sql';
 import type { EmitContext, Emitted } from '../types';
+import { emitFallback } from './fallback';
 
 /**
  * Always a fallback, reason `'collation'`: `CREATE COLLATION <name> (…)`
@@ -9,11 +11,40 @@ import type { EmitContext, Emitted } from '../types';
  * set.
  *
  * @param collation The collation.
- * @param ctx The migration context.
+ * @param _ctx The migration context.
  */
 export function emitCollation(
-  _collation: Collation,
+  collation: Collation,
   _ctx: EmitContext
 ): Emitted {
-  throw new Error('not implemented');
+  const settings = [`provider = ${collation.provider}`];
+  const { lcCollate, lcCtype, locale } = collation;
+  if (
+    lcCollate !== undefined &&
+    lcCtype !== undefined &&
+    lcCollate !== lcCtype
+  ) {
+    settings.push(
+      `lc_collate = ${quoteLiteral(lcCollate)}`,
+      `lc_ctype = ${quoteLiteral(lcCtype)}`
+    );
+  } else {
+    const single = locale ?? lcCollate ?? lcCtype;
+    if (single !== undefined) {
+      settings.push(`locale = ${quoteLiteral(single)}`);
+    }
+  }
+
+  if (!collation.deterministic) {
+    settings.push('deterministic = false');
+  }
+
+  if (collation.rules !== undefined) {
+    settings.push(`rules = ${quoteLiteral(collation.rules)}`);
+  }
+
+  return emitFallback(
+    `CREATE COLLATION ${qualifiedName(collation)} (${settings.join(', ')});`,
+    'collation'
+  );
 }

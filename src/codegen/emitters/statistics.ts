@@ -1,5 +1,7 @@
 import type { Statistics } from '../../introspect/types';
+import { qualifiedName, terminated } from '../sql';
 import type { EmitContext, Emitted } from '../types';
+import { withStatements } from './fallback';
 
 /**
  * Always a fallback, reason `'extended statistics'`:
@@ -7,11 +9,22 @@ import type { EmitContext, Emitted } from '../types';
  * STATISTICS …` when `statisticsTarget` is set.
  *
  * @param statistics The statistics object.
- * @param ctx The migration context.
+ * @param _ctx The migration context.
  */
 export function emitStatistics(
-  _statistics: Statistics,
+  statistics: Statistics,
   _ctx: EmitContext
 ): Emitted {
-  throw new Error('not implemented');
+  return withStatements(
+    '',
+    [
+      terminated(statistics.definition),
+      ...(statistics.statisticsTarget === undefined
+        ? []
+        : [
+            `ALTER STATISTICS ${qualifiedName(statistics)} SET STATISTICS ${String(statistics.statisticsTarget)};`,
+          ]),
+    ],
+    ['extended statistics']
+  );
 }
