@@ -582,9 +582,8 @@ function columnConstraintsSql(table: Table, column: Column): string[] {
       options.unshift(`SEQUENCE NAME ${qualifiedName(identity.sequence)}`);
     }
 
-    parts.push(
-      `GENERATED ${identity.generation} AS IDENTITY${options.length === 0 ? '' : ` (${options.join(' ')})`}`
-    );
+    const list = options.length === 0 ? '' : ` (${options.join(' ')})`;
+    parts.push(`GENERATED ${identity.generation} AS IDENTITY${list}`);
   }
 
   const constraint = ownNotNull(column);
@@ -767,10 +766,17 @@ function notNullCommentsSql(table: Table): string[] {
 }
 
 /**
- * The statements of a whole-table fallback.
+ * The `CREATE TABLE` of a whole-table fallback, before its `PARTITION BY`,
+ * `USING` and `WITH` clauses, and the `ATTACH PARTITION` that follows it
+ * when a partition is created on its own (see `PartitionOf.ownColumnOrder`).
+ *
+ * @param table The table.
+ * @param name Its qualified name.
  */
-function createTableSql(table: Table): string[] {
-  const name = qualifiedName(table);
+function createTableHeadSql(
+  table: Table,
+  name: string
+): { readonly create: string; readonly attach: string[] } {
   const unlogged = table.unlogged ? ' UNLOGGED' : '';
   const { partitionOf } = table;
   const attach: string[] = [];
@@ -803,6 +809,15 @@ function createTableSql(table: Table): string[] {
     create = `CREATE${unlogged} TABLE ${name} OF ${qualifiedName(table.ofType)}${list}`;
   }
 
+  return { create, attach };
+}
+
+/**
+ * The statements of a whole-table fallback.
+ */
+function createTableSql(table: Table): string[] {
+  const name = qualifiedName(table);
+  const { create, attach } = createTableHeadSql(table, name);
   const partitionBy =
     table.partitionKey === undefined
       ? ''
