@@ -559,10 +559,25 @@ const FALSE_VALUES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Whether PostgreSQL reads an encoding name as UTF-8. It only compares the
+ * letters and digits of the name, in lower case, so `UTF8`, `utf-8` and
+ * `UTF_8` all name UTF-8, and so does `UNICODE`.
+ *
+ * @param encoding The name, in lower case.
+ */
+function isUtf8(encoding: string): boolean {
+  const name = encoding.replaceAll(/[^\da-z]/g, '');
+
+  return name === 'utf8' || name === 'unicode';
+}
+
+/**
  * R6: a baseline runs as one query, which PostgreSQL reads before it runs any
  * of it. So a setting that changes how PostgreSQL reads the statements after
  * it cannot take effect, and the dump must not need it:
- * `standard_conforming_strings` off makes the backslashes in strings escapes.
+ * `standard_conforming_strings` off makes the backslashes in strings escapes,
+ * and a `client_encoding` other than UTF-8 means that the dump is in another
+ * encoding, while node-pg-migrate reads it as UTF-8.
  */
 function refuseLexicalSetting(statement: Statement, name: string): void {
   const value = settingValue(statement)?.toLowerCase();
@@ -574,6 +589,13 @@ function refuseLexicalSetting(statement: Statement, name: string): void {
     throw new BaselineError(
       'NON_STANDARD_STRINGS',
       `line ${statement.line}: the dump was made with standard_conforming_strings off (\`${excerpt(statement.text)}\`), so the backslashes in its strings are escapes. A migration runs as one query, which PostgreSQL reads before this SET can take effect, so those strings would get other values. Make the dump again with PGOPTIONS='-c standard_conforming_strings=on' set for pg_dump.`
+    );
+  }
+
+  if (name === 'client_encoding' && !isUtf8(value)) {
+    throw new BaselineError(
+      'NOT_UTF8',
+      `line ${statement.line}: the dump is not in UTF-8 (\`${excerpt(statement.text)}\`), but node-pg-migrate reads it as UTF-8, so its non-ASCII characters would change. Make the dump again in UTF-8, with pg_dump --encoding=UTF8.`
     );
   }
 }
@@ -1068,9 +1090,9 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  * text), has a psql meta-command, data (`COPY … FROM stdin`, `INSERT` or
  * `setval()`), `CREATE DATABASE` or `DROP` statements, changes the role
  * (`SET ROLE`, `SET SESSION AUTHORIZATION`), was made with
- * `standard_conforming_strings` off, creates the migrations table or its
- * sequence, or has a line that node-pg-migrate would read as an up/down
- * migration marker.
+ * `standard_conforming_strings` off or a `client_encoding` other than UTF-8,
+ * creates the migrations table or its sequence, or has a line that
+ * node-pg-migrate would read as an up/down migration marker.
  *
  * @param dump The pg_dump output.
  * @param options The migrations table and sequence, which the dump must not

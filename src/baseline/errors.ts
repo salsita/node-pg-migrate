@@ -8,6 +8,8 @@
  * - `BINARY_DUMP`: the dump is not SQL text, but a pg_dump custom- or
  *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16
  *   text.
+ * - `NOT_UTF8`: the dump is not in UTF-8: its `SET client_encoding` names
+ *   another encoding (make it with `pg_dump --encoding=UTF8`).
  * - `NON_STANDARD_STRINGS`: the dump was made with
  *   `standard_conforming_strings` off, so the backslashes in its strings are
  *   escapes, but a migration is read before its `SET` can take effect (make
@@ -38,6 +40,7 @@ export type BaselineErrorCode =
   | 'HISTORY_EXISTS'
   | 'UNSUPPORTED_SERVER'
   | 'BINARY_DUMP'
+  | 'NOT_UTF8'
   | 'NON_STANDARD_STRINGS'
   | 'PSQL_META_COMMAND'
   | 'DATA_IN_DUMP'
