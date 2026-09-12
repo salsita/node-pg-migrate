@@ -326,9 +326,13 @@ export function defaultMultirangeName(rangeName: string): string {
 /**
  * Storage parameters as `WITH (…)` takes them, the way pg_dump writes them:
  * `name=value` separated by `, `, the value in quotes unless it is a plain
- * identifier, e.g. `fillfactor='70', autovacuum_enabled='false'`.
+ * identifier, e.g. `fillfactor='70', autovacuum_enabled='false'`. A name
+ * with a namespace (`toast.autovacuum_enabled`, a parameter of the TOAST
+ * table) is written as the namespace and the name, each quoted only when it
+ * has to be, since `WITH (…)` would read a quoted `"toast.…"` as one name.
  *
- * @param options The parameters, each as stored (`name=value`).
+ * @param options The parameters, each as stored (`name=value`, or
+ * `toast.name=value`).
  */
 export function storageParameters(options: ReadonlyArray<string>): string {
   return options
@@ -339,7 +343,7 @@ export function storageParameters(options: ReadonlyArray<string>): string {
       const valueSql =
         quoteIdentifier(value) === value ? value : quoteLiteral(value);
 
-      return `${quoteIdentifier(name)}=${valueSql}`;
+      return `${name.split('.').map(quoteIdentifier).join('.')}=${valueSql}`;
     })
     .join(', ');
 }
