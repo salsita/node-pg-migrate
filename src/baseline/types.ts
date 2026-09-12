@@ -53,8 +53,10 @@ export interface BaselineOptions {
   readonly migrationsSchema?: string;
 
   /**
-   * The schema(s) on which migrations are run. Only used to default
-   * `migrationsSchema`, the way the runner does.
+   * The schema(s) on which migrations are run. Defaults `migrationsSchema`
+   * the way the runner does, and the baseline creates these schemas with
+   * `CREATE SCHEMA IF NOT EXISTS`, because the runner may create them before
+   * the baseline runs (`createSchema`).
    *
    * @default 'public'
    */
