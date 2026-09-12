@@ -250,6 +250,19 @@ describe('sanitizeDump', () => {
       );
     });
 
+    it('ends a last statement that has no semicolon before it restores the settings', () => {
+      const sql = sanitize(
+        'SET client_min_messages = warning;\nCREATE TABLE public.t (id integer)'
+      );
+
+      // The migration runs as one query: without a `;`, PostgreSQL would read
+      // the table and the restore after it as one statement.
+      expect(sql).toMatch(/CREATE TABLE public\.t \(id integer\)\s*;/);
+      expect(sql.trimEnd().endsWith(restoreOf('client_min_messages'))).toBe(
+        true
+      );
+    });
+
     it('keeps comments inside the setting', () => {
       expect(sanitize('SET /* quiet */ client_min_messages = warning;')).toBe(
         `${saveOf('client_min_messages')}\nSET LOCAL /* quiet */ client_min_messages = warning;\n\n${restoreOf('client_min_messages')}\n`
@@ -265,6 +278,10 @@ describe('sanitizeDump', () => {
       'SET standard_conforming_strings = 0;',
       "SET standard_conforming_strings = '0';",
       'set Standard_Conforming_Strings to OFF;',
+      "SET standard_conforming_strings = E'off';",
+      "SET standard_conforming_strings = U&'off';",
+      'SET standard_conforming_strings = $$off$$;',
+      'SET standard_conforming_strings = $v$off$v$;',
     ])(
       'refuses %j, whose string literals would not mean the same in the migration',
       (statement) => {
@@ -285,6 +302,8 @@ describe('sanitizeDump', () => {
       'SET standard_conforming_strings TO on;',
       "SET standard_conforming_strings = 'on';",
       'SET standard_conforming_strings = true;',
+      "SET standard_conforming_strings = U&'on';",
+      'SET standard_conforming_strings = $v$on$v$;',
     ])('accepts %j, and turns it into SET LOCAL', (statement) => {
       const sql = sanitize(
         `${statement}\nCREATE TABLE public.t (id integer);\n`
@@ -300,6 +319,9 @@ describe('sanitizeDump', () => {
       "SET client_encoding = 'SQL_ASCII';",
       'SET client_encoding = latin1;',
       "set CLIENT_ENCODING = 'euc_jp';",
+      "SET client_encoding = E'LATIN1';",
+      "SET client_encoding = U&'LATIN1';",
+      'SET client_encoding = $$LATIN1$$;',
     ])('refuses %j, which is not UTF-8', (statement) => {
       const error = refusalOf(
         `${statement}\nCREATE TABLE public.t (id integer);\n`
@@ -316,6 +338,9 @@ describe('sanitizeDump', () => {
       "SET client_encoding = 'UTF-8';",
       "SET client_encoding TO 'utf-8';",
       'SET client_encoding = UTF8;',
+      "SET client_encoding = U&'UTF8';",
+      "SET client_encoding = E'UTF8';",
+      'SET client_encoding = $enc$UTF8$enc$;',
     ])('accepts %j, and turns it into SET LOCAL', (statement) => {
       const sql = sanitize(
         `${statement}\nCREATE TABLE public.t (id integer);\n`

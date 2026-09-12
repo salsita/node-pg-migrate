@@ -1,4 +1,5 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { baseline } from '../../../src';
@@ -196,6 +197,37 @@ describe.each(PG_VERSIONS)(
           "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'artist' AND column_name = 'country'"
         )
       ).toEqual(['country']);
+    });
+
+    it('runs a hand-written dump whose last statement has no semicolon on a blank database', async () => {
+      const work = await workDir();
+      const fromFile = join(work, 'schema.sql');
+      // psql runs a file like this: it sends the last statement at the end.
+      await writeFile(
+        fromFile,
+        'SET client_min_messages = warning;\nCREATE TABLE public.notes (id integer PRIMARY KEY, body text NOT NULL)'
+      );
+      const dir = join(work, 'migrations');
+      const result = await baseline({
+        fromFile,
+        dir,
+        logger: recordingLogger(),
+      });
+      await createDatabase(container, 'no_semicolon_blank');
+
+      const ran = await migrateUp(
+        databaseUrl(container, 'no_semicolon_blank'),
+        dir
+      );
+
+      expect(ran.map(({ name }) => name)).toEqual([result.migrationName]);
+      expect(
+        await queryRows(
+          container,
+          'no_semicolon_blank',
+          "SELECT to_regclass('public.notes') IS NOT NULL"
+        )
+      ).toEqual(['t']);
     });
   }
 );
