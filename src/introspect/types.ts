@@ -1540,12 +1540,12 @@ export interface MaterializedViewColumn extends ViewColumn {
    * `SET STORAGE` (`attstorage`), when it is not the default storage of the
    * type (`typstorage`).
    */
-  readonly storage?: Column['storage'];
+  readonly storage?: NonNullable<Column['storage']>;
 
   /**
    * `SET COMPRESSION` (`attcompression`), when it is set.
    */
-  readonly compression?: Column['compression'];
+  readonly compression?: NonNullable<Column['compression']>;
 
   /**
    * `SET (…)` (`attoptions`), each as stored, e.g. `'n_distinct=100'`;
@@ -3118,6 +3118,12 @@ export interface ViewRow {
 }
 
 /**
+ * `tgenabled` / `ev_enabled`: the code of a {@link FiringMode} (`O`, `D`, `R`
+ * or `A`).
+ */
+export type FiringModeCode = 'O' | 'D' | 'R' | 'A';
+
+/**
  * A row of the `triggers` query: triggers that are not internal and not
  * partition clones.
  */
@@ -3139,7 +3145,7 @@ export interface TriggerRow {
    * `tgtype` (see `TRIGGER_TYPE` in `core/model.ts`).
    */
   readonly tgtype: number;
-  readonly tgenabled: 'O' | 'D' | 'R' | 'A';
+  readonly tgenabled: FiringModeCode;
   readonly functionSchema: string;
   readonly functionName: string;
 
@@ -3192,7 +3198,7 @@ export interface PartitionTriggerRow {
    * query or another row of this query.
    */
   readonly parent: number;
-  readonly tgenabled: 'O' | 'D' | 'R' | 'A';
+  readonly tgenabled: FiringModeCode;
   readonly comment: string | null;
 }
 
@@ -3252,7 +3258,7 @@ export interface RuleRow {
   /**
    * `ev_enabled`.
    */
-  readonly enabled: 'O' | 'D' | 'R' | 'A';
+  readonly enabled: FiringModeCode;
 
   /**
    * `pg_get_ruledef(oid)`.

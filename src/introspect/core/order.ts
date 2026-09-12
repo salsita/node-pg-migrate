@@ -9,6 +9,7 @@ import type {
   SchemaModel,
   SchemaQualifiedName,
 } from '../types';
+import { compareText } from './sort';
 
 /**
  * The phase of each kind of step. Among the steps whose dependencies are
@@ -763,7 +764,7 @@ function cycleError(
         })
         .join(', ')
     )
-    .toSorted();
+    .toSorted(compareText);
 
   return new BaselineError(
     'UNSUPPORTED_OBJECTS',

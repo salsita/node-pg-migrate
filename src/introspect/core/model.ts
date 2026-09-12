@@ -1231,6 +1231,79 @@ function withPartitionIndexes(
 }
 
 /**
+ * The dependencies of foreign keys on the key they reference: the
+ * constraint that owns the referenced index, or the unique index itself.
+ *
+ * @param indexes The indexes of the model.
+ * @param constraints The constraints of the model.
+ * @param rows The rows of the table constraints (see `ConstraintRows.tables`).
+ * @returns A dependency for each foreign key whose key is in the model, in
+ * the order of `rows`.
+ */
+function foreignKeyDependencies(
+  indexes: ReadonlyArray<Index>,
+  constraints: ReadonlyArray<Constraint>,
+  rows: ReadonlyArray<ConstraintRow>
+): Dependency[] {
+  const keys = new Map<number, ObjectRef>();
+  for (const index of indexes) {
+    keys.set(index.oid, refOf(index));
+  }
+
+  const constraintByOid = new Map(
+    constraints.map((constraint) => [constraint.oid, constraint])
+  );
+  for (const row of rows) {
+    const constraint = constraintByOid.get(row.oid);
+    if (
+      constraint !== undefined &&
+      constraint.type !== 'foreignKey' &&
+      row.conindid !== 0
+    ) {
+      keys.set(row.conindid, refOf(constraint));
+    }
+  }
+
+  const dependencies: Dependency[] = [];
+  for (const row of rows) {
+    const constraint = constraintByOid.get(row.oid);
+    const key = keys.get(row.conindid);
+    if (constraint?.type === 'foreignKey' && key !== undefined) {
+      dependencies.push({ from: refOf(constraint), to: key });
+    }
+  }
+
+  return dependencies;
+}
+
+/**
+ * The dependencies of partitions on their partitioned table, and of
+ * inheritance children on their parents.
+ *
+ * @param tables The tables of the model.
+ * @returns A dependency for each parent that is among `tables`, in the order
+ * of `tables`.
+ */
+function parentDependencies(tables: ReadonlyArray<Table>): Dependency[] {
+  const tablesByName = new Map(tables.map((table) => [nameKey(table), table]));
+  const dependencies: Dependency[] = [];
+  for (const table of tables) {
+    const parents =
+      table.partitionOf === undefined
+        ? table.inherits
+        : [table.partitionOf.parent];
+    for (const parent of parents) {
+      const parentTable = tablesByName.get(nameKey(parent));
+      if (parentTable !== undefined) {
+        dependencies.push({ from: refOf(table), to: refOf(parentTable) });
+      }
+    }
+  }
+
+  return dependencies;
+}
+
+/**
  * Builds the model of a schema from the rows of the introspection queries.
  *
  * - Scope: rows whose `schema` is not in `includeSchemas` (when set) or is in
@@ -1545,50 +1618,14 @@ export function rowsToModel(
     )
   );
 
-  // A foreign key needs the key it references: the constraint that owns the
-  // referenced index, or the unique index itself.
-  const keys = new Map<number, ObjectRef>();
-  for (const index of indexes) {
-    keys.set(index.oid, refOf(index));
-  }
-
-  const constraintByOid = new Map(
-    constraints.map((constraint) => [constraint.oid, constraint])
+  // A foreign key needs the key it references, a partition its partitioned
+  // table, an inheritance child its parents.
+  const keyDependencies = foreignKeyDependencies(
+    indexes,
+    constraints,
+    constraintRows.tables
   );
-  for (const row of constraintRows.tables) {
-    const constraint = constraintByOid.get(row.oid);
-    if (
-      constraint !== undefined &&
-      constraint.type !== 'foreignKey' &&
-      row.conindid !== 0
-    ) {
-      keys.set(row.conindid, refOf(constraint));
-    }
-  }
-
-  for (const row of constraintRows.tables) {
-    const constraint = constraintByOid.get(row.oid);
-    const key = keys.get(row.conindid);
-    if (constraint?.type === 'foreignKey' && key !== undefined) {
-      implicit.push({ from: refOf(constraint), to: key });
-    }
-  }
-
-  // A partition needs its partitioned table, an inheritance child its
-  // parents.
-  const tablesByName = new Map(tables.map((table) => [nameKey(table), table]));
-  for (const table of tables) {
-    const parents =
-      table.partitionOf === undefined
-        ? table.inherits
-        : [table.partitionOf.parent];
-    for (const parent of parents) {
-      const parentTable = tablesByName.get(nameKey(parent));
-      if (parentTable !== undefined) {
-        implicit.push({ from: refOf(table), to: refOf(parentTable) });
-      }
-    }
-  }
+  const tableDependencies = parentDependencies(tables);
 
   const model = {
     schemas: sortObjects(
@@ -1663,6 +1700,8 @@ export function rowsToModel(
     dependencies: finishDependencies([
       ...catalogDependencies(objects, rows.dependencies),
       ...implicit,
+      ...keyDependencies,
+      ...tableDependencies,
     ]),
     unsupported,
   };

@@ -304,9 +304,19 @@ const SHELL_TYPES = `SELECT t.oid, n.nspname AS schema, t.typname AS name,
   ${commentOn('pg_type', 't.oid')} AS comment
 ${userTypes('p')} AND NOT t.typisdefined`;
 
+/**
+ * The join of a composite type's `pg_class` row, as `c`.
+ */
+const COMPOSITE_RELATION_JOIN = `\nJOIN pg_catalog.pg_class AS c ON c.oid ${EQ} t.typrelid AND c.relkind ${EQ} 'c'`;
+
 const COMPOSITES = `SELECT t.oid, t.typrelid AS relid, n.nspname AS schema, t.typname AS name,
   ${commentOn('pg_type', 't.oid')} AS comment
-${userTypes('c', `\nJOIN pg_catalog.pg_class AS c ON c.oid ${EQ} t.typrelid AND c.relkind ${EQ} 'c'`)}`;
+${userTypes('c', COMPOSITE_RELATION_JOIN)}`;
+
+/**
+ * The join of a domain's base type, as `base`.
+ */
+const DOMAIN_BASE_TYPE_JOIN = `\nJOIN pg_catalog.pg_type AS base ON base.oid ${EQ} t.typbasetype`;
 
 // A domain's collation is only there when it differs from the one of its
 // base type, like pg_dump does.
@@ -316,7 +326,7 @@ const DOMAINS = `SELECT t.oid, n.nspname AS schema, t.typname AS name,
   pg_catalog.pg_get_expr(t.typdefaultbin, ${NO_OID}) AS "default",
   CASE WHEN t.typcollation ${NE} base.typcollation THEN ${qualifiedSql(COLLATIONS, 't.typcollation')} END AS collation,
   ${commentOn('pg_type', 't.oid')} AS comment
-${userTypes('d', `\nJOIN pg_catalog.pg_type AS base ON base.oid ${EQ} t.typbasetype`)}`;
+${userTypes('d', DOMAIN_BASE_TYPE_JOIN)}`;
 
 const RANGES = `SELECT t.oid, n.nspname AS schema, t.typname AS name,
   pg_catalog.format_type(r.rngsubtype, NULL) AS subtype,
