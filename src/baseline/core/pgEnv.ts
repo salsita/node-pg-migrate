@@ -185,6 +185,8 @@ export async function toPgEnv(
  *   ignores services.
  * - An inherited `PGHOSTADDR` is left out when the connection gives a host:
  *   libpq would connect to that address instead.
+ * - `PGCLIENTENCODING` is `UTF8`, so that the dump is UTF-8 (see
+ *   `decodeDump()`) whatever the encoding of the database.
  * - `PGOPTIONS` ends with `-c standard_conforming_strings=on`, which wins
  *   over the inherited options before it and over a database or role that
  *   sets it off. With it off, pg_dump writes backslashes in `'…'` literals
@@ -210,6 +212,7 @@ export function pgDumpEnv(
 
   return {
     ...env,
+    PGCLIENTENCODING: 'UTF8',
     PGOPTIONS: env.PGOPTIONS
       ? `${env.PGOPTIONS} ${STANDARD_LITERALS}`
       : STANDARD_LITERALS,

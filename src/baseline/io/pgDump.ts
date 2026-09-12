@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { decodeDump } from '../core/decode';
 import { pgDumpEnv } from '../core/pgEnv';
 import { parsePgDumpVersion } from '../core/version';
 import { BaselineError } from '../errors';
@@ -9,6 +10,13 @@ import type { PgDumpVersion } from '../types';
  * quotes.
  */
 const STDERR_LINES = 5;
+
+/**
+ * What to do about a pg_dump output that is not UTF-8 (see `decodeDump()`),
+ * although pg_dump runs with `PGCLIENTENCODING=UTF8` (see `pgDumpEnv()`).
+ */
+const NOT_UTF8_REMEDY =
+  'baseline runs pg_dump with PGCLIENTENCODING=UTF8: make sure the pg_dump of --pg-dump gets that variable, or passes --encoding=UTF8 to pg_dump.';
 
 /**
  * pg_dump 14–18 report an expired `--lock-wait-timeout` as a statement
@@ -83,7 +91,7 @@ function exitFailure(
 
 /**
  * Runs pg_dump to its end, with the environment of `pgDumpEnv()`, and
- * returns what it writes to its standard output as UTF-8.
+ * returns what it writes to its standard output.
  *
  * @param bin The pg_dump executable.
  * @param args The arguments.
@@ -95,15 +103,17 @@ function run(
   args: ReadonlyArray<string>,
   env: Record<string, string>,
   command: string
-): Promise<string> {
+): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, {
       env: pgDumpEnv(process.env, env),
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    const stdout: string[] = [];
+    // Bytes, decoded once at the end: a character can be split across
+    // chunks.
+    const stdout: Buffer[] = [];
     const stderr: string[] = [];
-    child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
+    child.stdout.on('data', (chunk: Buffer) => {
       stdout.push(chunk);
     });
     child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
@@ -114,7 +124,7 @@ function run(
     });
     child.once('close', (code, signal) => {
       if (code === 0) {
-        resolve(stdout.join(''));
+        resolve(Buffer.concat(stdout));
       } else {
         reject(exitFailure(command, code, signal, stderr.join('')));
       }
@@ -139,7 +149,7 @@ export async function getPgDumpVersion(
   const stdout = await run(bin, ['--version'], env, `${bin} --version`);
 
   try {
-    return parsePgDumpVersion(stdout);
+    return parsePgDumpVersion(stdout.toString('utf8'));
   } catch (error) {
     // Its message does not say which executable printed that.
     throw error instanceof BaselineError
@@ -151,21 +161,23 @@ export async function getPgDumpVersion(
 }
 
 /**
- * Runs pg_dump and returns what it writes to its standard output.
+ * Runs pg_dump and returns what it writes to its standard output, which must
+ * be UTF-8 (see `decodeDump()`).
  *
  * Throws a `BaselineError` with code `PG_DUMP_FAILED` and the first lines of
  * pg_dump's standard error when it exits with a non-zero code. When it gave
- * up waiting for a table lock, the message says so.
+ * up waiting for a table lock, the message says so. Throws one with code
+ * `NOT_UTF8` when its output is not UTF-8.
  *
  * @param bin The pg_dump executable.
  * @param args The arguments (see `buildPgDumpArgs()`).
  * @param env Environment variables to add to the current ones (see
  * `toPgEnv()`); pg_dump gets them the way `pgDumpEnv()` says.
  */
-export function runPgDump(
+export async function runPgDump(
   bin: string,
   args: ReadonlyArray<string>,
   env: Record<string, string>
 ): Promise<string> {
-  return run(bin, args, env, 'pg_dump');
+  return decodeDump(await run(bin, args, env, 'pg_dump'), NOT_UTF8_REMEDY);
 }
