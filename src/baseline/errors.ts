@@ -5,6 +5,9 @@
  * - `MIGRATIONS_EXIST`: the migrations directory already has files.
  * - `HISTORY_EXISTS`: the migrations table already records migrations.
  * - `UNSUPPORTED_SERVER`: the server is not PostgreSQL (e.g. CockroachDB).
+ * - `BINARY_DUMP`: the dump is not SQL text, but a pg_dump custom- or
+ *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16
+ *   text.
  * - `PSQL_META_COMMAND`: the dump has a psql meta-command such as `\connect`.
  * - `DATA_IN_DUMP`: the dump has table data (`COPY … FROM stdin`).
  * - `CREATE_DATABASE`: the dump creates a database (`pg_dump --create`).
@@ -25,6 +28,7 @@ export type BaselineErrorCode =
   | 'MIGRATIONS_EXIST'
   | 'HISTORY_EXISTS'
   | 'UNSUPPORTED_SERVER'
+  | 'BINARY_DUMP'
   | 'PSQL_META_COMMAND'
   | 'DATA_IN_DUMP'
   | 'CREATE_DATABASE'

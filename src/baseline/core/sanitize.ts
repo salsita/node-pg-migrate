@@ -821,6 +821,49 @@ function finish(context: Context): SanitizedDump {
 }
 
 /**
+ * pg_dump's archive formats (R0), by the magic their files have at `offset`.
+ * The header of a tar archive is ASCII, so the offset of its magic in the dump
+ * is its byte offset in the file.
+ */
+const ARCHIVE_FORMATS: ReadonlyArray<{
+  readonly format: string;
+  readonly option: string;
+  readonly magic: string;
+  readonly offset: number;
+}> = [
+  { format: 'custom', option: '-Fc', magic: 'PGDMP', offset: 0 },
+  { format: 'tar', option: '-Ft', magic: 'ustar', offset: 257 },
+];
+
+/**
+ * The command that turns a pg_dump archive into a plain-text schema dump
+ * (R0). The name of the archive file is not known here.
+ */
+const PG_RESTORE_COMMAND =
+  'pg_restore --schema-only --no-owner --no-privileges -f schema.sql <archive>';
+
+/**
+ * R0: a baseline is made from plain SQL text, which never has a NUL
+ * character. pg_dump's custom- and tar-format archives, compressed files and
+ * UTF-16 text read as UTF-8 have some.
+ */
+function refuseBinaryDump(dump: string): void {
+  if (!dump.includes('\0')) {
+    return;
+  }
+
+  const archive = ARCHIVE_FORMATS.find(({ magic, offset }) =>
+    dump.startsWith(magic, offset)
+  );
+  throw new BaselineError(
+    'BINARY_DUMP',
+    archive === undefined
+      ? "the dump is not SQL text: it may be compressed, or saved as UTF-16. Decompress it, save it as UTF-8, or make a plain-text dump (pg_dump's default format)."
+      : `the dump is a pg_dump ${archive.format}-format archive (pg_dump ${archive.option}), not SQL text. Turn it into SQL with ${PG_RESTORE_COMMAND}, then make the baseline from schema.sql.`
+  );
+}
+
+/**
  * The state of the cleanup of a dump with these options.
  */
 function createContext(dump: string, options: SanitizeOptions): Context {
@@ -863,10 +906,11 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  * `CREATE SCHEMA IF NOT EXISTS`. Everything else is kept byte for byte, and
  * the output ends with one `\n`.
  *
- * Throws a `BaselineError` when the dump cannot be a baseline: it has a psql
- * meta-command, data, `CREATE DATABASE` or `DROP` statements, creates the
- * migrations table or its sequence, or has a line that node-pg-migrate would
- * read as an up/down migration marker.
+ * Throws a `BaselineError` when the dump cannot be a baseline: it is not SQL
+ * text (a pg_dump custom- or tar-format archive, a compressed file or UTF-16
+ * text), has a psql meta-command, data, `CREATE DATABASE` or `DROP`
+ * statements, creates the migrations table or its sequence, or has a line
+ * that node-pg-migrate would read as an up/down migration marker.
  *
  * @param dump The pg_dump output.
  * @param options The migrations table and sequence, which the dump must not
@@ -877,6 +921,7 @@ export function sanitizeDump(
   dump: string,
   options: SanitizeOptions
 ): SanitizedDump {
+  refuseBinaryDump(dump);
   const context = createContext(dump, options);
   for (const segment of scanTopLevel(dump)) {
     SEGMENT_HANDLERS[segment.kind](segment, context);
