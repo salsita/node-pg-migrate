@@ -293,13 +293,57 @@ function createdRelation(
 type StatementRule = (statement: Statement, context: Context) => boolean;
 
 /**
- * R2: `COPY … FROM stdin` means the dump has table data.
+ * The index of the function name in `SELECT <name>…` or
+ * `SELECT pg_catalog.<name>…`; `-1` for any other statement.
  */
-function refuseCopyData(statement: Statement): boolean {
-  if (statement.word(0) === 'copy' && copiesFromStdin(statement.text)) {
-    throw new BaselineError(
-      'DATA_IN_DUMP',
-      `line ${statement.line}: the dump has table data (\`${excerpt(statement.text)}\`), but a baseline only creates the schema. Make the dump with --schema-only.`
+function selectedFunction(statement: Statement, name: string): number {
+  const call = statement.word(1) === 'pg_catalog' ? 3 : 1;
+  const selects =
+    statement.word(0) === 'select' &&
+    (call === 1 || statement.token(2)?.text === '.') &&
+    statement.word(call) === name;
+
+  return selects ? call : -1;
+}
+
+/**
+ * The error for a statement that means the dump has data (R2).
+ *
+ * @param what What the statement does, e.g. `has table data`.
+ * @param options The pg_dump options to make the dump with.
+ */
+function dataInDump(
+  statement: Statement,
+  what: string,
+  options: string
+): BaselineError {
+  return new BaselineError(
+    'DATA_IN_DUMP',
+    `line ${statement.line}: the dump ${what} (\`${excerpt(statement.text)}\`), but a baseline only creates the schema. Make the dump with ${options}.`
+  );
+}
+
+/**
+ * R2: `COPY … FROM stdin` and `INSERT` (pg_dump `--inserts` and
+ * `--column-inserts`) mean the dump has table data, and `setval()` that it
+ * has the values of sequences, which blank databases start from their start
+ * value. A schema-only dump has none of them.
+ */
+function refuseData(statement: Statement): boolean {
+  const first = statement.word(0);
+  if (
+    first === 'insert' ||
+    (first === 'copy' && copiesFromStdin(statement.text))
+  ) {
+    throw dataInDump(statement, 'has table data', '--schema-only');
+  }
+
+  const setval = selectedFunction(statement, 'setval');
+  if (setval !== -1 && statement.token(setval + 1)?.text === '(') {
+    throw dataInDump(
+      statement,
+      'sets the value of a sequence',
+      '--schema-only, and without --sequence-data'
     );
   }
 
@@ -381,11 +425,9 @@ const SEARCH_PATH_RESET: ReadonlyArray<string> = [
  * run after the baseline in the same transaction.
  */
 function dropSearchPathReset(statement: Statement, context: Context): boolean {
-  const call = statement.word(1) === 'pg_catalog' ? 3 : 1;
+  const call = selectedFunction(statement, 'set_config');
   const isReset =
-    statement.word(0) === 'select' &&
-    (call === 1 || statement.token(2)?.text === '.') &&
-    statement.word(call) === 'set_config' &&
+    call !== -1 &&
     SEARCH_PATH_RESET.every(
       (text, offset) =>
         foldIdentifier(statement.token(call + 1 + offset)?.text ?? '') === text
@@ -530,7 +572,7 @@ function createSchemaIfNotExists(
  * The rules for statements, in the order they are tried.
  */
 const STATEMENT_RULES: ReadonlyArray<StatementRule> = [
-  refuseCopyData,
+  refuseData,
   refuseCreateDatabase,
   refuseDrop,
   refuseMigrationsTable,
@@ -908,9 +950,10 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  *
  * Throws a `BaselineError` when the dump cannot be a baseline: it is not SQL
  * text (a pg_dump custom- or tar-format archive, a compressed file or UTF-16
- * text), has a psql meta-command, data, `CREATE DATABASE` or `DROP`
- * statements, creates the migrations table or its sequence, or has a line
- * that node-pg-migrate would read as an up/down migration marker.
+ * text), has a psql meta-command, data (`COPY … FROM stdin`, `INSERT` or
+ * `setval()`), `CREATE DATABASE` or `DROP` statements, creates the migrations
+ * table or its sequence, or has a line that node-pg-migrate would read as an
+ * up/down migration marker.
  *
  * @param dump The pg_dump output.
  * @param options The migrations table and sequence, which the dump must not

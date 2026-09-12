@@ -9,7 +9,8 @@
  *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16
  *   text.
  * - `PSQL_META_COMMAND`: the dump has a psql meta-command such as `\connect`.
- * - `DATA_IN_DUMP`: the dump has table data (`COPY … FROM stdin`).
+ * - `DATA_IN_DUMP`: the dump has table data (`COPY … FROM stdin` or
+ *   `INSERT`) or the values of sequences (`setval()`).
  * - `CREATE_DATABASE`: the dump creates a database (`pg_dump --create`).
  * - `CLEAN_DUMP`: the dump drops objects (`pg_dump --clean`).
  * - `MIGRATIONS_TABLE_IN_DUMP`: the dump creates the migrations table or its
