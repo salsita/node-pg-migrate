@@ -1,0 +1,173 @@
+import { describe, expect, it } from 'vitest';
+import { emitTrigger } from '../../../src/codegen/emitters/triggers';
+import type { Trigger } from '../../../src/introspect/types';
+import { makeTrigger } from '../../introspect/objects';
+import {
+  expectCode,
+  expectFallback,
+  expectSql,
+  expectSqlThenAnyOrder,
+} from '../expectations';
+import { emitAndRun } from '../run';
+
+const PRODUCTS = { schema: 'kitchen', name: 'products' };
+const ORDERS = { schema: 'public', name: 'orders' };
+
+describe('emitTrigger', () => {
+  it.each<[string, Trigger, string]>([
+    [
+      'a row trigger with arguments and a WHEN condition',
+      makeTrigger(PRODUCTS, 'products_touch', {
+        timing: 'BEFORE',
+        events: ['UPDATE'],
+        function: { schema: 'kitchen', name: 'touch_updated_at' },
+        args: ['price', "it's {x}"],
+        condition: '(old.price IS DISTINCT FROM new.price)',
+        comment: 'Set by a comment step',
+      }),
+      `CREATE TRIGGER "products_touch" BEFORE UPDATE ON "kitchen"."products" FOR EACH ROW
+       WHEN ((old.price IS DISTINCT FROM new.price))
+       EXECUTE FUNCTION "kitchen"."touch_updated_at"('price', 'it''s {x}');`,
+    ],
+    [
+      'a statement trigger on several events with a function of the default schema',
+      makeTrigger(ORDERS, 'orders_changed', {
+        events: ['INSERT', 'DELETE'],
+        level: 'STATEMENT',
+        function: { schema: 'public', name: 'log_change' },
+      }),
+      'CREATE TRIGGER "orders_changed" AFTER INSERT OR DELETE ON "orders" FOR EACH STATEMENT EXECUTE FUNCTION "log_change"();',
+    ],
+    [
+      'a TRUNCATE trigger',
+      makeTrigger(ORDERS, 'orders_truncated', {
+        events: ['TRUNCATE'],
+        level: 'STATEMENT',
+        function: { schema: 'public', name: 'log_change' },
+      }),
+      'CREATE TRIGGER "orders_truncated" AFTER TRUNCATE ON "orders" FOR EACH STATEMENT EXECUTE FUNCTION "log_change"();',
+    ],
+    [
+      'an INSTEAD OF trigger on a view',
+      makeTrigger(
+        { schema: 'kitchen', name: 'order_summary' },
+        'order_summary_insert',
+        {
+          timing: 'INSTEAD OF',
+          events: ['INSERT'],
+          function: { schema: 'kitchen', name: 'insert_order_summary' },
+        }
+      ),
+      'CREATE TRIGGER "order_summary_insert" INSTEAD OF INSERT ON "kitchen"."order_summary" FOR EACH ROW EXECUTE FUNCTION "kitchen"."insert_order_summary"();',
+    ],
+    [
+      'a deferrable constraint trigger',
+      makeTrigger(
+        { schema: 'kitchen', name: 'order_lines' },
+        'order_lines_check',
+        {
+          events: ['INSERT', 'UPDATE'],
+          function: { schema: 'kitchen', name: 'check_order_line' },
+          constraint: true,
+          deferrable: true,
+          deferred: true,
+        }
+      ),
+      'CREATE CONSTRAINT TRIGGER "order_lines_check" AFTER INSERT OR UPDATE ON "kitchen"."order_lines" DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION "kitchen"."check_order_line"();',
+    ],
+    [
+      'a constraint trigger that is not deferrable',
+      makeTrigger(
+        { schema: 'kitchen', name: 'order_lines' },
+        'order_lines_now',
+        {
+          function: { schema: 'kitchen', name: 'check_order_line' },
+          constraint: true,
+        }
+      ),
+      'CREATE CONSTRAINT TRIGGER "order_lines_now" AFTER INSERT ON "kitchen"."order_lines" NOT DEFERRABLE FOR EACH ROW EXECUTE FUNCTION "kitchen"."check_order_line"();',
+    ],
+  ])('creates %s with pgm.createTrigger', (_, trigger, expected) => {
+    const result = emitAndRun(emitTrigger, trigger);
+
+    expectCode(result);
+    expect(result.calls).toStrictEqual(['createTrigger']);
+    expectSql(result, expected);
+  });
+
+  it.each<[string, string, Partial<Trigger>]>([
+    [
+      'UPDATE OF columns',
+      'UPDATE OF columns',
+      {
+        timing: 'BEFORE',
+        events: ['UPDATE'],
+        updateOf: ['price', 'discount_pct'],
+        definition:
+          'CREATE TRIGGER t BEFORE UPDATE OF price, discount_pct ON kitchen.products FOR EACH ROW EXECUTE FUNCTION kitchen.touch_updated_at()',
+      },
+    ],
+    [
+      'a transition table',
+      'transition tables',
+      {
+        level: 'STATEMENT',
+        newTable: 'new_rows',
+        definition:
+          'CREATE TRIGGER t AFTER INSERT ON kitchen.products REFERENCING NEW TABLE AS new_rows FOR EACH STATEMENT EXECUTE FUNCTION kitchen.log_rows()',
+      },
+    ],
+  ])('falls back to pg_get_triggerdef for %s', (_, reason, fields) => {
+    const trigger = makeTrigger(PRODUCTS, 't', fields);
+    const result = emitAndRun(emitTrigger, trigger);
+
+    expectFallback(result, reason);
+    expect(result.calls).toStrictEqual(['sql']);
+    expectSql(result, trigger.definition);
+  });
+
+  it.each([
+    ['DISABLED', 'DISABLE TRIGGER'],
+    ['REPLICA', 'ENABLE REPLICA TRIGGER'],
+    ['ALWAYS', 'ENABLE ALWAYS TRIGGER'],
+  ] as const)(
+    'sets the firing mode %s after creating the trigger',
+    (enabled, action) => {
+      const result = emitAndRun(
+        emitTrigger,
+        makeTrigger(PRODUCTS, 'products_audit', {
+          function: { schema: 'kitchen', name: 'audit' },
+          enabled,
+          definition:
+            'CREATE TRIGGER products_audit AFTER INSERT ON kitchen.products FOR EACH ROW EXECUTE FUNCTION kitchen.audit()',
+        })
+      );
+
+      expectFallback(result, 'firing mode');
+      expectSqlThenAnyOrder(
+        result,
+        `CREATE TRIGGER "products_audit" AFTER INSERT ON "kitchen"."products" FOR EACH ROW EXECUTE FUNCTION "kitchen"."audit"();
+       ALTER TABLE "kitchen"."products" ${action} "products_audit";`
+      );
+    }
+  );
+
+  it('gives every reason when there are several', () => {
+    const trigger = makeTrigger(PRODUCTS, 't', {
+      timing: 'BEFORE',
+      events: ['UPDATE'],
+      updateOf: ['price'],
+      enabled: 'DISABLED',
+      definition:
+        'CREATE TRIGGER t BEFORE UPDATE OF price ON kitchen.products FOR EACH ROW EXECUTE FUNCTION kitchen.on_change()',
+    });
+    const result = emitAndRun(emitTrigger, trigger);
+
+    expectFallback(result, 'UPDATE OF columns', 'firing mode');
+    expectSqlThenAnyOrder(
+      result,
+      `${trigger.definition};
+       ALTER TABLE "kitchen"."products" DISABLE TRIGGER "t";`
+    );
+  });
+});
