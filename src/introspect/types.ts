@@ -1226,6 +1226,29 @@ export interface PartitionIndex {
    * which has the constraint's name).
    */
   readonly parent?: SchemaQualifiedName;
+
+  /**
+   * Its storage parameters (`reloptions`), each as stored, e.g.
+   * `'fillfactor=70'`. Left out when it has none.
+   */
+  readonly options?: ReadonlyArray<string>;
+
+  /**
+   * `true` when the partition is clustered on the index (`indisclustered`).
+   * Left out otherwise.
+   */
+  readonly clustered?: boolean;
+
+  /**
+   * `true` when the index is the partition's replica identity
+   * (`indisreplident`). Left out otherwise.
+   */
+  readonly replicaIdentity?: boolean;
+
+  /**
+   * The comment on the index (`COMMENT ON INDEX`), when it has one.
+   */
+  readonly comment?: string;
 }
 
 /**
@@ -2962,6 +2985,26 @@ export interface PartitionIndexRow {
    * backs, if any.
    */
   readonly constraintDefinition: string | null;
+
+  /**
+   * The index's `reloptions`; none when null or left out.
+   */
+  readonly reloptions?: ReadonlyArray<string> | null;
+
+  /**
+   * `indisclustered`; `false` when left out.
+   */
+  readonly indisclustered?: boolean;
+
+  /**
+   * `indisreplident`; `false` when left out.
+   */
+  readonly indisreplident?: boolean;
+
+  /**
+   * The comment on the index; none when null or left out.
+   */
+  readonly comment?: string | null;
 }
 
 /**

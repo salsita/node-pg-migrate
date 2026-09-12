@@ -5,7 +5,11 @@ import { qualifiedName, quoteName } from '../sql';
 import type { EmitContext, Emitted } from '../types';
 import { withStatements } from './fallback';
 import type { IndexLabel } from './shared';
-import { hasLineBreak, namedPartitionIndexes } from './shared';
+import {
+  hasLineBreak,
+  namedPartitionIndexes,
+  partitionIndexSettings,
+} from './shared';
 
 /**
  * What PostgreSQL names the index of each kind of constraint after.
@@ -30,7 +34,12 @@ const INDEX_LABELS: Readonly<Partial<Record<Constraint['type'], IndexLabel>>> =
  * whose name is not the one PostgreSQL would give them: each of those is
  * added to its partition first, with its own definition, so that adding the
  * constraint of the partitioned table attaches it instead of adding one with
- * another name.
+ * another name. After it, the indexes of the partitions' constraints get
+ * their own settings back (see `partitionIndexSettings()`; `addConstraint`
+ * gives them no storage parameters, since `pg_get_constraintdef()` leaves
+ * those out): their storage parameters, `CLUSTER ON` and `REPLICA IDENTITY
+ * USING INDEX` on their partitions, reason `'partition index settings'`, and
+ * their comments, reason `'comment on index'`, after the other reasons.
  *
  * @param constraint The constraint.
  * @param ctx The migration context.
@@ -80,6 +89,13 @@ export function emitConstraint(
   if (multiline) {
     reasons.push('line break');
   }
+
+  const settings = partitionIndexSettings(
+    label === undefined ? undefined : constraint.partitionIndexes,
+    () => []
+  );
+  statements.push(...settings.statements);
+  reasons.push(...settings.reasons);
 
   const code = multiline
     ? ''

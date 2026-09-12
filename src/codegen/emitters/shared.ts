@@ -1,7 +1,15 @@
 // Helpers that several emitters share.
 
+import { parseQualifiedName } from '../../baseline/core/identifiers';
 import type { PartitionIndex } from '../../introspect/types';
-import { makeObjectName } from '../sql';
+import {
+  makeObjectName,
+  qualifiedName,
+  quoteIdentifier,
+  quoteLiteral,
+  quoteName,
+  storageParameters,
+} from '../sql';
 
 /**
  * What PostgreSQL puts at the end of the name of an index it names itself:
@@ -50,6 +58,118 @@ export function namedPartitionIndexes(
     (partitionIndex) =>
       partitionIndex.name !== partitionIndexName(partitionIndex, label)
   );
+}
+
+/**
+ * A `CREATE [UNIQUE] INDEX` statement of `pg_get_indexdef()` without the
+ * `ONLY` of `ON ONLY`, which it writes for an index of a partitioned table.
+ *
+ * @param definition The statement.
+ * @returns The statement without `ONLY`, or `undefined` when it has none.
+ */
+export function withoutOnly(definition: string): string | undefined {
+  const prefix = ['CREATE UNIQUE INDEX ', 'CREATE INDEX '].find((start) =>
+    definition.startsWith(start)
+  );
+  const name =
+    prefix === undefined
+      ? undefined
+      : parseQualifiedName(definition, prefix.length);
+  const only = ' ON ONLY ';
+  if (name === undefined || !definition.startsWith(only, name.end)) {
+    return undefined;
+  }
+
+  return `${definition.slice(0, name.end)} ON ${definition.slice(name.end + only.length)}`;
+}
+
+/**
+ * The name of a storage parameter as stored (`name=value`).
+ */
+function parameterName(option: string): string {
+  const equals = option.indexOf('=');
+
+  return equals === -1 ? option : option.slice(0, equals);
+}
+
+/**
+ * What the indexes of partitions still need once the index of their
+ * partitioned table, or its constraint, has created or attached them, and
+ * why:
+ *
+ * - their storage parameters, when they have other ones than creating them
+ *   gives them (`created`): `ALTER INDEX … RESET (…)` for those they get and
+ *   don't have, then `ALTER INDEX … SET (…)` (an index of a partitioned
+ *   partition takes none of its own, so it is left as it is);
+ * - `ALTER TABLE <partition> CLUSTER ON <index>` and `ALTER TABLE
+ *   <partition> REPLICA IDENTITY USING INDEX <index>`;
+ * - their comments (`COMMENT ON INDEX`).
+ *
+ * The reasons are `'partition index settings'` for the storage parameters,
+ * clustering and replica identity, then `'comment on index'`.
+ *
+ * @param partitionIndexes The indexes of the partitions (see
+ * `Index.partitionIndexes`).
+ * @param created The storage parameters an index of a partition has once it
+ * is created (as stored, e.g. `'fillfactor=70'`).
+ */
+export function partitionIndexSettings(
+  partitionIndexes: ReadonlyArray<PartitionIndex> | undefined,
+  created: (partitionIndex: PartitionIndex) => ReadonlyArray<string>
+): { readonly statements: string[]; readonly reasons: string[] } {
+  const settings: string[] = [];
+  const comments: string[] = [];
+  for (const partitionIndex of partitionIndexes ?? []) {
+    const index = qualifiedName({
+      schema: partitionIndex.table.schema,
+      name: partitionIndex.name,
+    });
+    const table = qualifiedName(partitionIndex.table);
+    if (withoutOnly(partitionIndex.definition) === undefined) {
+      const own = partitionIndex.options ?? [];
+      const given = created(partitionIndex);
+      const ownNames = new Set(own.map(parameterName));
+      const reset = given
+        .map(parameterName)
+        .filter((name) => !ownNames.has(name));
+      if (reset.length > 0) {
+        settings.push(
+          `ALTER INDEX ${index} RESET (${reset.map(quoteIdentifier).join(', ')});`
+        );
+      }
+
+      const set = own.filter((option) => !given.includes(option));
+      if (set.length > 0) {
+        settings.push(`ALTER INDEX ${index} SET (${storageParameters(set)});`);
+      }
+    }
+
+    if (partitionIndex.clustered === true) {
+      settings.push(
+        `ALTER TABLE ${table} CLUSTER ON ${quoteName(partitionIndex.name)};`
+      );
+    }
+
+    if (partitionIndex.replicaIdentity === true) {
+      settings.push(
+        `ALTER TABLE ${table} REPLICA IDENTITY USING INDEX ${quoteName(partitionIndex.name)};`
+      );
+    }
+
+    if (partitionIndex.comment !== undefined) {
+      comments.push(
+        `COMMENT ON INDEX ${index} IS ${quoteLiteral(partitionIndex.comment)};`
+      );
+    }
+  }
+
+  return {
+    statements: [...settings, ...comments],
+    reasons: [
+      ...(settings.length === 0 ? [] : ['partition index settings']),
+      ...(comments.length === 0 ? [] : ['comment on index']),
+    ],
+  };
 }
 
 /**

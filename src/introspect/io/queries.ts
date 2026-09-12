@@ -677,7 +677,9 @@ WHERE NOT ic.relispartition AND ${isUserSchema('n')} AND ${isOwnObject('pg_class
 // attached to (`inhparent`): an index of the `indexes` query, the index of a
 // constraint, or another such partition index. The names of an index's
 // columns are the ones PostgreSQL gave them, which it names the indexes of
-// partitions after.
+// partitions after. Their storage parameters, clustering, replica identity
+// and comment are their own: the index they are attached to does not give
+// them those.
 const PARTITION_INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
   i.indrelid AS relid,
   inh.inhparent AS parent,
@@ -692,7 +694,11 @@ const PARTITION_INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS nam
     SELECT pg_catalog.pg_get_constraintdef(co.oid)
     FROM pg_catalog.pg_constraint AS co
     WHERE co.conindid ${EQ} ic.oid AND co.conrelid ${EQ} i.indrelid AND co.contype ${EQ} ANY (${codes(['p', 'u', 'x'])})
-  ) AS "constraintDefinition"
+  ) AS "constraintDefinition",
+  ic.reloptions,
+  i.indisclustered,
+  i.indisreplident,
+  ${commentOn('pg_class', 'ic.oid')} AS comment
 FROM pg_catalog.pg_index AS i
 JOIN pg_catalog.pg_class AS ic ON ic.oid ${EQ} i.indexrelid
 JOIN pg_catalog.pg_namespace AS n ON n.oid ${EQ} ic.relnamespace

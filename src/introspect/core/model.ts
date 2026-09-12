@@ -1175,6 +1175,13 @@ function partitionIndexesOf(
           ...optional('constraintDefinition', row.constraintDefinition),
           level,
           ...optional('parent', parentName),
+          ...optional('options', row.reloptions),
+          ...optional('clustered', row.indisclustered === true ? true : null),
+          ...optional(
+            'replicaIdentity',
+            row.indisreplident === true ? true : null
+          ),
+          ...optional('comment', row.comment),
         });
       }
 
@@ -1244,10 +1251,11 @@ function withPartitionIndexes(
  *   of the index, or primary key, unique or exclusion constraint
  *   (`conindid`), that they are attached to, directly or through other such
  *   rows (their `level`, and from level 2 on the `parent` they are attached
- *   to), with the name of their partition from its table row; that index or
- *   constraint depends on those partitions. An index that is not valid
- *   (`indisvalid` false) gets `valid: false`, and depends on every partition
- *   below its table.
+ *   to), with the name of their partition from its table row, and their
+ *   storage parameters, clustering, replica identity and comment when they
+ *   have them; that index or constraint depends on those partitions. An
+ *   index that is not valid (`indisvalid` false) gets `valid: false`, and
+ *   depends on every partition below its table.
  * - The arguments of a routine come from `argTypes`, `argNames` (`''` is no
  *   name), `argModes` and `argDefaults`, without `TABLE` (`t`) columns;
  *   `proconfig` entries are split at their first `=`.

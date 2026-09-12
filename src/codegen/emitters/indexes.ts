@@ -1,4 +1,3 @@
-import { parseQualifiedName } from '../../baseline/core/identifiers';
 import type { Index, IndexKey } from '../../introspect/types';
 import type { Code } from '../code';
 import { array, object, raw, statement, str } from '../code';
@@ -6,7 +5,11 @@ import { nameCode } from '../names';
 import { qualifiedName, quoteName, terminated } from '../sql';
 import type { EmitContext, Emitted } from '../types';
 import { sqlStatement, withStatements } from './fallback';
-import { namedPartitionIndexes } from './shared';
+import {
+  namedPartitionIndexes,
+  partitionIndexSettings,
+  withoutOnly,
+} from './shared';
 
 /**
  * The index methods that `CreateIndexOptions.method` takes.
@@ -57,21 +60,7 @@ function keyCode(key: IndexKey): Code {
  * its partitioned table made), so `ONLY` is left out.
  */
 function definitionSql(definition: string): string {
-  const prefix = ['CREATE UNIQUE INDEX ', 'CREATE INDEX '].find((start) =>
-    definition.startsWith(start)
-  );
-  const name =
-    prefix === undefined
-      ? undefined
-      : parseQualifiedName(definition, prefix.length);
-  const only = ' ON ONLY ';
-  if (name !== undefined && definition.startsWith(only, name.end)) {
-    return terminated(
-      `${definition.slice(0, name.end)} ON ${definition.slice(name.end + only.length)}`
-    );
-  }
-
-  return terminated(definition);
+  return terminated(withoutOnly(definition) ?? definition);
 }
 
 /**
@@ -157,11 +146,22 @@ function invalidIndexSql(index: Index): string[] {
  * from their own definitions, the index from its definition, `ON ONLY`
  * included, then each is attached with `ALTER INDEX … ATTACH PARTITION …`.
  *
+ * The indexes of partitions keep their own settings (see
+ * `partitionIndexSettings()`): their storage parameters when they differ from
+ * the ones creating them gives them (the index's, unless they are made from
+ * their own definitions), `CLUSTER ON` and `REPLICA IDENTITY USING INDEX` on
+ * their partitions, reason `'partition index settings'`, and their comments,
+ * reason `'comment on index'`, both last.
+ *
  * @param index The index.
  * @param ctx The migration context.
  */
 export function emitIndex(index: Index, ctx: EmitContext): Emitted {
   const table = qualifiedName(index.table);
+  const invalid = index.valid === false;
+  const named = invalid
+    ? []
+    : namedPartitionIndexes(index.partitionIndexes, 'idx');
   const after: string[] = [];
   const afterReasons: string[] = [];
   if (index.clustered) {
@@ -176,8 +176,20 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
     );
   }
 
+  // The indexes of partitions made from their own definitions have their
+  // own storage parameters; the others get those of the index.
+  const partitions = partitionIndexSettings(
+    index.partitionIndexes,
+    (partitionIndex) =>
+      invalid || named.includes(partitionIndex)
+        ? (partitionIndex.options ?? [])
+        : index.options
+  );
+  after.push(...partitions.statements);
+  afterReasons.push(...partitions.reasons);
+
   const reasons = definitionReasons(index);
-  if (index.valid === false) {
+  if (invalid) {
     return withStatements(
       '',
       [...invalidIndexSql(index), ...after],
@@ -185,8 +197,8 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
     );
   }
 
-  const before = namedPartitionIndexes(index.partitionIndexes, 'idx').map(
-    (partitionIndex) => definitionSql(partitionIndex.definition)
+  const before = named.map((partitionIndex) =>
+    definitionSql(partitionIndex.definition)
   );
   const beforeReasons = before.length === 0 ? [] : ['partition index name'];
   if (reasons.length > 0) {
