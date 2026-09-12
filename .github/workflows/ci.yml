@@ -50,7 +50,9 @@ jobs:
         os: [ubuntu-latest]
         node_version: [22, 24, 26]
       fail-fast: false
-    timeout-minutes: 10
+    # The baseline specs load fixture databases and 1,000-table schemas on
+    # every Postgres version.
+    timeout-minutes: 20
 
     name: 'Build & Integration Test: node-${{ matrix.node_version }}, ${{ matrix.os }}'
     steps:
