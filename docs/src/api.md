@@ -120,7 +120,7 @@ console.log(result.fakeCommand);
 
 When the options, the database or the dump can't make a baseline, it throws a `BaselineError`
 (exported too) and writes nothing. Its `code` says what went wrong (see
-[When `baseline` Refuses](baseline#when-baseline-refuses)), and its `message` says what to do.
+[Error Codes](baseline#error-codes)), and its `message` says what to do.
 
 ### Baseline Options
 
@@ -144,7 +144,7 @@ When the options, the database or the dump can't make a baseline, it throws a `B
 | `lockWaitTimeout`  | `string`                                    | How long pg_dump waits for table locks before it fails (defaults to `'10s'`)                                                                                                                                          |
 | `filenameFormat`   | `timestamp`, `utc` or `index`               | Prefix of the migration file name (defaults to `timestamp`)                                                                                                                                                           |
 | `logger`           | `object with debug/info/warn/error methods` | Redirect messages to this logger object, rather than `console`                                                                                                                                                        |
-| `format`           | `sql`, `ts` or `js`                         | The language of the migration (defaults to `sql`). `ts` and `js` are [experimental](baseline#experimental-typescript-and-javascript-output), need a connection and can't be combined with `fromFile`                  |
+| `format`           | `sql`, `ts` or `js`                         | The language of the migration (defaults to `sql`). `ts` and `js` are [experimental](baseline#typescript-output), need a connection and can't be combined with `fromFile`                                              |
 | `strict`           | `boolean`                                   | With `format` `ts` or `js`: throw `UNSUPPORTED_OBJECTS` instead of writing a migration with raw SQL fallbacks (defaults to `false`)                                                                                   |
 | `decamelize`       | `boolean`                                   | With `format` `ts` or `js`: whether the migrations run with `decamelize`, as for `runner()`. Then a database with identifiers that it would rename is refused with `INVALID_OPTIONS` (defaults to `false`)            |
 
