@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { pgDumpEnv } from '../core/pgEnv';
 import { parsePgDumpVersion } from '../core/version';
 import { BaselineError } from '../errors';
 import type { PgDumpVersion } from '../types';
@@ -81,8 +82,8 @@ function exitFailure(
 }
 
 /**
- * Runs pg_dump to its end, and returns what it writes to its standard output
- * as UTF-8.
+ * Runs pg_dump to its end, with the environment of `pgDumpEnv()`, and
+ * returns what it writes to its standard output as UTF-8.
  *
  * @param bin The pg_dump executable.
  * @param args The arguments.
@@ -97,7 +98,7 @@ function run(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, {
-      env: { ...process.env, ...env },
+      env: pgDumpEnv(process.env, env),
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     const stdout: string[] = [];
@@ -159,7 +160,7 @@ export async function getPgDumpVersion(
  * @param bin The pg_dump executable.
  * @param args The arguments (see `buildPgDumpArgs()`).
  * @param env Environment variables to add to the current ones (see
- * `toPgEnv()`).
+ * `toPgEnv()`); pg_dump gets them the way `pgDumpEnv()` says.
  */
 export function runPgDump(
   bin: string,

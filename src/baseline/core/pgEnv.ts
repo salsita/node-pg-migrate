@@ -167,3 +167,31 @@ export async function toPgEnv(
     )
   );
 }
+
+/**
+ * The environment pg_dump runs with: the inherited one with the connection
+ * settings (see `toPgEnv()`) over it, but without what would make pg_dump
+ * dump another database than the one node-postgres checked:
+ *
+ * - An inherited `PGSERVICE` and `PGSERVICEFILE` are left out: libpq takes
+ *   the settings of a service over the `PG*` variables, and node-postgres
+ *   ignores services.
+ * - An inherited `PGHOSTADDR` is left out when the connection gives a host:
+ *   libpq would connect to that address instead.
+ *
+ * @param inherited The environment of the current process.
+ * @param connection The connection settings.
+ */
+export function pgDumpEnv(
+  inherited: NodeJS.ProcessEnv,
+  connection: Readonly<Record<string, string>>
+): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...inherited };
+  delete env.PGSERVICE;
+  delete env.PGSERVICEFILE;
+  if (connection.PGHOST !== undefined) {
+    delete env.PGHOSTADDR;
+  }
+
+  return Object.assign(env, connection);
+}
