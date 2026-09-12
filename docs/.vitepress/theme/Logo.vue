@@ -7,7 +7,7 @@ defineProps<{ decorative?: boolean }>();
 
 <template>
   <span
-    class="npm-logo"
+    class="site-logo"
     :aria-hidden="decorative ? 'true' : undefined"
     v-html="svg"
   />

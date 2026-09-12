@@ -11,7 +11,7 @@ const { Layout } = DefaultTheme;
       <Logo class="logo" decorative />
     </template>
     <template #home-hero-image>
-      <Logo class="image-src" />
+      <Logo class="image-src" decorative />
     </template>
   </Layout>
 </template>

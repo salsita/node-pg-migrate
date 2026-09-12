@@ -108,40 +108,52 @@ html.dark:root {
  * Component: Logo
  * -------------------------------------------------------------------------- */
 
-.npm-logo {
+.site-logo {
   display: block;
-  aspect-ratio: 1;
 }
 
-.npm-logo svg {
+.site-logo svg {
   display: block;
   width: 100%;
   height: 100%;
 }
 
 /*
- * Hovering the logo, or a link around it, joins the slabs (each moves by the
- * --join offset set in logo.svg) and turns the Node ring 60deg.
+ * Hovering the logo, or a link around it, joins the slabs and turns the Node
+ * ring 60deg. Each slab moves by its --join offset, which closes the gaps in
+ * logo.svg (23 above the middle slab, 9 below it) around the center.
  */
-.npm-logo:hover,
-a:is(:hover, :focus-visible) .npm-logo {
+.site-logo:hover,
+a:is(:hover, :focus-visible) .site-logo {
   --joined: 1;
 }
 
-.npm-logo .slab {
+.site-logo .slab-top {
+  --join: 16px;
+}
+
+.site-logo .slab-middle {
+  --join: -7px;
+}
+
+.site-logo .slab-bottom {
+  --join: -16px;
+}
+
+.site-logo .slab {
   transform: translateY(calc(var(--joined, 0) * var(--join, 0px)));
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.npm-logo .ring {
+.site-logo .ring {
   transform: rotate(calc(var(--joined, 0) * 60deg));
   transform-origin: center;
   transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .npm-logo .slab,
-  .npm-logo .ring {
+  .site-logo .slab,
+  .site-logo .ring {
     transition: none;
   }
 }
