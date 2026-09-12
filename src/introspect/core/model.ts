@@ -788,7 +788,22 @@ function columnOf(
   };
 }
 
-function partitionOfTable(row: TableRow): Pick<Table, 'partitionOf'> {
+/**
+ * What a table is a partition of, when it is one.
+ *
+ * @param row The table.
+ * @param columns Its columns, in `attnum` order.
+ * @param parentColumns The names of the columns of its first parent, in
+ * `attnum` order; `undefined` when the parent is not among the tables of the
+ * rows.
+ * @returns `partitionOf`, with `ownColumnOrder` when the columns are not in
+ * the parent's order.
+ */
+function partitionOfTable(
+  row: TableRow,
+  columns: ReadonlyArray<Column>,
+  parentColumns: ReadonlyArray<string> | undefined
+): Pick<Table, 'partitionOf'> {
   const parent = row.inherits.at(0);
   if (
     !row.relispartition ||
@@ -798,19 +813,32 @@ function partitionOfTable(row: TableRow): Pick<Table, 'partitionOf'> {
     return {};
   }
 
+  const ownColumnOrder =
+    parentColumns !== undefined &&
+    (columns.length !== parentColumns.length ||
+      columns.some(({ name }, index) => name !== parentColumns[index]));
+
   return {
-    partitionOf: { parent: qualifiedName(parent), bound: row.partitionBound },
+    partitionOf: {
+      parent: qualifiedName(parent),
+      bound: row.partitionBound,
+      ...optional('ownColumnOrder', ownColumnOrder ? true : null),
+    },
   };
 }
 
-function tableOf(row: TableRow, columns: ReadonlyArray<Column>): Table {
+function tableOf(
+  row: TableRow,
+  columns: ReadonlyArray<Column>,
+  parentColumns: ReadonlyArray<string> | undefined
+): Table {
   return {
     ...catalogObject('table', row),
     partitioned: row.relkind === 'p',
     unlogged: row.relpersistence === 'u',
     columns,
     ...optional('partitionKey', row.partitionKey),
-    ...partitionOfTable(row),
+    ...partitionOfTable(row, columns, parentColumns),
     inherits: row.relispartition ? [] : row.inherits.map(qualifiedName),
     ...optionalName('ofType', row.ofType ?? null),
     rowLevelSecurity: row.relrowsecurity,
@@ -1188,8 +1216,9 @@ function withPartitionIndexes(
  * - A view's `definition` loses its final `;`, and the `check_option` entry
  *   of its `reloptions` becomes `checkOption`.
  * - A partition's parent is its one `inherits` row (`partitionOf.parent`),
- *   so its `inherits` is empty. A typed table's `ofType` row becomes its
- *   `ofType`.
+ *   so its `inherits` is empty; `partitionOf.ownColumnOrder` is set when its
+ *   columns are not in the order of the parent's (found by name among the
+ *   tables of the rows). A typed table's `ofType` row becomes its `ofType`.
  * - `dependencies` are the rows of the `dependencies` query between objects
  *   of the model, as `ObjectRef`s, plus the implicit ones (see
  *   `SchemaModel.dependencies`).
@@ -1280,7 +1309,8 @@ export function rowsToModel(
               owned.get(columnKey(row.schema, row.name, column.name)),
               columnInheritance(column, parents, constraintRows.notNull)
             )
-          )
+          ),
+          parents?.at(0)?.columns.map(({ name }) => name)
         );
       })
   );

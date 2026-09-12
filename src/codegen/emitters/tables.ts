@@ -538,6 +538,15 @@ export function serialSequences(
 }
 
 /**
+ * `GENERATED ALWAYS AS (…) STORED|VIRTUAL` for a generated column.
+ */
+function generationSql({ generated }: Column): string[] {
+  return generated === undefined
+    ? []
+    : [`GENERATED ALWAYS AS (${generated.expression}) ${generated.storage}`];
+}
+
+/**
  * The constraints of a column of `CREATE TABLE` (whole-table fallback): its
  * default, generation, identity and `NOT NULL`, e.g. `DEFAULT 0 NOT NULL`.
  */
@@ -547,12 +556,7 @@ function columnConstraintsSql(table: Table, column: Column): string[] {
     parts.push(`DEFAULT ${column.default}`);
   }
 
-  if (column.generated !== undefined) {
-    parts.push(
-      `GENERATED ALWAYS AS (${column.generated.expression}) ${column.generated.storage}`
-    );
-  }
-
+  parts.push(...generationSql(column));
   const { identity } = column;
   if (identity !== undefined) {
     const options = sequenceOptionsSql(
@@ -607,11 +611,10 @@ function typedColumnSql(table: Table, column: Column): string[] {
 }
 
 /**
- * The options of a column of a partition (`WITH OPTIONS …`): its default
- * and its `NOT NULL` constraint, with its name when it has one, so that a
- * partition gets them even when its partitioned table does not have them.
+ * The default and the `NOT NULL` constraint of a column of a partition,
+ * with its name when it has one.
  */
-function partitionColumnSql(column: Column): string[] {
+function partitionColumnOptions(column: Column): string[] {
   const parts: string[] = [];
   if (column.default !== undefined) {
     parts.push(`DEFAULT ${column.default}`);
@@ -626,9 +629,37 @@ function partitionColumnSql(column: Column): string[] {
     );
   }
 
+  return parts;
+}
+
+/**
+ * The options of a column of a partition (`WITH OPTIONS …`): its default
+ * and its `NOT NULL` constraint (see {@link partitionColumnOptions}), so that
+ * a partition gets them even when its partitioned table does not have them.
+ */
+function partitionColumnSql(column: Column): string[] {
+  const parts = partitionColumnOptions(column);
+
   return parts.length === 0
     ? []
     : [`${quoteName(column.name)} WITH OPTIONS ${parts.join(' ')}`];
+}
+
+/**
+ * A column of a partition that is created on its own, then attached (see
+ * `PartitionOf.ownColumnOrder`): its type, collation and generation, then
+ * its default and `NOT NULL` constraint (see {@link partitionColumnOptions}),
+ * since `ATTACH PARTITION` needs the partition to be `NOT NULL` where its
+ * partitioned table is.
+ */
+function attachedColumnSql(column: Column): string {
+  return [
+    quoteName(column.name),
+    column.type,
+    ...(column.collation === undefined ? [] : [`COLLATE ${column.collation}`]),
+    ...generationSql(column),
+    ...partitionColumnOptions(column),
+  ].join(' ');
 }
 
 /**
@@ -695,11 +726,20 @@ function identityCommentsSql(columns: ReadonlyArray<Column>): string[] {
 function createTableSql(table: Table): string[] {
   const name = qualifiedName(table);
   const unlogged = table.unlogged ? ' UNLOGGED' : '';
+  const { partitionOf } = table;
+  const attach: string[] = [];
   let create: string;
-  if (table.partitionOf !== undefined) {
+  if (partitionOf?.ownColumnOrder === true) {
+    // Like pg_dump: PARTITION OF would give it its parent's column order.
+    const columns = table.columns.map(attachedColumnSql);
+    create = `CREATE${unlogged} TABLE ${name} (${columns.join(', ')})`;
+    attach.push(
+      `ALTER TABLE ${qualifiedName(partitionOf.parent)} ATTACH PARTITION ${name} ${partitionOf.bound};`
+    );
+  } else if (partitionOf !== undefined) {
     const options = table.columns.flatMap(partitionColumnSql);
     const list = options.length === 0 ? '' : ` (${options.join(', ')})`;
-    create = `CREATE${unlogged} TABLE ${name} PARTITION OF ${qualifiedName(table.partitionOf.parent)}${list} ${table.partitionOf.bound}`;
+    create = `CREATE${unlogged} TABLE ${name} PARTITION OF ${qualifiedName(partitionOf.parent)}${list} ${partitionOf.bound}`;
   } else if (table.ofType === undefined) {
     const columns = localColumns(table).map((column) =>
       columnSql(table, column)
@@ -729,7 +769,10 @@ function createTableSql(table: Table): string[] {
     table.options.length === 0
       ? ''
       : ` WITH (${storageParameters(table.options)})`;
-  const statements = [`${create}${partitionBy}${using}${withOptions};`];
+  const statements = [
+    `${create}${partitionBy}${using}${withOptions};`,
+    ...attach,
+  ];
   for (const column of localColumns(table)) {
     const constraint = ownNotNull(column);
     if (constraint?.validated === false) {
@@ -739,10 +782,11 @@ function createTableSql(table: Table): string[] {
     }
   }
 
+  // CREATE TABLE gave a partition that is attached its own defaults and NOT
+  // NULL, and attaching it gives it nothing of its parent's.
+  const changes = attach.length === 0 ? inheritedColumnChanges(table) : [];
   statements.push(
-    ...inheritedColumnChanges(table).flatMap((change) =>
-      inheritedColumnSql(name, change)
-    ),
+    ...changes.flatMap((change) => inheritedColumnSql(name, change)),
     ...table.columns.flatMap((column) => columnSettingsSql(name, column))
   );
   if (table.replicaIdentity === 'FULL' || table.replicaIdentity === 'NOTHING') {
@@ -855,13 +899,16 @@ function columnCode(table: Table, column: Column): Code {
  *
  * The WHOLE table becomes one fallback, `CREATE TABLE …` built from the
  * model (columns in order, comments included), when it is a partition
- * (`CREATE TABLE … PARTITION OF … FOR VALUES …`), reason `'partition'`; is a
- * typed table (`CREATE TABLE … OF <type> (<column> WITH OPTIONS …)`, which
- * `createTable` cannot tie to its type), `'typed table'`; has a virtual
- * generated column, `'virtual generated column'`; storage parameters,
- * `'storage parameters'`; a non-heap access method, `'access method'`;
- * several parents, `'multiple inheritance'`; an identity sequence that is not
- * named `<table>_<column>_seq`, `'identity sequence name'`; a `NOT NULL`
+ * (`CREATE TABLE … PARTITION OF … FOR VALUES …`, or, when its columns are
+ * not in its partitioned table's order, `CREATE TABLE …` with its own
+ * columns in its own order then `ALTER TABLE <parent> ATTACH PARTITION …`,
+ * like pg_dump), reason `'partition'`; is a typed table (`CREATE TABLE … OF
+ * <type> (<column> WITH OPTIONS …)`, which `createTable` cannot tie to its
+ * type), `'typed table'`; has a virtual generated column, `'virtual
+ * generated column'`; storage parameters, `'storage parameters'`; a non-heap
+ * access method, `'access method'`; several parents, `'multiple
+ * inheritance'`; an identity sequence that is not named
+ * `<table>_<column>_seq`, `'identity sequence name'`; a `NOT NULL`
  * constraint whose name is not the default, `'NOT NULL constraint name'`;
  * column statistics, storage, compression or options, `'column settings'`;
  * or a `REPLICA IDENTITY` of `FULL` or `NOTHING`, `'replica identity'`. And,
@@ -881,9 +928,11 @@ function columnCode(table: Table, column: Column): Code {
  * In a whole-table fallback, a column that would be `serial` keeps its
  * `DEFAULT nextval(…)` (its sequence is created and owned on its own), the
  * columns of a partition get their defaults and `NOT NULL` constraints (with
- * their names) with `WITH OPTIONS`, those of a typed table their defaults,
- * generation, identity and `NOT NULL` with `WITH OPTIONS`, and column
- * settings and comments follow as `ALTER TABLE` and `COMMENT ON` statements.
+ * their names) with `WITH OPTIONS` (or in its own `CREATE TABLE`, with
+ * their types, collations and generations, when it is attached), those of a
+ * typed table their defaults, generation, identity and `NOT NULL` with `WITH
+ * OPTIONS`, and column settings and comments follow as `ALTER TABLE` and
+ * `COMMENT ON` statements.
  *
  * @param table The table.
  * @param ctx The migration context.

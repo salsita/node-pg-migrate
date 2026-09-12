@@ -1075,6 +1075,15 @@ export interface PartitionOf {
    * or `'DEFAULT'`.
    */
   readonly bound: string;
+
+  /**
+   * `true` when the partition's columns, in `attnum` order, are not in the
+   * order of its partitioned table's (it was created on its own, then
+   * attached): `CREATE TABLE … PARTITION OF` would give it its partitioned
+   * table's order. Left out when they are in the same order, and when the
+   * partitioned table is not among the tables of the rows.
+   */
+  readonly ownColumnOrder?: boolean;
 }
 
 /**
