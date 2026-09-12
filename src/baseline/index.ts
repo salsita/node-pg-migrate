@@ -235,7 +235,10 @@ async function generateBaseline(
   const { facts, model } = await readCatalogs(settings, plan);
   assertDecamelizeKeepsNames(model, plan.decamelize);
 
-  const fakeCommand = formatFakeCommand(migrationName, settings.dir);
+  const fakeCommand = formatFakeCommand(migrationName, settings.dir, {
+    migrationsTable: settings.migrationsTable,
+    migrationsSchema: settings.migrationsSchema,
+  });
   const source: DumpSource = { serverVersion: facts.version };
   const generated = generateMigration(model, {
     language: plan.language,
@@ -327,7 +330,10 @@ export async function baseline(
     relations,
     dump.facts
   );
-  const fakeCommand = formatFakeCommand(migrationName, settings.dir);
+  const fakeCommand = formatFakeCommand(migrationName, settings.dir, {
+    migrationsTable: settings.migrationsTable,
+    migrationsSchema: settings.migrationsSchema,
+  });
   const source = { ...sanitized.source, ...dump.source };
   const warnings = [...dump.warnings, ...lockWarnings];
 
