@@ -232,6 +232,12 @@ export interface DomainType extends CatalogObject {
   readonly notNullConstraintName?: string;
 
   /**
+   * The comment on the `NOT NULL` constraint (`COMMENT ON CONSTRAINT … ON
+   * DOMAIN …`), from PostgreSQL 17 on.
+   */
+  readonly notNullConstraintComment?: string;
+
+  /**
    * The default, as `pg_get_expr(typdefaultbin, 0)` writes it, e.g. `'0'`.
    */
   readonly default?: string;
@@ -921,6 +927,11 @@ export interface NotNullConstraint {
    * `false` for a `NOT VALID` constraint (`convalidated`).
    */
   readonly validated: boolean;
+
+  /**
+   * The comment on the constraint (`COMMENT ON CONSTRAINT … ON <table>`).
+   */
+  readonly comment?: string;
 }
 
 /**
@@ -2003,7 +2014,7 @@ export type ObjectComment =
       readonly object: DomainType;
 
       /**
-       * The name of the CHECK constraint.
+       * The name of the constraint: a CHECK, or the `NOT NULL` constraint.
        */
       readonly constraint: string;
 

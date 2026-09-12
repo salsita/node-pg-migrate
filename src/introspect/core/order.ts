@@ -334,18 +334,24 @@ function commentsOf(model: SchemaModel): CommentStep[] {
         ]
   );
   const onDomainConstraints = model.domains.flatMap((object) =>
-    object.checks.flatMap((check): CommentStep[] =>
-      check.comment === undefined
+    [
+      {
+        name: object.notNullConstraintName,
+        comment: object.notNullConstraintComment,
+      },
+      ...object.checks,
+    ].flatMap(({ name, comment }): CommentStep[] =>
+      name === undefined || comment === undefined
         ? []
         : [
             {
               comment: {
                 on: 'domainConstraint',
                 object,
-                constraint: check.name,
-                text: check.comment,
+                constraint: name,
+                text: comment,
               },
-              detail: check.name,
+              detail: name,
             },
           ]
     )

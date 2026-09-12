@@ -753,6 +753,20 @@ function identityCommentsSql(columns: ReadonlyArray<Column>): string[] {
 }
 
 /**
+ * `COMMENT ON CONSTRAINT … ON <table>` for the `NOT NULL` constraint of
+ * each column that has one with a comment (PostgreSQL 18).
+ */
+function notNullCommentsSql(table: Table): string[] {
+  return table.columns.flatMap(({ notNullConstraint: constraint }) =>
+    constraint?.comment === undefined
+      ? []
+      : [
+          `COMMENT ON CONSTRAINT ${quoteName(constraint.name)} ON ${qualifiedName(table)} IS ${quoteLiteral(constraint.comment)};`,
+        ]
+  );
+}
+
+/**
  * The statements of a whole-table fallback.
  */
 function createTableSql(table: Table): string[] {
@@ -837,7 +851,8 @@ function createTableSql(table: Table): string[] {
 
   statements.push(
     ...columnCommentsSql(name, table.columns),
-    ...identityCommentsSql(table.columns)
+    ...identityCommentsSql(table.columns),
+    ...notNullCommentsSql(table)
   );
 
   return statements;
@@ -915,7 +930,10 @@ function columnCode(table: Table, column: Column): Code {
  * `createTable` cannot list) are set after it with `pgm.sql('COMMENT ON
  * COLUMN …')`, which makes the step a fallback, reason `'comment on
  * column'`; so are comments on identity sequences (`COMMENT ON SEQUENCE`),
- * reason `'comment on sequence'` (both joined in that order).
+ * reason `'comment on sequence'`, and on the `NOT NULL` constraints of
+ * columns (PostgreSQL 18, `COMMENT ON CONSTRAINT … ON <table>`), reason
+ * `'comment on constraint'` (joined in that order; the last one is also a
+ * reason of a whole-table fallback, after its other reasons).
  *
  * `CREATE TABLE … INHERITS` gives the columns of a child the default and the
  * `NOT NULL` of its parent's (see `ColumnInheritance`), so a column that has
@@ -977,8 +995,14 @@ function columnCode(table: Table, column: Column): Code {
  */
 export function emitTable(table: Table, ctx: EmitContext): Emitted {
   const reasons = fallbackReasons(table);
+  const notNullComments = notNullCommentsSql(table);
+  const notNullReasons =
+    notNullComments.length === 0 ? [] : ['comment on constraint'];
   if (reasons.length > 0) {
-    return withStatements('', createTableSql(table), reasons);
+    return withStatements('', createTableSql(table), [
+      ...reasons,
+      ...notNullReasons,
+    ]);
   }
 
   const partition =
@@ -1032,11 +1056,12 @@ export function emitTable(table: Table, ctx: EmitContext): Emitted {
 
   return withStatements(
     [code, ...changeCode].join('\n'),
-    [...defaults, ...columnComments, ...sequenceComments],
+    [...defaults, ...columnComments, ...sequenceComments, ...notNullComments],
     [
       ...(defaults.length === 0 ? [] : ['line break']),
       ...(columnComments.length === 0 ? [] : ['comment on column']),
       ...(sequenceComments.length === 0 ? [] : ['comment on sequence']),
+      ...notNullReasons,
     ]
   );
 }

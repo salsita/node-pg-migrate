@@ -484,6 +484,7 @@ function domainOf(
     baseType: row.baseType,
     notNull: row.notNull,
     ...optional('notNullConstraintName', notNull?.name),
+    ...optional('notNullConstraintComment', notNull?.comment),
     ...optional('default', row.default),
     ...optional('collation', row.collation),
     checks: sortByKey(checks, ({ name }) => [name]),
@@ -1085,6 +1086,7 @@ function splitConstraints(rows: ReadonlyArray<ConstraintRow>): ConstraintRows {
           name: row.name,
           noInherit: row.connoinherit,
           validated: row.convalidated,
+          ...optional('comment', row.comment),
         },
         local: row.conislocal,
       });
@@ -1229,8 +1231,9 @@ function withPartitionIndexes(
  *   INHERIT`), and the `conislocal` of its own `NOT NULL` row.
  * - Table constraints that are not local (`conislocal`) are left out. `NOT
  *   NULL` rows (`contype = 'n'`) are folded into their column (`conkey`) as
- *   `notNullConstraint`, or into their domain as `notNullConstraintName`;
- *   the CHECK rows of a domain become its `checks`.
+ *   `notNullConstraint`, or into their domain as `notNullConstraintName`
+ *   and `notNullConstraintComment`, with their comments; the CHECK rows of
+ *   a domain become its `checks`.
  * - The rows of the `partitionIndexes` query become the `partitionIndexes`
  *   of the index, or primary key, unique or exclusion constraint
  *   (`conindid`), that they are attached to, directly or through other such
