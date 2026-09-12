@@ -1218,6 +1218,14 @@ export interface PartitionIndex {
    * partition of such a partition, and so on.
    */
   readonly level: number;
+
+  /**
+   * The index it is attached to (`pg_inherits.inhparent`), from `level` 2 on:
+   * the index of a partitioned partition. Left out at `level` 1, where it is
+   * the index that has these `partitionIndexes` (for a constraint, its index,
+   * which has the constraint's name).
+   */
+  readonly parent?: SchemaQualifiedName;
 }
 
 /**
@@ -1361,6 +1369,12 @@ export type IndexKey =
  * (`relispartition` indexes) are not in the model either: creating the
  * partitioned index, or attaching a partition, creates them. They are the
  * `partitionIndexes` of that index or constraint.
+ *
+ * Like pg_dump, the model leaves out the indexes that are not ready or not
+ * valid (`NOT indisready`, or `NOT indisvalid`: what a failed `CREATE INDEX
+ * CONCURRENTLY` leaves behind), except the indexes of partitioned tables
+ * (`relkind = 'I'`), which are not valid until an index of every partition
+ * is attached to them (see {@link Index.valid}).
  */
 export interface Index extends CatalogObject {
   readonly kind: 'index';
@@ -1431,6 +1445,13 @@ export interface Index extends CatalogObject {
    * first, then by table and name. Left out when there are none.
    */
   readonly partitionIndexes?: ReadonlyArray<PartitionIndex>;
+
+  /**
+   * `false` for an index of a partitioned table that is not valid
+   * (`indisvalid`): one created `ON ONLY` the table that has no index of
+   * some partition attached to it. Left out for a valid index.
+   */
+  readonly valid?: boolean;
 }
 
 /**
@@ -1941,8 +1962,10 @@ export interface SchemaModel {
    * extension's member counted as dependencies on the extension), plus the
    * implicit ones: a table's constraints, indexes, triggers, policies, rules
    * and statistics depend on it, a partition on its partitioned table, an
-   * inheritance child on its parents, and a foreign key on the primary key
-   * or unique constraint it references.
+   * inheritance child on its parents, a foreign key on the primary key or
+   * unique constraint it references, an index or constraint on the
+   * partitions whose indexes it has (`partitionIndexes`), and an index that
+   * is not valid on every partition below its table.
    *
    * A sequence's owner is not a dependency (the column's default usually
    * depends on the sequence): it is {@link Sequence.ownedBy}.
@@ -2859,7 +2882,9 @@ export interface IndexKeyRow {
 
 /**
  * A row of the `indexes` query: indexes that back no constraint and are not
- * partitions of a partitioned index.
+ * partitions of a partitioned index, and that are ready and valid, unless
+ * they are indexes of partitioned tables (`relkind = 'I'`), which are kept
+ * when they are not valid.
  */
 export interface IndexRow {
   readonly oid: number;
@@ -2893,6 +2918,12 @@ export interface IndexRow {
   readonly indisclustered: boolean;
   readonly indisreplident: boolean;
   readonly comment: string | null;
+
+  /**
+   * `indisvalid` (only ever `false` for an index of a partitioned table);
+   * valid when left out.
+   */
+  readonly indisvalid?: boolean;
 }
 
 /**

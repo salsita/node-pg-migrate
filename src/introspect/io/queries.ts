@@ -588,7 +588,9 @@ function followsKey(text: string): string {
 // like pg_get_indexdef(oid, <key number>, false) does (for a column, its
 // quoted name), but an expression in parentheses unless it is a function
 // call, and a collation or an operator class unqualified in pg_catalog (the
-// search path is empty).
+// search path is empty). The indexes that are not ready or not valid are left
+// out like pg_dump does, except those of partitioned tables (`relkind =
+// 'I'`), which are not valid until every partition has one attached.
 const INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
   i.indrelid AS relid,
   def.definition,
@@ -643,7 +645,8 @@ const INDEXES = `SELECT ic.oid, n.nspname AS schema, ic.relname AS name,
   ic.reloptions,
   i.indisclustered,
   i.indisreplident,
-  ${commentOn('pg_class', 'ic.oid')} AS comment
+  ${commentOn('pg_class', 'ic.oid')} AS comment,
+  i.indisvalid
 FROM pg_catalog.pg_index AS i
 JOIN pg_catalog.pg_class AS ic ON ic.oid ${EQ} i.indexrelid
 JOIN pg_catalog.pg_namespace AS n ON n.oid ${EQ} ic.relnamespace
@@ -664,6 +667,7 @@ CROSS JOIN LATERAL (
     END AS keys
 ) AS def
 WHERE NOT ic.relispartition AND ${isUserSchema('n')} AND ${isOwnObject('pg_class', 'ic.oid')}
+  AND i.indisready AND (i.indisvalid OR ic.relkind ${EQ} 'I')
   AND NOT EXISTS (
     SELECT FROM pg_catalog.pg_constraint AS co
     WHERE co.conindid ${EQ} i.indexrelid AND co.conrelid ${EQ} i.indrelid AND co.contype ${EQ} ANY (${codes(['p', 'u', 'x'])})

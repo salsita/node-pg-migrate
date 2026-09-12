@@ -104,6 +104,29 @@ function definitionReasons(index: Index): string[] {
 }
 
 /**
+ * The statements that create an index of a partitioned table that is not
+ * valid, like pg_dump: each index of a partition attached to it, from its own
+ * definition, then the index `ON ONLY` the table, then `ALTER INDEX …
+ * ATTACH PARTITION …` for each of them (deepest first, each to the index it
+ * is attached to). The partitions that have no index attached get none:
+ * creating the index without `ONLY` would give them one, and make it valid.
+ */
+function invalidIndexSql(index: Index): string[] {
+  const partitionIndexes = index.partitionIndexes ?? [];
+
+  return [
+    ...partitionIndexes.map((partitionIndex) =>
+      terminated(partitionIndex.definition)
+    ),
+    terminated(index.definition),
+    ...partitionIndexes.map(
+      (partitionIndex) =>
+        `ALTER INDEX ${qualifiedName(partitionIndex.parent ?? index)} ATTACH PARTITION ${qualifiedName({ schema: partitionIndex.table.schema, name: partitionIndex.name })};`
+    ),
+  ];
+}
+
+/**
  * `pgm.createIndex(table, columns, { name, unique, where, include, method,
  * nulls })` for an index whose keys are columns or expressions without an
  * operator class or collation, each `ASC` or `DESC` with its default nulls
@@ -127,15 +150,18 @@ function definitionReasons(index: Index): string[] {
  * fallback too, reason `'partition index name'`, after the reasons of the
  * definition and before the others.
  *
+ * An index of a partitioned table that is not valid (`valid: false`, e.g.
+ * created `ON ONLY` the table with an index of only some partitions attached)
+ * is a fallback that keeps it so, reason `'invalid index'`, after the reasons
+ * of the definition: the indexes of the partitions attached to it are created
+ * from their own definitions, the index from its definition, `ON ONLY`
+ * included, then each is attached with `ALTER INDEX … ATTACH PARTITION …`.
+ *
  * @param index The index.
  * @param ctx The migration context.
  */
 export function emitIndex(index: Index, ctx: EmitContext): Emitted {
   const table = qualifiedName(index.table);
-  const before = namedPartitionIndexes(index.partitionIndexes, 'idx').map(
-    (partitionIndex) => definitionSql(partitionIndex.definition)
-  );
-  const beforeReasons = before.length === 0 ? [] : ['partition index name'];
   const after: string[] = [];
   const afterReasons: string[] = [];
   if (index.clustered) {
@@ -151,6 +177,18 @@ export function emitIndex(index: Index, ctx: EmitContext): Emitted {
   }
 
   const reasons = definitionReasons(index);
+  if (index.valid === false) {
+    return withStatements(
+      '',
+      [...invalidIndexSql(index), ...after],
+      [...reasons, 'invalid index', ...afterReasons]
+    );
+  }
+
+  const before = namedPartitionIndexes(index.partitionIndexes, 'idx').map(
+    (partitionIndex) => definitionSql(partitionIndex.definition)
+  );
+  const beforeReasons = before.length === 0 ? [] : ['partition index name'];
   if (reasons.length > 0) {
     return withStatements(
       '',

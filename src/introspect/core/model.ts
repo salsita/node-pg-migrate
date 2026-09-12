@@ -924,6 +924,7 @@ function indexOf(row: IndexRow, table: SchemaQualifiedName): Index {
     options: row.reloptions ?? [],
     clustered: row.indisclustered,
     replicaIdentity: row.indisreplident,
+    ...optional('valid', row.indisvalid === false ? false : null),
   };
 }
 
@@ -1158,7 +1159,11 @@ function partitionIndexesOf(
   tableNames: ReadonlyMap<number, SchemaQualifiedName>
 ): PartitionIndex[] {
   const found: PartitionIndex[] = [];
-  const visit = (parent: number, level: number): void => {
+  const visit = (
+    parent: number,
+    level: number,
+    parentName?: SchemaQualifiedName
+  ): void => {
     for (const row of attached.get(parent) ?? []) {
       const table = tableNames.get(row.relid);
       if (table !== undefined) {
@@ -1169,10 +1174,11 @@ function partitionIndexesOf(
           definition: row.definition,
           ...optional('constraintDefinition', row.constraintDefinition),
           level,
+          ...optional('parent', parentName),
         });
       }
 
-      visit(row.oid, level + 1);
+      visit(row.oid, level + 1, qualifiedName(row));
     }
   };
   visit(index, 1);
@@ -1237,8 +1243,11 @@ function withPartitionIndexes(
  * - The rows of the `partitionIndexes` query become the `partitionIndexes`
  *   of the index, or primary key, unique or exclusion constraint
  *   (`conindid`), that they are attached to, directly or through other such
- *   rows (their `level`), with the name of their partition from its table
- *   row; that index or constraint depends on those partitions.
+ *   rows (their `level`, and from level 2 on the `parent` they are attached
+ *   to), with the name of their partition from its table row; that index or
+ *   constraint depends on those partitions. An index that is not valid
+ *   (`indisvalid` false) gets `valid: false`, and depends on every partition
+ *   below its table.
  * - The arguments of a routine come from `argTypes`, `argNames` (`''` is no
  *   name), `argModes` and `argDefaults`, without `TABLE` (`t`) columns;
  *   `proconfig` entries are split at their first `=`.
@@ -1424,10 +1433,34 @@ export function rowsToModel(
         : withPartitions(constraint, row.conindid);
     })
   );
+  // Creating a partition attaches a new index of it to every index of its
+  // partitioned table, even one that is not valid, so such an index needs
+  // every partition below its table.
+  const partitionsOf = new Map<string, Table[]>();
+  for (const table of tables) {
+    if (table.partitionOf !== undefined) {
+      const key = nameKey(table.partitionOf.parent);
+      const siblings = partitionsOf.get(key) ?? [];
+      siblings.push(table);
+      partitionsOf.set(key, siblings);
+    }
+  }
+
+  const needPartitions = (object: Index, table: SchemaQualifiedName): void => {
+    for (const partition of partitionsOf.get(nameKey(table)) ?? []) {
+      implicit.push({ from: refOf(object), to: refOf(partition) });
+      needPartitions(object, partition);
+    }
+  };
   const indexes = sortObjects(
-    onRelation(rows.indexes, (row, table) =>
-      withPartitions(indexOf(row, table), row.oid)
-    )
+    onRelation(rows.indexes, (row, table) => {
+      const index = withPartitions(indexOf(row, table), row.oid);
+      if (index.valid === false) {
+        needPartitions(index, table);
+      }
+
+      return index;
+    })
   );
   const triggers = sortObjects(onRelation(rows.triggers, triggerOf));
   const policies = sortObjects(onRelation(rows.policies, policyOf));
