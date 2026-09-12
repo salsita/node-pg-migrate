@@ -159,6 +159,182 @@ a:is(:hover, :focus-visible) .site-logo {
 }
 
 /**
+ * Component: Home features
+ * -------------------------------------------------------------------------- */
+
+.VPHome .VPFeatures .VPFeature {
+  border-color: var(--vp-c-divider);
+  transition:
+    border-color 0.25s,
+    transform 0.25s,
+    box-shadow 0.25s;
+}
+
+.VPHome .VPFeatures .VPFeature.link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -24px
+    color-mix(in srgb, var(--vp-c-brand-1) 70%, transparent);
+}
+
+.VPHome .VPFeatures .box {
+  padding: 28px;
+}
+
+/* icon tiles are rounded hexagons, like the ring in the logo */
+.VPHome .VPFeatures .icon {
+  background-color: color-mix(in srgb, var(--vp-c-brand-1) 14%, transparent);
+  width: 46px;
+  height: 52px;
+  color: var(--vp-c-brand-1);
+  clip-path: path(
+    'M17.8 3Q23 0 28.2 3L40.32 10Q45.52 13 45.52 19L45.52 33Q45.52 39 40.32 42L28.2 49Q23 52 17.8 49L5.68 42Q0.48 39 0.48 33L0.48 19Q0.48 13 5.68 10Z'
+  );
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+
+.VPHome .VPFeatures .VPFeature.link:hover .icon {
+  background-color: var(--vp-c-brand-1);
+  color: var(--vp-c-white);
+}
+
+/* the feature icons in index.md are bare paths; they share one line style */
+.VPHome .VPFeatures .icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.VPHome .VPFeatures .title {
+  font-size: 17px;
+}
+
+.VPHome .VPFeatures .details {
+  line-height: 1.65;
+}
+
+/* features sit outside .vp-doc, so match its inline code by hand */
+.VPHome .VPFeatures .details code {
+  border-radius: 4px;
+  background-color: var(--vp-code-bg);
+  padding: 3px 6px;
+  font-size: var(--vp-code-font-size);
+  color: var(--vp-code-color);
+}
+
+/**
+ * Component: Home sections (markdown below the features)
+ * -------------------------------------------------------------------------- */
+
+.VPHome .home-section {
+  margin-top: 96px;
+}
+
+.VPHome .home-section h2 {
+  margin: 0 0 12px;
+  border-top: 0;
+  padding-top: 0;
+  line-height: 40px;
+  font-size: 32px;
+}
+
+/* VitePress offsets the # by the 24px h2 padding removed above */
+.VPHome .home-section h2 .header-anchor {
+  top: 0;
+}
+
+.VPHome .home-section > p {
+  margin: 0 0 28px;
+  max-width: 680px;
+  line-height: 1.7;
+  font-size: 16px;
+  color: var(--vp-c-text-2);
+}
+
+.VPHome .home-section > p code {
+  white-space: nowrap;
+}
+
+/* 13px code keeps the longest lines (the TypeScript signature, CREATE INDEX) unscrolled */
+.VPHome .home-showcase {
+  display: grid;
+  gap: 16px;
+  --vp-code-font-size: 13px;
+}
+
+@media (min-width: 960px) {
+  .VPHome .home-showcase {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* both panels as tall as the migration */
+  .VPHome .home-showcase .vp-code-group {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0;
+  }
+
+  .VPHome .home-showcase .blocks {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .VPHome .home-showcase .blocks > .active {
+    flex: 1;
+    margin-bottom: 0;
+  }
+}
+
+.VPHome .home-coverage ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.VPHome .home-coverage li {
+  margin: 0;
+}
+
+.VPHome .home-coverage a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  color: var(--vp-c-text-1);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.VPHome .home-coverage a::before {
+  width: 8px;
+  height: 9px;
+  background-color: var(--vp-c-brand-1);
+  content: '';
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.VPHome .home-coverage a:hover {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+/**
  * Component: Custom Block
  * -------------------------------------------------------------------------- */
 
