@@ -199,6 +199,41 @@ function migrationsDir(config: ResolvedConfig): string {
 }
 
 /**
+ * The glob metacharacters the runner reads a migrations-dir for with
+ * `--use-glob` (see `getMigrationFilePaths`).
+ */
+const GLOB_CHARACTERS = /[*?[\]{}]/;
+
+/**
+ * Refuses a glob migrations-dir: baseline writes the migration into a
+ * directory, so a configuration with `use-glob` on, or a migrations-dir that
+ * is a glob pattern, cannot say where the file goes (and would leave a literal
+ * directory named after the pattern, while `up` would look for the migration
+ * elsewhere).
+ *
+ * Throws a `BaselineError` with code `INVALID_OPTIONS`, which the handler
+ * prints as its message (exit 1, no stack trace), before anything is written.
+ *
+ * @param config The resolved configuration.
+ * @param dir The migrations directory baseline would write to.
+ */
+function assertPlainMigrationsDir(config: ResolvedConfig, dir: string): void {
+  if (config.useGlob) {
+    throw new BaselineError(
+      'INVALID_OPTIONS',
+      'baseline writes the migration into a directory, so it cannot run with use-glob turned on. Run baseline with a configuration where use-glob is off and migrations-dir is a plain directory.'
+    );
+  }
+
+  if (GLOB_CHARACTERS.test(dir)) {
+    throw new BaselineError(
+      'INVALID_OPTIONS',
+      `baseline writes the migration into a directory, so it cannot use a glob migrations-dir (${dir}). Set migrations-dir to a plain directory, without glob characters such as * ? [ ] { }.`
+    );
+  }
+}
+
+/**
  * Handler for the `baseline` action.
  *
  * It exits the process when it is done: with code 0 once the migration is
@@ -225,13 +260,16 @@ export async function runBaseline(
       ? nameArgs.join('-').replaceAll(/[ _]+/g, '-')
       : 'baseline';
 
+  const dir = migrationsDir(config);
+
   try {
+    assertPlainMigrationsDir(config, dir);
     await baseline({
       databaseUrl:
         connection === undefined
           ? undefined
           : baselineConnection(connection, options.rejectUnauthorized),
-      dir: migrationsDir(config),
+      dir,
       name,
       migrationsTable: config.migrationsTable,
       migrationsSchema: config.migrationsSchema,
