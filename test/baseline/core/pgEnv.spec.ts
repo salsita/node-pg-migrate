@@ -1,6 +1,6 @@
 import type { ClientConfig } from 'pg';
 import { describe, expect, it } from 'vitest';
-import { toPgEnv } from '../../../src/baseline/core/pgEnv';
+import { pgDumpEnv, toPgEnv } from '../../../src/baseline/core/pgEnv';
 
 /**
  * The libpq variables `toPgEnv` may set.
@@ -25,6 +25,12 @@ const LIBPQ_VARIABLES = new Set([
  */
 const SSL_FILES_URL =
   'postgres://u:p@db.example.com:5432/app?sslmode=verify-full&sslrootcert=%2Fetc%2Fssl%2Frds%20ca.pem&sslcert=/home/app/.postgresql/client.crt&sslkey=/home/app/.postgresql/client.key&sslcrl=/etc/ssl/revoked.crl';
+
+/**
+ * The startup option pg_dump always gets last in `PGOPTIONS`, so that it
+ * writes backslashes in string literals the standard way.
+ */
+const STANDARD_LITERALS = '-c standard_conforming_strings=on';
 
 describe('toPgEnv', () => {
   it('maps a connection URL to the libpq variables', async () => {
@@ -224,6 +230,178 @@ describe('toPgEnv', () => {
       expect(
         Object.values(env).every((value) => typeof value === 'string')
       ).toBe(true);
+    }
+  );
+});
+
+describe('pgDumpEnv', () => {
+  it('puts the connection settings over the inherited environment, and keeps the rest of it', () => {
+    expect(
+      pgDumpEnv(
+        {
+          PATH: '/usr/bin',
+          PGUSER: 'someone-else',
+          PGPORT: '6000',
+          PGSSLMODE: 'verify-ca',
+          PGCONNECT_TIMEOUT: '5',
+        },
+        {
+          PGHOST: 'db.example.com',
+          PGUSER: 'app',
+          PGPASSWORD: 'pw',
+          PGDATABASE: 'appdb',
+          PGSSLMODE: 'verify-full',
+        }
+      )
+    ).toStrictEqual({
+      PATH: '/usr/bin',
+      PGHOST: 'db.example.com',
+      PGPORT: '6000',
+      PGUSER: 'app',
+      PGPASSWORD: 'pw',
+      PGDATABASE: 'appdb',
+      PGSSLMODE: 'verify-full',
+      PGCONNECT_TIMEOUT: '5',
+      PGCLIENTENCODING: 'UTF8',
+      PGOPTIONS: STANDARD_LITERALS,
+    });
+  });
+
+  it('leaves the inherited environment as it is', () => {
+    const inherited = {
+      PGSERVICE: 'reporting',
+      PGSERVICEFILE: '/etc/pg_service.conf',
+      PGHOSTADDR: '203.0.113.7',
+      PGSSLMODE: 'no-verify',
+      PGCLIENTENCODING: 'LATIN1',
+      PGOPTIONS: '-c TimeZone=UTC',
+    };
+    const before = { ...inherited };
+
+    pgDumpEnv(inherited, { PGHOST: 'db.example.com' });
+
+    expect(inherited).toStrictEqual(before);
+  });
+
+  it.each<{ name: string; connection: Record<string, string> }>([
+    {
+      name: 'a connection with a host',
+      connection: { PGHOST: 'db.example.com', PGDATABASE: 'appdb' },
+    },
+    {
+      name: 'a connection without a host',
+      connection: { PGDATABASE: 'appdb' },
+    },
+  ])(
+    'leaves out an inherited PGSERVICE and PGSERVICEFILE for $name',
+    ({ connection }) => {
+      const env = pgDumpEnv(
+        { PGSERVICE: 'reporting', PGSERVICEFILE: '/etc/pg_service.conf' },
+        connection
+      );
+
+      expect(env).not.toHaveProperty('PGSERVICE');
+      expect(env).not.toHaveProperty('PGSERVICEFILE');
+      expect(env).toMatchObject(connection);
+    }
+  );
+
+  it('leaves out an inherited PGHOSTADDR when the connection gives a host', () => {
+    const env = pgDumpEnv(
+      { PGHOST: 'other.example.com', PGHOSTADDR: '203.0.113.7' },
+      { PGHOST: 'db.example.com' }
+    );
+
+    expect(env).not.toHaveProperty('PGHOSTADDR');
+    expect(env.PGHOST).toBe('db.example.com');
+  });
+
+  it('keeps an inherited PGHOSTADDR when the connection gives no host, as it keeps the inherited PGHOST', () => {
+    expect(
+      pgDumpEnv(
+        { PGHOST: 'db.example.com', PGHOSTADDR: '203.0.113.7' },
+        { PGDATABASE: 'appdb' }
+      )
+    ).toMatchObject({
+      PGHOST: 'db.example.com',
+      PGHOSTADDR: '203.0.113.7',
+      PGDATABASE: 'appdb',
+    });
+  });
+
+  it.each<{
+    name: string;
+    inherited: NodeJS.ProcessEnv;
+    connection: Record<string, string>;
+    expected: string;
+  }>([
+    {
+      name: "the user's own PGSSLMODE=no-verify of node-postgres",
+      inherited: { PGSSLMODE: 'no-verify' },
+      connection: { PGHOST: 'db.example.com' },
+      expected: 'require',
+    },
+    {
+      name: 'a PGSSLMODE=no-verify of the connection',
+      inherited: {},
+      connection: { PGHOST: 'db.example.com', PGSSLMODE: 'no-verify' },
+      expected: 'require',
+    },
+    {
+      name: 'the PGSSLMODE of the connection over an inherited no-verify',
+      inherited: { PGSSLMODE: 'no-verify' },
+      connection: { PGHOST: 'db.example.com', PGSSLMODE: 'verify-full' },
+      expected: 'verify-full',
+    },
+    {
+      name: "the user's own PGSSLMODE=verify-ca",
+      inherited: { PGSSLMODE: 'verify-ca' },
+      connection: { PGHOST: 'db.example.com' },
+      expected: 'verify-ca',
+    },
+  ])(
+    'gives pg_dump PGSSLMODE=$expected for $name',
+    ({ inherited, connection, expected }) => {
+      expect(pgDumpEnv(inherited, connection).PGSSLMODE).toBe(expected);
+    }
+  );
+
+  it.each([
+    { name: 'none', inherited: {} },
+    { name: 'UTF8', inherited: { PGCLIENTENCODING: 'UTF8' } },
+    { name: 'LATIN1', inherited: { PGCLIENTENCODING: 'LATIN1' } },
+  ])(
+    'makes pg_dump write UTF-8 when the inherited PGCLIENTENCODING is $name',
+    ({ inherited }) => {
+      expect(
+        pgDumpEnv(inherited, { PGHOST: 'db.example.com' }).PGCLIENTENCODING
+      ).toBe('UTF8');
+    }
+  );
+
+  it.each([
+    { name: 'no PGOPTIONS', inherited: {}, expected: STANDARD_LITERALS },
+    {
+      name: 'an empty PGOPTIONS',
+      inherited: { PGOPTIONS: '' },
+      expected: STANDARD_LITERALS,
+    },
+    {
+      name: 'PGOPTIONS with other settings',
+      inherited: { PGOPTIONS: '-c TimeZone=Asia/Tokyo' },
+      expected: `-c TimeZone=Asia/Tokyo ${STANDARD_LITERALS}`,
+    },
+    {
+      name: 'PGOPTIONS that turn standard_conforming_strings off',
+      inherited: { PGOPTIONS: '-c standard_conforming_strings=off' },
+      expected: `-c standard_conforming_strings=off ${STANDARD_LITERALS}`,
+    },
+  ])(
+    'ends PGOPTIONS with standard_conforming_strings=on, after the inherited options, for $name',
+    ({ inherited, expected }) => {
+      expect(pgDumpEnv(inherited, { PGHOST: 'db.example.com' }).PGOPTIONS).toBe(
+        expected
+      );
     }
   );
 });

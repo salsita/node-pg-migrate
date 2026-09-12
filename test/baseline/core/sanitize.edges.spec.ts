@@ -326,6 +326,48 @@ describe('sanitizeDump', () => {
     });
 
     it.each([
+      'SET client_encoding = DEFAULT;',
+      'SET client_encoding TO default;',
+    ])(
+      "accepts %j, which sets the migration's own client_encoding, and turns it into SET LOCAL",
+      (statement) => {
+        expect(sanitize(`${statement}\n`)).toBe(
+          `${saveOf('client_encoding')}\nSET LOCAL${statement.slice('SET'.length)}\n\n${restoreOf('client_encoding')}\n`
+        );
+      }
+    );
+
+    it.each([
+      {
+        name: 'standard_conforming_strings',
+        statement: "SET standard_conforming_strings = E'on';",
+      },
+      {
+        name: 'client_encoding',
+        statement: 'SET client_encoding = $$UTF8$$;',
+      },
+      {
+        name: 'client_encoding',
+        statement: 'SET client_encoding = $enc$UTF8$enc$;',
+      },
+    ])(
+      'accepts $statement, an escape or dollar-quoted string, and turns it into SET LOCAL',
+      ({ name, statement }) => {
+        expect(sanitize(`${statement}\n`)).toBe(
+          `${saveOf(name)}\nSET LOCAL${statement.slice('SET'.length)}\n\n${restoreOf(name)}\n`
+        );
+      }
+    );
+
+    it('keeps a SET cut short before its value at the end of the dump as SET LOCAL, for PostgreSQL to refuse', () => {
+      expect(
+        sanitize('CREATE TABLE public.t (id integer);\nSET client_encoding =')
+      ).toBe(
+        `CREATE TABLE public.t (id integer);\n${saveOf('client_encoding')}\nSET LOCAL client_encoding =\n\n${restoreOf('client_encoding')}\n`
+      );
+    });
+
+    it.each([
       "CREATE FUNCTION public.f() RETURNS integer\n    LANGUAGE sql\n    SET standard_conforming_strings TO 'off'\n    AS $$ SELECT 1 $$;",
       "CREATE FUNCTION public.g() RETURNS void\n    LANGUAGE plpgsql\n    AS $$\nBEGIN\n    SET standard_conforming_strings = off;\n    SET client_encoding = 'LATIN1';\nEND;\n$$;",
       "COMMENT ON TABLE public.t IS 'SET standard_conforming_strings = off; SET client_encoding = ''LATIN1'';';",
