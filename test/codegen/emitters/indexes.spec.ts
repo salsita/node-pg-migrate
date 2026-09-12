@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { emitIndex } from '../../../src/codegen/emitters/indexes';
-import type { Index, IndexKey } from '../../../src/introspect/types';
+import type {
+  Index,
+  IndexKey,
+  IndexKeyBase,
+} from '../../../src/introspect/types';
 import { makeIndex } from '../../introspect/objects';
 import {
   expectCode,
@@ -18,8 +22,11 @@ function key(column: string, fields: Partial<IndexKey> = {}): IndexKey {
   return { column, descending: false, nullsFirst: false, ...fields };
 }
 
-function expressionKey(expression: string): IndexKey {
-  return { expression, descending: false, nullsFirst: false };
+function expressionKey(
+  expression: string,
+  fields: Partial<IndexKeyBase> = {}
+): IndexKey {
+  return { expression, descending: false, nullsFirst: false, ...fields };
 }
 
 describe('emitIndex', () => {
@@ -207,4 +214,57 @@ describe('emitIndex', () => {
       );
     }
   );
+
+  it('sets the statistics target of each expression key that has one by its position, a target of 0 included', () => {
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(CUSTOMERS, 't_idx', {
+        keys: [
+          expressionKey('lower(email)', { statisticsTarget: 500 }),
+          key('id'),
+          expressionKey('upper(code)'),
+          expressionKey('length(code)', { statisticsTarget: 0 }),
+        ],
+      })
+    );
+
+    expectFallback(result, 'column settings');
+    expect(result.calls).toStrictEqual(['createIndex', 'sql', 'sql']);
+    expectSql(
+      result,
+      `CREATE INDEX "t_idx" ON "kitchen"."customers" ((lower(email)), "id", (upper(code)), (length(code)));
+       ALTER INDEX "kitchen"."t_idx" ALTER COLUMN 1 SET STATISTICS 500;
+       ALTER INDEX "kitchen"."t_idx" ALTER COLUMN 4 SET STATISTICS 0;`
+    );
+  });
+
+  it('sets the statistics targets of an index created from its definition after clustering the table on it, and gives the reasons in that order', () => {
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(CUSTOMERS, 't_idx', {
+        keys: [
+          key('id'),
+          expressionKey('lower(email)', { statisticsTarget: 50 }),
+        ],
+        options: ['fillfactor=80'],
+        definition:
+          "CREATE INDEX t_idx ON kitchen.customers USING btree (id, lower(email)) WITH (fillfactor='80')",
+        clustered: true,
+      })
+    );
+
+    expectFallback(
+      result,
+      'storage parameters',
+      'CLUSTER ON',
+      'column settings'
+    );
+    expect(result.calls).toStrictEqual(['sql', 'sql', 'sql']);
+    expectSql(
+      result,
+      `CREATE INDEX t_idx ON kitchen.customers USING btree (id, lower(email)) WITH (fillfactor='80');
+       ALTER TABLE "kitchen"."customers" CLUSTER ON "t_idx";
+       ALTER INDEX "kitchen"."t_idx" ALTER COLUMN 2 SET STATISTICS 50;`
+    );
+  });
 });

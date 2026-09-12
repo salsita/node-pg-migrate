@@ -51,6 +51,17 @@ describe('emitFunction', () => {
           "CREATE OR REPLACE FUNCTION kitchen.f()\n RETURNS integer\n LANGUAGE c\n COST 100\nAS '$libdir/kitchen', $function$kitchen_f$function$\n",
       },
     ],
+    [
+      'a C function with a planner support function and a cost that is not its default',
+      'cost or rows, support function, language c',
+      {
+        language: 'c',
+        cost: 10,
+        support: 'kitchen.f_support',
+        definition:
+          "CREATE OR REPLACE FUNCTION kitchen.f()\n RETURNS integer\n LANGUAGE c\n COST 10 SUPPORT kitchen.f_support\nAS '$libdir/kitchen', $function$kitchen_f$function$\n",
+      },
+    ],
   ])(
     'falls back to pg_get_functiondef for %s, whose body is a symbol',
     (_, reason, fields) => {

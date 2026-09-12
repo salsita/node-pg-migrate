@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { emitFunction } from '../../../src/codegen/emitters/functions';
+import {
+  emitFunction,
+  usesCreateFunction,
+} from '../../../src/codegen/emitters/functions';
 import type { Routine } from '../../../src/introspect/types';
 import { makeFunction } from '../../introspect/objects';
 import {
@@ -202,6 +205,24 @@ describe('emitFunction', () => {
           'CREATE OR REPLACE FUNCTION kitchen.f()\n RETURNS SETOF integer\n LANGUAGE sql\n ROWS 10\nAS $function$ SELECT 1 $function$\n',
       },
     ],
+    [
+      'a planner support function',
+      'support function',
+      {
+        arguments: [
+          { mode: 'IN', type: 'text' },
+          { mode: 'IN', type: 'text' },
+        ],
+        identityArguments: 'text, text',
+        returns: 'boolean',
+        volatility: 'IMMUTABLE',
+        strict: true,
+        body: ' SELECT $1 LIKE $2 ',
+        support: 'pg_catalog.textlike_support',
+        definition:
+          'CREATE OR REPLACE FUNCTION kitchen.f(text, text)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE STRICT SUPPORT pg_catalog.textlike_support\nAS $function$ SELECT $1 LIKE $2 $function$\n',
+      },
+    ],
   ])('falls back to pg_get_functiondef for %s', (_, reason, fields) => {
     const routine = makeFunction('kitchen', 'f', fields);
     const result = emitAndRun(emitFunction, routine);
@@ -209,5 +230,28 @@ describe('emitFunction', () => {
     expectFallback(result, reason);
     expect(result.calls).toStrictEqual(['sql']);
     expectSql(result, routine.definition);
+  });
+});
+
+describe('usesCreateFunction', () => {
+  it('is true for a function that emitFunction creates with pgm.createFunction and its set option', () => {
+    expect(
+      usesCreateFunction(
+        makeFunction('kitchen', 'f', {
+          config: [{ name: 'TimeZone', value: 'UTC' }],
+        })
+      )
+    ).toBe(true);
+  });
+
+  it('is false for a function with a planner support function, whose settings its definition sets', () => {
+    expect(
+      usesCreateFunction(
+        makeFunction('kitchen', 'f', {
+          support: 'pg_catalog.textlike_support',
+          config: [{ name: 'TimeZone', value: 'UTC' }],
+        })
+      )
+    ).toBe(false);
   });
 });

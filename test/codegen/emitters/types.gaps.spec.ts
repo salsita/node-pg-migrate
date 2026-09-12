@@ -7,13 +7,15 @@ import {
   emitSequence,
   emitSequenceOwnership,
 } from '../../../src/codegen/emitters/sequences';
-import type { SequenceOptions } from '../../../src/introspect/types';
+import { emitShellType } from '../../../src/codegen/emitters/types';
+import type { SequenceOptions, ShellType } from '../../../src/introspect/types';
 import {
   makeCollation,
   makeComposite,
   makeDomain,
   makeRange,
   makeSequence,
+  nextOid,
 } from '../../introspect/objects';
 import { expectCode, expectFallback, expectSql } from '../expectations';
 import { emitAndRun } from '../run';
@@ -226,6 +228,33 @@ describe('emitCollation', () => {
     );
 
     expect(result.steps[0]).toContain(String.raw`E'und-x-a\\b'`);
+  });
+});
+
+describe('emitShellType', () => {
+  function makeShellType(schema: string, name: string): ShellType {
+    return { kind: 'shellType', oid: nextOid(), schema, name };
+  }
+
+  it('declares a shell type with CREATE TYPE and its name only, which no pgm operation writes', () => {
+    const result = emitAndRun(
+      emitShellType,
+      makeShellType('kitchen', 'shell_t')
+    );
+
+    expectFallback(result, 'shell type');
+    expect(result.calls).toStrictEqual(['sql']);
+    expectSql(result, 'CREATE TYPE "kitchen"."shell_t";');
+  });
+
+  it('quotes the schema and name of a shell type', () => {
+    const result = emitAndRun(
+      emitShellType,
+      makeShellType('user', 'Shell "T"')
+    );
+
+    expectFallback(result, 'shell type');
+    expect(result.steps).toStrictEqual(['CREATE TYPE "user"."Shell ""T""";']);
   });
 });
 

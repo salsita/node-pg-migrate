@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { emitTrigger } from '../../../src/codegen/emitters/triggers';
-import type { Trigger } from '../../../src/introspect/types';
+import type {
+  FiringMode,
+  PartitionTrigger,
+  Trigger,
+} from '../../../src/introspect/types';
 import { makeTrigger } from '../../introspect/objects';
 import {
   expectCode,
@@ -12,6 +16,18 @@ import { emitAndRun } from '../run';
 
 const PRODUCTS = { schema: 'kitchen', name: 'products' };
 const ORDERS = { schema: 'public', name: 'orders' };
+const MEASUREMENTS = { schema: 'kitchen', name: 'measurements' };
+
+/**
+ * The clone of a trigger on a partition of `kitchen.measurements`.
+ */
+function clone(
+  table: string,
+  enabled: FiringMode,
+  fields: Partial<PartitionTrigger> = {}
+): PartitionTrigger {
+  return { table: { schema: 'kitchen', name: table }, enabled, ...fields };
+}
 
 describe('emitTrigger', () => {
   it.each<[string, Trigger, string]>([
@@ -222,5 +238,127 @@ describe('emitTrigger', () => {
       `CREATE TRIGGER "t" BEFORE UPDATE OF price ON "kitchen"."products" FOR EACH ROW EXECUTE FUNCTION "kitchen"."on_change"();
        ALTER TABLE "kitchen"."products" DISABLE TRIGGER "t";`
     );
+  });
+
+  describe('with clones on partitions', () => {
+    it('gives each clone that fires unlike the trigger it is a clone of its firing mode, a partition before its own partitions', () => {
+      const result = emitAndRun(
+        emitTrigger,
+        makeTrigger(MEASUREMENTS, 'm_touch', {
+          timing: 'BEFORE',
+          function: { schema: 'kitchen', name: 'touch' },
+          partitionTriggers: [
+            clone('measurements_2025', 'DISABLED'),
+            clone('measurements_2026', 'REPLICA', {
+              partitionTriggers: [
+                clone('measurements_2026_eu', 'REPLICA'),
+                clone('measurements_2026_us', 'ORIGIN'),
+              ],
+            }),
+            clone('measurements_2027', 'ORIGIN'),
+            clone('measurements_2028', 'ALWAYS'),
+          ],
+        })
+      );
+
+      expectFallback(result, 'firing mode');
+      expect(result.calls).toStrictEqual([
+        'createTrigger',
+        'sql',
+        'sql',
+        'sql',
+        'sql',
+      ]);
+      expectSql(
+        result,
+        `CREATE TRIGGER "m_touch" BEFORE INSERT ON "kitchen"."measurements" FOR EACH ROW EXECUTE FUNCTION "kitchen"."touch"();
+         ALTER TABLE "kitchen"."measurements_2025" DISABLE TRIGGER "m_touch";
+         ALTER TABLE "kitchen"."measurements_2026" ENABLE REPLICA TRIGGER "m_touch";
+         ALTER TABLE "kitchen"."measurements_2026_us" ENABLE TRIGGER "m_touch";
+         ALTER TABLE "kitchen"."measurements_2028" ENABLE ALWAYS TRIGGER "m_touch";`
+      );
+    });
+
+    it('enables a clone of a disabled trigger after disabling the trigger, and gives the firing mode reason once', () => {
+      const result = emitAndRun(
+        emitTrigger,
+        makeTrigger(MEASUREMENTS, 'm_audit', {
+          enabled: 'DISABLED',
+          partitionTriggers: [
+            clone('measurements_2025', 'DISABLED'),
+            clone('measurements_2026', 'ORIGIN'),
+          ],
+        })
+      );
+
+      expectFallback(result, 'firing mode');
+      expect(result.calls).toStrictEqual(['createTrigger', 'sql', 'sql']);
+      expectSql(
+        result,
+        `CREATE TRIGGER "m_audit" AFTER INSERT ON "kitchen"."measurements" FOR EACH ROW EXECUTE FUNCTION "kitchen"."on_change"();
+         ALTER TABLE "kitchen"."measurements" DISABLE TRIGGER "m_audit";
+         ALTER TABLE "kitchen"."measurements_2026" ENABLE TRIGGER "m_audit";`
+      );
+    });
+
+    it('comments on the clones that fire like the trigger, with only the comment reason', () => {
+      const result = emitAndRun(
+        emitTrigger,
+        makeTrigger(MEASUREMENTS, 'm_touch', {
+          partitionTriggers: [
+            clone('measurements_2025', 'ORIGIN'),
+            clone('measurements_2026', 'ORIGIN', {
+              partitionTriggers: [
+                clone('measurements_2026_eu', 'ORIGIN', {
+                  comment: "Fires on the EU partition's rows",
+                }),
+              ],
+            }),
+          ],
+        })
+      );
+
+      expectFallback(result, 'comment on trigger');
+      expect(result.calls).toStrictEqual(['createTrigger', 'sql']);
+      expectSql(
+        result,
+        `CREATE TRIGGER "m_touch" AFTER INSERT ON "kitchen"."measurements" FOR EACH ROW EXECUTE FUNCTION "kitchen"."on_change"();
+         COMMENT ON TRIGGER "m_touch" ON "kitchen"."measurements_2026_eu" IS 'Fires on the EU partition''s rows';`
+      );
+    });
+
+    it('comments on the clones last, after the definition and the firing modes, and gives the reasons in order', () => {
+      const trigger = makeTrigger(MEASUREMENTS, 'm_touch', {
+        timing: 'BEFORE',
+        events: ['UPDATE'],
+        updateOf: ['value'],
+        definition:
+          'CREATE TRIGGER m_touch BEFORE UPDATE OF value ON kitchen.measurements FOR EACH ROW EXECUTE FUNCTION kitchen.on_change()',
+        partitionTriggers: [
+          clone('measurements_2025', 'DISABLED', {
+            comment: 'Disabled on the first partition',
+          }),
+          clone('measurements_2026', 'ORIGIN', {
+            comment: 'Fires on the second partition',
+          }),
+        ],
+      });
+      const result = emitAndRun(emitTrigger, trigger);
+
+      expectFallback(result, 'firing mode', 'comment on trigger');
+      expect(result.calls).toStrictEqual([
+        'createTrigger',
+        'sql',
+        'sql',
+        'sql',
+      ]);
+      expectSql(
+        result,
+        `CREATE TRIGGER "m_touch" BEFORE UPDATE OF value ON "kitchen"."measurements" FOR EACH ROW EXECUTE FUNCTION "kitchen"."on_change"();
+         ALTER TABLE "kitchen"."measurements_2025" DISABLE TRIGGER "m_touch";
+         COMMENT ON TRIGGER "m_touch" ON "kitchen"."measurements_2025" IS 'Disabled on the first partition';
+         COMMENT ON TRIGGER "m_touch" ON "kitchen"."measurements_2026" IS 'Fires on the second partition';`
+      );
+    });
   });
 });

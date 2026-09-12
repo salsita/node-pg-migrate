@@ -153,6 +153,77 @@ describe('emitIndex', () => {
     expectCode(result);
     expect(result.calls).toStrictEqual(['createIndex']);
   });
+
+  it('creates an index that is not valid ON ONLY its table, without an index for any partition', () => {
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(MEASUREMENTS, 'measurements_id_idx', {
+        definition:
+          'CREATE INDEX measurements_id_idx ON ONLY kitchen.measurements USING btree (id)',
+        valid: false,
+      })
+    );
+
+    expectFallback(result, 'invalid index');
+    expect(result.calls).toStrictEqual(['sql']);
+    expectSql(
+      result,
+      'CREATE INDEX measurements_id_idx ON ONLY kitchen.measurements USING btree (id);'
+    );
+  });
+
+  it('creates the partition indexes of an index that is not valid from their own definitions, then attaches each to its parent', () => {
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(MEASUREMENTS, 'measurements_value_idx', {
+        keys: [{ column: 'value', descending: false, nullsFirst: false }],
+        options: ['fillfactor=90'],
+        definition:
+          "CREATE INDEX measurements_value_idx ON ONLY kitchen.measurements USING btree (value) WITH (fillfactor='90')",
+        valid: false,
+        partitionIndexes: [
+          partitionIndex('measurements_2026_eu', 'eu_readings', {
+            level: 2,
+            parent: { schema: 'kitchen', name: 'measurements_2026_value_idx' },
+            options: ['fillfactor=70'],
+            definition:
+              "CREATE INDEX eu_readings ON kitchen.measurements_2026_eu USING btree (value) WITH (fillfactor='70')",
+            comment: 'EU readings',
+          }),
+          partitionIndex('measurements_2026', 'measurements_2026_value_idx', {
+            definition:
+              'CREATE INDEX measurements_2026_value_idx ON ONLY kitchen.measurements_2026 USING btree (value)',
+          }),
+        ],
+      })
+    );
+
+    expectFallback(
+      result,
+      'storage parameters',
+      'invalid index',
+      'comment on index'
+    );
+    expect(result.calls).toStrictEqual([
+      'sql',
+      'sql',
+      'sql',
+      'sql',
+      'sql',
+      'sql',
+    ]);
+    expectSql(
+      result,
+      [
+        "CREATE INDEX eu_readings ON kitchen.measurements_2026_eu USING btree (value) WITH (fillfactor='70');",
+        'CREATE INDEX measurements_2026_value_idx ON ONLY kitchen.measurements_2026 USING btree (value);',
+        "CREATE INDEX measurements_value_idx ON ONLY kitchen.measurements USING btree (value) WITH (fillfactor='90');",
+        'ALTER INDEX "kitchen"."measurements_2026_value_idx" ATTACH PARTITION "kitchen"."eu_readings";',
+        'ALTER INDEX "kitchen"."measurements_value_idx" ATTACH PARTITION "kitchen"."measurements_2026_value_idx";',
+        `COMMENT ON INDEX "kitchen"."eu_readings" IS 'EU readings';`,
+      ].join('\n')
+    );
+  });
 });
 
 describe('emitConstraint', () => {
