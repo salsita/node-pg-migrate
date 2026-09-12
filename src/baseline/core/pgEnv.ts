@@ -15,6 +15,12 @@ interface ConnectionSettings {
 }
 
 /**
+ * The startup option that makes the server take backslashes in `'…'` string
+ * literals as they are (see `pgDumpEnv()`).
+ */
+const STANDARD_LITERALS = '-c standard_conforming_strings=on';
+
+/**
  * An empty or missing value is unknown.
  */
 function known(value: string | null | undefined): string | undefined {
@@ -171,13 +177,20 @@ export async function toPgEnv(
 /**
  * The environment pg_dump runs with: the inherited one with the connection
  * settings (see `toPgEnv()`) over it, but without what would make pg_dump
- * dump another database than the one node-postgres checked:
+ * dump another database than the one node-postgres checked, or write it in a
+ * way the baseline cannot keep:
  *
  * - An inherited `PGSERVICE` and `PGSERVICEFILE` are left out: libpq takes
  *   the settings of a service over the `PG*` variables, and node-postgres
  *   ignores services.
  * - An inherited `PGHOSTADDR` is left out when the connection gives a host:
  *   libpq would connect to that address instead.
+ * - `PGOPTIONS` ends with `-c standard_conforming_strings=on`, which wins
+ *   over the inherited options before it and over a database or role that
+ *   sets it off. With it off, pg_dump writes backslashes in `'…'` literals
+ *   the legacy way, which only reads right after its `SET
+ *   standard_conforming_strings = off`, and node-pg-migrate sends the
+ *   baseline as one query, whose literals are all read before that runs.
  *
  * @param inherited The environment of the current process.
  * @param connection The connection settings.
@@ -193,5 +206,12 @@ export function pgDumpEnv(
     delete env.PGHOSTADDR;
   }
 
-  return Object.assign(env, connection);
+  Object.assign(env, connection);
+
+  return {
+    ...env,
+    PGOPTIONS: env.PGOPTIONS
+      ? `${env.PGOPTIONS} ${STANDARD_LITERALS}`
+      : STANDARD_LITERALS,
+  };
 }
