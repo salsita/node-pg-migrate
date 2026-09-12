@@ -3,7 +3,8 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 
 const managers = ['npm', 'pnpm', 'yarn', 'bun'] as const;
 const manager = ref<(typeof managers)[number]>('npm');
-const command = computed(() => `${manager.value} add -D node-pg-migrate pg`);
+// not -D: runner() and pg are runtime dependencies when migrating from app code
+const command = computed(() => `${manager.value} add node-pg-migrate pg`);
 
 const code = ref<HTMLElement>();
 const copied = ref(false);
@@ -27,16 +28,18 @@ async function copy(): Promise<void> {
 
 <template>
   <div class="hero-install">
-    <div class="managers" role="group" aria-label="Package manager">
-      <button
-        v-for="m in managers"
-        :key="m"
-        type="button"
-        :aria-pressed="m === manager"
-        @click="manager = m"
-      >
-        {{ m }}
-      </button>
+    <!-- radio inputs, like VitePress's code-group tabs: arrow keys switch managers -->
+    <div class="managers" role="radiogroup" aria-label="Package manager">
+      <template v-for="m in managers" :key="m">
+        <input
+          :id="`install-${m}`"
+          v-model="manager"
+          type="radio"
+          name="install-manager"
+          :value="m"
+        />
+        <label :for="`install-${m}`">{{ m }}</label>
+      </template>
     </div>
     <div class="command">
       <code ref="code"
@@ -82,24 +85,31 @@ async function copy(): Promise<void> {
   padding: 6px 8px 0;
 }
 
+.managers input {
+  position: fixed;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* styled like the code-group tabs further down the page */
-.managers button {
+.managers label {
   border-bottom: 2px solid transparent;
   padding: 4px 8px 6px;
   font-family: var(--vp-font-family-mono);
   font-size: 12px;
   font-weight: 500;
   color: var(--vp-code-tab-text-color);
+  cursor: pointer;
   transition:
     color 0.2s,
     border-color 0.2s;
 }
 
-.managers button:hover {
+.managers label:hover {
   color: var(--vp-code-tab-hover-text-color);
 }
 
-.managers button[aria-pressed='true'] {
+.managers input:checked + label {
   border-bottom-color: var(--vp-code-tab-active-bar-color);
   color: var(--vp-code-tab-active-text-color);
 }
@@ -147,7 +157,7 @@ async function copy(): Promise<void> {
   color: var(--vp-c-brand-1);
 }
 
-.managers button:focus-visible,
+.managers input:focus-visible + label,
 .copy:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 2px;

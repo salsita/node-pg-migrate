@@ -159,6 +159,22 @@ a:is(:hover, :focus-visible) .site-logo {
 }
 
 /**
+ * Component: Nav
+ * -------------------------------------------------------------------------- */
+
+/*
+ * From VitePress's 768px breakpoint the full menu shows, but until 960px it is
+ * wider than the viewport (logo, long version label), so the search button
+ * shows only its icon, as it does below 768px.
+ */
+@media (min-width: 768px) and (max-width: 959px) {
+  .VPNavBar .VPNavBarSearchButton .text,
+  .VPNavBar .VPNavBarSearchButton .keys {
+    display: none;
+  }
+}
+
+/**
  * Component: Home features
  * -------------------------------------------------------------------------- */
 
@@ -263,6 +279,8 @@ a:is(:hover, :focus-visible) .site-logo {
 /* 13px code keeps the longest lines (the TypeScript signature, CREATE INDEX) unscrolled */
 .VPHome .home-showcase {
   display: grid;
+  /* minmax(0, …) lets the code blocks scroll instead of widening the page */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   --vp-code-font-size: 13px;
 }

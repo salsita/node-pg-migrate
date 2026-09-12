@@ -25,7 +25,8 @@ export default defineConfig({
   // head entries are not prefixed with `base`; social previews need absolute URLs
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}logo.svg` }],
-    // accent color of link embeds in Discord and others
+    // accent color of link embeds in Discord and others; keep in sync with
+    // --c-brown-1 in theme/style.css (meta tags can't read CSS variables)
     ['meta', { name: 'theme-color', content: '#d26b38' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'node-pg-migrate' }],
@@ -79,7 +80,6 @@ export default defineConfig({
         },
       }),
     ],
-    languages: ['js', 'ts'],
   },
 
   themeConfig: {

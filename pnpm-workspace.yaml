@@ -3,3 +3,12 @@ allowBuilds:
   esbuild: false
   protobufjs: false
   ssh2: false
+
+overrides:
+  # the docs' Twoslash popups patch FloatingVue's Popper component, which 5.4 removed
+  '@shikijs/vitepress-twoslash>floating-vue': 5.3.0
+
+patchedDependencies:
+  # VitePress strips static HTML from lean page chunks with a greedy regex that can span two
+  # calls on one line, which breaks the home page's chunk; drop once fixed upstream
+  vitepress@2.0.0-alpha.19: patches/vitepress@2.0.0-alpha.19.patch

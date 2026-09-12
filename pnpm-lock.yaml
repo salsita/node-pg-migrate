@@ -203,6 +203,12 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@shikijs/vitepress-twoslash>floating-vue': 5.3.0
+
+patchedDependencies:
+  vitepress@2.0.0-alpha.19: 8dd061d1c908665c309ac226bb2981c7699b780216c0d3ffd66aaf75ad2125f1
+
 importers:
 
   .:
@@ -279,7 +285,7 @@ importers:
         version: typescript@6.0.3
       vitepress:
         specifier: 2.0.0-alpha.19
-        version: 2.0.0-alpha.19(@types/node@26.4.1)(jiti@2.7.0)(postcss@8.5.28)(typescript@7.0.2)(yaml@2.9.0)
+        version: 2.0.0-alpha.19(patch_hash=8dd061d1c908665c309ac226bb2981c7699b780216c0d3ffd66aaf75ad2125f1)(@types/node@26.4.1)(jiti@2.7.0)(postcss@8.5.28)(typescript@7.0.2)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
         version: 4.1.11(@types/node@26.4.1)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -322,8 +328,8 @@ packages:
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
 
-  '@floating-ui/dom@1.8.0':
-    resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
+  '@floating-ui/dom@1.1.1':
+    resolution: {integrity: sha512-TpIO93+DIujg3g7SykEAGZMDtbJRrmnYRCNYSjJlvIbGhBjRSNTLVbNeDQBrzy9qDgUbiWdc7KA0uZHZ2tJmiw==}
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
@@ -1664,8 +1670,8 @@ packages:
   flatted@3.4.4:
     resolution: {integrity: sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==}
 
-  floating-vue@5.4.0:
-    resolution: {integrity: sha512-hb5y5N8sXs9Dy4iZfWBKLzf3FkUkqhbkQREhRulAEvIihMlSGxc/7pXGrIDetoqXm/RRHNVjvN6lql9IhMM+tQ==}
+  floating-vue@5.3.0:
+    resolution: {integrity: sha512-GxTZLXT6H1+kbSPZLOHnejS2kbJLUl9RZODTTwNK/5rD1UcW8MpCt3uK8TD8SQlQgi1Hx3qLHM9I99ADiEGu3A==}
     peerDependencies:
       '@nuxt/kit': ^3.2.0 || ^4.0.0 || ^5.0.0-0
       vue: ^3.2.0
@@ -2687,6 +2693,11 @@ packages:
       jsdom:
         optional: true
 
+  vue-resize@2.0.0-alpha.1:
+    resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
+    peerDependencies:
+      vue: ^3.0.0
+
   vue@3.5.42:
     resolution: {integrity: sha512-4RyHQTbQvOPs3MfvUO1Sg0YRrKNnA0mAVtvpd12Tg1fKDN7OHBUl1IqSn8zGJjK9nI3NkNp8cgTpVrSZC5TTcA==}
     peerDependencies:
@@ -2787,10 +2798,9 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.12
 
-  '@floating-ui/dom@1.8.0':
+  '@floating-ui/dom@1.1.1':
     dependencies:
       '@floating-ui/core': 1.8.0
-      '@floating-ui/utils': 0.2.12
 
   '@floating-ui/utils@0.2.12': {}
 
@@ -3110,7 +3120,7 @@ snapshots:
   '@shikijs/vitepress-twoslash@4.4.3(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
       '@shikijs/twoslash': 4.4.3(supports-color@7.2.0)(typescript@7.0.2)
-      floating-vue: 5.4.0(vue@3.5.42(typescript@7.0.2))
+      floating-vue: 5.3.0(vue@3.5.42(typescript@7.0.2))
       lz-string: 1.5.0
       magic-string: 1.3.1
       markdown-it: 14.3.1
@@ -3844,10 +3854,11 @@ snapshots:
 
   flatted@3.4.4: {}
 
-  floating-vue@5.4.0(vue@3.5.42(typescript@7.0.2)):
+  floating-vue@5.3.0(vue@3.5.42(typescript@7.0.2)):
     dependencies:
-      '@floating-ui/dom': 1.8.0
+      '@floating-ui/dom': 1.1.1
       vue: 3.5.42(typescript@7.0.2)
+      vue-resize: 2.0.0-alpha.1(vue@3.5.42(typescript@7.0.2))
 
   focus-trap@8.2.2:
     dependencies:
@@ -4983,7 +4994,7 @@ snapshots:
       jiti: 2.7.0
       yaml: 2.9.0
 
-  vitepress@2.0.0-alpha.19(@types/node@26.4.1)(jiti@2.7.0)(postcss@8.5.28)(typescript@7.0.2)(yaml@2.9.0):
+  vitepress@2.0.0-alpha.19(patch_hash=8dd061d1c908665c309ac226bb2981c7699b780216c0d3ffd66aaf75ad2125f1)(@types/node@26.4.1)(jiti@2.7.0)(postcss@8.5.28)(typescript@7.0.2)(yaml@2.9.0):
     dependencies:
       '@docsearch/css': 4.7.0
       '@docsearch/js': 4.7.0
@@ -5060,6 +5071,10 @@ snapshots:
       '@vitest/ui': 4.1.11(vitest@4.1.11)
     transitivePeerDependencies:
       - msw
+
+  vue-resize@2.0.0-alpha.1(vue@3.5.42(typescript@7.0.2)):
+    dependencies:
+      vue: 3.5.42(typescript@7.0.2)
 
   vue@3.5.42(typescript@7.0.2):
     dependencies:
