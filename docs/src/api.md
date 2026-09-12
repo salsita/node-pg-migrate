@@ -1,7 +1,8 @@
 # Programmatic API
 
 Alongside command line, you can use `node-pg-migrate` also programmatically. It exports runner function,
-which takes options argument with the following structure (similar to [command line arguments](cli.md#configuration)):
+which takes options argument with the following structure (similar to [command line arguments](cli.md#configuration)).
+It also exports [`baseline()`](#baseline), the programmatic form of `node-pg-migrate baseline`.
 
 ## Example
 
@@ -98,3 +99,115 @@ export interface MigrationUnit {
   actions: MigrationBuilderActions;
 }
 ```
+
+## Baseline
+
+`baseline()` writes a baseline migration for a database that node-pg-migrate didn't create,
+like [`node-pg-migrate baseline`](baseline), and returns what it wrote. It logs the same lines
+as the CLI through `logger`.
+
+```javascript
+import { baseline } from 'node-pg-migrate';
+
+const result = await baseline({
+  databaseUrl: process.env.DATABASE_URL,
+  dir: 'migrations',
+});
+
+console.log(result.fakeCommand);
+// node-pg-migrate up 1789084800000_baseline --fake
+```
+
+When the options, the database or the dump can't make a baseline, it throws a `BaselineError`
+(exported too) and writes nothing. Its `code` says what went wrong (see
+[Error Codes](baseline#error-codes)), and its `message` says what to do.
+
+### Baseline Options
+
+> [!NOTE]
+> Pass either `databaseUrl` or `dbClient`, not both. pg_dump can't use `dbClient`, so a SQL
+> baseline with only a `dbClient` needs `fromFile` (the client then checks the migration history).
+
+| Option             | Type                                        | Description                                                                                                                                                                                                                                                                                      |
+| ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `databaseUrl`      | `string or object`                          | Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor). pg_dump gets the same settings through `PG*` environment variables (not the contents of `ssl.ca`/`cert`/`key`: use `sslrootcert=` in the URL). Optional with `fromFile` |
+| `dbClient`         | `pg.Client`                                 | Instance of [new pg.Client](https://node-postgres.com/api/client), connected to the database. `baseline()` doesn't close it                                                                                                                                                                      |
+| `dir`              | `string`                                    | The directory the migration is written to, resolved from `cwd()`. It is created if it doesn't exist, and must not have any file yet                                                                                                                                                              |
+| `name`             | `string`                                    | The migration name, after the file name prefix (defaults to `baseline`)                                                                                                                                                                                                                          |
+| `migrationsTable`  | `string`                                    | The table storing which migrations have been run (defaults to `pgmigrations`). It must not record any migration, and is left out of the dump                                                                                                                                                     |
+| `migrationsSchema` | `string`                                    | The schema storing table which migrations have been run (defaults to the first `schema`, else `public`)                                                                                                                                                                                          |
+| `schema`           | `string or array[string]`                   | The schema(s) on which migrations will be run, as for `runner()`. It doesn't limit the dump: see `includeSchemas`                                                                                                                                                                                |
+| `fromFile`         | `string`                                    | Path of a `pg_dump --schema-only` output to clean up instead of running pg_dump; `'-'` reads standard input. A path that can't be read is refused with `INVALID_OPTIONS`, and a dump that isn't UTF-8 with `NOT_UTF8`                                                                            |
+| `pgDump`           | `string`                                    | The pg_dump executable to run (defaults to `pg_dump`). Its major version must be at least the server's                                                                                                                                                                                           |
+| `includeSchemas`   | `array[string]`                             | Only dump these schemas (`pg_dump --schema`), or only read them with `format` `ts` or `js`                                                                                                                                                                                                       |
+| `excludeSchemas`   | `array[string]`                             | Leave these schemas out of the dump (`pg_dump --exclude-schema`), or of what `format` `ts` or `js` reads                                                                                                                                                                                         |
+| `lockWaitTimeout`  | `string`                                    | How long pg_dump waits for table locks before it fails (defaults to `'10s'`)                                                                                                                                                                                                                     |
+| `filenameFormat`   | `timestamp`, `utc` or `index`               | Prefix of the migration file name (defaults to `timestamp`)                                                                                                                                                                                                                                      |
+| `logger`           | `object with debug/info/warn/error methods` | Redirect messages to this logger object, rather than `console`                                                                                                                                                                                                                                   |
+| `format`           | `sql`, `ts` or `js`                         | The language of the migration (defaults to `sql`). `ts` and `js` are [experimental](baseline#typescript-output), need a connection and can't be combined with `fromFile`                                                                                                                         |
+| `strict`           | `boolean`                                   | With `format` `ts` or `js`: throw `UNSUPPORTED_OBJECTS` instead of writing a migration with raw SQL fallbacks (defaults to `false`)                                                                                                                                                              |
+| `decamelize`       | `boolean`                                   | With `format` `ts` or `js`: whether the migrations run with `decamelize`, as for `runner()`. Then a database with names that it would rename (identifiers, constraint names, function `SET` settings) is refused with `INVALID_OPTIONS` (defaults to `false`)                                    |
+
+### Baseline Result
+
+| Property                         | Type            | Description                                                                                                                                    |
+| -------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`                           | `string`        | Absolute path of the written migration                                                                                                         |
+| `migrationName`                  | `string`        | The file name without its extension, as the migrations table records it                                                                        |
+| `fakeCommand`                    | `string`        | The command that records the migration without running it, e.g. `node-pg-migrate up 1789084800000_baseline --fake`                             |
+| `relations`                      | `number`        | About how many relations the migration creates in its transaction                                                                              |
+| `requiredMaxLocksPerTransaction` | `number`        | The `max_locks_per_transaction` blank databases need, only set when it is more than the default of 64                                          |
+| `warnings`                       | `string[]`      | What you should know about the migration; each one is also logged as a warning                                                                 |
+| `source`                         | `object`        | Where the schema came from, as far as known: `serverVersion`, `pgDumpVersion` and `file` (`'stdin'` for standard input)                        |
+| `fallbacks`                      | `array[object]` | With `format` `ts` or `js`: the objects written as raw SQL, each with its `kind` (e.g. `table`, `index`, `shellType`), `identity` and `reason` |
+
+### Generating a Baseline Without Node.js <Badge type="warning" text="experimental" /> {#baseline-without-node}
+
+> [!WARNING]
+> Like [`--format ts`](baseline#typescript-output), this entry point is experimental: review what
+> it generates, and expect the output to change between releases.
+
+`node-pg-migrate/baseline/catalogs` generates the same migration as `baseline()` with `format`
+`ts` or `js`, byte for byte, without importing a single Node.js module. Any client with a
+node-postgres-like `query()` does, so it also runs in a browser, for example against
+[PGlite](https://pglite.dev):
+
+```ts
+import { PGlite } from '@electric-sql/pglite';
+import { generateBaselineFromCatalogs } from 'node-pg-migrate/baseline/catalogs';
+
+const client = new PGlite();
+await client.exec(schemaSql);
+
+const result = await generateBaselineFromCatalogs(client, {
+  format: 'ts',
+  migrationName: `${Date.now()}_baseline`,
+});
+
+// What `baseline --format ts` writes to `migrations/<migrationName>.ts`.
+console.log(result.content, result.fakeCommand, result.fallbacks.length);
+```
+
+```ts
+function generateBaselineFromCatalogs(
+  client: CatalogClient,
+  options: CatalogBaselineOptions
+): Promise<CatalogBaselineResult>;
+```
+
+- `client` is a `CatalogClient`: anything with a
+  `query(text, values?) => Promise<{ rows }>`. It must be one connection, not a pool, and must
+  not be in a transaction: each read runs in a transaction of its own, which it rolls back. It is
+  never closed. Values have to be parsed the way node-postgres parses them (booleans as booleans,
+  arrays as arrays, `bytea` as bytes); a connected `pg.Client` and a PGlite instance both are.
+- `options` are the [Baseline Options](#baseline-options) that decide what the migration says —
+  `format` (`ts` by default, or `js`), `schema`, `migrationsTable`, `migrationsSchema`,
+  `includeSchemas`, `excludeSchemas`, `strict`, `decamelize` — plus `migrationName`, the file
+  name without its extension, and `dir` (only the `fakeCommand` names it). Nothing is written,
+  so there is no `logger`, `name` or `filenameFormat`.
+- the result is the [Baseline Result](#baseline-result) without `path`, plus `content`, the
+  content of the migration file. Nothing is logged: `warnings` is yours to show.
+- it refuses what `baseline()` refuses, with the same `BaselineError` code (see
+  [Error Codes](baseline#error-codes)). This entry point carries its own copy of the class, so
+  check `error.code` rather than `instanceof` when you import `BaselineError` from
+  `node-pg-migrate` too.

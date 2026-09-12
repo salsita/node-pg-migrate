@@ -11,9 +11,15 @@
     "ts-check": "tsc",
     "test": "vitest",
     "test:unit": "vitest --project unit",
-    "test:integration": "vitest --project integration",
+    "test:integration": "vitest --project integration --maxWorkers=3",
+    "test:e2e": "vitest --project e2e",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --project unit --coverage",
+    "test:coverage:unit": "PGM_COVERAGE_SUITE=unit vitest run --project unit --coverage",
+    "test:coverage:integration": "PGM_COVERAGE_SUITE=integration vitest run --project integration --maxWorkers=3 --coverage",
+    "test:coverage:e2e": "PGM_E2E_COVERAGE=1 vitest run --project e2e && node test/e2e/report-coverage.mjs",
+    "bench": "vitest bench --run --project 'bench (bench)'",
+    "fixtures:capture": "jiti test/fixtures/capture-dumps.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -68,6 +74,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./baseline/catalogs": {
+      "types": "./dist/baseline/catalogs.d.ts",
+      "default": "./dist/baseline/catalogs.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "dist/index.js",
@@ -97,6 +107,7 @@
     "config": "5.0.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
+    "monocart-coverage-reports": "2.13.0",
     "node-pg-migrate": "link:.",
     "npm-run-all2": "9.0.3",
     "oxfmt": "0.66.0",
