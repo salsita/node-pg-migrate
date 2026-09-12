@@ -41,7 +41,7 @@ export async function planBaselineFile(options: {
   // migrations in them.
   const files = (await readdir(dir))
     .filter((file) => !file.startsWith('.'))
-    .toSorted();
+    .toSorted((a, b) => a.localeCompare(b));
   if (files.length > 0) {
     throw new BaselineError(
       'MIGRATIONS_EXIST',

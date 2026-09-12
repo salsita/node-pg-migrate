@@ -646,7 +646,10 @@ function handleStatement(segment: TopLevelSegment, context: Context): void {
  * The psql meta-commands that switch to another database, which pg_dump
  * writes with `--create`.
  */
-const CONNECT_COMMANDS: ReadonlySet<string> = new Set(['\\connect', '\\c']);
+const CONNECT_COMMANDS: ReadonlySet<string> = new Set([
+  String.raw`\connect`,
+  String.raw`\c`,
+]);
 
 /**
  * R1: drops the `\restrict` line and then the `\unrestrict` line with the
@@ -658,18 +661,18 @@ function handleMeta(segment: TopLevelSegment, context: Context): void {
   const [name, ...rest] = command.split(/\s+/);
   const key = rest.join(' ');
   const restrict = context.restrict;
-  if (restrict === undefined && name === '\\restrict' && key !== '') {
+  if (restrict === undefined && name === String.raw`\restrict` && key !== '') {
     context.restrict = { key, open: true };
   } else if (
     restrict?.open === true &&
-    name === '\\unrestrict' &&
+    name === String.raw`\unrestrict` &&
     key === restrict.key
   ) {
     restrict.open = false;
   } else {
     const hint = CONNECT_COMMANDS.has(name)
       ? 'Was the dump made with --create? Make it without --create: a baseline runs in the database it is recorded in.'
-      : 'A baseline only drops the one \\restrict … \\unrestrict pair that pg_dump writes around a dump: take this line out of the dump.';
+      : String.raw`A baseline only drops the one \restrict … \unrestrict pair that pg_dump writes around a dump: take this line out of the dump.`;
     throw new BaselineError(
       'PSQL_META_COMMAND',
       `line ${segment.line}: \`${excerpt(command)}\` is a psql command, not SQL. ${hint}`

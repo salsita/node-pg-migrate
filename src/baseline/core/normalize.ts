@@ -4,8 +4,8 @@
  * comments name the server and pg_dump.
  */
 const VOLATILE_LINE_STARTS: ReadonlyArray<string> = [
-  '\\restrict ',
-  '\\unrestrict ',
+  String.raw`\restrict `,
+  String.raw`\unrestrict `,
   '-- Dumped from database version ',
   '-- Dumped by pg_dump version ',
 ];

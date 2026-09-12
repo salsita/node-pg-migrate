@@ -17,9 +17,12 @@ const SHELL_SAFE = /^[\w%+,./:@-]+$/;
  * @param word The word, e.g. a path.
  */
 export function quoteShellWord(word: string): string {
-  return SHELL_SAFE.test(word)
-    ? word
-    : `'${word.replaceAll("'", String.raw`'\''`)}'`;
+  if (SHELL_SAFE.test(word)) {
+    return word;
+  }
+
+  const escaped = word.replaceAll("'", String.raw`'\''`);
+  return `'${escaped}'`;
 }
 
 /**
