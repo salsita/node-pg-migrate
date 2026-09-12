@@ -1,9 +1,6 @@
 import { relative } from 'node:path';
 import type { ClientBase } from 'pg';
-import { generateMigration } from '../codegen';
 import { db as connect } from '../db';
-import { introspect } from '../introspect/io/introspect';
-import type { SchemaModel } from '../introspect/types';
 import type { Logger } from '../logger';
 import { formatFakeCommand } from './core/fakeCommand';
 import { renderHeader } from './core/header';
@@ -12,6 +9,8 @@ import { toPgEnv } from './core/pgEnv';
 import { sanitizeDump } from './core/sanitize';
 import { assertPgDumpCompatible } from './core/version';
 import { BaselineError } from './errors';
+import type { CatalogBaseline } from './io/catalogBaseline';
+import { generateCatalogBaseline } from './io/catalogBaseline';
 import { getPgDumpVersion, runPgDump } from './io/pgDump';
 import { readDumpFile } from './io/readDump';
 import type { InstalledExtension } from './io/server';
@@ -30,8 +29,6 @@ import type {
 } from './plan';
 import {
   assertCanBaseline,
-  assertDecamelizeKeepsNames,
-  fallbackWarnings,
   locksNeeded,
   migrationsObjects,
   pgDumpArguments,
@@ -280,31 +277,22 @@ async function dumpDatabase(
 }
 
 /**
- * Reads the schema of the database from its catalogs, after checking it,
- * through a connection that is closed again unless it is the caller's
- * client.
+ * Generates a TypeScript or JavaScript baseline from the catalogs of the
+ * database (see `generateCatalogBaseline()`), through a connection that is
+ * closed again unless it is the caller's client.
  *
  * @param settings The settings of the baseline.
- * @param plan The database and the schemas to read.
+ * @param plan The database, the language and what to refuse.
+ * @param migrationName The migration name.
  */
-async function readCatalogs(
+async function generateFromCatalogs(
   settings: BaselineSettings,
-  plan: CatalogPlan
-): Promise<{ readonly facts: ServerFacts; readonly model: SchemaModel }> {
+  plan: CatalogPlan,
+  migrationName: string
+): Promise<CatalogBaseline> {
   const db = connect(plan.connection, settings.logger);
   try {
-    const facts = await readServerFacts(db, settings, { requireTable: true });
-    assertCanBaseline(facts, settings);
-    await assertIncludedSchemasExist(db, plan.includeSchemas ?? []);
-    const model = await introspect(db, {
-      includeSchemas: plan.includeSchemas,
-      excludeSchemas: plan.excludeSchemas,
-      migrationsSchema: settings.migrationsSchema,
-      migrationsTable: settings.migrationsTable,
-      migrationsSequence: migrationsObjects(settings, facts).sequence,
-    });
-
-    return { facts, model };
+    return await generateCatalogBaseline(db, settings, plan, migrationName);
   } finally {
     await db.close();
   }
@@ -345,7 +333,7 @@ function report(
 
 /**
  * Writes a TypeScript or JavaScript baseline: reads the catalogs, generates
- * `pgm` calls (see `generateMigration()`) and writes them.
+ * `pgm` calls (see `generateCatalogBaseline()`) and writes them.
  *
  * @param settings The settings of the baseline.
  * @param plan The database, the language and what to refuse.
@@ -357,49 +345,21 @@ async function generateBaseline(
   file: { readonly path: string; readonly migrationName: string }
 ): Promise<BaselineResult> {
   const { path, migrationName } = file;
-  const { facts, model } = await readCatalogs(settings, plan);
-  assertDecamelizeKeepsNames(model, plan.decamelize);
+  const { content, ...generated } = await generateFromCatalogs(
+    settings,
+    plan,
+    migrationName
+  );
 
-  const fakeCommand = formatFakeCommand(migrationName, settings.dir, {
-    migrationsTable: settings.migrationsTable,
-    migrationsSchema: settings.migrationsSchema,
-  });
-  const source: DumpSource = { serverVersion: facts.version };
-  const generated = generateMigration(model, {
-    language: plan.language,
-    defaultSchema: settings.createdSchemas[0],
-    strict: plan.strict,
-    migrationName,
-    fakeCommand,
-    source,
-    maxConnections: facts.maxConnections,
-    maxPreparedTransactions: facts.maxPreparedTransactions,
-  });
-  const relations = estimateRelations(generated.stats);
-  const { warnings: lockWarnings, ...locks } = locksNeeded(relations, facts);
-  const warnings = [
-    ...fallbackWarnings(generated.fallbacks.length),
-    ...lockWarnings,
-  ];
-
-  await writeBaselineFile(path, generated.content);
-  report(settings.logger, path, fakeCommand, {
+  await writeBaselineFile(path, content);
+  report(settings.logger, path, generated.fakeCommand, {
     notes: [
       `--format ${plan.language} is experimental; review the generated migration.`,
     ],
-    warnings,
+    warnings: generated.warnings,
   });
 
-  return {
-    path,
-    migrationName,
-    fakeCommand,
-    relations,
-    ...locks,
-    warnings,
-    source,
-    fallbacks: generated.fallbacks,
-  };
+  return { path, ...generated };
 }
 
 /**
