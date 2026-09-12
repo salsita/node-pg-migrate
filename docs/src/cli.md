@@ -81,9 +81,9 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 
 ## Adopting an Existing Database
 
-`node-pg-migrate baseline` writes one SQL migration that creates the schema of an existing
-database (it runs `pg_dump --schema-only` and cleans up its output), so that node-pg-migrate can
-manage a database it didn't create:
+`node-pg-migrate baseline` writes one migration that creates the schema of an existing database
+(by default in SQL: it runs `pg_dump --schema-only` and cleans up its output), so that
+node-pg-migrate can manage a database it didn't create:
 
 ```sh
 node-pg-migrate baseline                           # writes migrations/1789084800000_baseline.sql
@@ -91,8 +91,22 @@ node-pg-migrate up 1789084800000_baseline --fake   # on databases that already h
 node-pg-migrate up                                 # on blank databases
 ```
 
-It has its own options, e.g. `--from-file` for a dump you made yourself. See
-[Adopting an Existing Database](baseline) for the whole workflow.
+It has its own options, e.g. `--from-file` for a dump you made yourself, and these two for
+the language of the migration:
+
+| Option     | Default | Description                                                                                                                                                                                                                                                                                                         |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--format` | `sql`   | `sql` cleans up `pg_dump --schema-only` output. `ts` and `js` (experimental) read the catalogs of the database instead and write `…_baseline.ts` or `.js`, made of `pgm` calls, with `pgm.sql(…)` fallbacks for what those can't express. They need a database connection and can't be combined with `--from-file`. |
+| `--strict` | `false` | With `--format ts` or `js`: write nothing and fail with `UNSUPPORTED_OBJECTS`, listing every object that would need a raw SQL fallback and why. Refused with `--format sql`.                                                                                                                                        |
+
+```sh
+node-pg-migrate baseline --format ts            # writes migrations/1789084800000_baseline.ts
+node-pg-migrate baseline --format ts --strict   # or fails, listing what needs raw SQL
+```
+
+See [Adopting an Existing Database](baseline) for the whole workflow, and
+[Experimental: TypeScript and JavaScript Output](baseline#experimental-typescript-and-javascript-output)
+for what `--format ts` and `js` write.
 
 ## Dry Runs
 
