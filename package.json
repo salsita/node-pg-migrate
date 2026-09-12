@@ -92,8 +92,8 @@
     "@types/config": "4.4.0",
     "@types/node": "26.4.1",
     "@types/pg": "8.23.1",
-    "@vitest/coverage-v8": "4.1.11",
-    "@vitest/ui": "4.1.11",
+    "@vitest/coverage-v8": "5.0.0",
+    "@vitest/ui": "5.0.0",
     "config": "5.0.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
@@ -108,7 +108,7 @@
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",
     "vitepress": "2.0.0-alpha.19",
-    "vitest": "4.1.11"
+    "vitest": "5.0.0"
   },
   "peerDependencies": {
     "@types/pg": ">=7.0.0 <9.0.0",
