@@ -87,6 +87,50 @@ describe('emitTrigger', () => {
       ),
       'CREATE CONSTRAINT TRIGGER "order_lines_now" AFTER INSERT ON "kitchen"."order_lines" NOT DEFERRABLE FOR EACH ROW EXECUTE FUNCTION "kitchen"."check_order_line"();',
     ],
+    [
+      'a row trigger on UPDATE OF two columns',
+      makeTrigger(PRODUCTS, 'products_touch', {
+        timing: 'BEFORE',
+        events: ['UPDATE'],
+        updateOf: ['price', 'discount_pct'],
+        function: { schema: 'kitchen', name: 'touch_updated_at' },
+      }),
+      'CREATE TRIGGER "products_touch" BEFORE UPDATE OF price, discount_pct ON "kitchen"."products" FOR EACH ROW EXECUTE FUNCTION "kitchen"."touch_updated_at"();',
+    ],
+    [
+      'a trigger on INSERT and UPDATE OF columns whose names need quotes',
+      makeTrigger(ORDERS, 'orders_flagged', {
+        events: ['INSERT', 'UPDATE'],
+        updateOf: ['isMember', 'order', 'a"b', 'in stock'],
+        function: { schema: 'public', name: 'log_change' },
+      }),
+      'CREATE TRIGGER "orders_flagged" AFTER INSERT OR UPDATE OF "isMember", "order", "a""b", "in stock" ON "orders" FOR EACH ROW EXECUTE FUNCTION "log_change"();',
+    ],
+    [
+      'a statement trigger on UPDATE OF a column and DELETE',
+      makeTrigger(ORDERS, 'orders_status', {
+        events: ['UPDATE', 'DELETE'],
+        updateOf: ['status'],
+        level: 'STATEMENT',
+        function: { schema: 'public', name: 'log_change' },
+      }),
+      'CREATE TRIGGER "orders_status" AFTER UPDATE OF status OR DELETE ON "orders" FOR EACH STATEMENT EXECUTE FUNCTION "log_change"();',
+    ],
+    [
+      'a constraint trigger on UPDATE OF a column',
+      makeTrigger(
+        { schema: 'kitchen', name: 'order_lines' },
+        'order_lines_quantity',
+        {
+          events: ['UPDATE'],
+          updateOf: ['quantity'],
+          function: { schema: 'kitchen', name: 'check_order_line' },
+          constraint: true,
+          deferrable: true,
+        }
+      ),
+      'CREATE CONSTRAINT TRIGGER "order_lines_quantity" AFTER UPDATE OF quantity ON "kitchen"."order_lines" DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION "kitchen"."check_order_line"();',
+    ],
   ])('creates %s with pgm.createTrigger', (_, trigger, expected) => {
     const result = emitAndRun(emitTrigger, trigger);
 
@@ -96,17 +140,6 @@ describe('emitTrigger', () => {
   });
 
   it.each<[string, string, Partial<Trigger>]>([
-    [
-      'UPDATE OF columns',
-      'UPDATE OF columns',
-      {
-        timing: 'BEFORE',
-        events: ['UPDATE'],
-        updateOf: ['price', 'discount_pct'],
-        definition:
-          'CREATE TRIGGER t BEFORE UPDATE OF price, discount_pct ON kitchen.products FOR EACH ROW EXECUTE FUNCTION kitchen.touch_updated_at()',
-      },
-    ],
     [
       'a transition table',
       'transition tables',
@@ -154,19 +187,39 @@ describe('emitTrigger', () => {
 
   it('gives every reason when there are several', () => {
     const trigger = makeTrigger(PRODUCTS, 't', {
-      timing: 'BEFORE',
-      events: ['UPDATE'],
-      updateOf: ['price'],
+      level: 'STATEMENT',
+      newTable: 'new_rows',
       enabled: 'DISABLED',
       definition:
-        'CREATE TRIGGER t BEFORE UPDATE OF price ON kitchen.products FOR EACH ROW EXECUTE FUNCTION kitchen.on_change()',
+        'CREATE TRIGGER t AFTER INSERT ON kitchen.products REFERENCING NEW TABLE AS new_rows FOR EACH STATEMENT EXECUTE FUNCTION kitchen.log_rows()',
     });
     const result = emitAndRun(emitTrigger, trigger);
 
-    expectFallback(result, 'UPDATE OF columns', 'firing mode');
+    expectFallback(result, 'transition tables', 'firing mode');
     expectSqlThenAnyOrder(
       result,
       `${trigger.definition};
+       ALTER TABLE "kitchen"."products" DISABLE TRIGGER "t";`
+    );
+  });
+
+  it('creates a trigger on UPDATE OF columns with pgm.createTrigger, then sets its firing mode', () => {
+    const result = emitAndRun(
+      emitTrigger,
+      makeTrigger(PRODUCTS, 't', {
+        timing: 'BEFORE',
+        events: ['UPDATE'],
+        updateOf: ['price'],
+        function: { schema: 'kitchen', name: 'on_change' },
+        enabled: 'DISABLED',
+      })
+    );
+
+    expectFallback(result, 'firing mode');
+    expect(result.calls).toStrictEqual(['createTrigger', 'sql']);
+    expectSqlThenAnyOrder(
+      result,
+      `CREATE TRIGGER "t" BEFORE UPDATE OF price ON "kitchen"."products" FOR EACH ROW EXECUTE FUNCTION "kitchen"."on_change"();
        ALTER TABLE "kitchen"."products" DISABLE TRIGGER "t";`
     );
   });

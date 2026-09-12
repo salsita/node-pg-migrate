@@ -59,8 +59,8 @@ export async function catalogQuery(
  * - a procedure is one, reason `procedure`, and so is a function with a
  *   SQL-standard body, reason `SQL-standard body`;
  * - a restrictive policy, reason `restrictive policy`;
- * - a trigger with `UPDATE OF` columns, reason `UPDATE OF columns`, or with
- *   transition tables, reason `transition tables`.
+ * - a trigger with transition tables, reason `transition tables` (a trigger on
+ *   `UPDATE OF` columns is a `pgm.createTrigger` call).
  *
  * Identities are written like `Fallback.identity`: names as stored,
  * `schema.name`, `schema.name(identity arguments)` for routines and `name on
@@ -118,9 +118,8 @@ fallbacks (kind, identity, reason) AS (
   FROM pg_catalog.pg_policy AS po JOIN relations AS r ON r.oid = po.polrelid
   WHERE NOT po.polpermissive
   UNION ALL
-  SELECT 'trigger', tg.tgname || ' on ' || r.identity, pg_catalog.concat_ws(', ',
-      CASE WHEN pg_catalog.cardinality(tg.tgattr::pg_catalog.int2[]) > 0 THEN 'UPDATE OF columns' END,
-      CASE WHEN tg.tgoldtable IS NOT NULL OR tg.tgnewtable IS NOT NULL THEN 'transition tables' END)
+  SELECT 'trigger', tg.tgname || ' on ' || r.identity,
+      CASE WHEN tg.tgoldtable IS NOT NULL OR tg.tgnewtable IS NOT NULL THEN 'transition tables' ELSE '' END
   FROM pg_catalog.pg_trigger AS tg JOIN relations AS r ON r.oid = tg.tgrelid
   WHERE NOT tg.tgisinternal AND tg.tgparentid = 0
 )

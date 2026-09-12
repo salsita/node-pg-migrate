@@ -21,6 +21,7 @@ import {
   dumpSchema,
   INTEGRATION_TIMEOUT,
   loadFixture,
+  loadSql,
   PG_VERSIONS,
   setupPostgresDatabase,
 } from '../utils';
@@ -41,8 +42,8 @@ const ROUND_TRIP_TIMEOUT = INTEGRATION_TIMEOUT * 2;
  * What the kitchen sink needs raw SQL for, on every server version, beyond
  * what {@link catalogFallbacks} reads from the catalogs (its partitions,
  * collation, range type, aggregate, procedure, SQL-standard body, restrictive
- * policy, the trigger with `UPDATE OF` columns and the one with a transition
- * table, and PostgreSQL 18's virtual generated column). Each entry follows a
+ * policy, the trigger with a transition table, and PostgreSQL 18's virtual
+ * generated column). Each entry follows a
  * rule of the emitters' JSDoc (`src/codegen/emitters/*.ts`).
  */
 const KITCHEN_SINK_FALLBACKS: ReadonlyArray<Fallback> = [
@@ -370,6 +371,50 @@ describe.each(PG_VERSIONS)(
         expect(result.fallbacks).toEqual([]);
         const content = await expectMigrationWritten(result, dir, 'ts');
         expect(fallbackComments(content)).toEqual([]);
+        const blank = await rebuild(dir);
+        expect(await dumpSchema(container, blank)).toBe(
+          await dumpSchema(container, source)
+        );
+      },
+      ROUND_TRIP_TIMEOUT
+    );
+
+    it(
+      'writes triggers on UPDATE OF columns as pgm.createTrigger calls, quoting the names that need it',
+      async () => {
+        const source = await newDatabase('update_of');
+        await loadSql(
+          container,
+          source,
+          `CREATE TABLE public.accounts (
+             id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+             email text NOT NULL,
+             "displayName" text,
+             "order" integer,
+             is_member boolean NOT NULL DEFAULT false
+           );
+           CREATE FUNCTION public.accounts_touch() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN RETURN NULL; END$$;
+           CREATE TRIGGER accounts_membership AFTER INSERT OR UPDATE OF is_member ON public.accounts
+             FOR EACH ROW EXECUTE FUNCTION public.accounts_touch();
+           CREATE TRIGGER accounts_profile AFTER UPDATE OF email, "displayName", "order" ON public.accounts
+             FOR EACH STATEMENT EXECUTE FUNCTION public.accounts_touch();
+           CREATE CONSTRAINT TRIGGER accounts_order AFTER UPDATE OF "order" ON public.accounts
+             DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.accounts_touch();`
+        );
+        const dir = join(await tempDir(), 'migrations');
+
+        const result = await baseline({
+          databaseUrl: databaseUrl(container, source),
+          dir,
+          format: 'ts',
+          strict: true,
+          logger: silentLogger(),
+        });
+
+        expect(result.fallbacks).toEqual([]);
+        const content = await expectMigrationWritten(result, dir, 'ts');
+        expect(content).toContain('UPDATE OF is_member');
+        expect(content).toContain('UPDATE OF email, "displayName", "order"');
         const blank = await rebuild(dir);
         expect(await dumpSchema(container, blank)).toBe(
           await dumpSchema(container, source)
