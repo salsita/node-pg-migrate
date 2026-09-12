@@ -20,6 +20,7 @@ import {
   rangeRow,
   schemaRow,
   sequenceRow,
+  shellTypeRow,
 } from './rows';
 
 describe('rowsToModel', () => {
@@ -143,6 +144,38 @@ describe('rowsToModel', () => {
         name: 'mood',
         comment: 'How it went',
         labels,
+      },
+    ]);
+  });
+
+  it('keeps the shell types in scope with the enums, sorted with them by name', () => {
+    const model = rowsToModel(
+      emptyRows({
+        enums: [enumRow(16_610, 'kitchen', 'mood', ['sad', 'happy'])],
+        shellTypes: [
+          shellTypeRow(16_611, 'kitchen', 'rational', 'Defined later'),
+          shellTypeRow(16_612, 'kitchen', 'box'),
+          shellTypeRow(16_613, 'audit', 'hidden'),
+        ],
+      }),
+      { ...FACTS, excludeSchemas: ['audit'] }
+    );
+
+    expect(model.enums).toStrictEqual([
+      { kind: 'shellType', oid: 16_612, schema: 'kitchen', name: 'box' },
+      {
+        kind: 'enum',
+        oid: 16_610,
+        schema: 'kitchen',
+        name: 'mood',
+        labels: ['sad', 'happy'],
+      },
+      {
+        kind: 'shellType',
+        oid: 16_611,
+        schema: 'kitchen',
+        name: 'rational',
+        comment: 'Defined later',
       },
     ]);
   });

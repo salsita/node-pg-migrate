@@ -829,6 +829,45 @@ describe('rowsToModel', () => {
         },
       ]);
     });
+
+    it('keeps the column settings of a materialized view, and leaves out column options when there are none', () => {
+      const model = rowsToModel(
+        emptyRows({
+          views: [
+            viewRow(18_092, 'kitchen', 'daily_totals', ' SELECT 1 AS n;', {
+              relkind: 'm',
+              accessMethod: 'heap',
+            }),
+          ],
+          columns: [
+            columnRow(18_092, 1, 'total', 'numeric', {
+              statisticsTarget: 500,
+              attstorage: 'm',
+              typstorage: 'x',
+              attcompression: 'l',
+              attoptions: ['n_distinct=100'],
+            }),
+            columnRow(18_092, 2, 'label', 'text', {
+              attstorage: 'x',
+              typstorage: 'x',
+              attoptions: [],
+            }),
+          ],
+        }),
+        FACTS
+      );
+
+      expect(model.materializedViews[0].columns).toStrictEqual([
+        {
+          name: 'total',
+          statisticsTarget: 500,
+          storage: 'MAIN',
+          compression: 'lz4',
+          options: ['n_distinct=100'],
+        },
+        { name: 'label' },
+      ]);
+    });
   });
 
   describe('triggers', () => {

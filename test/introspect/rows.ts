@@ -23,6 +23,7 @@ import type {
   RuleRow,
   SchemaRow,
   SequenceRow,
+  ShellTypeRow,
   StatisticsRow,
   TableRow,
   TriggerRow,
@@ -95,6 +96,15 @@ export function enumRow(
   comment: string | null = null
 ): EnumRow {
   return { oid, schema, name, labels, comment };
+}
+
+export function shellTypeRow(
+  oid: number,
+  schema: string,
+  name: string,
+  comment: string | null = null
+): ShellTypeRow {
+  return { oid, schema, name, comment };
 }
 
 export function compositeRow(
