@@ -32,6 +32,7 @@ export type ObjectKind =
   | 'schema'
   | 'extension'
   | 'enum'
+  | 'shellType'
   | 'composite'
   | 'domain'
   | 'range'
@@ -57,9 +58,9 @@ export type ObjectKind =
  *
  * OIDs are only unique within their catalog, so a reference needs both: the
  * kind tells the catalog (`pg_class` for tables, views, materialized views,
- * sequences and indexes, `pg_type` for enums, composites, domains and ranges,
- * `pg_proc` for functions and aggregates, `pg_collation`, `pg_operator` and
- * `pg_cast` for collations, operators and casts, …).
+ * sequences and indexes, `pg_type` for enums, shell types, composites,
+ * domains and ranges, `pg_proc` for functions and aggregates, `pg_collation`,
+ * `pg_operator` and `pg_cast` for collations, operators and casts, …).
  */
 export interface ObjectRef {
   /**
@@ -136,6 +137,16 @@ export interface EnumType extends CatalogObject {
    * The labels, in `enumsortorder` order.
    */
   readonly labels: ReadonlyArray<string>;
+}
+
+/**
+ * A shell type (`pg_type.typtype = 'p'` that is not `typisdefined`): a type
+ * that `CREATE TYPE name` declares without a definition, e.g. so that the
+ * functions of a base type can refer to it before it is defined. The
+ * pseudo-types of the system are not in the model.
+ */
+export interface ShellType extends CatalogObject {
+  readonly kind: 'shellType';
 }
 
 /**
@@ -1880,6 +1891,7 @@ export type ModelObject =
   | Schema
   | Extension
   | EnumType
+  | ShellType
   | CompositeType
   | DomainType
   | RangeType
@@ -1929,9 +1941,9 @@ export interface SchemaModel {
   readonly extensions: ReadonlyArray<Extension>;
 
   /**
-   * The enum types.
+   * The enum types, and the shell types (see {@link ShellType}).
    */
-  readonly enums: ReadonlyArray<EnumType>;
+  readonly enums: ReadonlyArray<EnumType | ShellType>;
 
   /**
    * The standalone composite types.
@@ -2329,6 +2341,16 @@ export interface EnumRow {
    * The labels, in `enumsortorder` order.
    */
   readonly labels: ReadonlyArray<string>;
+  readonly comment: string | null;
+}
+
+/**
+ * A row of the `shellTypes` query.
+ */
+export interface ShellTypeRow {
+  readonly oid: number;
+  readonly schema: string;
+  readonly name: string;
   readonly comment: string | null;
 }
 
@@ -3322,6 +3344,11 @@ export interface CatalogRows {
   readonly schemas: ReadonlyArray<SchemaRow>;
   readonly extensions: ReadonlyArray<ExtensionRow>;
   readonly enums: ReadonlyArray<EnumRow>;
+
+  /**
+   * The shell types (none when left out).
+   */
+  readonly shellTypes?: ReadonlyArray<ShellTypeRow>;
   readonly composites: ReadonlyArray<CompositeRow>;
   readonly domains: ReadonlyArray<DomainRow>;
   readonly ranges: ReadonlyArray<RangeRow>;

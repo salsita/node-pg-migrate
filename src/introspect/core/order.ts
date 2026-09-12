@@ -23,7 +23,7 @@ export const PHASES = {
   extensions: 2,
 
   /**
-   * Enums, composite types, domains and range types.
+   * Enums, shell types, composite types, domains and range types.
    */
   types: 3,
 
@@ -89,6 +89,7 @@ const CREATE_PHASES: Readonly<Record<ObjectKind, Phase>> = {
   schema: PHASES.schemas,
   extension: PHASES.extensions,
   enum: PHASES.types,
+  shellType: PHASES.types,
   composite: PHASES.types,
   domain: PHASES.types,
   range: PHASES.types,

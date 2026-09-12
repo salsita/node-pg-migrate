@@ -297,6 +297,13 @@ const ENUMS = `SELECT t.oid, n.nspname AS schema, t.typname AS name,
   ${commentOn('pg_type', 't.oid')} AS comment
 ${userTypes('e')}`;
 
+// A shell type is a type that `CREATE TYPE name` declared without a
+// definition: a pseudo-type (`p`) that is not defined. The system's
+// pseudo-types are all in pg_catalog.
+const SHELL_TYPES = `SELECT t.oid, n.nspname AS schema, t.typname AS name,
+  ${commentOn('pg_type', 't.oid')} AS comment
+${userTypes('p')} AND NOT t.typisdefined`;
+
 const COMPOSITES = `SELECT t.oid, t.typrelid AS relid, n.nspname AS schema, t.typname AS name,
   ${commentOn('pg_type', 't.oid')} AS comment
 ${userTypes('c', `\nJOIN pg_catalog.pg_class AS c ON c.oid ${EQ} t.typrelid AND c.relkind ${EQ} 'c'`)}`;
@@ -1047,6 +1054,7 @@ export const QUERIES: Readonly<Record<QueryName, string>> = {
   schemas: SCHEMAS,
   extensions: EXTENSIONS,
   enums: ENUMS,
+  shellTypes: SHELL_TYPES,
   composites: COMPOSITES,
   domains: DOMAINS,
   ranges: RANGES,

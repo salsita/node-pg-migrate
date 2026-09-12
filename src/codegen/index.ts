@@ -42,6 +42,7 @@ import { emitSequence, emitSequenceOwnership } from './emitters/sequences';
 import { emitStatistics } from './emitters/statistics';
 import { emitTable, serialSequences } from './emitters/tables';
 import { emitTrigger } from './emitters/triggers';
+import { emitShellType } from './emitters/types';
 import { emitView } from './emitters/views';
 import { renderMigration } from './render';
 import type {
@@ -64,10 +65,18 @@ export type {
 } from './types';
 
 /**
+ * How the kinds of objects whose name is not a word are written in messages.
+ */
+const KIND_LABELS: Readonly<Record<string, string>> = {
+  materializedView: 'materialized view',
+  shellType: 'shell type',
+};
+
+/**
  * How a kind of object is written in messages.
  */
 function kindLabel(kind: string): string {
-  return kind === 'materializedView' ? 'materialized view' : kind;
+  return KIND_LABELS[kind] ?? kind;
 }
 
 /**
@@ -109,6 +118,7 @@ const EMITTERS: {
   schema: emitSchema,
   extension: emitExtension,
   enum: emitEnum,
+  shellType: emitShellType,
   composite: emitComposite,
   domain: emitDomain,
   range: emitRange,

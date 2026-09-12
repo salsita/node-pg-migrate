@@ -14,10 +14,12 @@ interface CommentTarget {
 
 /**
  * The object type of a comment on an object that is written `<TYPE>
- * "schema"."name"`, e.g. `TYPE` for an enum, a composite or a range type.
+ * "schema"."name"`, e.g. `TYPE` for an enum, a shell type, a composite or a
+ * range type.
  */
 const QUALIFIED_TYPES: Readonly<Record<string, string>> = {
   enum: 'type',
+  shellType: 'type',
   composite: 'type',
   range: 'type',
   domain: 'domain',

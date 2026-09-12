@@ -61,6 +61,8 @@ import type {
   SequenceOptionsRow,
   SequenceOwner,
   SequenceRow,
+  ShellType,
+  ShellTypeRow,
   Statistics,
   StatisticsRow,
   Table,
@@ -441,6 +443,10 @@ function extensionOf(row: ExtensionRow): Extension {
 
 function enumOf(row: EnumRow): EnumType {
   return { ...catalogObject('enum', row), labels: row.labels };
+}
+
+function shellTypeOf(row: ShellTypeRow): ShellType {
+  return catalogObject('shellType', row);
 }
 
 function compositeAttributeOf(row: ColumnRow): CompositeAttribute {
@@ -1268,6 +1274,7 @@ function withPartitionIndexes(
  *   `partitionTriggers` of the trigger they are clones of (or of the clone
  *   they are clones of), when their partition is among the tables of the
  *   model; the trigger depends on those partitions.
+ * - Shell types go with the enums (`enums`).
  * - A view's `definition` loses its final `;`, and the `check_option` entry
  *   of its `reloptions` becomes `checkOption`.
  * - A partition's parent is its one `inherits` row (`partitionOf.parent`),
@@ -1577,9 +1584,12 @@ export function rowsToModel(
         .map(schemaOf)
     ),
     extensions: sortObjects(rows.extensions.map(extensionOf)),
-    enums: sortObjects(
-      rows.enums.filter((row) => inScope(row.schema)).map(enumOf)
-    ),
+    enums: sortObjects([
+      ...rows.enums.filter((row) => inScope(row.schema)).map(enumOf),
+      ...(rows.shellTypes ?? [])
+        .filter((row) => inScope(row.schema))
+        .map(shellTypeOf),
+    ]),
     composites: sortObjects(
       rows.composites
         .filter((row) => inScope(row.schema))

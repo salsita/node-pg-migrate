@@ -20,6 +20,7 @@ async function readCatalogs(db: DBConnection): Promise<CatalogRows> {
     schemas: await select('schemas'),
     extensions: await select('extensions'),
     enums: await select('enums'),
+    shellTypes: await select('shellTypes'),
     composites: await select('composites'),
     domains: await select('domains'),
     ranges: await select('ranges'),

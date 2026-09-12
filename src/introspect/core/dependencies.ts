@@ -14,6 +14,7 @@ const CATALOGS: Readonly<Record<ObjectKind, string>> = {
   schema: 'pg_namespace',
   extension: 'pg_extension',
   enum: 'pg_type',
+  shellType: 'pg_type',
   composite: 'pg_type',
   domain: 'pg_type',
   range: 'pg_type',
