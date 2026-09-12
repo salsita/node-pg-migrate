@@ -25,6 +25,7 @@ const OWNED = [
   'src/cli/baseline.ts',
   'src/baseline/index.ts',
   'src/baseline/io/',
+  'src/introspect/io/',
 ];
 const THRESHOLD = 90;
 const METRICS = ['lines', 'statements', 'functions', 'branches'];
