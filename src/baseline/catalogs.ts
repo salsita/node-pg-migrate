@@ -1,4 +1,7 @@
 import type { Fallback } from '../codegen/fallback';
+import type { CatalogConnection } from '../introspect/types';
+import { resolveCatalogOptions } from './core/plan';
+import { generateCatalogBaseline } from './io/catalogBaseline';
 import type { DumpSource } from './source';
 
 // The entry `node-pg-migrate/baseline/catalogs`: what `baseline()` does with
@@ -173,7 +176,28 @@ export interface CatalogBaselineResult {
   readonly fallbacks: ReadonlyArray<Fallback>;
 }
 
-/* oxlint-disable no-unused-vars, typescript/require-await -- a stub until it is implemented */
+/**
+ * Reads the catalogs through a caller's client the way `baseline()` reads
+ * them through a `DBConnection`, except that nothing is logged: statements
+ * and queries are passed to its `query()`, the values of a query's
+ * placeholders only when it has some.
+ *
+ * @param client The caller's client.
+ */
+function catalogConnection(client: CatalogClient): CatalogConnection {
+  return {
+    query: (text) => client.query(text),
+    select: async (query) => {
+      const { rows } =
+        typeof query === 'string'
+          ? await client.query(query)
+          : await client.query(query.text, query.values);
+
+      return rows;
+    },
+  };
+}
+
 /**
  * Generates the TypeScript or JavaScript baseline migration of a database
  * from its catalogs, through any client with a node-postgres-like `query()`:
@@ -182,15 +206,18 @@ export interface CatalogBaselineResult {
  * `baseline()` returns about it. It runs without Node.js (e.g. in a browser
  * against PGlite), writes no file and logs nothing.
  *
- * Like `baseline()`, it checks the server and the migration history first,
- * and throws a `BaselineError` with the same code as `baseline()` when the
- * database cannot get a baseline: `UNSUPPORTED_SERVER` for a server that is
- * not PostgreSQL, `HISTORY_EXISTS` when the migrations table records
- * migrations, `INVALID_MIGRATIONS_TABLE` when a relation with its name is not
- * a table, `INVALID_OPTIONS` for `includeSchemas` that name no schema or
- * identifiers that `decamelize` would rename, and `UNSUPPORTED_OBJECTS` for
- * objects that the migration cannot create (with `strict`, the ones that need
- * raw SQL).
+ * Like `baseline()`, it checks the options, the server and the migration
+ * history first, and throws a `BaselineError` with the same code as
+ * `baseline()` when the database cannot get a baseline: `INVALID_OPTIONS`
+ * for options that `baseline()` refuses too (a `format` other than `'ts'` or
+ * `'js'`, an empty `migrationName`, `dir`, `migrationsTable` or
+ * `migrationsSchema`, or a migration name with spaces or slashes),
+ * `includeSchemas` that name no schema or identifiers that `decamelize`
+ * would rename, `UNSUPPORTED_SERVER` for a server that is not PostgreSQL,
+ * `HISTORY_EXISTS` when the migrations table records migrations,
+ * `INVALID_MIGRATIONS_TABLE` when a relation with its name is not a table,
+ * and `UNSUPPORTED_OBJECTS` for objects that the migration cannot create
+ * (with `strict`, the ones that need raw SQL).
  *
  * @param client The database (see {@link CatalogClient}). It is left open,
  * outside any transaction.
@@ -202,6 +229,12 @@ export async function generateBaselineFromCatalogs(
   client: CatalogClient,
   options: CatalogBaselineOptions
 ): Promise<CatalogBaselineResult> {
-  throw new Error('generateBaselineFromCatalogs() is not implemented yet');
+  const { settings, catalog } = resolveCatalogOptions(options);
+
+  return generateCatalogBaseline(
+    catalogConnection(client),
+    settings,
+    catalog,
+    options.migrationName
+  );
 }
-/* oxlint-enable no-unused-vars, typescript/require-await */

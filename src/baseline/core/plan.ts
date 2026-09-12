@@ -31,6 +31,11 @@ import {
 const DEFAULT_MIGRATIONS_TABLE = 'pgmigrations';
 
 /**
+ * The migrations directory node-pg-migrate uses when none is given.
+ */
+const DEFAULT_MIGRATIONS_DIR = 'migrations';
+
+/**
  * Characters that a migration name cannot have: it becomes a file name and an
  * argument of the printed `up … --fake` command.
  */
@@ -89,6 +94,42 @@ export interface CatalogSettings {
 
   readonly excludeSchemas: ReadonlyArray<string>;
 }
+
+/**
+ * The options of `generateBaselineFromCatalogs()` (`CatalogBaselineOptions`,
+ * which this module cannot import without an import cycle): the options of
+ * `baseline()` that decide what a TypeScript or JavaScript baseline says,
+ * with the same names, plus the migration name.
+ */
+export type CatalogOptions = Pick<
+  BaselineOptions,
+  | 'migrationsTable'
+  | 'migrationsSchema'
+  | 'schema'
+  | 'includeSchemas'
+  | 'excludeSchemas'
+  | 'strict'
+  | 'decamelize'
+> & {
+  /**
+   * `'ts'` or `'js'`.
+   *
+   * @default 'ts'
+   */
+  readonly format?: string;
+
+  /**
+   * The migration name (the file name without its extension).
+   */
+  readonly migrationName: string;
+
+  /**
+   * The migrations directory, as the user gives it to node-pg-migrate.
+   *
+   * @default 'migrations'
+   */
+  readonly dir?: string;
+};
 
 /**
  * The error for options that `baseline()` cannot work with.
@@ -183,6 +224,46 @@ export function resolveCatalogSettings(
     // Like pg_dump, which dumps every schema without --schema.
     ...(includeSchemas.length === 0 ? {} : { includeSchemas }),
     excludeSchemas,
+  };
+}
+
+/**
+ * Checks the options of `generateBaselineFromCatalogs()` the way `baseline()`
+ * checks its own, and applies the same defaults (see
+ * {@link resolveSchemaSettings} and {@link resolveCatalogSettings}), with
+ * `format` `'ts'` and `dir` `'migrations'`.
+ *
+ * Throws a `BaselineError` with code `INVALID_OPTIONS` when `format` is
+ * neither `'ts'` nor `'js'`, when `migrationName`, `dir`, `migrationsTable`
+ * or `migrationsSchema` is empty, or when the migration name has spaces or
+ * slashes.
+ *
+ * @param options The options of `generateBaselineFromCatalogs()`.
+ * @returns The schemas of node-pg-migrate with the migrations directory, and
+ * how to read the catalogs.
+ */
+export function resolveCatalogOptions(options: CatalogOptions): {
+  readonly settings: SchemaSettings & { readonly dir: string };
+  readonly catalog: CatalogSettings;
+} {
+  assertNoEmptyOption(options, [
+    'migrationName',
+    'dir',
+    'migrationsTable',
+    'migrationsSchema',
+  ]);
+  assertSafeMigrationName(options.migrationName);
+  const format = options.format ?? 'ts';
+  if (format !== 'ts' && format !== 'js') {
+    throw invalidOptions(`format must be ts or js, not ${format}.`);
+  }
+
+  return {
+    settings: {
+      dir: options.dir ?? DEFAULT_MIGRATIONS_DIR,
+      ...resolveSchemaSettings(options),
+    },
+    catalog: resolveCatalogSettings(options, format),
   };
 }
 

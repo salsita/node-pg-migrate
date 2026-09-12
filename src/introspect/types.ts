@@ -2292,9 +2292,9 @@ export interface IntrospectOptions {
 
 /**
  * What reading the catalogs needs of a database connection (see
- * `introspect()` and `readServerFacts()`): a `DBConnection` has it, and so
- * does any client with a node-postgres-like `query()`, without pg (see
- * `generateBaselineFromCatalogs()`).
+ * `introspect()` and `readServerFacts()`). A `DBConnection` is one, and
+ * `generateBaselineFromCatalogs()` makes one, without pg, out of any client
+ * with a node-postgres-like `query()`.
  *
  * The statements of a read share a transaction, so they must all run in one
  * session: a single connection, not a pool.
