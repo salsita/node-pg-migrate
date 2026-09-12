@@ -207,3 +207,61 @@ describe('assertDecamelizeKeepsNames with the names of constraints and settings'
     expect(decamelizeRefusalOf(model)).toBeUndefined();
   });
 });
+
+describe('assertDecamelizeKeepsNames with names that pgm calls do not take', () => {
+  it('accepts the settings of a function that raw SQL creates, which decamelize does not change', () => {
+    const model = emptyModel({
+      functions: [
+        makeFunction('public', 'tenant', {
+          leakproof: true,
+          config: [{ name: 'TimeZone', value: 'UTC' }],
+        }),
+      ],
+    });
+
+    expect(decamelizeRefusalOf(model)).toBeUndefined();
+  });
+
+  it('leaves out the NOT NULL constraint of a domain with the name createDomain gives it', () => {
+    const error = decamelizeRefusalOf(
+      emptyModel({
+        domains: [
+          makeDomain('public', 'Money', 'numeric', {
+            notNull: true,
+            notNullConstraintName: 'Money_not_null',
+          }),
+        ],
+      })
+    );
+
+    expect(error).toMatchObject({ code: 'INVALID_OPTIONS' });
+    expect(error).toHaveProperty(
+      'message',
+      expect.stringContaining('"Money" (as money)')
+    );
+    expect(error).toHaveProperty(
+      'message',
+      expect.not.stringContaining('Money_not_null')
+    );
+  });
+
+  it('names the constraints of tables that are not partitioned, sorted with the other names', () => {
+    const zeta = makeTable('public', 'Zeta');
+    const alpha = makeTable('public', 'Alpha');
+    const error = decamelizeRefusalOf(
+      emptyModel({
+        tables: [zeta, alpha],
+        constraints: [
+          makeConstraint(alpha, 'AlphaPkey', 'primaryKey', 'PRIMARY KEY (id)'),
+        ],
+      })
+    );
+
+    expect(error).toHaveProperty(
+      'message',
+      expect.stringContaining(
+        '"Alpha" (as alpha), "AlphaPkey" (as alpha_pkey), "Zeta" (as zeta).'
+      )
+    );
+  });
+});
