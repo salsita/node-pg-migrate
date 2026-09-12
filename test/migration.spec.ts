@@ -374,6 +374,28 @@ describe('migration', () => {
       );
     });
 
+    it('should record the run in the migrations table as configured, even under decamelize', async () => {
+      const migration = new Migration(
+        dbMock,
+        callbackMigration,
+        actionsCallback,
+        {
+          ...options,
+          migrationsSchema: 'myApp',
+          migrationsTable: 'pgMigrations',
+          decamelize: true,
+        },
+        {},
+        logger
+      );
+
+      await migration.markAsRun('up');
+
+      expect(queryMock).toHaveBeenCalledExactlyOnceWith(
+        expect.stringMatching(/^INSERT INTO "myApp"\."pgMigrations" /)
+      );
+    });
+
     it('should not delete the migration row on --dry-run', async () => {
       const migration = new Migration(
         dbMock,

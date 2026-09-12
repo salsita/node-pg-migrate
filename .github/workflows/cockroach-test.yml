@@ -70,3 +70,20 @@ jobs:
         run: pnpm run migrate up -m test/cockroach --no-lock && pnpm run migrate down 0 -m test/cockroach --no-lock
         env:
           DATABASE_URL: postgresql://root@localhost:26257/integration_test
+
+      # `down 0` above left the migrations table empty. With another schema holding a history,
+      # the next run has to find that table - and read it - then refuse, until it is pointed
+      # at a schema on purpose.
+      - name: Migration History Test
+        run: |
+          docker exec roach ./cockroach sql --insecure --database=integration_test --execute="CREATE SCHEMA other; CREATE TABLE other.pgmigrations (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL); INSERT INTO other.pgmigrations (name, run_on) VALUES ('001_other_app', now());"
+          if pnpm run migrate up -m test/cockroach --no-lock > refused.log 2>&1; then
+            cat refused.log
+            echo "::error::a run with an empty migrations table ignored the history in another schema"
+            exit 1
+          fi
+          cat refused.log
+          grep -q '"other"."pgmigrations" already records migrations' refused.log
+          pnpm run migrate up -m test/cockroach --no-lock --migrations-schema public
+        env:
+          DATABASE_URL: postgresql://root@localhost:26257/integration_test

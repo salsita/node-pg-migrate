@@ -174,7 +174,7 @@ export async function cleanupDatabase(
         WHERE schema_name NOT IN ('public', 'information_schema')
           AND schema_name NOT LIKE 'pg_%'
       LOOP
-        EXECUTE 'DROP SCHEMA IF EXISTS "' || schema_rec.schema_name || '" CASCADE;';
+        EXECUTE format('DROP SCHEMA IF EXISTS %I CASCADE', schema_rec.schema_name);
       END LOOP;
     END $$;
   `
@@ -230,7 +230,7 @@ export async function cleanupDatabase(
           AND rolname NOT LIKE 'pg\\_%'
           AND rolname <> current_user
       LOOP
-        EXECUTE 'DROP ROLE IF EXISTS "' || role_rec.rolname || '";';
+        EXECUTE format('DROP ROLE IF EXISTS %I', role_rec.rolname);
       END LOOP;
     END $$;
   `
@@ -250,7 +250,7 @@ export async function cleanupDatabase(
           AND typtype IN ('c', 'e', 'd')
           AND typname NOT LIKE 'pg\\_%'
       LOOP
-        EXECUTE 'DROP TYPE IF EXISTS public."' || type_rec.typname || '" CASCADE;';
+        EXECUTE format('DROP TYPE IF EXISTS public.%I CASCADE', type_rec.typname);
       END LOOP;
     END $$;
   `

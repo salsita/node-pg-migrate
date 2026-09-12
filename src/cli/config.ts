@@ -49,6 +49,7 @@ export interface ResolvedConfig {
   useGlob: boolean;
   ignorePattern: string | undefined;
   schema: string | string[];
+  schemaIsDefault: boolean;
   createSchema: boolean | undefined;
   migrationsSchema: string | undefined;
   createMigrationsSchema: boolean | undefined;
@@ -357,6 +358,8 @@ export async function resolveConfig(
   MIGRATIONS_FILE_LANGUAGE ??= 'js';
   MIGRATIONS_FILENAME_FORMAT ??= 'timestamp';
   MIGRATIONS_TABLE ??= 'pgmigrations';
+  // The runner must be able to tell this fallback from a schema the user asked for.
+  const SCHEMA_IS_DEFAULT = SCHEMA === undefined;
   SCHEMA ??= ['public'];
   CHECK_ORDER ??= true;
   VERBOSE ??= true;
@@ -369,6 +372,7 @@ export async function resolveConfig(
     useGlob: USE_GLOB,
     ignorePattern: IGNORE_PATTERN,
     schema: SCHEMA,
+    schemaIsDefault: SCHEMA_IS_DEFAULT,
     createSchema: CREATE_SCHEMA,
     migrationsSchema: MIGRATIONS_SCHEMA,
     createMigrationsSchema: CREATE_MIGRATIONS_SCHEMA,

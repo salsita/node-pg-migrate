@@ -7,7 +7,12 @@ import { getMigrationFilePaths, Migration } from './migration';
 import type { MigrationLoaderConfig } from './migrationLoader';
 import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
-import { createSchemalize, getMigrationTableSchema, getSchemas } from './utils';
+import {
+  getMigrationTableName,
+  getMigrationTableSchema,
+  getSchemas,
+  toArray,
+} from './utils';
 
 type AdvisoryLockMode = 'fail' | 'wait';
 
@@ -30,6 +35,18 @@ export interface RunnerOptionConfig {
    * @default 'public'
    */
   schema?: string | string[];
+
+  /**
+   * Marks `schema` as a fallback filled in by the caller rather than a schema the user chose,
+   * as the CLI does when `--schema` is not given. It still sets the `search_path`, but it does
+   * not vouch for where the migration history lives: if the migrations table is missing or
+   * empty there while another schema already holds one, the run is refused.
+   *
+   * Without `schema` this changes nothing: `public` is then already only a fallback.
+   *
+   * @default false
+   */
+  schemaIsDefault?: boolean;
 
   /**
    * The directory containing your migration files. This path is resolved from `cwd()`.
@@ -348,6 +365,58 @@ async function createSchemas(
   );
 }
 
+interface QueryParameters {
+  values: unknown[];
+
+  /**
+   * Adds `value` to `values` and returns its placeholder.
+   */
+  bind: (value: unknown) => string;
+}
+
+/**
+ * The values of a parameterized query. Each placeholder is handed out as its value is bound,
+ * so the numbering always matches, however the conditions using them are ordered.
+ */
+function queryParameters(): QueryParameters {
+  const values: unknown[] = [];
+
+  return { values, bind: (value) => `$${values.push(value)}` };
+}
+
+/**
+ * `FROM` and `WHERE` for the relations named `name` (a placeholder) that also meet
+ * `conditions`, looked up in the system catalogs. Not in `information_schema`: it only shows
+ * objects the connected role holds privileges on, so a role without a grant on an existing
+ * migrations table would be told it does not exist, try to create it and fail with "already
+ * exists" rather than a permissions error.
+ */
+function relationsNamed(name: string, ...conditions: string[]): string {
+  const where = [`c.relname = ${name}`, ...conditions].join(' AND ');
+
+  return `FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE ${where}`;
+}
+
+/**
+ * The relation kinds `information_schema.tables` lists: tables, partitioned tables, views and
+ * foreign tables.
+ */
+const LISTED_RELATION_KINDS = "c.relkind IN ('r', 'p', 'v', 'f')";
+
+/**
+ * The run's own migrations table, as `information_schema.tables` would list it.
+ */
+function ownMigrationsTable(
+  options: RunnerOption,
+  { bind }: QueryParameters
+): string {
+  return relationsNamed(
+    bind(options.migrationsTable),
+    LISTED_RELATION_KINDS,
+    `n.nspname = ${bind(getMigrationTableSchema(options))}`
+  );
+}
+
 /**
  * Whether the table storing which migrations have been run already exists.
  *
@@ -359,11 +428,10 @@ async function migrationsTableExists(
   db: DBConnection,
   options: RunnerOption
 ): Promise<boolean> {
-  const schema = getMigrationTableSchema(options);
-  const { migrationsTable } = options;
-
+  const parameters = queryParameters();
   const migrationTables = await db.select(
-    `SELECT table_name FROM information_schema.tables WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}'`
+    `SELECT 1 ${ownMigrationsTable(options, parameters)}`,
+    parameters.values
   );
 
   return migrationTables?.length === 1;
@@ -371,22 +439,17 @@ async function migrationsTableExists(
 
 async function ensureMigrationsTable(
   db: DBConnection,
-  options: RunnerOption
+  options: RunnerOption,
+  hasMigrationsTable: boolean
 ): Promise<void> {
   try {
-    const schema = getMigrationTableSchema(options);
-    const { migrationsTable } = options;
-    const fullTableName = createSchemalize({
-      shouldDecamelize: Boolean(options.decamelize),
-      shouldQuote: true,
-    })({
-      schema,
-      name: migrationsTable,
-    });
+    const fullTableName = getMigrationTableName(options);
 
-    if (await migrationsTableExists(db, options)) {
+    if (hasMigrationsTable) {
+      const parameters = queryParameters();
       const primaryKeyConstraints = await db.select(
-        `SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = '${schema}' AND table_name = '${migrationsTable}' AND constraint_type = 'PRIMARY KEY'`
+        `SELECT 1 FROM pg_catalog.pg_constraint WHERE contype = 'p' AND conrelid = (SELECT c.oid ${ownMigrationsTable(options, parameters)})`,
+        parameters.values
       );
 
       if (!primaryKeyConstraints || primaryKeyConstraints.length !== 1) {
@@ -410,20 +473,189 @@ async function getRunMigrations(
   db: DBConnection,
   options: RunnerOption
 ): Promise<string[]> {
-  const schema = getMigrationTableSchema(options);
-  const { migrationsTable } = options;
-  const fullTableName = createSchemalize({
-    shouldDecamelize: Boolean(options.decamelize),
-    shouldQuote: true,
-  })({
-    schema,
-    name: migrationsTable,
-  });
-
   return db.column(
     nameColumn,
-    `SELECT ${nameColumn} FROM ${fullTableName} ORDER BY ${runOnColumn}, ${idColumn}`
+    `SELECT ${nameColumn} FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
   );
+}
+
+/**
+ * Whether the user pointed the run at a schema, rather than it falling back to the default.
+ */
+function isSchemaChosen(options: RunnerOption): boolean {
+  return !options.schemaIsDefault && toArray(options.schema).some(Boolean);
+}
+
+interface MigrationsTableLocation {
+  schema: string;
+
+  /**
+   * Whether the connected role may read the table, and so tell whether it records anything.
+   */
+  readable: boolean;
+}
+
+/**
+ * The columns every migrations table has. A table in another schema only counts as a history
+ * when it has all of them: an unrelated table that merely shares a generic name such as
+ * `migrations` is not one, and pointing the run at it would fail.
+ */
+const MIGRATIONS_TABLE_COLUMNS = [idColumn, nameColumn, runOnColumn];
+
+/**
+ * Whether the migrations table in `schema` records anything. Unlike the catalog lookups, this
+ * reads the table itself: the catalog has just shown that it exists and that this role may read
+ * it, so it cannot raise the `42P01` that would poison a dry run's read-only transaction.
+ */
+async function recordsMigrations(
+  db: DBConnection,
+  options: RunnerOption,
+  schema: string
+): Promise<boolean> {
+  const rows = await db.select(
+    `SELECT 1 FROM ${getMigrationTableName(options, schema)} LIMIT 1`
+  );
+
+  return rows.length > 0;
+}
+
+/**
+ * Look for the migration history this run would otherwise ignore: a table named like the
+ * migrations table, in another schema, that already records migrations - or that this role
+ * cannot read, and so might.
+ *
+ * Where to look depends on how the run was pointed at its own table. A `migrationsSchema`
+ * is taken at its word. Without one, the table follows the first `schema`: when the user
+ * chose those schemas, other schemas belong to other tenants and only the rest of the list
+ * is searched (a reordered list moves the table); when the schema is only a fallback, any
+ * schema may hold the history.
+ */
+async function findHistoryElsewhere(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<MigrationsTableLocation | undefined> {
+  if (options.migrationsSchema !== undefined) {
+    return undefined;
+  }
+
+  const schema = getMigrationTableSchema(options);
+  const searched = isSchemaChosen(options)
+    ? getSchemas(options.schema).filter((s) => s !== schema)
+    : undefined;
+
+  if (searched?.length === 0) {
+    return undefined;
+  }
+
+  const parameters = queryParameters();
+  const name = parameters.bind(options.migrationsTable);
+  const conditions = [
+    // Local tables only: a view is not a history, and a foreign table would be read on another
+    // server, failing the run whenever that server is down.
+    "c.relkind IN ('r', 'p')",
+    `n.nspname <> ${parameters.bind(schema)}`,
+    String.raw`n.nspname NOT LIKE 'pg\_%'`,
+    "n.nspname NOT IN ('information_schema', 'crdb_internal')",
+    `(SELECT count(*) FROM pg_catalog.pg_attribute a WHERE a.attrelid = c.oid AND a.attname = ANY(${parameters.bind(MIGRATIONS_TABLE_COLUMNS)}::text[]) AND NOT a.attisdropped) = ${MIGRATIONS_TABLE_COLUMNS.length}`,
+  ];
+
+  if (searched) {
+    conditions.push(`n.nspname = ANY(${parameters.bind(searched)}::text[])`);
+  }
+
+  const tables: MigrationsTableLocation[] = await db.select(
+    `SELECT n.nspname AS "schema", has_schema_privilege(n.oid, 'USAGE') AND has_table_privilege(c.oid, 'SELECT') AS "readable" ${relationsNamed(name, ...conditions)} ORDER BY n.nspname`,
+    parameters.values
+  );
+
+  for (const table of tables) {
+    if (
+      !table.readable ||
+      (await recordsMigrations(db, options, table.schema))
+    ) {
+      return table;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Why a run that finds no history where it looks is refused, and which options point it at the
+ * history found elsewhere - or start a new one on purpose.
+ */
+function describeHistoryElsewhere(
+  options: RunnerOption,
+  history: MigrationsTableLocation,
+  hasMigrationsTable: boolean
+): string {
+  const schema = getMigrationTableSchema(options);
+  const found = history.schema;
+  // Starting a new history is offered through `--migrations-schema` in both cases: unlike
+  // `--schema`, it does not also change the `search_path` a run without a schema leaves alone.
+  const hint = isSchemaChosen(options)
+    ? `The migrations table follows the first \`--schema\` entry, and "${found}" is further down that list. To continue that history, pass \`--migrations-schema ${found}\` (or list "${found}" first)`
+    : `No schema was configured, so "${schema}" is only the fallback. To continue that history, pass \`--schema ${found}\` (or \`--migrations-schema ${found}\` if only the migrations table lives there)`;
+
+  return `Refusing to run: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. Carrying on would start the history over and could apply migrations that have already run. ${hint}; to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`. From the API, use the \`schema\` and \`migrationsSchema\` options.`;
+}
+
+interface MigrationHistory {
+  hasMigrationsTable: boolean;
+  runNames: string[];
+}
+
+/**
+ * Read which migrations have been run, once it is clear the history really is where the run
+ * looks for it. That place only comes from configuration: when the migrations table there is
+ * missing or empty while another schema holds a history, starting over would replay every
+ * migration - failing half-way (`relation "…" does not exist`) or silently duplicating
+ * objects into the wrong schema. The run is refused instead, before it has created anything.
+ */
+async function readMigrationHistory(
+  db: DBConnection,
+  options: RunnerOption
+): Promise<MigrationHistory> {
+  const hasMigrationsTable = await migrationsTableExists(db, options);
+  const runNames: string[] = hasMigrationsTable
+    ? await getRunMigrations(db, options)
+    : [];
+  const history =
+    runNames.length === 0 ? await findHistoryElsewhere(db, options) : undefined;
+
+  if (history) {
+    throw new Error(
+      describeHistoryElsewhere(options, history, hasMigrationsTable)
+    );
+  }
+
+  return { hasMigrationsTable, runNames };
+}
+
+/**
+ * Read the history and load the migration files together - loading touches no database - but
+ * report the history check's verdict first: a refusal matters more than a migration file that
+ * fails to load.
+ */
+async function readHistoryAndMigrations(
+  db: DBConnection,
+  options: RunnerOption,
+  logger: Logger
+): Promise<[MigrationHistory, Migration[]]> {
+  const [history, migrations] = await Promise.allSettled([
+    readMigrationHistory(db, options),
+    loadMigrations(db, options, logger),
+  ]);
+
+  if (history.status === 'rejected') {
+    throw history.reason;
+  }
+
+  if (migrations.status === 'rejected') {
+    throw migrations.reason;
+  }
+
+  return [history.value, migrations.value];
 }
 
 function getMigrationsToRun(
@@ -579,6 +811,10 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       await lock(db, options.lockValue, options.advisoryLockMode);
     }
 
+    // Before anything is created: a run that is refused must leave the database as it was.
+    const [{ hasMigrationsTable, runNames }, migrations] =
+      await readHistoryAndMigrations(db, options, logger);
+
     if (options.schema) {
       const schemas = getSchemas(options.schema);
 
@@ -595,24 +831,15 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       await createSchemas(db, [options.migrationsSchema], dryRun, logger);
     }
 
-    let hasMigrationsTable = true;
-
     if (dryRun) {
-      hasMigrationsTable = await migrationsTableExists(db, options);
-
       if (!hasMigrationsTable) {
         logger.info(
-          `> Would create migrations table "${getMigrationTableSchema(options)}"."${options.migrationsTable}"`
+          `> Would create migrations table ${getMigrationTableName(options)}`
         );
       }
     } else {
-      await ensureMigrationsTable(db, options);
+      await ensureMigrationsTable(db, options, hasMigrationsTable);
     }
-
-    const [migrations, runNames] = await Promise.all([
-      loadMigrations(db, options, logger),
-      hasMigrationsTable ? getRunMigrations(db, options) : [],
-    ]);
 
     if (options.checkOrder !== false) {
       checkOrder(runNames, migrations);
