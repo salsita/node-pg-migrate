@@ -4,7 +4,11 @@ import type { HeaderMeta } from '../../src/baseline/types';
 import { generateMigration } from '../../src/codegen';
 import { renderMigration } from '../../src/codegen/render';
 import type { GenerateOptions } from '../../src/codegen/types';
-import type { Column, ModelObject } from '../../src/introspect/types';
+import type {
+  Column,
+  ModelObject,
+  SchemaModel,
+} from '../../src/introspect/types';
 import {
   defaultSequenceOptions,
   dependsOn,
@@ -14,6 +18,7 @@ import {
   makeDomain,
   makeFunction,
   makeMaterializedView,
+  makeSchema,
   makeSequence,
   makeTable,
   makeView,
@@ -62,16 +67,29 @@ function thrownBy(action: () => unknown): unknown {
   return undefined;
 }
 
-function serialColumn(table: string): Column {
+function serialColumn(table: string, schema = 'public'): Column {
   return makeColumn('id', 'integer', {
     notNull: true,
-    default: `nextval('public.${table}_id_seq'::regclass)`,
+    default: `nextval('${schema}.${table}_id_seq'::regclass)`,
     ownedSequence: {
-      name: { schema: 'public', name: `${table}_id_seq` },
+      name: { schema, name: `${table}_id_seq` },
       options: defaultSequenceOptions('integer'),
       unlogged: false,
     },
   });
+}
+
+/**
+ * The canonical SQL of the `up` of a TypeScript migration of a model,
+ * without the prologue (two statements) and the epilogue (one).
+ */
+async function upSqlOf(model: SchemaModel): Promise<string[]> {
+  const { content } = generateMigration(model, OPTIONS);
+
+  return canonicalSteps(await runUp(await loadMigration(content, 'ts'))).slice(
+    2,
+    -1
+  );
 }
 
 describe('renderMigration', () => {
@@ -248,6 +266,75 @@ describe('generateMigration', () => {
     expect(created).not.toContain(-1);
     expect(created).toStrictEqual(created.toSorted((a, b) => a - b));
     expect(sql[created[2]]).not.toMatch(/\bserial\b/);
+  });
+
+  it('keeps a column serial when its table waits for something twice but not for another user of its sequence', async () => {
+    // The table and its sequence both depend on their schema, so looking for
+    // a cycle from the table meets the schema twice; the other table that
+    // uses the sequence is not on the way.
+    const kitchen = makeSchema('kitchen');
+    const sequence = makeSequence('kitchen', 'orders_id_seq', {
+      ...defaultSequenceOptions('integer'),
+      ownedBy: { table: { schema: 'kitchen', name: 'orders' }, column: 'id' },
+    });
+    const orders = makeTable('kitchen', 'orders', {
+      columns: [serialColumn('orders', 'kitchen')],
+    });
+    const archive = makeTable('kitchen', 'archive', {
+      columns: [
+        makeColumn('id', 'integer', {
+          default: "nextval('kitchen.orders_id_seq'::regclass)",
+        }),
+      ],
+    });
+
+    expect(
+      await upSqlOf(
+        modelOf(
+          [kitchen, sequence, orders, archive],
+          [
+            dependsOn(sequence, kitchen),
+            dependsOn(orders, kitchen),
+            dependsOn(orders, sequence),
+            dependsOn(archive, kitchen),
+            dependsOn(archive, sequence),
+          ]
+        )
+      )
+    ).toStrictEqual([
+      'create schema if not exists kitchen',
+      'create table kitchen . orders ( id serial )',
+      "create table kitchen . archive ( id integer default nextval ( 'kitchen.orders_id_seq' :: regclass ) )",
+    ]);
+  });
+
+  it('writes a column as serial when no dependency of the model is on its sequence', async () => {
+    const sequence = makeSequence('public', 'orders_id_seq', {
+      ...defaultSequenceOptions('integer'),
+      ownedBy: { table: { schema: 'public', name: 'orders' }, column: 'id' },
+      comment: 'Order numbers',
+    });
+    const orders = makeTable('public', 'orders', {
+      columns: [serialColumn('orders')],
+    });
+
+    expect(await upSqlOf(modelOf([sequence, orders]))).toStrictEqual([
+      'create table orders ( id serial )',
+      "comment on sequence public . orders_id_seq is 'Order numbers'",
+    ]);
+  });
+
+  it('writes a column as serial when the model does not have its sequence', async () => {
+    // serial creates the sequence that the column's default uses.
+    const orders = makeTable('public', 'orders', {
+      columns: [serialColumn('orders'), makeColumn('note', 'text')],
+    });
+    const model = modelOf([orders]);
+
+    expect(generateMigration(model, OPTIONS).fallbacks).toStrictEqual([]);
+    expect(await upSqlOf(model)).toStrictEqual([
+      'create table orders ( id serial , note text )',
+    ]);
   });
 
   it('reports the comments on columns, domain constraints and the indexes of constraints by what they are on', () => {

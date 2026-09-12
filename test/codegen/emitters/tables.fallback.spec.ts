@@ -8,6 +8,7 @@ import {
 } from '../../introspect/objects';
 import {
   expectFallback,
+  expectSql,
   expectSqlOneOf,
   expectSqlThenAnyOrder,
 } from '../expectations';
@@ -78,6 +79,102 @@ describe('emitTable', () => {
       expectFallback(result, 'partition');
       onlyRawSql(result);
       expectSqlThenAnyOrder(result, expected);
+    });
+
+    it("creates a partition whose columns are not in its partitioned table's order on its own, then attaches it", () => {
+      const result = emitAndRun(
+        emitTable,
+        makeTable('kitchen', 'measurements_2020', {
+          partitionOf: {
+            parent: MEASUREMENTS,
+            bound: "FOR VALUES FROM ('2020-01-01') TO ('2021-01-01')",
+            ownColumnOrder: true,
+          },
+          columns: [
+            makeColumn('label', 'text', {
+              local: false,
+              inheritCount: 1,
+              collation: 'pg_catalog."C"',
+            }),
+            makeColumn('at', 'date', {
+              notNull: true,
+              local: false,
+              inheritCount: 1,
+              notNullConstraint: {
+                name: 'at_required',
+                noInherit: false,
+                validated: true,
+              },
+            }),
+            makeColumn('value', 'numeric', {
+              local: false,
+              inheritCount: 1,
+              default: '0',
+            }),
+          ],
+        })
+      );
+
+      expectFallback(result, 'partition');
+      onlyRawSql(result);
+      expectSql(
+        result,
+        `CREATE TABLE "kitchen"."measurements_2020" (
+           "label" text COLLATE pg_catalog."C",
+           "at" date CONSTRAINT "at_required" NOT NULL,
+           "value" numeric DEFAULT 0
+         );
+         ALTER TABLE "kitchen"."measurements" ATTACH PARTITION "kitchen"."measurements_2020"
+           FOR VALUES FROM ('2020-01-01') TO ('2021-01-01');`
+      );
+    });
+
+    it('creates a typed table with CREATE TABLE … OF its type, with the options of its columns', () => {
+      const result = emitAndRun(
+        emitTable,
+        makeTable('kitchen', 'people', {
+          ofType: { schema: 'kitchen', name: 'person' },
+          comment: 'People',
+          columns: [
+            makeColumn('name', 'text', { notNull: true, comment: 'Full name' }),
+            makeColumn('age', 'integer', { default: '0' }),
+            makeColumn('nickname', 'text'),
+          ],
+        })
+      );
+
+      expectFallback(result, 'typed table');
+      onlyRawSql(result);
+      expectSqlThenAnyOrder(
+        result,
+        `CREATE TABLE "kitchen"."people" OF "kitchen"."person" (
+           "name" WITH OPTIONS NOT NULL,
+           "age" WITH OPTIONS DEFAULT 0
+         );
+         COMMENT ON TABLE "kitchen"."people" IS 'People';
+         COMMENT ON COLUMN "kitchen"."people"."name" IS 'Full name';`
+      );
+    });
+
+    it('gives a typed table its other reasons, and none of those of createTable', () => {
+      // An object would put the column "1" first: a reason for createTable,
+      // which a typed table does not use.
+      const result = emitAndRun(
+        emitTable,
+        makeTable('kitchen', 'people', {
+          ofType: { schema: 'kitchen', name: 'person' },
+          unlogged: true,
+          options: ['fillfactor=70'],
+          columns: [makeColumn('age', 'integer'), makeColumn('1', 'text')],
+        })
+      );
+
+      expectFallback(result, 'typed table', 'storage parameters');
+      onlyRawSql(result);
+      expectSql(
+        result,
+        'CREATE UNLOGGED TABLE "kitchen"."people" OF "kitchen"."person" WITH (fillfactor=70);'
+      );
     });
 
     it('keeps the order of the columns around a virtual generated column', () => {

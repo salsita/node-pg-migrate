@@ -4,6 +4,8 @@ import { emitIndex } from '../../../src/codegen/emitters/indexes';
 import {
   namedPartitionIndexes,
   partitionIndexName,
+  partitionIndexSettings,
+  withoutOnly,
 } from '../../../src/codegen/emitters/shared';
 import type { PartitionIndex } from '../../../src/introspect/types';
 import { makeConstraint, makeIndex } from '../../introspect/objects';
@@ -80,6 +82,87 @@ describe('namedPartitionIndexes', () => {
   });
 });
 
+describe('withoutOnly', () => {
+  it.each([
+    [
+      'CREATE INDEX readings ON ONLY kitchen.measurements USING btree (value)',
+      'CREATE INDEX readings ON kitchen.measurements USING btree (value)',
+    ],
+    [
+      'CREATE UNIQUE INDEX "x ON ONLY y" ON ONLY kitchen.measurements USING btree (value)',
+      'CREATE UNIQUE INDEX "x ON ONLY y" ON kitchen.measurements USING btree (value)',
+    ],
+  ])('leaves out the ONLY of %j', (definition, expected) => {
+    expect(withoutOnly(definition)).toBe(expected);
+  });
+
+  it.each([
+    'CREATE INDEX readings ON kitchen.measurements USING btree (value)',
+    'CREATE INDEX "x ON ONLY y" ON kitchen.measurements USING btree (value)',
+    'ALTER TABLE ONLY kitchen.measurements CLUSTER ON readings',
+  ])('finds no ON ONLY in %j', (definition) => {
+    expect(withoutOnly(definition)).toBeUndefined();
+  });
+});
+
+describe('partitionIndexSettings', () => {
+  it('gives nothing to the indexes of partitions that creating them gives their settings', () => {
+    const settings = partitionIndexSettings(
+      [
+        partitionIndex('measurements_2025', 'measurements_2025_value_idx', {
+          options: ['fillfactor=70'],
+        }),
+      ],
+      () => ['fillfactor=70']
+    );
+
+    expect(settings).toStrictEqual({ statements: [], reasons: [] });
+    expect(partitionIndexSettings(undefined, () => [])).toStrictEqual({
+      statements: [],
+      reasons: [],
+    });
+  });
+
+  it('gives a comment alone its own reason', () => {
+    expect(
+      partitionIndexSettings(
+        [
+          partitionIndex('measurements_2025', 'measurements_2025_value_idx', {
+            comment: "It's 2025",
+          }),
+        ],
+        () => []
+      )
+    ).toStrictEqual({
+      statements: [
+        `COMMENT ON INDEX "kitchen"."measurements_2025_value_idx" IS 'It''s 2025';`,
+      ],
+      reasons: ['comment on index'],
+    });
+  });
+
+  it('matches a parameter that creating the index gives by its name alone', () => {
+    // `fastupdate` is the index's own `fastupdate=off` by name, so it is set,
+    // not reset.
+    expect(
+      partitionIndexSettings(
+        [
+          partitionIndex('measurements_2025', 'measurements_2025_value_idx', {
+            options: ['fastupdate=off'],
+          }),
+        ],
+        () => ['fastupdate', 'gin_pending_list_limit=64']
+      )
+    ).toStrictEqual({
+      statements: [
+        'ALTER INDEX "kitchen"."measurements_2025_value_idx" RESET (gin_pending_list_limit);',
+        'ALTER INDEX "kitchen"."measurements_2025_value_idx" SET (fastupdate=off);',
+      ],
+      reasons: ['partition index settings'],
+    });
+  });
+});
+
 describe('emitIndex', () => {
   it('creates the indexes of partitions with a name of their own first', () => {
     const result = emitAndRun(
@@ -152,6 +235,101 @@ describe('emitIndex', () => {
 
     expectCode(result);
     expect(result.calls).toStrictEqual(['createIndex']);
+  });
+
+  it('gives the indexes of partitions their own storage parameters, clustering, replica identity and comments after it', () => {
+    // REPLICA IDENTITY USING INDEX takes a unique index, and the indexes of
+    // the partitions of a unique index are unique.
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(MEASUREMENTS, 'measurements_value_idx', {
+        unique: true,
+        keys: [{ column: 'value', descending: false, nullsFirst: false }],
+        partitionIndexes: [
+          partitionIndex('measurements_2025', 'measurements_2025_value_idx', {
+            definition:
+              'CREATE UNIQUE INDEX measurements_2025_value_idx ON kitchen.measurements_2025 USING btree (value)',
+            options: ['fillfactor=50'],
+            clustered: true,
+            comment: 'Readings of 2025',
+          }),
+          partitionIndex('measurements_2026', 'measurements_2026_value_idx', {
+            definition:
+              'CREATE UNIQUE INDEX measurements_2026_value_idx ON kitchen.measurements_2026 USING btree (value)',
+            replicaIdentity: true,
+          }),
+        ],
+      })
+    );
+
+    expectFallback(result, 'partition index settings', 'comment on index');
+    expect(result.calls).toStrictEqual([
+      'createIndex',
+      'sql',
+      'sql',
+      'sql',
+      'sql',
+    ]);
+    expectSql(
+      result,
+      [
+        'CREATE UNIQUE INDEX "measurements_value_idx" ON "kitchen"."measurements" ("value");',
+        `ALTER INDEX "kitchen"."measurements_2025_value_idx" SET (fillfactor='50');`,
+        'ALTER TABLE "kitchen"."measurements_2025" CLUSTER ON "measurements_2025_value_idx";',
+        'ALTER TABLE "kitchen"."measurements_2026" REPLICA IDENTITY USING INDEX "measurements_2026_value_idx";',
+        `COMMENT ON INDEX "kitchen"."measurements_2025_value_idx" IS 'Readings of 2025';`,
+      ].join('\n')
+    );
+  });
+
+  it("resets and sets the storage parameters in which the indexes of partitions differ from the index's", () => {
+    // Creating the index gives the indexes that PostgreSQL creates or names
+    // its own storage parameters; an index created from its own definition
+    // has its own, and one of a partitioned partition takes none.
+    const result = emitAndRun(
+      emitIndex,
+      makeIndex(MEASUREMENTS, 'measurements_value_idx', {
+        keys: [{ column: 'value', descending: false, nullsFirst: false }],
+        options: ['fillfactor=70', 'deduplicate_items=off'],
+        definition:
+          "CREATE INDEX measurements_value_idx ON ONLY kitchen.measurements USING btree (value) WITH (fillfactor='70', deduplicate_items=off)",
+        partitionIndexes: [
+          partitionIndex('measurements_2024', 'measurements_2024_value_idx', {
+            options: ['fillfactor=70', 'deduplicate_items=off'],
+          }),
+          partitionIndex('measurements_2025', 'measurements_2025_value_idx', {
+            options: ['fillfactor=50'],
+          }),
+          partitionIndex('measurements_2026', 'measurements_2026_value_idx'),
+          partitionIndex('measurements_2027', 'measurements_2027_value_idx', {
+            definition:
+              'CREATE INDEX measurements_2027_value_idx ON ONLY kitchen.measurements_2027 USING btree (value)',
+          }),
+          partitionIndex('measurements_2028', 'readings_2028', {
+            options: ['fillfactor=30'],
+            definition:
+              "CREATE INDEX readings_2028 ON kitchen.measurements_2028 USING btree (value) WITH (fillfactor='30')",
+          }),
+        ],
+      })
+    );
+
+    expectFallback(
+      result,
+      'storage parameters',
+      'partition index name',
+      'partition index settings'
+    );
+    expectSql(
+      result,
+      [
+        "CREATE INDEX readings_2028 ON kitchen.measurements_2028 USING btree (value) WITH (fillfactor='30');",
+        "CREATE INDEX measurements_value_idx ON kitchen.measurements USING btree (value) WITH (fillfactor='70', deduplicate_items=off);",
+        'ALTER INDEX "kitchen"."measurements_2025_value_idx" RESET (deduplicate_items);',
+        `ALTER INDEX "kitchen"."measurements_2025_value_idx" SET (fillfactor='50');`,
+        'ALTER INDEX "kitchen"."measurements_2026_value_idx" RESET (fillfactor, deduplicate_items);',
+      ].join('\n')
+    );
   });
 
   it('creates an index that is not valid ON ONLY its table, without an index for any partition', () => {
@@ -311,6 +489,52 @@ describe('emitConstraint', () => {
     expect(result.calls).toStrictEqual(['sql', 'sql']);
     expect(result.steps.join('\n')).toContain(
       'ALTER TABLE "kitchen"."measurements_2025" ADD CONSTRAINT "labels" EXCLUDE'
+    );
+  });
+
+  it('gives the indexes of the constraints of partitions their own settings and comments after it', () => {
+    // addConstraint gives the indexes no storage parameters.
+    const result = emitAndRun(
+      emitConstraint,
+      makeConstraint(
+        MEASUREMENTS,
+        'measurements_pkey',
+        'primaryKey',
+        'PRIMARY KEY (sensor_id, measured_at)',
+        {
+          partitionIndexes: [
+            partitionIndex('measurements_2025', 'measurements_2025_pkey', {
+              options: ['fillfactor=80'],
+              replicaIdentity: true,
+            }),
+            partitionIndex('measurements_2026', 'readings_2026_pk', {
+              clustered: true,
+              comment: 'Keys of 2026',
+            }),
+          ],
+        }
+      )
+    );
+
+    expectFallback(result, 'partition index settings', 'comment on index');
+    expect(result.calls).toStrictEqual([
+      'addConstraint',
+      'addConstraint',
+      'sql',
+      'sql',
+      'sql',
+      'sql',
+    ]);
+    expectSql(
+      result,
+      [
+        'ALTER TABLE "kitchen"."measurements_2026" ADD CONSTRAINT "readings_2026_pk" PRIMARY KEY (sensor_id, measured_at);',
+        'ALTER TABLE "kitchen"."measurements" ADD CONSTRAINT "measurements_pkey" PRIMARY KEY (sensor_id, measured_at);',
+        `ALTER INDEX "kitchen"."measurements_2025_pkey" SET (fillfactor='80');`,
+        'ALTER TABLE "kitchen"."measurements_2025" REPLICA IDENTITY USING INDEX "measurements_2025_pkey";',
+        'ALTER TABLE "kitchen"."measurements_2026" CLUSTER ON "readings_2026_pk";',
+        `COMMENT ON INDEX "kitchen"."readings_2026_pk" IS 'Keys of 2026';`,
+      ].join('\n')
     );
   });
 
