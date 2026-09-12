@@ -5,6 +5,7 @@ import type { SchemaModel } from '../introspect/types';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
 import { decamelize, getSchemas, quote } from '../utils';
+import { quoteShellWord } from './core/fakeCommand';
 import { toPgDumpPattern } from './core/identifiers';
 import {
   DEFAULT_MAX_LOCKS_PER_TRANSACTION,
@@ -239,7 +240,7 @@ function catalogPlan(
 ): CatalogPlan {
   if (options.fromFile !== undefined) {
     throw invalidOptions(
-      `--format ${language} reads the schema from the catalogs of a live database, so it cannot use a dump: leave out --from-file, or clean up the dump with --format sql.`
+      `--format ${language} reads the schema from the catalogs of a live database, so it cannot use a dump file with --from-file. To use --format ${language} with this dump, load it into a scratch database (createdb scratch && psql -d scratch -f ${quoteShellWord(options.fromFile)}) and run baseline against that database. To clean up the dump as a SQL baseline, use --format sql.`
     );
   }
 

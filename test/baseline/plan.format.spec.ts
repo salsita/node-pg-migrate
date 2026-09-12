@@ -107,7 +107,7 @@ describe('resolveSettings with format ts or js', () => {
   });
 
   it.each(['ts', 'js'] as const)(
-    'refuses a dump file with format %s, naming both options',
+    'refuses a dump file with format %s, naming both options and how to use the dump anyway',
     (format) => {
       const error = refusalOf({
         dir: 'migrations',
@@ -119,6 +119,8 @@ describe('resolveSettings with format ts or js', () => {
       expect(error.code).toBe('INVALID_OPTIONS');
       expect(error.message).toContain(`--format ${format}`);
       expect(error.message).toContain('--from-file');
+      expect(error.message).toContain('scratch database');
+      expect(error.message).toContain('psql -d scratch -f schema.sql');
     }
   );
 
