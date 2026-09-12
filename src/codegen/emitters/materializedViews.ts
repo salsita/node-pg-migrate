@@ -3,7 +3,8 @@ import { object, raw, statement, str } from '../code';
 import { nameCode } from '../names';
 import { qualifiedName, quoteName, storageParameters } from '../sql';
 import type { EmitContext, Emitted } from '../types';
-import { emitFallback } from './fallback';
+import { withStatements } from './fallback';
+import { columnSettingsSql } from './tables';
 
 /**
  * `pgm.createMaterializedView(name, { data: false }, definition)`:
@@ -16,6 +17,11 @@ import { emitFallback } from './fallback';
  * when it has storage parameters, reason `'storage parameters'`, or a
  * non-heap access method, `'access method'`.
  *
+ * The statistics targets, storage, compression and options of its columns
+ * are set after it with `pgm.sql('ALTER MATERIALIZED VIEW … ALTER COLUMN …
+ * SET …')`, which makes the step a fallback, reason `'column settings'`
+ * (after the other reasons).
+ *
  * @param view The materialized view.
  * @param ctx The migration context.
  */
@@ -23,6 +29,7 @@ export function emitMaterializedView(
   view: MaterializedView,
   ctx: EmitContext
 ): Emitted {
+  const name = qualifiedName(view);
   const reasons: string[] = [];
   if (view.options.length > 0) {
     reasons.push('storage parameters');
@@ -32,6 +39,10 @@ export function emitMaterializedView(
     reasons.push('access method');
   }
 
+  const settings = view.columns.flatMap((column) =>
+    columnSettingsSql(`MATERIALIZED VIEW ${name}`, column)
+  );
+  const settingsReasons = settings.length === 0 ? [] : ['column settings'];
   if (reasons.length > 0) {
     const using =
       view.accessMethod === undefined
@@ -42,18 +53,23 @@ export function emitMaterializedView(
         ? ''
         : ` WITH (${storageParameters(view.options)})`;
 
-    return emitFallback(
-      `CREATE MATERIALIZED VIEW ${qualifiedName(view)}${using}${withOptions} AS ${view.definition} WITH NO DATA;`,
-      reasons.join(', ')
+    return withStatements(
+      '',
+      [
+        `CREATE MATERIALIZED VIEW ${name}${using}${withOptions} AS ${view.definition} WITH NO DATA;`,
+        ...settings,
+      ],
+      [...reasons, ...settingsReasons]
     );
   }
 
-  return {
-    kind: 'code',
-    code: statement('createMaterializedView', [
+  return withStatements(
+    statement('createMaterializedView', [
       nameCode(view, ctx),
       object([['data', raw('false')]]),
       str(view.definition),
     ]),
-  };
+    settings,
+    settingsReasons
+  );
 }

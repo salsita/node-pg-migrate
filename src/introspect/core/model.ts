@@ -32,6 +32,7 @@ import type {
   IndexRow,
   IntrospectOptions,
   MaterializedView,
+  MaterializedViewColumn,
   MovingAggregate,
   NameRow,
   NotNullConstraint,
@@ -758,6 +759,27 @@ function columnInheritance(
   };
 }
 
+/**
+ * The settings of a column (`ALTER COLUMN … SET …`) that are set: its
+ * statistics target, its storage when it is not its type's, and its
+ * compression.
+ *
+ * @param row The column.
+ * @returns The settings, each left out when it is not set.
+ */
+function columnSettingsOf(
+  row: ColumnRow
+): Pick<Column, 'statisticsTarget' | 'storage' | 'compression'> {
+  return {
+    ...optional('statisticsTarget', row.statisticsTarget),
+    ...optional(
+      'storage',
+      row.attstorage === row.typstorage ? null : STORAGES[row.attstorage]
+    ),
+    ...optional('compression', COMPRESSIONS[row.attcompression]),
+  };
+}
+
 function columnOf(
   row: ColumnRow,
   notNullConstraint: NotNullConstraint | undefined,
@@ -778,12 +800,7 @@ function columnOf(
     local: row.attislocal,
     inheritCount: row.attinhcount,
     ...optional('inheritance', inheritance),
-    ...optional('statisticsTarget', row.statisticsTarget),
-    ...optional(
-      'storage',
-      row.attstorage === row.typstorage ? null : STORAGES[row.attstorage]
-    ),
-    ...optional('compression', COMPRESSIONS[row.attcompression]),
+    ...columnSettingsOf(row),
     options: row.attoptions ?? [],
   };
 }
@@ -917,6 +934,17 @@ function viewColumnOf(row: ColumnRow): ViewColumn {
   };
 }
 
+function materializedViewColumnOf(row: ColumnRow): MaterializedViewColumn {
+  return {
+    ...viewColumnOf(row),
+    ...columnSettingsOf(row),
+    ...optional(
+      'options',
+      row.attoptions?.length === 0 ? null : row.attoptions
+    ),
+  };
+}
+
 /**
  * The `reloptions` entry of a view that holds its check option.
  */
@@ -963,7 +991,7 @@ function materializedViewOf(
       'accessMethod',
       row.accessMethod === 'heap' ? null : row.accessMethod
     ),
-    columns: columns.map(viewColumnOf),
+    columns: columns.map(materializedViewColumnOf),
   };
 }
 
@@ -1188,7 +1216,8 @@ function withPartitionIndexes(
  *   (see {@link TRIGGER_TYPE}) become `timing`, `events` and `level`;
  *   `attstorage` is only kept when it differs from `typstorage`; `-1`/null
  *   statistics targets, `''` codes, a `heap` access method and null texts
- *   are left out.
+ *   are left out, and so are the `attoptions` of a column of a materialized
+ *   view when it has none.
  * - Columns go to their table, view, materialized view or composite type
  *   (by `relid`), in `attnum` order. The `default` of a generated column is
  *   its `generated.expression`. A column gets `ownedSequence` when exactly one

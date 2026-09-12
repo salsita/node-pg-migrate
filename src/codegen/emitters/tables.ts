@@ -1,6 +1,7 @@
 import { parseQualifiedName } from '../../baseline/core/identifiers';
 import type {
   Column,
+  MaterializedViewColumn,
   NotNullConstraint,
   SchemaQualifiedName,
   Table,
@@ -678,11 +679,27 @@ function attachedColumnSql(column: Column): string {
 }
 
 /**
- * The statements that set the settings of the columns (whole-table
- * fallback).
+ * The settings of a column of a table or a materialized view.
  */
-function columnSettingsSql(name: string, column: Column): string[] {
-  const alter = `ALTER TABLE ${name} ALTER COLUMN ${quoteName(column.name)}`;
+type ColumnSettings = Pick<
+  MaterializedViewColumn,
+  'name' | 'statisticsTarget' | 'storage' | 'compression' | 'options'
+>;
+
+/**
+ * The statements that set the settings of a column: `ALTER <relation> ALTER
+ * COLUMN … SET STATISTICS | STORAGE | COMPRESSION | (…)`, in that order,
+ * for the settings it has (see `Column.statisticsTarget`, …).
+ *
+ * @param relation What `ALTER` alters, e.g. `TABLE "public"."t"` or
+ * `MATERIALIZED VIEW "public"."mv"`.
+ * @param column The column.
+ */
+export function columnSettingsSql(
+  relation: string,
+  column: ColumnSettings
+): string[] {
+  const alter = `ALTER ${relation} ALTER COLUMN ${quoteName(column.name)}`;
   const statements: string[] = [];
   if (column.statisticsTarget !== undefined) {
     statements.push(
@@ -698,7 +715,7 @@ function columnSettingsSql(name: string, column: Column): string[] {
     statements.push(`${alter} SET COMPRESSION ${column.compression};`);
   }
 
-  if (column.options.length > 0) {
+  if (column.options !== undefined && column.options.length > 0) {
     statements.push(`${alter} SET (${column.options.join(', ')});`);
   }
 
@@ -802,7 +819,9 @@ function createTableSql(table: Table): string[] {
   const changes = attach.length === 0 ? inheritedColumnChanges(table) : [];
   statements.push(
     ...changes.flatMap((change) => inheritedColumnSql(name, change)),
-    ...table.columns.flatMap((column) => columnSettingsSql(name, column))
+    ...table.columns.flatMap((column) =>
+      columnSettingsSql(`TABLE ${name}`, column)
+    )
   );
   if (table.replicaIdentity === 'FULL' || table.replicaIdentity === 'NOTHING') {
     statements.push(

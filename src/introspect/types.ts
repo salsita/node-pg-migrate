@@ -1445,6 +1445,35 @@ export interface ViewColumn {
 }
 
 /**
+ * A column of a materialized view, with the settings that `ALTER
+ * MATERIALIZED VIEW … ALTER COLUMN … SET …` gives it (see the same fields of
+ * {@link Column}), each left out when it is not set.
+ */
+export interface MaterializedViewColumn extends ViewColumn {
+  /**
+   * `SET STATISTICS` (`attstattarget`), when it is set.
+   */
+  readonly statisticsTarget?: number;
+
+  /**
+   * `SET STORAGE` (`attstorage`), when it is not the default storage of the
+   * type (`typstorage`).
+   */
+  readonly storage?: Column['storage'];
+
+  /**
+   * `SET COMPRESSION` (`attcompression`), when it is set.
+   */
+  readonly compression?: Column['compression'];
+
+  /**
+   * `SET (…)` (`attoptions`), each as stored, e.g. `'n_distinct=100'`;
+   * left out when there are none.
+   */
+  readonly options?: ReadonlyArray<string>;
+}
+
+/**
  * A view (`pg_class.relkind = 'v'`).
  */
 export interface View extends CatalogObject {
@@ -1501,7 +1530,7 @@ export interface MaterializedView extends CatalogObject {
   /**
    * The columns, in `attnum` order.
    */
-  readonly columns: ReadonlyArray<ViewColumn>;
+  readonly columns: ReadonlyArray<MaterializedViewColumn>;
 }
 
 /**
