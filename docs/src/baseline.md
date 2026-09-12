@@ -346,6 +346,9 @@ The real file also starts with a header comment, and with two `pgm.sql(…)` cal
   rename, such as `LegacyCustomer`: identifiers, constraint names and the settings of a
   function's `SET` clause (PostgreSQL stores `SET timezone` as `TimeZone`). Use `--format sql`
   for that database.
+- The same migration can be generated without Node.js, from any client with a `query()` (such as
+  PGlite in a browser), with the entry point `node-pg-migrate/baseline/catalogs`: see
+  [Generating a Baseline Without Node.js](api#baseline-without-node).
 
 **What becomes a `pgm` call:** schemas, extensions, enums and composite types, domains,
 sequences, tables with their columns, identity and generated columns and comments,

@@ -160,3 +160,54 @@ When the options, the database or the dump can't make a baseline, it throws a `B
 | `warnings`                       | `string[]`      | What you should know about the migration; each one is also logged as a warning                                                                 |
 | `source`                         | `object`        | Where the schema came from, as far as known: `serverVersion`, `pgDumpVersion` and `file` (`'stdin'` for standard input)                        |
 | `fallbacks`                      | `array[object]` | With `format` `ts` or `js`: the objects written as raw SQL, each with its `kind` (e.g. `table`, `index`, `shellType`), `identity` and `reason` |
+
+### Generating a Baseline Without Node.js <Badge type="warning" text="experimental" /> {#baseline-without-node}
+
+> [!WARNING]
+> Like [`--format ts`](baseline#typescript-output), this entry point is experimental: review what
+> it generates, and expect the output to change between releases.
+
+`node-pg-migrate/baseline/catalogs` generates the same migration as `baseline()` with `format`
+`ts` or `js`, byte for byte, without importing a single Node.js module. Any client with a
+node-postgres-like `query()` does, so it also runs in a browser, for example against
+[PGlite](https://pglite.dev):
+
+```ts
+import { PGlite } from '@electric-sql/pglite';
+import { generateBaselineFromCatalogs } from 'node-pg-migrate/baseline/catalogs';
+
+const client = new PGlite();
+await client.exec(schemaSql);
+
+const result = await generateBaselineFromCatalogs(client, {
+  format: 'ts',
+  migrationName: `${Date.now()}_baseline`,
+});
+
+// What `baseline --format ts` writes to `migrations/<migrationName>.ts`.
+console.log(result.content, result.fakeCommand, result.fallbacks.length);
+```
+
+```ts
+function generateBaselineFromCatalogs(
+  client: CatalogClient,
+  options: CatalogBaselineOptions
+): Promise<CatalogBaselineResult>;
+```
+
+- `client` is a `CatalogClient`: anything with a
+  `query(text, values?) => Promise<{ rows }>`. It must be one connection, not a pool, and must
+  not be in a transaction: each read runs in a transaction of its own, which it rolls back. It is
+  never closed. Values have to be parsed the way node-postgres parses them (booleans as booleans,
+  arrays as arrays, `bytea` as bytes); a connected `pg.Client` and a PGlite instance both are.
+- `options` are the [Baseline Options](#baseline-options) that decide what the migration says —
+  `format` (`ts` by default, or `js`), `schema`, `migrationsTable`, `migrationsSchema`,
+  `includeSchemas`, `excludeSchemas`, `strict`, `decamelize` — plus `migrationName`, the file
+  name without its extension, and `dir` (only the `fakeCommand` names it). Nothing is written,
+  so there is no `logger`, `name` or `filenameFormat`.
+- the result is the [Baseline Result](#baseline-result) without `path`, plus `content`, the
+  content of the migration file. Nothing is logged: `warnings` is yours to show.
+- it refuses what `baseline()` refuses, with the same `BaselineError` code (see
+  [Error Codes](baseline#error-codes)). This entry point carries its own copy of the class, so
+  check `error.code` rather than `instanceof` when you import `BaselineError` from
+  `node-pg-migrate` too.
