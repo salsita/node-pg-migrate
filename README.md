@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="docs/src/public/logo.svg" alt="node-pg-migrate logo" width="160" />
+
 # node-pg-migrate
 
 [![npm version](https://badgen.net/npm/v/node-pg-migrate)](https://www.npmjs.com/package/node-pg-migrate)
@@ -6,6 +10,8 @@
 [![Postgres Test](https://github.com/salsita/node-pg-migrate/actions/workflows/postgres-test.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/postgres-test.yml)
 [![Cockroach Test](https://github.com/salsita/node-pg-migrate/actions/workflows/cockroach-test.yml/badge.svg)](https://github.com/salsita/node-pg-migrate/actions/workflows/cockroach-test.yml)
 ![Licence](https://img.shields.io/npm/l/node-pg-migrate.svg?style=flat)
+
+</div>
 
 Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
 
