@@ -1,5 +1,12 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
@@ -149,18 +156,48 @@ describe('baseline without a database', () => {
     ]);
   });
 
+  it.each([
+    {
+      problem: 'does not exist',
+      path: (): Promise<string> => Promise.resolve('missing.sql'),
+    },
+    {
+      problem: 'is a directory',
+      path: async (cwd: string): Promise<string> => {
+        await mkdir(join(cwd, 'dumps'));
+
+        return 'dumps';
+      },
+    },
+  ])(
+    'refuses a --from-file path that $problem with a message, not a stack trace',
+    async ({ path }) => {
+      const cwd = await tempDir();
+      const fromFile = await path(cwd);
+
+      const result = await runCli(['baseline', '--from-file', fromFile], {
+        cwd,
+        env: NO_CONNECTION,
+      });
+
+      expectRefusal(result, [`Could not read the dump ${fromFile}`]);
+      expect(await filesOf(join(cwd, 'migrations'))).toEqual([]);
+    }
+  );
+
   it('prints an error that is not a refusal as it is', async () => {
     const cwd = await tempDir();
+    // The migrations directory cannot be made inside a file.
+    await writeFile(join(cwd, 'notes.txt'), 'not a directory\n');
 
-    const result = await runCli(['baseline', '--from-file', 'missing.sql'], {
-      cwd,
-      env: NO_CONNECTION,
-    });
+    const result = await runCli(
+      ['baseline', '--from-file', CHINOOK_DUMP, '-m', 'notes.txt/migrations'],
+      { cwd, env: NO_CONNECTION }
+    );
 
     expect(result.code).toBe(1);
-    expect(result.stderr).toContain('ENOENT');
-    expect(result.stderr).toContain("'missing.sql'");
-    expect(await filesOf(join(cwd, 'migrations'))).toEqual([]);
+    expect(result.stderr).toContain('ENOTDIR');
+    expect(result.stderr).toContain("'notes.txt/migrations'");
   });
 
   it('refuses schemas to dump with a dump file', async () => {

@@ -1,13 +1,15 @@
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
+import { gzipSync } from 'node:zlib';
 import type { ClientBase } from 'pg';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { baseline, BaselineError } from '../../../src';
 import { getPgDumpVersion, runPgDump } from '../../../src/baseline/io/pgDump';
 import { readDumpFile } from '../../../src/baseline/io/readDump';
 import { planBaselineFile } from '../../../src/baseline/io/writeBaseline';
-import { recordingLogger, rejectionOf, workDir } from './helpers';
+import { listFiles, recordingLogger, rejectionOf, workDir } from './helpers';
 
 // The I/O paths of baseline that a real server and pg_dump don't take: they
 // run pg_dump stand-ins, streams and a CockroachDB client instead.
@@ -19,6 +21,25 @@ const LOCK_WAIT_TIMEOUT_STDERR = [
   'pg_dump: error: query failed: ERROR:  canceling statement due to statement timeout',
   'pg_dump: detail: Query was: LOCK TABLE public.widgets IN ACCESS SHARE MODE',
 ];
+
+/**
+ * The start of a dump that pg_dump wrote in LATIN1: `é` is the byte 0xE9,
+ * which is not UTF-8.
+ */
+const LATIN1_DUMP = Buffer.from(
+  "SET client_encoding = 'LATIN1';\nCOMMENT ON SCHEMA public IS 'café';\n",
+  'latin1'
+);
+
+/**
+ * A small plain-text dump.
+ */
+const SMALL_DUMP = 'CREATE TABLE public.t (id integer);\n';
+
+/**
+ * Whether the tests run as root, who can read a file whatever its mode.
+ */
+const RUNS_AS_ROOT = process.getuid?.() === 0;
 
 /**
  * Writes an executable shell script.
@@ -86,6 +107,137 @@ describe('baseline I/O without a server', () => {
       'CREATE TABLE public.t (id integer);\n'
     );
     await expect(readDumpFile('-', stdin)).resolves.toBe('SELECT 1;\n');
+  });
+
+  it.each([
+    {
+      problem: 'does not exist',
+      path: (dir: string): Promise<string> =>
+        Promise.resolve(join(dir, 'schema.sq')),
+    },
+    {
+      problem: 'is a directory',
+      path: async (dir: string): Promise<string> => {
+        await mkdir(join(dir, 'dumps'));
+
+        return join(dir, 'dumps');
+      },
+    },
+    // Root reads a file whatever its mode.
+    ...(RUNS_AS_ROOT
+      ? []
+      : [
+          {
+            problem: 'cannot be read',
+            path: async (dir: string): Promise<string> => {
+              const path = join(dir, 'schema.sql');
+              await writeFile(path, SMALL_DUMP, { mode: 0o000 });
+
+              return path;
+            },
+          },
+        ]),
+  ])(
+    'refuses a dump file that $problem, saying which (INVALID_OPTIONS)',
+    async ({ path }) => {
+      const file = await path(await workDir());
+
+      const error = await rejectionOf(readDumpFile(file));
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'INVALID_OPTIONS' });
+      expect((error as BaselineError).message).toContain(
+        `Could not read the dump ${file}`
+      );
+    }
+  );
+
+  it('reads a dump from a named pipe, like the /dev/fd/N path of a process substitution', async () => {
+    const path = join(await workDir(), 'dump.fifo');
+    execFileSync('mkfifo', [path]);
+
+    const reading = readDumpFile(path);
+    // Opening the pipe for writing waits for its reader.
+    const writer = spawn(
+      'sh',
+      ['-c', 'printf "%s" "$1" > "$2"', 'sh', SMALL_DUMP, path],
+      { stdio: 'ignore' }
+    );
+    onTestFinished(() => {
+      writer.kill();
+    });
+
+    await expect(reading).resolves.toBe(SMALL_DUMP);
+  });
+
+  it('refuses a missing --from-file path with a BaselineError (INVALID_OPTIONS), and writes nothing', async () => {
+    const work = await workDir();
+    const fromFile = join(work, 'schema.sq');
+    const dir = join(work, 'migrations');
+
+    const error = await rejectionOf(
+      baseline({ fromFile, dir, logger: recordingLogger() })
+    );
+
+    expect(error).toBeInstanceOf(BaselineError);
+    expect(error).toMatchObject({ code: 'INVALID_OPTIONS' });
+    expect((error as BaselineError).message).toContain(
+      `Could not read the dump ${fromFile}`
+    );
+    expect(await listFiles(dir)).toEqual([]);
+  });
+
+  it.each([
+    { name: 'a compressed dump', bytes: gzipSync(SMALL_DUMP) },
+    {
+      name: 'a dump saved as UTF-16',
+      bytes: Buffer.concat([
+        Buffer.from([0xff, 0xfe]),
+        Buffer.from(SMALL_DUMP, 'utf16le'),
+      ]),
+    },
+  ])(
+    'still refuses $name as binary (BINARY_DUMP), not as text that is not UTF-8',
+    async ({ bytes }) => {
+      const work = await workDir();
+      const fromFile = join(work, 'schema.sql');
+      await writeFile(fromFile, bytes);
+      const dir = join(work, 'migrations');
+
+      const error = await rejectionOf(
+        baseline({ fromFile, dir, logger: recordingLogger() })
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'BINARY_DUMP' });
+      expect(await listFiles(dir)).toEqual([]);
+    }
+  );
+
+  it('refuses a dump file that is not UTF-8 instead of replacing its characters (NOT_UTF8)', async () => {
+    const path = join(await workDir(), 'latin1.sql');
+    await writeFile(path, LATIN1_DUMP);
+
+    const error = await rejectionOf(readDumpFile(path));
+
+    expect(error).toBeInstanceOf(BaselineError);
+    expect(error).toMatchObject({ code: 'NOT_UTF8' });
+    const { message } = error as BaselineError;
+    expect(message).toContain('UTF-8');
+    expect(message).toContain('--encoding=UTF8');
+  });
+
+  it('refuses a dump on standard input that is not UTF-8 (NOT_UTF8)', async () => {
+    const stdin = new PassThrough();
+    stdin.end(LATIN1_DUMP);
+
+    const error = await rejectionOf(readDumpFile('-', stdin));
+
+    expect(error).toBeInstanceOf(BaselineError);
+    expect(error).toMatchObject({ code: 'NOT_UTF8' });
+    const { message } = error as BaselineError;
+    expect(message).toContain('UTF-8');
+    expect(message).toContain('--encoding=UTF8');
   });
 
   it('prefixes the migration with a timestamp by default', async () => {
@@ -224,6 +376,19 @@ describe('baseline I/O without a server', () => {
     ]);
 
     await expect(runPgDump(pgDump, [], {})).resolves.toBe(process.env.HOME);
+  });
+
+  it('refuses pg_dump output that is not UTF-8 instead of replacing its characters (NOT_UTF8)', async () => {
+    // What pg_dump prints for a LATIN1 database when it writes LATIN1.
+    const pgDump = await script(await workDir(), 'pg_dump', [
+      String.raw`printf "SET client_encoding = 'LATIN1';\nCOMMENT ON SCHEMA public IS 'caf\351';\n"`,
+    ]);
+
+    const error = await rejectionOf(runPgDump(pgDump, ['--schema-only'], {}));
+
+    expect(error).toBeInstanceOf(BaselineError);
+    expect(error).toMatchObject({ code: 'NOT_UTF8' });
+    expect((error as BaselineError).message).toContain('UTF-8');
   });
 
   it('quotes the first lines pg_dump printed when it fails', async () => {

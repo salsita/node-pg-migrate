@@ -12,7 +12,19 @@ const LIBPQ_VARIABLES = new Set([
   'PGPASSWORD',
   'PGDATABASE',
   'PGSSLMODE',
+  'PGSSLROOTCERT',
+  'PGSSLCERT',
+  'PGSSLKEY',
+  'PGSSLCRL',
 ]);
+
+/**
+ * A connection string with the certificate files of a verify-full
+ * connection, the way RDS, Azure and Cloud SQL document it. The root
+ * certificate is percent-encoded.
+ */
+const SSL_FILES_URL =
+  'postgres://u:p@db.example.com:5432/app?sslmode=verify-full&sslrootcert=%2Fetc%2Fssl%2Frds%20ca.pem&sslcert=/home/app/.postgresql/client.crt&sslkey=/home/app/.postgresql/client.key&sslcrl=/etc/ssl/revoked.crl';
 
 describe('toPgEnv', () => {
   it('maps a connection URL to the libpq variables', async () => {
@@ -64,6 +76,25 @@ describe('toPgEnv', () => {
       toPgEnv(`postgres://u:p@db:5432/app?sslmode=${sslmode}`)
     ).resolves.toMatchObject({ PGSSLMODE: sslmode });
   });
+
+  it.each<{ name: string; connection: string | ClientConfig }>([
+    { name: 'a connection string', connection: SSL_FILES_URL },
+    {
+      name: 'the connection string of a client config',
+      connection: { connectionString: SSL_FILES_URL },
+    },
+  ])(
+    'passes the certificate files of $name as PGSSLROOTCERT, PGSSLCERT, PGSSLKEY and PGSSLCRL',
+    async ({ connection }) => {
+      await expect(toPgEnv(connection)).resolves.toMatchObject({
+        PGSSLMODE: 'verify-full',
+        PGSSLROOTCERT: '/etc/ssl/rds ca.pem',
+        PGSSLCERT: '/home/app/.postgresql/client.crt',
+        PGSSLKEY: '/home/app/.postgresql/client.key',
+        PGSSLCRL: '/etc/ssl/revoked.crl',
+      });
+    }
+  );
 
   it('maps a client config to the libpq variables', async () => {
     await expect(
