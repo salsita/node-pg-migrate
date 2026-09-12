@@ -33,8 +33,10 @@ function isRoutineHead(words: ReadonlyArray<string>): boolean {
  * Follows the tokens of one statement to find where it ends, with psql's
  * rules: a `;` only ends it outside parentheses and, in a
  * `CREATE [OR REPLACE] FUNCTION|PROCEDURE` statement, outside its
- * `BEGIN ATOMIC … END` body. Once `BEGIN ATOMIC` is seen there, each `BEGIN`
- * and `CASE` opens a block and each `END` closes one (outside parentheses).
+ * `BEGIN ATOMIC … END` body. Once `BEGIN ATOMIC` is seen there, each `CASE`
+ * opens a block and each `END` closes one (outside parentheses). Unlike psql,
+ * a `BEGIN` in the body opens nothing: the statements of a body cannot start
+ * a block, so there it is a name, such as a column named `begin`.
  *
  * It also notices a `COPY … FROM STDIN` statement, whose data follows it.
  */
@@ -135,11 +137,11 @@ class StatementTracker {
   }
 
   /**
-   * `1` for a word that opens a block of a `BEGIN ATOMIC` body, `-1` for one
-   * that closes it, `0` for any other.
+   * `1` for a word that opens a block of a `BEGIN ATOMIC` body (`CASE`), `-1`
+   * for one that closes it (`END`), `0` for any other.
    */
   #blockChange(start: number, end: number): number {
-    if (this.#is(start, end, 'begin') || this.#is(start, end, 'case')) {
+    if (this.#is(start, end, 'case')) {
       return 1;
     }
 
