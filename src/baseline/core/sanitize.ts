@@ -513,9 +513,76 @@ function sessionSetting(
 }
 
 /**
+ * The quotes around a string (`'…'`) and a quoted identifier (`"…"`).
+ */
+const QUOTES: ReadonlySet<string> = new Set(["'", '"']);
+
+/**
+ * The value a `SET <name> = <value>` statement gives its setting: a word or
+ * a number as it is written, or the text of a `'…'` string or a `"…"`
+ * identifier, with its doubled quotes undoubled. `undefined` for `DEFAULT`
+ * and for values written any other way (e.g. `E'…'`).
+ */
+function settingValue(statement: Statement): string | undefined {
+  const token = statement.token(3);
+  if (token === undefined || token.folded === 'default') {
+    return undefined;
+  }
+
+  if (token.kind === 'word' || token.kind === 'number') {
+    return token.text;
+  }
+
+  const quote = token.text.charAt(0);
+
+  return QUOTES.has(quote)
+    ? token.text.slice(1, -1).replaceAll(quote.repeat(2), quote)
+    : undefined;
+}
+
+/**
+ * The values PostgreSQL reads as the boolean false, in lower case: `false`,
+ * `no` and `off`, which it also takes cut short as long as no word for true
+ * starts the same way (`of`, but not `o`), and `0`.
+ */
+const FALSE_VALUES: ReadonlySet<string> = new Set([
+  'f',
+  'fa',
+  'fal',
+  'fals',
+  'false',
+  'n',
+  'no',
+  'of',
+  'off',
+  '0',
+]);
+
+/**
+ * R6: a baseline runs as one query, which PostgreSQL reads before it runs any
+ * of it. So a setting that changes how PostgreSQL reads the statements after
+ * it cannot take effect, and the dump must not need it:
+ * `standard_conforming_strings` off makes the backslashes in strings escapes.
+ */
+function refuseLexicalSetting(statement: Statement, name: string): void {
+  const value = settingValue(statement)?.toLowerCase();
+  if (value === undefined) {
+    return;
+  }
+
+  if (name === 'standard_conforming_strings' && FALSE_VALUES.has(value)) {
+    throw new BaselineError(
+      'NON_STANDARD_STRINGS',
+      `line ${statement.line}: the dump was made with standard_conforming_strings off (\`${excerpt(statement.text)}\`), so the backslashes in its strings are escapes. A migration runs as one query, which PostgreSQL reads before this SET can take effect, so those strings would get other values. Make the dump again with PGOPTIONS='-c standard_conforming_strings=on' set for pg_dump.`
+    );
+  }
+}
+
+/**
  * R6: pg_dump's session settings would outlive the baseline. Timeouts are
  * dropped; other settings are saved, set with `SET LOCAL` and restored at the
- * end (see {@link finish}).
+ * end (see {@link finish}), once their value is checked (see
+ * {@link refuseLexicalSetting}).
  */
 function rewriteSetting(statement: Statement, context: Context): boolean {
   const setting = sessionSetting(statement);
@@ -528,6 +595,7 @@ function rewriteSetting(statement: Statement, context: Context): boolean {
     return drop(statement, context);
   }
 
+  refuseLexicalSetting(statement, name);
   if (!context.settings.has(name)) {
     context.settings.add(name);
     context.output.write(`${saveOf(name)}\n`);
@@ -999,8 +1067,9 @@ function createContext(dump: string, options: SanitizeOptions): Context {
  * text (a pg_dump custom- or tar-format archive, a compressed file or UTF-16
  * text), has a psql meta-command, data (`COPY … FROM stdin`, `INSERT` or
  * `setval()`), `CREATE DATABASE` or `DROP` statements, changes the role
- * (`SET ROLE`, `SET SESSION AUTHORIZATION`), creates the migrations table or
- * its sequence, or has a line that node-pg-migrate would read as an up/down
+ * (`SET ROLE`, `SET SESSION AUTHORIZATION`), was made with
+ * `standard_conforming_strings` off, creates the migrations table or its
+ * sequence, or has a line that node-pg-migrate would read as an up/down
  * migration marker.
  *
  * @param dump The pg_dump output.

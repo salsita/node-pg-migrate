@@ -8,6 +8,10 @@
  * - `BINARY_DUMP`: the dump is not SQL text, but a pg_dump custom- or
  *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16
  *   text.
+ * - `NON_STANDARD_STRINGS`: the dump was made with
+ *   `standard_conforming_strings` off, so the backslashes in its strings are
+ *   escapes, but a migration is read before its `SET` can take effect (make
+ *   it with `PGOPTIONS='-c standard_conforming_strings=on'`).
  * - `PSQL_META_COMMAND`: the dump has a psql meta-command such as `\connect`.
  * - `DATA_IN_DUMP`: the dump has table data (`COPY … FROM stdin` or
  *   `INSERT`) or the values of sequences (`setval()`).
@@ -34,6 +38,7 @@ export type BaselineErrorCode =
   | 'HISTORY_EXISTS'
   | 'UNSUPPORTED_SERVER'
   | 'BINARY_DUMP'
+  | 'NON_STANDARD_STRINGS'
   | 'PSQL_META_COMMAND'
   | 'DATA_IN_DUMP'
   | 'CREATE_DATABASE'
