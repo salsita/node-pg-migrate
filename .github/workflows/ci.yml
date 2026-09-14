@@ -172,3 +172,37 @@ jobs:
       - name: Check file was created
         run: |
           [ $(ls -1 migrations | wc -l) -eq 1 ]
+
+  docs-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: 'Docs: node-22, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+
+      - name: Set node version to 22
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 22.21.1
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps --only-shell chromium
+
+      - name: Build docs and test them in a browser
+        run: pnpm run test:docs
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docs-test-results
+          path: test-results/
+          if-no-files-found: ignore
