@@ -14,6 +14,8 @@
     "test:integration": "vitest --project integration",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --project unit --coverage",
+    "pretest:docs": "pnpm run docs:build",
+    "test:docs": "playwright test",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -87,6 +89,7 @@
     "jiti": "~2.7.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@shikijs/vitepress-twoslash": "4.4.3",
     "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
