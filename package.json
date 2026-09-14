@@ -20,6 +20,8 @@
     "test:coverage:e2e": "PGM_E2E_COVERAGE=1 vitest run --project e2e && node test/e2e/report-coverage.mjs",
     "bench": "vitest bench --run --project 'bench (bench)'",
     "fixtures:capture": "jiti test/fixtures/capture-dumps.ts",
+    "pretest:docs": "pnpm run docs:build",
+    "test:docs": "playwright test",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -97,6 +99,7 @@
     "jiti": "~2.7.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@shikijs/vitepress-twoslash": "4.4.3",
     "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
@@ -130,14 +133,14 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@12.4.0",
+  "packageManager": "pnpm@12.4.1",
   "engines": {
     "node": ">=22.12.0"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.4.0",
+      "version": "12.4.1",
       "onFail": "download"
     }
   }

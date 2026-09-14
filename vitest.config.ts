@@ -66,7 +66,7 @@ export default defineConfig({
           name: 'unit',
           environment: 'node',
           include: ['test/**/*.spec.ts'],
-          exclude: ['test/integration/**/*', 'test/e2e/**/*'],
+          exclude: ['test/integration/**/*', 'test/e2e/**/*', 'test/docs/**/*'],
         },
       },
       {

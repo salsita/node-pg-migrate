@@ -56,6 +56,32 @@ If array of strings, it is interpreted as is, if array of objects:
 | `function_params` | `array[string]` `array[object]` | parameters of the function        |
 | `drop_options`    | `object`                        | Check below for available options |
 
+Parameters may be reused from `createFunction`: their `default` values,
+including defaults supplied by type shorthands, are omitted from drop SQL.
+This also applies when `createFunction` is reversed automatically. Creation
+continues to emit defaults, and argument modes, names, and types are preserved.
+String parameters and object `type` fields must describe argument types without
+inline `DEFAULT` clauses.
+
+```javascript
+export const shorthands = {
+  defaultInt: { type: 'integer', default: 2 },
+};
+
+export function up(pgm) {
+  pgm.createFunction(
+    'defaulted_function',
+    ['defaultInt'],
+    { language: 'sql', returns: 'integer' },
+    'SELECT $1'
+  );
+}
+// Creation includes (integer DEFAULT 2).
+// With down omitted, automatic rollback emits:
+// DROP FUNCTION "defaulted_function"(integer);
+// An explicit pgm.dropFunction('defaulted_function', ['defaultInt']) does the same.
+```
+
 ### drop_options
 
 | Option     | Type      | Description                      |

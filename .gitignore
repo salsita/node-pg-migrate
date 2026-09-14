@@ -101,6 +101,10 @@ yarn.lock
 # Snapshot test files
 !test/integration/__snapshots__/**/*.log
 
+# Playwright
+/test-results
+/playwright-report
+
 # AI
 .claude/
 .playwright-mcp
