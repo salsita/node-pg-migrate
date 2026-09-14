@@ -91,7 +91,7 @@ export interface CliOptions {
  * (dotenv, the `config` package and `--config-file`) and are therefore relevant
  * regardless of the action being run.
  */
-function addConfigOptions(command: Command): Command {
+export function addConfigOptions(command: Command): Command {
   return (
     command
       .addOption(

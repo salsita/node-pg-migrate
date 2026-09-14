@@ -3,11 +3,9 @@ import type { RunnerOption } from 'node-pg-migrate';
 import { Migration, runner as migrationRunner } from 'node-pg-migrate';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
-// TODO causes tests to fail when `.js` is removed
-// @ts-expect-error type exports from @types/pg doesn't match importing
-import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import { getMigrationTableSchema } from '../utils';
 import { resolveConfig } from './config';
+import { requireDbConnection } from './connection';
 import type { CliOptions } from './options';
 
 /**
@@ -92,23 +90,7 @@ export async function runMigration(
   options: CliOptions
 ): Promise<void> {
   const config = await resolveConfig(options);
-
-  let dbConnection = config.dbConnection;
-  if (!dbConnection) {
-    const cp = new ConnectionParameters();
-
-    const dbUrlFromEnv = config.databaseUrlVar
-      ? process.env[config.databaseUrlVar]
-      : undefined;
-    if (!dbUrlFromEnv && (!process.env.PGHOST || !cp.user || !cp.database)) {
-      console.error(
-        `The ${config.databaseUrlVar} environment variable is not set or incomplete connection parameters are provided.`
-      );
-      process.exit(1);
-    }
-
-    dbConnection = cp;
-  }
+  const dbConnection = requireDbConnection(config);
 
   const dryRun = options.dryRun;
   if (dryRun) {

@@ -1,0 +1,49 @@
+name: Stress Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * 1' # Mondays at 03:30 UTC
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  baseline-stress:
+    # Forks don't need the weekly run; they can still start it by hand.
+    if: github.event_name != 'schedule' || github.repository == 'salsita/node-pg-migrate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    name: 'Baseline Stress Test: pg-18, node-24, ubuntu-latest'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Set node version to 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      # A baseline of 5,000 tables: it warns about max_locks_per_transaction,
+      # fails on a blank database with the default, and applies with the
+      # printed value. The spec logs how long each step takes.
+      - name: Stress Test
+        run: pnpm vitest run --project e2e test/e2e/baseline-stress.spec.ts
+        env:
+          PGM_E2E_STRESS: '1' # the spec is skipped without it
+          PGM_VERSIONS: '18' # Postgres version to test against
+
+      - name: Benchmarks
+        if: ${{ !cancelled() }}
+        run: pnpm run bench

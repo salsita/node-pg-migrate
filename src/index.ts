@@ -1,3 +1,10 @@
+export { baseline, BaselineError } from './baseline';
+export type {
+  BaselineErrorCode,
+  BaselineOptions,
+  BaselineResult,
+  DumpSource,
+} from './baseline';
 export { Migration } from './migration';
 export { MigrationBuilder } from './migrationBuilder';
 export { jiti } from './migrationLoader';
