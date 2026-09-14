@@ -240,8 +240,8 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
       typescript-6:
-        specifier: npm:typescript@6.0.3
-        version: typescript@6.0.3
+        specifier: npm:typescript@7.0.2
+        version: typescript@7.0.2
       vitepress:
         specifier: 2.0.0-alpha.19
         version: 2.0.0-alpha.19(patch_hash=8dd061d1c908665c309ac226bb2981c7699b780216c0d3ffd66aaf75ad2125f1)(@types/node@26.5.1)(jiti@2.7.0)(postcss@8.5.28)(typescript@7.0.2)(yaml@2.9.0)
@@ -2458,11 +2458,6 @@ packages:
     resolution: {integrity: sha512-rDclk+OtzuTX+tnea7DYLCkqGQ3eP0IyfD+kzUJ7t46X/NzlaxwrhecmEBNuSCuEn3V+n1PhcjUUQQ7gUJzX5Q==}
     peerDependencies:
       typescript: ^5.5.0 || ^6.0.0
-
-  typescript@6.0.3:
-    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   typescript@7.0.2:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
@@ -4770,8 +4765,6 @@ snapshots:
       typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
-
-  typescript@6.0.3: {}
 
   typescript@7.0.2:
     optionalDependencies:
