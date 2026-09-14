@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatParams } from '../../utils';
+import { formatFunctionIdentityParams } from '../../utils/formatParams';
 import type { DropOptions, Name } from '../generalTypes';
 import type { FunctionParam } from './shared';
 
@@ -22,17 +22,7 @@ export function dropFunction(mOptions: MigrationOptions): DropFunction {
     const ifExistsStr = ifExists ? ' IF EXISTS' : '';
     const cascadeStr = cascade ? ' CASCADE' : '';
 
-    const paramsForDrop = functionParams.map((param) => {
-      if (typeof param === 'object' && param !== null) {
-        const copy = { ...param };
-        delete copy.default;
-        return copy;
-      }
-
-      return param;
-    });
-
-    const paramsStr = formatParams(paramsForDrop, mOptions);
+    const paramsStr = formatFunctionIdentityParams(functionParams, mOptions);
     const functionNameStr = mOptions.literal(functionName);
 
     return `DROP FUNCTION${ifExistsStr} ${functionNameStr}${paramsStr}${cascadeStr};`;
