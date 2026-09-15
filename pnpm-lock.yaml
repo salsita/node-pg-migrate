@@ -163,7 +163,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@shikijs/vitepress-twoslash>floating-vue': 5.3.0
+  '@shikijs/vitepress-twoslash>floating-vue': 5.4.0
 
 patchedDependencies:
   vitepress@2.0.0-alpha.19: 8dd061d1c908665c309ac226bb2981c7699b780216c0d3ffd66aaf75ad2125f1
@@ -290,8 +290,8 @@ packages:
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
 
-  '@floating-ui/dom@1.1.1':
-    resolution: {integrity: sha512-TpIO93+DIujg3g7SykEAGZMDtbJRrmnYRCNYSjJlvIbGhBjRSNTLVbNeDQBrzy9qDgUbiWdc7KA0uZHZ2tJmiw==}
+  '@floating-ui/dom@1.8.0':
+    resolution: {integrity: sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==}
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
@@ -844,9 +844,6 @@ packages:
 
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
-
-  '@types/node@26.4.1':
-    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
 
   '@types/node@26.5.1':
     resolution: {integrity: sha512-CzNm2FezW4VR/LjG6yUdiEgLE/rAQ9Slj5gCu/C2VrdcW7I0ahNZ8DRbHT7zOZ6r3ONgd/bsQIeSaoDGrd1C6g==}
@@ -1632,8 +1629,8 @@ packages:
   flatted@3.4.4:
     resolution: {integrity: sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==}
 
-  floating-vue@5.3.0:
-    resolution: {integrity: sha512-GxTZLXT6H1+kbSPZLOHnejS2kbJLUl9RZODTTwNK/5rD1UcW8MpCt3uK8TD8SQlQgi1Hx3qLHM9I99ADiEGu3A==}
+  floating-vue@5.4.0:
+    resolution: {integrity: sha512-hb5y5N8sXs9Dy4iZfWBKLzf3FkUkqhbkQREhRulAEvIihMlSGxc/7pXGrIDetoqXm/RRHNVjvN6lql9IhMM+tQ==}
     peerDependencies:
       '@nuxt/kit': ^3.2.0 || ^4.0.0 || ^5.0.0-0
       vue: ^3.2.0
@@ -2496,9 +2493,6 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@8.3.0:
-    resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
-
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
@@ -2630,11 +2624,6 @@ packages:
       jsdom:
         optional: true
 
-  vue-resize@2.0.0-alpha.1:
-    resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
-    peerDependencies:
-      vue: ^3.0.0
-
   vue@3.5.42:
     resolution: {integrity: sha512-4RyHQTbQvOPs3MfvUO1Sg0YRrKNnA0mAVtvpd12Tg1fKDN7OHBUl1IqSn8zGJjK9nI3NkNp8cgTpVrSZC5TTcA==}
     peerDependencies:
@@ -2735,9 +2724,10 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.12
 
-  '@floating-ui/dom@1.1.1':
+  '@floating-ui/dom@1.8.0':
     dependencies:
       '@floating-ui/core': 1.8.0
+      '@floating-ui/utils': 0.2.12
 
   '@floating-ui/utils@0.2.12': {}
 
@@ -3061,7 +3051,7 @@ snapshots:
   '@shikijs/vitepress-twoslash@4.4.3(typescript@7.0.2)':
     dependencies:
       '@shikijs/twoslash': 4.4.3(typescript@7.0.2)
-      floating-vue: 5.3.0(vue@3.5.42(typescript@7.0.2))
+      floating-vue: 5.4.0(vue@3.5.42(typescript@7.0.2))
       lz-string: 1.5.0
       magic-string: 1.3.1
       markdown-it: 14.3.1
@@ -3106,13 +3096,13 @@ snapshots:
 
   '@types/docker-modem@3.0.6':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2': 1.15.6
 
   '@types/dockerode@4.0.1':
     dependencies:
       '@types/docker-modem': 3.0.6
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2': 1.15.6
 
   '@types/estree@1.0.9': {}
@@ -3140,10 +3130,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@26.4.1':
-    dependencies:
-      undici-types: 8.3.0
-
   '@types/node@26.5.1':
     dependencies:
       undici-types: 8.9.0
@@ -3156,11 +3142,11 @@ snapshots:
 
   '@types/ssh2-streams@0.1.13':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
 
   '@types/ssh2@0.5.52':
     dependencies:
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       '@types/ssh2-streams': 0.1.13
 
   '@types/ssh2@1.15.6':
@@ -3776,11 +3762,10 @@ snapshots:
 
   flatted@3.4.4: {}
 
-  floating-vue@5.3.0(vue@3.5.42(typescript@7.0.2)):
+  floating-vue@5.4.0(vue@3.5.42(typescript@7.0.2)):
     dependencies:
-      '@floating-ui/dom': 1.1.1
+      '@floating-ui/dom': 1.8.0
       vue: 3.5.42(typescript@7.0.2)
-      vue-resize: 2.0.0-alpha.1(vue@3.5.42(typescript@7.0.2))
 
   focus-trap@8.2.2:
     dependencies:
@@ -4455,7 +4440,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.4.1
+      '@types/node': 26.5.1
       long: 5.3.2
 
   pump@3.0.4:
@@ -4833,8 +4818,6 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@8.3.0: {}
-
   undici-types@8.9.0: {}
 
   undici@8.10.2: {}
@@ -4960,10 +4943,6 @@ snapshots:
       '@vitest/ui': 5.0.0(vitest@5.0.0)
     transitivePeerDependencies:
       - msw
-
-  vue-resize@2.0.0-alpha.1(vue@3.5.42(typescript@7.0.2)):
-    dependencies:
-      vue: 3.5.42(typescript@7.0.2)
 
   vue@3.5.42(typescript@7.0.2):
     dependencies:
