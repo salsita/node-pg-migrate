@@ -75,7 +75,9 @@ export function generateColumnString(
 
   const name = mOptions.schemalize(column);
   const isExpression = /[^\w".]/.test(name);
-  if (!isExpression) {
+  // Bare hyphenated names are identifiers. Subtraction can use spaces or
+  // parentheses; explicitly quoted columns keep their existing expression path.
+  if (!isExpression || /^[\w.-]+$/.test(name)) {
     return mOptions.literal(name);
   }
 

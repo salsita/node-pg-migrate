@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PgLiteral } from '../../../src';
-import { createIndex } from '../../../src/operations/indexes';
+import { createIndex, dropIndex } from '../../../src/operations/indexes';
 import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
@@ -185,6 +185,114 @@ describe('operations', () => {
         expect(() =>
           createIndexFn('films', ['title'], { nulls: 'distinct' })
         ).toThrow('The "nulls" option can only be used with unique indexes.');
+      });
+
+      describe.each([
+        {
+          title: 'inferred',
+          name: undefined,
+          indexName: 'measurements_a-b_unique_index',
+        },
+        {
+          title: 'explicit',
+          name: 'unique_measurement',
+          indexName: 'unique_measurement',
+        },
+      ])('hyphenated column with $title index name', ({ name, indexName }) => {
+        it.each([
+          { title: 'string', columns: 'a-b' },
+          { title: 'string array', columns: ['a-b'] },
+          { title: 'object array', columns: [{ name: 'a-b' }] },
+        ])('quotes the $title and preserves reversal', ({ columns }) => {
+          const options = { name, unique: true };
+
+          expect(createIndexFn('measurements', columns, options)).toBe(
+            `CREATE UNIQUE INDEX "${indexName}" ON "measurements" ("a-b");`
+          );
+          expect(createIndexFn.reverse('measurements', columns, options)).toBe(
+            `DROP INDEX "${indexName}";`
+          );
+          expect(dropIndex(options1)('measurements', columns, options)).toBe(
+            `DROP INDEX "${indexName}";`
+          );
+        });
+      });
+
+      it.each(['account-id-number', 'a--b'])(
+        'quotes a column with multiple hyphens: %s',
+        (column) => {
+          expect(
+            createIndexFn('measurements', column, { name: 'measurement_idx' })
+          ).toBe(
+            `CREATE INDEX "measurement_idx" ON "measurements" ("${column}");`
+          );
+        }
+      );
+
+      it.each([
+        {
+          title: 'without decamelization',
+          options: options1,
+          schema: 'mySchema',
+          table: 'myTable',
+          column: 'camelCase-id',
+          opclass: 'intOps',
+        },
+        {
+          title: 'with decamelization',
+          options: options2,
+          schema: 'my_schema',
+          table: 'my_table',
+          column: 'camel_case-id',
+          opclass: 'int_ops',
+        },
+      ])(
+        'preserves schema, operator class and sort $title',
+        ({ options, schema, table, column, opclass }) => {
+          const create = createIndex(options);
+          const tableName = { schema: 'mySchema', name: 'myTable' };
+          const columns = [
+            {
+              name: 'camelCase-id',
+              opclass: { schema: 'mySchema', name: 'intOps' },
+              sort: 'DESC' as const,
+            },
+          ];
+
+          expect(create(tableName, columns, { unique: true })).toBe(
+            `CREATE UNIQUE INDEX "${table}_${column}_unique_index" ON "${schema}"."${table}" ("${column}" "${schema}"."${opclass}" DESC);`
+          );
+          expect(create.reverse(tableName, columns, { unique: true })).toBe(
+            `DROP INDEX "${schema}"."${table}_${column}_unique_index";`
+          );
+        }
+      );
+
+      it.each([
+        ['a - b', '(a - b)'],
+        ['(a-b)', '(a-b)'],
+        ['"a-b"', '("a-b")'],
+        ['a*b', '(a*b)'],
+        ['a+b', '(a+b)'],
+        ['a/b', '(a/b)'],
+      ])(
+        'preserves explicit expressions and quoted columns: %s',
+        (column, sql) => {
+          expect(
+            createIndexFn('measurements', column, { name: 'measurement_idx' })
+          ).toBe(`CREATE INDEX "measurement_idx" ON "measurements" (${sql});`);
+        }
+      );
+
+      it('preserves subtraction in a PgLiteral', () => {
+        expect(
+          createIndexFn(
+            'measurements',
+            // @ts-expect-error: PgLiteral columns are supported at runtime
+            PgLiteral.create('(a-b)'),
+            { name: 'measurement_idx' }
+          )
+        ).toBe('CREATE INDEX "measurement_idx" ON "measurements" ((a-b));');
       });
 
       it('should create index with JSON operator expression', () => {

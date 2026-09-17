@@ -16,6 +16,11 @@
 | `columns`   | `string` or `array[string]` | columns to add to the index with optional operator class and sort |
 | `options`   | `object`                    | Check below for available options                                 |
 
+Bare hyphenated names such as `a-b` are quoted as column identifiers, including
+when passed as `[{ name: 'a-b' }]`. To index subtraction instead, use `a - b` or
+`(a-b)` and provide an explicit index name. Function calls, JSON expressions, and
+other supported index expressions retain their existing behavior.
+
 #### Options
 
 | Option         | Type                        | Description                                                               |
@@ -36,6 +41,19 @@
 ```ts [single column]
 pgm.createIndex('table', 'column');
 //expected output: CREATE INDEX ON "table" ("column")
+```
+
+```ts [hyphenated column]
+pgm.createIndex('measurements', 'a-b', {
+  name: 'unique_measurement',
+  unique: true,
+});
+// CREATE UNIQUE INDEX "unique_measurement" ON "measurements" ("a-b");
+```
+
+```ts [subtraction expression]
+pgm.createIndex('measurements', '(a-b)', { name: 'measurement_difference' });
+// CREATE INDEX "measurement_difference" ON "measurements" ((a-b));
 ```
 
 ```ts [multiple columns]

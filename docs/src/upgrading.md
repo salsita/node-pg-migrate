@@ -7,6 +7,18 @@ major versions of `node-pg-migrate`.
 
 ### Breaking changes
 
+#### Hyphenated index columns are quoted as identifiers
+
+`createIndex('measurements', 'a-b')` now indexes the column `"a-b"` instead of
+the subtraction expression `a - b`. This also applies to `[{ name: 'a-b' }]`.
+If a migration intentionally indexes subtraction, use `a - b` or `(a-b)` with
+an explicit index name. The explicitly quoted `"a-b"` workaround remains valid.
+
+Upgrading does not rebuild indexes that were already created on the wrong
+expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplicate
+column values, and use a new corrective migration to drop and recreate the
+intended unique index. See [Index Operations](./migrations/indexes).
+
 #### The CLI now uses subcommands
 
 The command-line parser was rewritten around idiomatic subcommands. Options now
