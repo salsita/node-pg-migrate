@@ -21,10 +21,9 @@
 > as column identifiers. This includes `a-b` and `[{ name: 'a-b' }]`.
 > Other unquoted inputs are treated as SQL expressions, with parentheses added
 > when needed: `a+b`, `a*b`, `a/b` and `a - b` remain expressions.
-> To make subtraction explicit, use `(a-b)`; an explicit index name is recommended
-> for string expressions, but is not required. The explicitly quoted `"a-b"`
-> workaround still indexes the column. Function calls and JSON expressions retain
-> their existing behavior.
+> To make subtraction explicit, use `a - b` or `(a-b)`; an explicit index name is
+> recommended for string expressions, but is not required. Function calls and JSON
+> expressions retain their existing behavior.
 
 #### Options
 
