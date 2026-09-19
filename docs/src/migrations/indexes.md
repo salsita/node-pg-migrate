@@ -16,6 +16,15 @@
 | `columns`   | `string` or `array[string]` | columns to add to the index with optional operator class and sort |
 | `options`   | `object`                    | Check below for available options                                 |
 
+> [!NOTE]
+> Bare names containing only ASCII letters, digits, `_`, `.` and `-` are quoted
+> as column identifiers. This includes `a-b` and `[{ name: 'a-b' }]`.
+> Other unquoted inputs are treated as SQL expressions, with parentheses added
+> when needed: `a+b`, `a*b`, `a/b` and `a - b` remain expressions.
+> To make subtraction explicit, use `a - b` or `(a-b)`; an explicit index name is
+> recommended for string expressions, but is not required. Function calls and JSON
+> expressions retain their existing behavior.
+
 #### Options
 
 | Option         | Type                        | Description                                                               |
@@ -36,6 +45,19 @@
 ```ts [single column]
 pgm.createIndex('table', 'column');
 //expected output: CREATE INDEX ON "table" ("column")
+```
+
+```ts [hyphenated column]
+pgm.createIndex('measurements', 'a-b', {
+  name: 'unique_measurement',
+  unique: true,
+});
+//expected output: CREATE UNIQUE INDEX "unique_measurement" ON "measurements" ("a-b")
+```
+
+```ts [subtraction expression]
+pgm.createIndex('measurements', '(a-b)', { name: 'measurement_difference' });
+//expected output: CREATE INDEX "measurement_difference" ON "measurements" ((a-b))
 ```
 
 ```ts [multiple columns]

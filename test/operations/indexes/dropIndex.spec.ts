@@ -18,6 +18,13 @@ describe('operations', () => {
         expect(statement).toBe('DROP INDEX "title_idx__index";');
       });
 
+      it('drops a hyphenated index using the name generated in v9', () => {
+        // v9 indexed (a-b), but inferred this name from the original column input.
+        expect(dropIndexFn('measurements', 'a-b', { unique: true })).toBe(
+          'DROP INDEX "measurements_a-b_unique_index";'
+        );
+      });
+
       it('should return sql statement with dropOptions', () => {
         const statement = dropIndexFn('title_idx', [], {
           concurrently: true,

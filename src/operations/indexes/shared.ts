@@ -74,8 +74,11 @@ export function generateColumnString(
   }
 
   const name = mOptions.schemalize(column);
-  const isExpression = /[^\w".]/.test(name);
-  if (!isExpression) {
+  // Bare hyphenated names are identifiers. Keep quotes and hyphens in separate
+  // patterns so that already quoted names like '"a-b"' stay on the expression
+  // path: literal() would escape their quotes again.
+  const isIdentifier = /^[\w".]*$/.test(name) || /^[\w.-]+$/.test(name);
+  if (isIdentifier) {
     return mOptions.literal(name);
   }
 
