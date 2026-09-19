@@ -74,10 +74,11 @@ export function generateColumnString(
   }
 
   const name = mOptions.schemalize(column);
-  const isExpression = /[^\w".]/.test(name);
-  // Bare hyphenated names are identifiers. Subtraction can use spaces or
-  // parentheses; explicitly quoted columns keep their existing expression path.
-  if (!isExpression || /^[\w.-]+$/.test(name)) {
+  // Bare hyphenated names are identifiers. Keep quotes and hyphens in separate
+  // patterns so that already quoted names like '"a-b"' stay on the expression
+  // path: literal() would escape their quotes again.
+  const isIdentifier = /^[\w".]*$/.test(name) || /^[\w.-]+$/.test(name);
+  if (isIdentifier) {
     return mOptions.literal(name);
   }
 

@@ -16,10 +16,15 @@
 | `columns`   | `string` or `array[string]` | columns to add to the index with optional operator class and sort |
 | `options`   | `object`                    | Check below for available options                                 |
 
-Bare hyphenated names such as `a-b` are quoted as column identifiers, including
-when passed as `[{ name: 'a-b' }]`. To index subtraction instead, use `a - b` or
-`(a-b)` and provide an explicit index name. Function calls, JSON expressions, and
-other supported index expressions retain their existing behavior.
+> [!NOTE]
+> Bare names containing only ASCII letters, digits, `_`, `.` and `-` are quoted
+> as column identifiers. This includes `a-b` and `[{ name: 'a-b' }]`.
+> Other unquoted inputs are treated as SQL expressions, with parentheses added
+> when needed: `a+b`, `a*b`, `a/b` and `a - b` remain expressions.
+> To make subtraction explicit, use `(a-b)`; an explicit index name is recommended
+> for string expressions, but is not required. The explicitly quoted `"a-b"`
+> workaround still indexes the column. Function calls and JSON expressions retain
+> their existing behavior.
 
 #### Options
 
@@ -48,12 +53,12 @@ pgm.createIndex('measurements', 'a-b', {
   name: 'unique_measurement',
   unique: true,
 });
-// CREATE UNIQUE INDEX "unique_measurement" ON "measurements" ("a-b");
+//expected output: CREATE UNIQUE INDEX "unique_measurement" ON "measurements" ("a-b")
 ```
 
 ```ts [subtraction expression]
 pgm.createIndex('measurements', '(a-b)', { name: 'measurement_difference' });
-// CREATE INDEX "measurement_difference" ON "measurements" ((a-b));
+//expected output: CREATE INDEX "measurement_difference" ON "measurements" ((a-b))
 ```
 
 ```ts [multiple columns]

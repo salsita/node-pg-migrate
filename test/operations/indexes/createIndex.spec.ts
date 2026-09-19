@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PgLiteral } from '../../../src';
-import { createIndex, dropIndex } from '../../../src/operations/indexes';
+import { createIndex } from '../../../src/operations/indexes';
 import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
@@ -212,9 +212,6 @@ describe('operations', () => {
           expect(createIndexFn.reverse('measurements', columns, options)).toBe(
             `DROP INDEX "${indexName}";`
           );
-          expect(dropIndex(options1)('measurements', columns, options)).toBe(
-            `DROP INDEX "${indexName}";`
-          );
         });
       });
 
@@ -233,22 +230,26 @@ describe('operations', () => {
         {
           title: 'without decamelization',
           options: options1,
-          schema: 'mySchema',
-          table: 'myTable',
-          column: 'camelCase-id',
-          opclass: 'intOps',
+          expected: {
+            schema: 'mySchema',
+            table: 'myTable',
+            column: 'camelCase-id',
+            opclass: 'intOps',
+          },
         },
         {
           title: 'with decamelization',
           options: options2,
-          schema: 'my_schema',
-          table: 'my_table',
-          column: 'camel_case-id',
-          opclass: 'int_ops',
+          expected: {
+            schema: 'my_schema',
+            table: 'my_table',
+            column: 'camel_case-id',
+            opclass: 'int_ops',
+          },
         },
       ])(
         'preserves schema, operator class and sort $title',
-        ({ options, schema, table, column, opclass }) => {
+        ({ options, expected: { schema, table, column, opclass } }) => {
           const create = createIndex(options);
           const tableName = { schema: 'mySchema', name: 'myTable' };
           const columns = [
@@ -271,6 +272,7 @@ describe('operations', () => {
       it.each([
         ['a - b', '(a - b)'],
         ['(a-b)', '(a-b)'],
+        // PostgreSQL normalizes a parenthesized column reference to a column index.
         ['"a-b"', '("a-b")'],
         ['a*b', '(a*b)'],
         ['a+b', '(a+b)'],

@@ -89,7 +89,7 @@ describe.each(PG_VERSIONS)(
       { title: 'string', columns: '"a-b"' },
       { title: 'object', columns: '[{ name: "a-b" }]' },
     ])(
-      'enforces uniqueness and reverses a $title column',
+      'enforces uniqueness and reverses a $title-form column',
       async ({ columns }) => {
         await writeFile(
           join(dir, `${migrationName}.mjs`),

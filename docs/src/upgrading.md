@@ -7,18 +7,6 @@ major versions of `node-pg-migrate`.
 
 ### Breaking changes
 
-#### Hyphenated index columns are quoted as identifiers
-
-`createIndex('measurements', 'a-b')` now indexes the column `"a-b"` instead of
-the subtraction expression `a - b`. This also applies to `[{ name: 'a-b' }]`.
-If a migration intentionally indexes subtraction, use `a - b` or `(a-b)` with
-an explicit index name. The explicitly quoted `"a-b"` workaround remains valid.
-
-Upgrading does not rebuild indexes that were already created on the wrong
-expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplicate
-column values, and use a new corrective migration to drop and recreate the
-intended unique index. See [Index Operations](./migrations/indexes).
-
 #### The CLI now uses subcommands
 
 The command-line parser was rewritten around idiomatic subcommands. Options now
@@ -145,6 +133,25 @@ The migrations table and its primary key are now looked up in the system catalog
 `information_schema`, which only lists objects the connected role holds privileges on. A role
 without privileges on an existing migrations table now gets the database's permissions error
 instead of `relation "pgmigrations" already exists`.
+
+#### Hyphenated index columns are quoted as identifiers
+
+`createIndex('measurements', 'a-b')` now indexes the column `"a-b"` instead of
+the subtraction expression `a - b`. This also applies to `[{ name: 'a-b' }]`.
+If a migration intentionally indexes subtraction, use `a - b` or `(a-b)`.
+We recommend an explicit index name for string expressions, but it is optional.
+The explicitly quoted `"a-b"` workaround remains valid.
+
+Generated index names are unchanged. For example, an index created in v9 with
+`createIndex('measurements', 'a-b', { unique: true })` is still named
+`measurements_a-b_unique_index`. Both
+`dropIndex('measurements', 'a-b', { unique: true })` and the original migration's
+automatic reversal continue to target that index.
+
+Upgrading does not rebuild indexes that were already created on the wrong
+expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplicate
+column values, and use a new corrective migration to drop and recreate the
+intended unique index. See [Index Operations](migrations/indexes).
 
 ## From v8 to v9
 
