@@ -44,6 +44,7 @@ await runner({
 With this configuration:
 
 - `001_init.up.sql` + `001_init.down.sql` are treated as one migration (`001_init`)
+- The final SQL extension is case-insensitive: `001_init.up.SQL` + `001_init.down.SqL` also form one migration. The `.up` and `.down` direction tokens must remain lowercase; filename stems and source paths retain their case.
 - The migration `id` is normalized to the equivalent `.sql` form (`001_init.up.sql` / `001_init.down.sql` -> `001_init.sql`). This means you can switch from a single `001_init.sql` migration to split `.up/.down` files (or vice versa) without creating a second entry in `migrationsTable`.
 - `001_init.sql` still works as a single-file SQL migration
 - mixing `001_init.sql` with `001_init.up.sql` / `001_init.down.sql` throws an error

@@ -204,7 +204,7 @@ interface SqlGroup {
  * @returns The parsed file.
  */
 function parseSqlFile(filePath: string): ParsedSqlFile {
-  const name = basename(filePath, '.sql');
+  const name = basename(filePath).replace(/\.sql$/i, '');
 
   if (name.endsWith('.up')) {
     return {
@@ -301,7 +301,7 @@ function sqlGroupId(group: SqlGroup): string {
     throw new Error(`No SQL file found for group ${group.id}`);
   }
 
-  return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
+  return group.single ?? filePath.replace(/\.(?:up|down)\.sql$/i, '.sql');
 }
 
 /**

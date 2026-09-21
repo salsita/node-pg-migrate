@@ -2,8 +2,9 @@ import { readdirSync } from 'node:fs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getMigrationFilePaths } from '../src/migration';
+import type { MigrationBuilder } from '../src/migrationBuilder';
 import type {
   MigrationLoader,
   MigrationLoaderConfig,
@@ -11,8 +12,15 @@ import type {
 } from '../src/migrationLoader';
 import { loadMigrationUnits } from '../src/migrationLoader';
 
+const sqlExtensions = [
+  ['sql', 'sql'],
+  ['SQL', 'SQL'],
+  ['SqL', 'sQl'],
+  ['sql', 'SQL'],
+];
+
 async function withTempDir<T>(run: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), 'npm-migration-loader-test-'));
+  const dir = await mkdtemp(join(tmpdir(), 'npm-Migration-Loader-test-'));
   try {
     return await run(dir);
   } finally {
@@ -31,71 +39,168 @@ async function writeMigrationFile(
 }
 
 describe('loadMigrationUnits', () => {
-  it('keeps legacy SQL behavior by default (.up/.down are separate migrations)', async () => {
-    await withTempDir(async (dir) => {
-      const upPath = await writeMigrationFile(
-        dir,
-        '001_create_users.up.sql',
-        '-- up migration\nCREATE TABLE users(id serial primary key);\n'
+  it.each(sqlExtensions)(
+    'keeps legacy SQL behavior for .up.%s / .down.%s by default',
+    async (upExtension, downExtension) => {
+      await withTempDir(async (dir) => {
+        const upPath = await writeMigrationFile(
+          dir,
+          `001_create_users.up.${upExtension}`,
+          '-- up migration\nCREATE TABLE users(id serial primary key);\n'
+        );
+        const downPath = await writeMigrationFile(
+          dir,
+          `001_create_users.down.${downExtension}`,
+          '-- down migration\nDROP TABLE users;\n'
+        );
+
+        const units = await loadMigrationUnits({}, [upPath, downPath]);
+
+        expect(units).toHaveLength(2);
+        expect(units.map((u) => u.id)).toEqual([downPath, upPath].toSorted());
+        expect(units.every((u) => u.filePaths.length === 1)).toBe(true);
+      });
+    }
+  );
+
+  it.each(sqlExtensions)(
+    'groups .up.%s / .down.%s with their own SQL actions',
+    async (upExtension, downExtension) => {
+      await withTempDir(async (dir) => {
+        const upSql = 'CREATE TABLE users(id serial primary key);\n';
+        const downSql = 'DROP TABLE users;\n';
+        const upPath = await writeMigrationFile(
+          dir,
+          `001_Create_Users.up.${upExtension}`,
+          upSql
+        );
+        const downPath = await writeMigrationFile(
+          dir,
+          `001_Create_Users.down.${downExtension}`,
+          downSql
+        );
+
+        const config: MigrationLoaderConfig = {
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        };
+
+        const units = await loadMigrationUnits(config, [downPath, upPath]);
+
+        expect(units).toHaveLength(1);
+        expect(units[0].id).toBe(join(dir, '001_Create_Users.sql'));
+        expect(units[0].filePaths).toEqual([upPath, downPath]);
+        expect(units[0].actions.up).toBeTypeOf('function');
+        expect(units[0].actions.down).toBeTypeOf('function');
+
+        const sql = vi.fn();
+        const pgm = { sql } as unknown as MigrationBuilder;
+        const { up, down } = units[0].actions;
+        if (up) {
+          await up(pgm);
+        }
+        expect(sql).toHaveBeenCalledExactlyOnceWith(upSql);
+        sql.mockClear();
+        if (down) {
+          await down(pgm);
+        }
+        expect(sql).toHaveBeenCalledExactlyOnceWith(downSql);
+      });
+    }
+  );
+
+  it.each(['sql', 'SQL', 'SqL'])(
+    'rejects .down.%s without a matching up file',
+    async (extension) => {
+      await withTempDir(async (dir) => {
+        const downPath = await writeMigrationFile(
+          dir,
+          `001_create_users.down.${extension}`,
+          'DROP TABLE users;\n'
+        );
+
+        const config: MigrationLoaderConfig = {
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        };
+
+        await expect(loadMigrationUnits(config, [downPath])).rejects.toThrow(
+          'Found .down.sql without matching .up.sql for 001_create_users'
+        );
+      });
+    }
+  );
+
+  it.each(['up', 'down', 'single'])(
+    'rejects duplicate %s files with different extension case before reading them',
+    async (direction) => {
+      const suffix = direction === 'single' ? '' : `.${direction}`;
+      const paths = [
+        join('migrations', `001_init${suffix}.sql`),
+        join('migrations', `001_init${suffix}.SQL`),
+      ];
+
+      await expect(
+        loadMigrationUnits(
+          {
+            migrationLoaderStrategies: [
+              { extensions: ['.sql'], loader: 'sql' },
+            ],
+          },
+          paths
+        )
+      ).rejects.toThrow(`Duplicate ${suffix}.sql for 001_init`);
+    }
+  );
+
+  it.each(sqlExtensions)(
+    'rejects single .%s mixed with split .%s files',
+    async (singleExtension, splitExtension) => {
+      const paths = [
+        join('migrations', `001_init.${singleExtension}`),
+        join('migrations', `001_init.up.${splitExtension}`),
+        join('migrations', `001_init.down.${splitExtension}`),
+      ];
+
+      await expect(
+        loadMigrationUnits(
+          {
+            migrationLoaderStrategies: [
+              { extensions: ['.sql'], loader: 'sql' },
+            ],
+          },
+          paths
+        )
+      ).rejects.toThrow(
+        'Conflicting SQL migration files for 001_init: cannot mix .sql with .up/.down'
       );
-      const downPath = await writeMigrationFile(
-        dir,
-        '001_create_users.down.sql',
-        '-- down migration\nDROP TABLE users;\n'
-      );
+    }
+  );
 
-      const units = await loadMigrationUnits({}, [upPath, downPath]);
+  it.each([
+    '001_Init.SQL',
+    '001_Init.SqL',
+    '001_Init.UP.SQL',
+    '001_Init.DOWN.SqL',
+  ])(
+    'preserves the standalone path and direction-token case for %s',
+    async (fileName) => {
+      await withTempDir(async (dir) => {
+        const path = await writeMigrationFile(dir, fileName, 'SELECT 1;');
+        const units = await loadMigrationUnits(
+          {
+            migrationLoaderStrategies: [
+              { extensions: ['.sql'], loader: 'sql' },
+            ],
+          },
+          [path]
+        );
 
-      expect(units).toHaveLength(2);
-      expect(units.map((u) => u.id)).toEqual([downPath, upPath].toSorted());
-      expect(units.every((u) => u.filePaths.length === 1)).toBe(true);
-    });
-  });
-
-  it('groups .up/.down SQL files when the new sql loader is configured', async () => {
-    await withTempDir(async (dir) => {
-      const upPath = await writeMigrationFile(
-        dir,
-        '001_create_users.up.sql',
-        'CREATE TABLE users(id serial primary key);\n'
-      );
-      const downPath = await writeMigrationFile(
-        dir,
-        '001_create_users.down.sql',
-        'DROP TABLE users;\n'
-      );
-
-      const config: MigrationLoaderConfig = {
-        migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
-      };
-
-      const units = await loadMigrationUnits(config, [upPath, downPath]);
-
-      expect(units).toHaveLength(1);
-      expect(units[0].id).toBe(join(dir, '001_create_users.sql'));
-      expect(units[0].filePaths).toEqual([upPath, downPath]);
-      expect(units[0].actions.up).toBeTypeOf('function');
-      expect(units[0].actions.down).toBeTypeOf('function');
-    });
-  });
-
-  it('throws when sql loader sees .down.sql without matching .up.sql', async () => {
-    await withTempDir(async (dir) => {
-      const downPath = await writeMigrationFile(
-        dir,
-        '001_create_users.down.sql',
-        'DROP TABLE users;\n'
-      );
-
-      const config: MigrationLoaderConfig = {
-        migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
-      };
-
-      await expect(loadMigrationUnits(config, [downPath])).rejects.toThrow(
-        'Found .down.sql without matching .up.sql for 001_create_users'
-      );
-    });
-  });
+        expect(units).toHaveLength(1);
+        expect(units[0].id).toBe(path);
+        expect(units[0].filePaths).toEqual([path]);
+        expect(units[0].actions.down).toBe(false);
+      });
+    }
+  );
 
   it('uses custom loader only for matched extension buckets', async () => {
     await withTempDir(async (dir) => {
@@ -229,27 +334,30 @@ describe('loadMigrationUnits', () => {
     });
   });
 
-  it('groups .up.sql-only (no .down.sql) into a single migration with undefined down action', async () => {
-    await withTempDir(async (dir) => {
-      const upPath = await writeMigrationFile(
-        dir,
-        '001_create_users.up.sql',
-        'CREATE TABLE users(id serial primary key);\n'
-      );
+  it.each(['sql', 'SQL', 'SqL'])(
+    'loads .up.%s alone with a normalized ID and undefined down action',
+    async (extension) => {
+      await withTempDir(async (dir) => {
+        const upPath = await writeMigrationFile(
+          dir,
+          `001_create_users.up.${extension}`,
+          'CREATE TABLE users(id serial primary key);\n'
+        );
 
-      const config: MigrationLoaderConfig = {
-        migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
-      };
+        const config: MigrationLoaderConfig = {
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        };
 
-      const units = await loadMigrationUnits(config, [upPath]);
+        const units = await loadMigrationUnits(config, [upPath]);
 
-      expect(units).toHaveLength(1);
-      expect(units[0].id).toBe(join(dir, '001_create_users.sql'));
-      expect(units[0].filePaths).toEqual([upPath]);
-      expect(units[0].actions.up).toBeTypeOf('function');
-      expect(units[0].actions.down).toBeUndefined();
-    });
-  });
+        expect(units).toHaveLength(1);
+        expect(units[0].id).toBe(join(dir, '001_create_users.sql'));
+        expect(units[0].filePaths).toEqual([upPath]);
+        expect(units[0].actions.up).toBeTypeOf('function');
+        expect(units[0].actions.down).toBeUndefined();
+      });
+    }
+  );
 
   it('sorts cockroach files up to 062 in numeric order and keeps 062_view before 062_view_test', async () => {
     const customLoader: MigrationLoader = (filePaths) =>
