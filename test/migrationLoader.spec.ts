@@ -20,7 +20,7 @@ const sqlExtensions = [
 ];
 
 async function withTempDir<T>(run: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await mkdtemp(join(tmpdir(), 'npm-Migration-Loader-test-'));
+  const dir = await mkdtemp(join(tmpdir(), 'npm-migration-loader-test-'));
   try {
     return await run(dir);
   } finally {
@@ -175,32 +175,71 @@ describe('loadMigrationUnits', () => {
     }
   );
 
-  it.each([
-    '001_Init.SQL',
-    '001_Init.SqL',
-    '001_Init.UP.SQL',
-    '001_Init.DOWN.SqL',
-  ])(
-    'preserves the standalone path and direction-token case for %s',
-    async (fileName) => {
-      await withTempDir(async (dir) => {
-        const path = await writeMigrationFile(dir, fileName, 'SELECT 1;');
-        const units = await loadMigrationUnits(
-          {
-            migrationLoaderStrategies: [
-              { extensions: ['.sql'], loader: 'sql' },
-            ],
-          },
-          [path]
-        );
+  describe.each(['sql', 'SQL', 'SqL'])('SQL extension .%s', (extension) => {
+    it.each(['UP', 'Up', 'uP', 'DOWN', 'Down', 'dOwN'])(
+      'rejects direction token .%s before reading files',
+      async (direction) => {
+        const fileName = `001_Init.${direction}.${extension}`;
 
-        expect(units).toHaveLength(1);
-        expect(units[0].id).toBe(path);
-        expect(units[0].filePaths).toEqual([path]);
-        expect(units[0].actions.down).toBe(false);
+        await expect(
+          loadMigrationUnits(
+            {
+              migrationLoaderStrategies: [
+                { extensions: ['.sql'], loader: 'sql' },
+              ],
+            },
+            [join('migrations', fileName)]
+          )
+        ).rejects.toThrow(`Direction token must be lowercase: ${fileName}`);
+      }
+    );
+  });
+
+  it.each(['default', 'legacySql'] as const)(
+    'keeps uppercase direction tokens unchanged with the %s SQL loader',
+    async (loader) => {
+      await withTempDir(async (dir) => {
+        const paths = [
+          await writeMigrationFile(dir, '001_Init.UP.SQL', 'SELECT 1;'),
+          await writeMigrationFile(dir, '001_Init.DOWN.SqL', 'SELECT 2;'),
+        ];
+        const config: MigrationLoaderConfig =
+          loader === 'default'
+            ? {}
+            : {
+                migrationLoaderStrategies: [{ extensions: ['.sql'], loader }],
+              };
+
+        const units = await loadMigrationUnits(config, paths);
+        expect(units.map(({ id }) => id)).toEqual(paths.toSorted());
+        expect(units.map(({ filePaths }) => filePaths)).toEqual(
+          paths.toSorted().map((path) => [path])
+        );
       });
     }
   );
+
+  it.each([
+    '001_Init.SQL',
+    '001_Init.SqL',
+    '001_UP_Init.SQL',
+    '001_Init.DOWN.backup.SqL',
+  ])('preserves the standalone path for %s', async (fileName) => {
+    await withTempDir(async (dir) => {
+      const path = await writeMigrationFile(dir, fileName, 'SELECT 1;');
+      const units = await loadMigrationUnits(
+        {
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        },
+        [path]
+      );
+
+      expect(units).toHaveLength(1);
+      expect(units[0].id).toBe(path);
+      expect(units[0].filePaths).toEqual([path]);
+      expect(units[0].actions.down).toBe(false);
+    });
+  });
 
   it('uses custom loader only for matched extension buckets', async () => {
     await withTempDir(async (dir) => {

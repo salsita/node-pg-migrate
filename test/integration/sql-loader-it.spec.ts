@@ -166,5 +166,94 @@ describe.each(PG_VERSIONS)(
         expect(await history()).toEqual([]);
       }
     );
+
+    it.each(['UP.SQL', 'Down.SqL', 'dOwN.sql'])(
+      'rejects .%s before changing data or history',
+      async (suffix) => {
+        await writeFile(join(dir, `${migrationName}.sql`), upSql);
+        await runner(options);
+        await client.query('INSERT INTO sql_loader.example VALUES (1)');
+        const recorded = await history();
+        const fileName = `2000000000000_Invalid.${suffix}`;
+        await writeFile(join(dir, fileName), downSql);
+
+        await expect(runner(options)).rejects.toThrow(
+          `Direction token must be lowercase: ${fileName}`
+        );
+
+        expect(await history()).toEqual(recorded);
+        expect(
+          (await client.query('SELECT id FROM sql_loader.example')).rows
+        ).toEqual([{ id: 1 }]);
+      }
+    );
+
+    it.each([false, true])(
+      'preserves manually corrected history (paired: %s)',
+      async (paired) => {
+        await writeFile(
+          join(dir, `${migrationName}.up.SQL`),
+          'CREATE TABLE IF NOT EXISTS sql_loader.example (id integer);\n' +
+            'INSERT INTO sql_loader.example VALUES (1);'
+        );
+        if (paired) {
+          await writeFile(
+            join(dir, `${migrationName}.down.SQL`),
+            'DROP TABLE IF EXISTS sql_loader.example;'
+          );
+        }
+
+        // Legacy loading reproduces the separate names recorded by the old
+        // grouped loader for uppercase extensions.
+        await runner({
+          ...options,
+          migrationLoaderStrategies: [
+            { extensions: ['.sql'], loader: 'legacySql' },
+          ],
+        });
+        const recorded = await history();
+        expect(recorded.map(({ name }) => name)).toEqual(
+          paired
+            ? [`${migrationName}.down`, `${migrationName}.up`]
+            : [`${migrationName}.up`]
+        );
+
+        await expect(runner(options)).rejects.toThrow(
+          `Not run migration ${migrationName} is preceding already run migration`
+        );
+        expect(await history()).toEqual(recorded);
+
+        // Apply the documented manual correction to these known history rows.
+        await client.query(
+          'UPDATE sql_loader.pgmigrations SET name = $1 WHERE name = $2',
+          [migrationName, `${migrationName}.up`]
+        );
+        if (paired) {
+          await client.query(
+            'DELETE FROM sql_loader.pgmigrations WHERE name = $1',
+            [`${migrationName}.down`]
+          );
+        }
+
+        expect(await runner(options)).toEqual([]);
+        expect(await history()).toEqual([
+          {
+            ...recorded.find(({ name }) => name === `${migrationName}.up`),
+            name: migrationName,
+          },
+        ]);
+        expect(
+          (await client.query('SELECT id FROM sql_loader.example')).rows
+        ).toEqual([{ id: 1 }]);
+
+        if (!paired) {
+          await writeFile(join(dir, `${migrationName}.down.SQL`), downSql);
+        }
+        const reverted = await runner({ ...options, direction: 'down' });
+        expect(reverted.map(({ name }) => name)).toEqual([migrationName]);
+        expect(await tableExists()).toBe(false);
+        expect(await history()).toEqual([]);
+      }
+    );
   }
 );
