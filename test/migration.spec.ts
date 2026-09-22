@@ -35,8 +35,86 @@ describe('migration', () => {
   let queryMock: Mock;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     queryMock = vi.fn();
     dbMock.query = queryMock;
+  });
+
+  describe.each(['apply', 'markAsRun'] as const)('%s bookkeeping', (method) => {
+    describe.each(['up', 'down'] as const)('%s', (direction) => {
+      it.each([
+        ["0001_user's-table", "$pga$0001_user's-table$pga$"],
+        ["0001_users''table", "$pga$0001_users''table$pga$"],
+        ["0001_' OR '1'='1", "$pga$0001_' OR '1'='1$pga$"],
+        ['0001_tag$pga$', '$pgb$0001_tag$pga$$pgb$'],
+        ['0001_tag$pga', '$pgb$0001_tag$pga$pgb$'],
+        ['0001_tag$pga$pgb', '$pgc$0001_tag$pga$pgb$pgc$'],
+      ])('should treat %s as a literal name', async (name, literal) => {
+        const migration = new Migration(
+          dbMock,
+          `${name}.cjs`,
+          { up: () => {}, down: () => {} },
+          {
+            ...options,
+            migrationsSchema: 'my"App',
+            migrationsTable: 'pg"Migrations',
+            decamelize: true,
+          },
+          {},
+          logger
+        );
+        const table = '"my""App"."pg""Migrations"';
+
+        await migration[method](direction);
+
+        expect(queryMock).toHaveBeenCalledWith(
+          direction === 'up'
+            ? `INSERT INTO ${table} (name, run_on) VALUES (${literal}, NOW());`
+            : `DELETE FROM ${table} WHERE name=${literal};`
+        );
+        expect(migration.name).toBe(name);
+      });
+
+      it('should print the escaped name without executing a dry run', async () => {
+        const migration = new Migration(
+          dbMock,
+          "0001_user's-table.cjs",
+          { up: () => {}, down: () => {} },
+          { ...options, dryRun: true },
+          {},
+          logger
+        );
+
+        await migration[method](direction);
+
+        expect(queryMock).not.toHaveBeenCalled();
+        expect(logger.info).toHaveBeenCalledWith(
+          expect.stringContaining("$pga$0001_user's-table$pga$")
+        );
+      });
+    });
+  });
+
+  it('should escape history names during automatic rollback', async () => {
+    const migration = new Migration(
+      dbMock,
+      "0001_user's-table.cjs",
+      {
+        up: (pgm) => {
+          pgm.createTable('users', { id: 'integer' });
+        },
+      },
+      options,
+      {},
+      logger
+    );
+
+    await migration.apply('down');
+
+    expect(queryMock).toHaveBeenCalledWith('DROP TABLE "users";');
+    expect(queryMock).toHaveBeenCalledWith(
+      'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_user\'s-table$pga$;'
+    );
   });
 
   describe('getMigrationFilePaths', () => {

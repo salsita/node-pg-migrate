@@ -17,10 +17,12 @@ export function escapeValue(val: Value): string | number {
     const ids = stringIdGenerator();
     let index: string;
 
+    // A trailing `$pga` can combine with the closing delimiter's first `$`
+    // to close the literal early, even without a full delimiter in the value.
     do {
       index = ids.next().value;
       dollars = `$pg${index}$`;
-    } while (val.includes(dollars));
+    } while (val.includes(dollars) || val.endsWith(dollars.slice(0, -1)));
 
     return `${dollars}${val}${dollars}`;
   }
