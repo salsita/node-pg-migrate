@@ -801,8 +801,8 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       // control: a migration reaching for `pgm.db.query('DROP TABLE ...')` is stopped by
       // the server rather than by our own honor system.
       await db.query('BEGIN');
-      await db.query('SET TRANSACTION READ ONLY');
       readOnlyTransaction = true;
+      await db.query('SET TRANSACTION READ ONLY');
     }
 
     // A dry run never writes, so it has nothing to serialize against - and it must not be
@@ -877,7 +877,13 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
           await db.query('COMMIT');
         } catch (error) {
           logger.warn('> Rolling back attempted migration ...');
-          await db.query('ROLLBACK');
+          await db.query('ROLLBACK').catch((rollbackError: unknown) => {
+            logger.warn(
+              rollbackError instanceof Error
+                ? rollbackError.message
+                : String(rollbackError)
+            );
+          });
           throw error;
         }
       }

@@ -361,7 +361,10 @@ export class Migration implements RunMigration {
 
     sqlSteps.push(this._getMarkAsRun(action));
 
-    if (!this.options.singleTransaction && pgm.isUsingTransaction()) {
+    const ownTransaction =
+      !this.options.singleTransaction && pgm.isUsingTransaction();
+
+    if (ownTransaction) {
       // if not in singleTransaction mode we need to create our own transaction
       sqlSteps.unshift('BEGIN;');
       sqlSteps.push('COMMIT;');
@@ -384,11 +387,38 @@ export class Migration implements RunMigration {
       this.logger.debug(`${sqlSteps.join('\n')}\n\n`);
     }
 
-    return sqlSteps.reduce<Promise<unknown>>(
-      (promise, sql) =>
-        promise.then((): unknown => this.options.dryRun || this.db.query(sql)),
-      Promise.resolve()
-    );
+    let transactionStarted = false;
+
+    try {
+      return await sqlSteps.reduce<Promise<unknown>>(
+        (promise, sql, index) =>
+          promise.then(async (): Promise<unknown> => {
+            if (this.options.dryRun) {
+              return true;
+            }
+
+            const result = await this.db.query(sql);
+            if (ownTransaction && index === 0) {
+              transactionStarted = true;
+            }
+            return result;
+          }),
+        Promise.resolve()
+      );
+    } catch (error) {
+      // End our transaction before the runner attempts to release its session lock.
+      // A failed BEGIN or a transaction owned by the runner needs no local rollback.
+      if (transactionStarted) {
+        await this.db.query('ROLLBACK;').catch((rollbackError: unknown) => {
+          this.logger.warn(
+            rollbackError instanceof Error
+              ? rollbackError.message
+              : String(rollbackError)
+          );
+        });
+      }
+      throw error;
+    }
   }
 
   _getAction(direction: MigrationDirection): MigrationAction {

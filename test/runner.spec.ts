@@ -27,6 +27,115 @@ const OTHER_MIGRATIONS_TABLES_IN_LIST = OTHER_MIGRATIONS_TABLES.replace(
 );
 
 describe('runner', () => {
+  describe('transaction cleanup', () => {
+    function setup(failedSql: string, rollbackError?: unknown) {
+      const error = new Error('original failure');
+      const rejectRollback = vi.fn().mockRejectedValue(rollbackError);
+      const query = vi.fn((sql: string) => {
+        if (sql.startsWith(failedSql)) {
+          return Promise.reject(error);
+        }
+        if (sql === 'ROLLBACK' && rollbackError !== undefined) {
+          return rejectRollback();
+        }
+        if (sql.includes('pg_try_advisory_lock')) {
+          return Promise.resolve({ rows: [{ lockObtained: true }] });
+        }
+        if (sql.includes('pg_advisory_unlock')) {
+          return Promise.resolve({ rows: [{ lockReleased: true }] });
+        }
+        return Promise.resolve({ rows: [] });
+      });
+      const end = vi.fn();
+      const dbClient = { query, end } as unknown as ClientBase;
+      const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+      const run = (options: Partial<RunnerOptionConfig> = {}) =>
+        runner({
+          dbClient,
+          logger,
+          dir: 'test/dry-run-migrations',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          ...options,
+        });
+      return { error, query, end, logger, run };
+    }
+
+    it.each([false, undefined, true])(
+      'rolls back before unlocking (singleTransaction=%s)',
+      async (singleTransaction) => {
+        const { error, query, end, run } = setup(
+          'CREATE TABLE "dry_run_table"'
+        );
+        await expect(run({ singleTransaction })).rejects.toBe(error);
+        const cleanup = query.mock.calls
+          .map(([sql]) => sql)
+          .filter(
+            (sql) =>
+              sql.startsWith('ROLLBACK') || sql.includes('pg_advisory_unlock')
+          );
+        expect(cleanup).toEqual([
+          singleTransaction ? 'ROLLBACK' : 'ROLLBACK;',
+          'SELECT pg_advisory_unlock(7241865325823964) AS "lockReleased"',
+        ]);
+        expect(end).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([new Error('rollback failed'), 'rollback failed'])(
+      'preserves the original error if global rollback fails with %s',
+      async (rollbackError) => {
+        const { error, query, end, logger, run } = setup(
+          'CREATE TABLE "dry_run_table"',
+          rollbackError
+        );
+        await expect(run({ singleTransaction: true })).rejects.toBe(error);
+        expect(logger.warn).toHaveBeenCalledWith('rollback failed');
+        expect(query).toHaveBeenLastCalledWith(
+          'SELECT pg_advisory_unlock(7241865325823964) AS "lockReleased"',
+          undefined
+        );
+        expect(end).not.toHaveBeenCalled();
+      }
+    );
+
+    it('does not roll back a global transaction that failed to start', async () => {
+      const { error, query, run } = setup('BEGIN');
+      await expect(run({ singleTransaction: true })).rejects.toBe(error);
+      expect(query.mock.calls.map(([sql]) => sql)).not.toContain('ROLLBACK');
+    });
+
+    it.each([undefined, new Error('rollback failed'), 'rollback failed'])(
+      'cleans up a failed read-only setup and preserves its error (rollback error=%s)',
+      async (rollbackError) => {
+        const { error, query, end, logger, run } = setup(
+          'SET TRANSACTION READ ONLY',
+          rollbackError
+        );
+        await expect(run({ dryRun: true })).rejects.toBe(error);
+        expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+          "SELECT current_setting('autocommit_before_ddl', true) AS setting",
+          'BEGIN',
+          'SET TRANSACTION READ ONLY',
+          'ROLLBACK',
+        ]);
+        expect(logger.warn.mock.calls).toEqual(
+          rollbackError === undefined ? [] : [['rollback failed']]
+        );
+        expect(end).not.toHaveBeenCalled();
+      }
+    );
+
+    it('does not roll back a dry-run transaction that failed to start', async () => {
+      const { error, query, run } = setup('BEGIN');
+      await expect(run({ dryRun: true })).rejects.toBe(error);
+      expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+        "SELECT current_setting('autocommit_before_ddl', true) AS setting",
+        'BEGIN',
+      ]);
+    });
+  });
+
   it('should return a function', () => {
     expect(runner).toBeTypeOf('function');
   });
