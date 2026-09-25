@@ -1,0 +1,13 @@
+diff --git a/dist/node/chunk-BYTgXTwz.js b/dist/node/chunk-BYTgXTwz.js
+index 94bb6c8ed28caeac6dce3c1bcc7ef6bc01de8955..596de913b792fe380d3e3e15c1918a6cde1dced7 100644
+--- a/dist/node/chunk-BYTgXTwz.js
++++ b/dist/node/chunk-BYTgXTwz.js
+@@ -22561,7 +22561,7 @@ const webfontMarkerRE = /\/(?:\*|\/) *webfont-marker-begin *(?:\*\/|\n|\r|\n\r|\
+ 			return enabled ? code.match(webfontMarkerRE)?.[1] : code.replace(webfontMarkerRE, "");
+ 		}
+ 	}
+-}), themeRE = /(?:^|\/)\.vitepress\/theme\/index\.(m|c)?(j|t)s$/, startsWithThemeRE = /^@theme(?:\/|$)/, docsearchRE = /\bdocsearch\b/, hashRE = /\.([-\w]+)\.js$/, staticInjectMarkerRE = /\bcreateStaticVNode\((?:(".*")|('.*')), (\d+)\)/g, staticStripRE = /['"`]__VP_STATIC_START__[^]*?__VP_STATIC_END__['"`]/g, staticRestoreRE = /__VP_STATIC_(START|END)__/g, scriptClientRE = /<script\b[^>]*client\b[^>]*>([^]*?)<\/script>/, isPageChunk = (chunk) => !!(chunk.type === "chunk" && chunk.isEntry && chunk.facadeModuleId?.endsWith(".md")), cleanUrl = (url) => url.replace(/[?#].*$/s, "");
++}), themeRE = /(?:^|\/)\.vitepress\/theme\/index\.(m|c)?(j|t)s$/, startsWithThemeRE = /^@theme(?:\/|$)/, docsearchRE = /\bdocsearch\b/, hashRE = /\.([-\w]+)\.js$/, staticInjectMarkerRE = /\bcreateStaticVNode\((?:("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')), (\d+)\)/g, staticStripRE = /['"`]__VP_STATIC_START__[^]*?__VP_STATIC_END__['"`]/g, staticRestoreRE = /__VP_STATIC_(START|END)__/g, scriptClientRE = /<script\b[^>]*client\b[^>]*>([^]*?)<\/script>/, isPageChunk = (chunk) => !!(chunk.type === "chunk" && chunk.isEntry && chunk.facadeModuleId?.endsWith(".md")), cleanUrl = (url) => url.replace(/[?#].*$/s, "");
+ async function createVitePressPlugin(siteConfig, ssr = !1, pageToHashMap, clientJSMap, pageMetaMap, restartServer) {
+ 	let { srcDir, configPath, configDeps, markdown, site, vue: userVuePluginOptions, vite: userViteConfig, lastUpdated, cleanUrls } = siteConfig, markdownToVue, vuePlugin = await import("@vitejs/plugin-vue").then((r) => r.default({
+ 		include: /\.(?:vue|md)$/,
