@@ -93,7 +93,7 @@
     "@shikijs/vitepress-twoslash": "4.4.3",
     "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.2",
     "@types/pg": "8.23.1",
     "@vitest/coverage-v8": "5.0.1",
     "@vitest/ui": "5.0.1",
