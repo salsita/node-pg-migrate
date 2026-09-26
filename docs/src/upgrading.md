@@ -153,6 +153,30 @@ expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplica
 column values, and use a new corrective migration to drop and recreate the
 intended unique index. See [Index Operations](migrations/indexes).
 
+#### Grouped SQL filenames and existing history
+
+With `loader: 'sql'`, uppercase and mixed-case SQL extensions now group correctly:
+`001_init.up.SQL` and `001_init.down.SqL` form one migration named `001_init`.
+The split migration ID always ends in lowercase `.sql`.
+
+Earlier versions could apply these files separately and record `001_init.up`
+and `001_init.down`. Before upgrading, inspect the affected database and your
+configured `migrationsTable` (in `migrationsSchema`, if configured). For an
+already-applied migration, rename its `001_init.up` history entry to `001_init`
+and remove its corresponding `001_init.down` entry if present. Keep the up
+entry's `id` and `run_on` values. If `001_init` is already recorded, reconcile
+the duplicate history against the database's actual state first.
+
+The loader does not rewrite history automatically. Disabling `checkOrder` does
+not correct old names and can execute an already-applied migration again.
+
+Direction tokens must also be lowercase: filenames ending in `.UP.sql`,
+`.Down.SQL`, or other non-lowercase variants now throw before migration SQL is
+read or executed. Rename those tokens to `.up` and `.down` and, if already
+applied, reconcile their case-sensitive history names using the same process.
+The default and `legacySql` loaders are unchanged. See
+[Migration Loading Strategies](migration-loading-strategies#example-use-grouped-sql-loader).
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript

@@ -204,7 +204,12 @@ interface SqlGroup {
  * @returns The parsed file.
  */
 function parseSqlFile(filePath: string): ParsedSqlFile {
-  const name = basename(filePath, '.sql');
+  const name = basename(filePath).replace(/\.sql$/i, '');
+  const direction = /\.(up|down)$/i.exec(name)?.[1];
+
+  if (direction && direction !== direction.toLowerCase()) {
+    throw new Error(`Direction token must be lowercase: ${basename(filePath)}`);
+  }
 
   if (name.endsWith('.up')) {
     return {
@@ -290,18 +295,24 @@ function groupSqlFiles(filePaths: string[]): SqlGroup[] {
  * Compatibility: when using the new grouped SQL loader (`loader: "sql"`),
  * ids are normalized so that switching representations doesn't double-track
  * migrations. Concretely, `.up.sql` / `.down.sql` map to the equivalent
- * `.sql` id (e.g. `001_init.up.sql` -> `001_init.sql`).
+ * `.sql` id (e.g. `001_init.up.SQL` -> `001_init.sql`). The extension match
+ * is case-insensitive, and split ids always end in lowercase `.sql`.
+ * Standalone file paths are returned unchanged.
  *
  * @param group - The SQL file group to get the id for.
  * @returns The group id.
  */
 function sqlGroupId(group: SqlGroup): string {
-  const filePath = group.single ?? group.up ?? group.down;
+  if (group.single) {
+    return group.single;
+  }
+
+  const filePath = group.up ?? group.down;
   if (!filePath) {
     throw new Error(`No SQL file found for group ${group.id}`);
   }
 
-  return filePath.replace(/\.up\.sql$/, '.sql').replace(/\.down\.sql$/, '.sql');
+  return filePath.replace(/\.(?:up|down)\.sql$/i, '.sql');
 }
 
 /**
