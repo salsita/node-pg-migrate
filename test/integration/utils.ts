@@ -1,6 +1,9 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { exec as processExec } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { readdir, readFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 /**
@@ -255,4 +258,321 @@ export async function cleanupDatabase(
     END $$;
   `
   );
+}
+
+/**
+ * A schema fixture: a directory in `test/fixtures/schemas` whose `*.sql` files
+ * {@link loadFixture} loads in file name order.
+ */
+export type SchemaFixture = 'pagila' | 'chinook' | 'kitchen-sink';
+
+/**
+ * Every schema fixture.
+ */
+export const SCHEMA_FIXTURES: ReadonlyArray<SchemaFixture> = [
+  'pagila',
+  'chinook',
+  'kitchen-sink',
+];
+
+const SCHEMA_FIXTURES_DIR = resolve(import.meta.dirname, '../fixtures/schemas');
+
+/**
+ * A first line like `-- requires: 18` marks a fixture file that only loads on
+ * that PostgreSQL major version or later.
+ */
+const REQUIRES_LINE = /^-- requires: (\d+)\s*$/;
+
+/**
+ * Quotes an SQL identifier.
+ *
+ * @param name The identifier.
+ *
+ * @returns The identifier in double quotes, with inner double quotes doubled.
+ */
+function quoteIdent(name: string): string {
+  return `"${name.replaceAll('"', '""')}"`;
+}
+
+/**
+ * Runs `psql` inside the container, connected to the given database through
+ * the local socket, and stops at the first error.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database to connect to.
+ * @param args More `psql` arguments, e.g. `['-c', sql]`.
+ *
+ * @returns What `psql` printed on stdout.
+ *
+ * @throws Throws an error with `psql`'s output when it exits with a non-zero
+ * code.
+ */
+async function psql(
+  container: StartedPostgreSqlContainer,
+  database: string,
+  args: ReadonlyArray<string>
+): Promise<string> {
+  const res = await container.exec([
+    'psql',
+    '-X',
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-U',
+    container.getUsername(),
+    '-d',
+    database,
+    ...args,
+  ]);
+
+  if (res.exitCode !== 0) {
+    throw new Error(
+      `psql failed in database "${database}": ${res.stderr || res.stdout}`
+    );
+  }
+
+  return res.stdout;
+}
+
+/**
+ * Creates a database in the container.
+ *
+ * @param container The PostgreSQL container.
+ * @param name The name of the new database, used as is (it gets quoted).
+ *
+ * @returns A promise that resolves once the database exists.
+ *
+ * @throws Throws an error if `CREATE DATABASE` fails, e.g. when the database
+ * already exists.
+ */
+export async function createDatabase(
+  container: StartedPostgreSqlContainer,
+  name: string
+): Promise<void> {
+  await psql(container, container.getDatabase(), [
+    '-c',
+    `CREATE DATABASE ${quoteIdent(name)}`,
+  ]);
+}
+
+/**
+ * Runs an SQL script in a database with `psql -v ON_ERROR_STOP=1 -f`.
+ *
+ * The script is copied into the container first, so it can be of any size
+ * (arguments of `psql -c` are limited) and may contain psql meta-commands such
+ * as the `\restrict` lines of recent `pg_dump` output.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database to run the script in.
+ * @param sql The SQL script.
+ *
+ * @returns A promise that resolves once the whole script ran.
+ *
+ * @throws Throws an error with `psql`'s output at the first failing statement.
+ */
+export async function loadSql(
+  container: StartedPostgreSqlContainer,
+  database: string,
+  sql: string
+): Promise<void> {
+  const target = `/tmp/pgm-load-${randomUUID()}.sql`;
+  await container.copyContentToContainer([{ content: sql, target }]);
+  try {
+    await psql(container, database, ['-q', '-f', target]);
+  } finally {
+    await container.exec(['rm', '-f', target]);
+  }
+}
+
+/**
+ * Builds a connection URL for a database in the container, reachable from the
+ * host.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database name.
+ *
+ * @returns A URL like `postgres://user:password@host:mappedPort/database`.
+ */
+export function databaseUrl(
+  container: StartedPostgreSqlContainer,
+  database: string
+): string {
+  const user = encodeURIComponent(container.getUsername());
+  const password = encodeURIComponent(container.getPassword());
+
+  return `postgres://${user}:${password}@${container.getHost()}:${container.getPort()}/${encodeURIComponent(database)}`;
+}
+
+/**
+ * The comment-only entry that `pg_dump` 15+ writes, even with `--no-owner`,
+ * for a `public` schema whose owner isn't the default `pg_database_owner`,
+ * blank lines included.
+ */
+const PUBLIC_SCHEMA_ENTRY: ReadonlyArray<string> = [
+  '--',
+  '-- Name: public; Type: SCHEMA; Schema: -; Owner: -',
+  '--',
+  '',
+  '-- *not* creating schema, since initdb creates it',
+  '',
+  '',
+];
+
+/**
+ * Dumps the schema of a database for comparisons, with the `pg_dump` inside
+ * the container, so it always matches the server version.
+ *
+ * It runs `pg_dump --schema-only --no-owner --no-privileges` without the
+ * default migrations table (`public.pgmigrations`) and its sequence. It
+ * doesn't use the code under test. It only drops what differs between dumps of
+ * identical schemas:
+ *
+ * - the `\restrict` and `\unrestrict` lines, which have random keys;
+ * - the `-- Dumped from database version` and `-- Dumped by pg_dump version`
+ *   comments;
+ * - the comment-only entry for the `public` schema (`-- *not* creating schema,
+ *   since initdb creates it`, with its `-- Name: public; Type: SCHEMA` header
+ *   and blank lines). `pg_dump` 15+ writes it only when `public` isn't owned by
+ *   `pg_database_owner`, e.g. in databases that started on PostgreSQL 14 or
+ *   earlier, or after Pagila's `ALTER SCHEMA public OWNER TO postgres`. It is
+ *   ownership leaking into `--no-owner` output. Baselines leave owners out, so
+ *   this entry would otherwise make a database and one built from its baseline
+ *   compare unequal.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database to dump.
+ *
+ * @returns The dump without those lines.
+ *
+ * @throws Throws an error with `pg_dump`'s output if it fails.
+ */
+export async function dumpSchema(
+  container: StartedPostgreSqlContainer,
+  database: string
+): Promise<string> {
+  const res = await container.exec([
+    'pg_dump',
+    '-U',
+    container.getUsername(),
+    '-d',
+    database,
+    '--schema-only',
+    '--no-owner',
+    '--no-privileges',
+    '--exclude-table="public"."pgmigrations"',
+    '--exclude-table="public"."pgmigrations_id_seq"',
+  ]);
+
+  if (res.exitCode !== 0) {
+    throw new Error(
+      `pg_dump failed for database "${database}": ${res.stderr || res.stdout}`
+    );
+  }
+
+  const lines = res.stdout
+    .split('\n')
+    .filter(
+      (line) =>
+        !line.startsWith('\\restrict ') &&
+        !line.startsWith('\\unrestrict ') &&
+        !line.startsWith('-- Dumped from database version ') &&
+        !line.startsWith('-- Dumped by pg_dump version ')
+    );
+
+  const publicEntry = lines.findIndex((_, start) =>
+    PUBLIC_SCHEMA_ENTRY.every((line, offset) => lines[start + offset] === line)
+  );
+  if (publicEntry !== -1) {
+    lines.splice(publicEntry, PUBLIC_SCHEMA_ENTRY.length);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Creates a role unless it already exists, the way a restore needs the roles
+ * that a dump refers to.
+ *
+ * @param container The PostgreSQL container.
+ * @param role The role name, used as is (it gets quoted).
+ *
+ * @returns A promise that resolves once the role exists.
+ */
+export async function ensureRole(
+  container: StartedPostgreSqlContainer,
+  role: string
+): Promise<void> {
+  const literal = `'${role.replaceAll("'", "''")}'`;
+  await psql(container, container.getDatabase(), [
+    '-c',
+    `DO $pgm$
+BEGIN
+  EXECUTE format('CREATE ROLE %I', ${literal});
+EXCEPTION
+  WHEN duplicate_object OR unique_violation THEN NULL;
+END
+$pgm$`,
+  ]);
+}
+
+/**
+ * Returns the major version of the server, e.g. `18`.
+ *
+ * @param container The PostgreSQL container.
+ *
+ * @returns The major version.
+ */
+async function serverMajor(
+  container: StartedPostgreSqlContainer
+): Promise<number> {
+  const versionNum = await psql(container, container.getDatabase(), [
+    '-At',
+    '-c',
+    'SHOW server_version_num',
+  ]);
+
+  return Math.floor(Number(versionNum.trim()) / 10_000);
+}
+
+/**
+ * Loads a schema fixture from `test/fixtures/schemas/<fixture>` into a
+ * database: its `*.sql` files, one {@link loadSql} each, in file name order.
+ *
+ * A file whose first line is `-- requires: <major>` is skipped on servers
+ * older than that major version. Pagila's dump refers to the role `postgres`,
+ * so that role is created first when it doesn't exist, the way a real restore
+ * needs its roles. Nothing else is changed: Pagila leaves `public` owned by
+ * `postgres`, see {@link dumpSchema}.
+ *
+ * @param container The PostgreSQL container.
+ * @param database The database to load the fixture into, e.g. a new one from
+ * {@link createDatabase}.
+ * @param fixture The fixture.
+ *
+ * @returns A promise that resolves once every file is loaded.
+ *
+ * @throws Throws an error with `psql`'s output if a file fails to load.
+ */
+export async function loadFixture(
+  container: StartedPostgreSqlContainer,
+  database: string,
+  fixture: SchemaFixture
+): Promise<void> {
+  if (fixture === 'pagila') {
+    await ensureRole(container, 'postgres');
+  }
+
+  const dir = join(SCHEMA_FIXTURES_DIR, fixture);
+  const files = (await readdir(dir)).filter((file) => file.endsWith('.sql'));
+  files.sort();
+
+  const major = await serverMajor(container);
+  for (const file of files) {
+    const sql = await readFile(join(dir, file), 'utf8');
+    const requires = REQUIRES_LINE.exec(sql.split('\n', 1)[0]);
+    if (requires !== null && Number(requires[1]) > major) {
+      continue;
+    }
+
+    await loadSql(container, database, sql);
+  }
 }

@@ -170,6 +170,10 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
       link: 'cli',
     },
     {
+      text: 'Adopting an Existing Database',
+      link: 'baseline',
+    },
+    {
       text: 'Programmatic API',
       link: 'api',
     },

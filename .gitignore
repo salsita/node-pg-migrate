@@ -78,6 +78,7 @@ versions.json
 
 /migrations
 /bin/*.js
+/bin/*.js.map
 /bin/*.mjs
 /bin/esm
 
