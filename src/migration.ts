@@ -388,26 +388,25 @@ export class Migration implements RunMigration {
     }
 
     let transactionStarted = false;
+    let result: unknown;
 
     try {
-      return await sqlSteps.reduce<Promise<unknown>>(
-        (promise, sql, index) =>
-          promise.then(async (): Promise<unknown> => {
-            if (this.options.dryRun) {
-              return true;
-            }
+      for (const sql of sqlSteps) {
+        if (this.options.dryRun) {
+          result = true;
+          continue;
+        }
 
-            const result = await this.db.query(sql);
-            if (ownTransaction && index === 0) {
-              transactionStarted = true;
-            }
-            return result;
-          }),
-        Promise.resolve()
-      );
+        result = await this.db.query(sql);
+        // BEGIN is the first step when this migration owns the transaction.
+        transactionStarted ||= ownTransaction;
+      }
+
+      return result;
     } catch (error) {
       // End our transaction before the runner attempts to release its session lock.
       // A failed BEGIN or a transaction owned by the runner needs no local rollback.
+      // noTransaction() SQL autocommits and also needs no local rollback.
       if (transactionStarted) {
         await this.db.query('ROLLBACK;').catch((rollbackError: unknown) => {
           this.logger.warn(
