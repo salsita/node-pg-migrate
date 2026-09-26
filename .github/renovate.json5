@@ -67,6 +67,11 @@
     {
       "groupName": "doc-dependencies",
       "matchPackageNames": ["@algolia/client-search", "vitepress"]
+    },
+    {
+      // pinned via pnpm override: the docs' Twoslash popups patch FloatingVue's Popper component, which 5.4 removed
+      "matchPackageNames": ["floating-vue"],
+      "enabled": false
     }
   ],
   "customManagers": [

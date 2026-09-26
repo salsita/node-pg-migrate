@@ -93,16 +93,16 @@
     "@shikijs/vitepress-twoslash": "4.4.3",
     "@testcontainers/postgresql": "12.1.0",
     "@types/config": "4.4.0",
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.2",
     "@types/pg": "8.23.1",
-    "@vitest/coverage-v8": "5.0.0",
-    "@vitest/ui": "5.0.0",
+    "@vitest/coverage-v8": "5.0.1",
+    "@vitest/ui": "5.0.1",
     "config": "5.0.1",
     "dotenv": "17.3.1",
     "dotenv-expand": "12.0.3",
     "node-pg-migrate": "link:.",
     "npm-run-all2": "9.0.3",
-    "oxfmt": "0.66.0",
+    "oxfmt": "0.70.0",
     "oxlint": "1.81.0",
     "oxlint-tsgolint": "7.0.2001",
     "pg": "8.23.0",
@@ -110,8 +110,8 @@
     "tsdown": "0.23.0",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",
-    "vitepress": "2.0.0-alpha.19",
-    "vitest": "5.0.0"
+    "vitepress": "2.0.0-alpha.20",
+    "vitest": "5.0.1"
   },
   "peerDependencies": {
     "@types/pg": ">=7.0.0 <9.0.0",
@@ -122,14 +122,14 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@12.4.1",
+  "packageManager": "pnpm@12.5.1",
   "engines": {
     "node": ">=22.12.0"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.4.1",
+      "version": "12.5.1",
       "onFail": "download"
     }
   }
