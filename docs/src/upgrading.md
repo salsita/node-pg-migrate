@@ -153,6 +153,21 @@ expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplica
 column values, and use a new corrective migration to drop and recreate the
 intended unique index. See [Index Operations](migrations/indexes).
 
+### Migration history corrections
+
+Migration names containing apostrophes are now recorded exactly. This does not
+repair history written by older versions: for example, `0001_users''table.cjs`
+could have been recorded as `0001_users'table`. Before running migrations after
+upgrading, compare affected files with your configured `migrationsTable` and
+the database's actual state. For a confirmed applied migration, update the
+existing row's `name` to the exact filename without its extension
+(`0001_users''table` in this example), preserving `id` and `run_on`.
+
+If the correct name is already recorded too, reconcile the duplicate entries
+first. Disabling order checking does not repair old names and can replay an
+already-applied migration. Schema changes left unrecorded by an earlier failed
+run also need manual reconciliation before retrying.
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript

@@ -86,6 +86,7 @@ describe.each(PG_VERSIONS)(
     function runCli(args: string[]) {
       return execFile(process.execPath, [cli, ...args, '-m', dir], {
         cwd: dir,
+        // Keep inherited PG* settings from overriding the disposable database.
         env: { DATABASE_URL: container.getConnectionUri() },
       });
     }
@@ -173,7 +174,7 @@ describe.each(PG_VERSIONS)(
       { name: '0001_tag$pga', automatic: false },
       { name: '0001_tag$pga$pgb', automatic: false },
     ])(
-      'should preserve $name with automatic rollback: $automatic',
+      'should round-trip $name (inferred down: $automatic)',
       async ({ name, automatic }) => {
         await seedHistory();
         await writeMigration(name, { automatic });
