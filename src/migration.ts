@@ -12,6 +12,7 @@ import type { MigrationDirection, RunnerOption } from './runner';
 import type { MigrationBuilderActions } from './sqlMigration';
 import {
   compareMigrationFileNames,
+  escapeValue,
   getMigrationTableName,
   getNumericPrefix,
   getSuffixFromFileName,
@@ -327,17 +328,17 @@ export class Migration implements RunMigration {
   _getMarkAsRun(action: MigrationAction): string {
     const fullTableName = getMigrationTableName(this.options);
 
-    const { name } = this;
+    const name = escapeValue(this.name);
 
     switch (action) {
       case this.down: {
         this.logger.info(`### MIGRATION ${this.name} (DOWN) ###`);
-        return `DELETE FROM ${fullTableName} WHERE name='${name}';`;
+        return `DELETE FROM ${fullTableName} WHERE name=${name};`;
       }
 
       case this.up: {
         this.logger.info(`### MIGRATION ${this.name} (UP) ###`);
-        return `INSERT INTO ${fullTableName} (name, run_on) VALUES ('${name}', NOW());`;
+        return `INSERT INTO ${fullTableName} (name, run_on) VALUES (${name}, NOW());`;
       }
 
       default: {

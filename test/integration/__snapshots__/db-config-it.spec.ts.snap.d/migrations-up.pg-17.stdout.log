@@ -99,26 +99,26 @@
 > - 098_rename_index
 > - 099_schema_qualified_renames
 ### MIGRATION 001_noop (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('001_noop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$001_noop$pga$, NOW());
 
 
 ### MIGRATION 002_callback (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('002_callback', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$002_callback$pga$, NOW());
 
 
 ### MIGRATION 003_promise (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('003_promise', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$003_promise$pga$, NOW());
 
 
 ### MIGRATION 004_table (UP) ###
 CREATE TABLE "t1" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL);
 CREATE TABLE IF NOT EXISTS "t2" ("id1" serial, "id2" integer REFERENCES t1(id), CONSTRAINT "t2_pkey" PRIMARY KEY ("id1", "id2"));
 COMMENT ON TABLE "t2" IS $pga$comment on table t2$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('004_table', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$004_table$pga$, NOW());
 
 
 ### MIGRATION 005_table_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('005_table_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$005_table_test$pga$, NOW());
 
 
 ### MIGRATION 006_table_rename (UP) ###
@@ -127,39 +127,39 @@ CREATE SCHEMA "rename_schema";
 CREATE TABLE "rename_schema"."original" ("id" integer);
 ALTER TABLE "rename_schema"."original" RENAME TO "intermediate";
 ALTER TABLE "rename_schema"."intermediate" RENAME TO "renamed";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('006_table_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$006_table_rename$pga$, NOW());
 
 
 ### MIGRATION 007_table_rename_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('007_table_rename_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$007_table_rename_test$pga$, NOW());
 
 
 ### MIGRATION 008_column_drop (UP) ###
 ALTER TABLE "t1" DROP "string";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('008_column_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$008_column_drop$pga$, NOW());
 
 
 ### MIGRATION 009_column (UP) ###
 ALTER TABLE "t1" ADD "nr" integer UNIQUE CHECK (nr > 10);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('009_column', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$009_column$pga$, NOW());
 
 
 ### MIGRATION 010_column_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('010_column_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$010_column_test$pga$, NOW());
 
 
 ### MIGRATION 011_column_rename (UP) ###
 ALTER TABLE "t1" RENAME "nr" TO "nmbr";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('011_column_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$011_column_rename$pga$, NOW());
 
 
 ### MIGRATION 012_column_alter (UP) ###
 ALTER TABLE "t1" ALTER "nmbr" SET DATA TYPE smallint;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('012_column_alter', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$012_column_alter$pga$, NOW());
 
 
 ### MIGRATION 013_column_alter_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('013_column_alter_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$013_column_alter_test$pga$, NOW());
 
 
 ### MIGRATION 014_add_constraint (UP) ###
@@ -169,130 +169,130 @@ CREATE SCHEMA "payroll_reports";
 CREATE TABLE "payroll_reports"."upload_headers" ("id" serial PRIMARY KEY, "paycode_type" text, "aggregate_paycode_type" text, "meta_field_type" text, "is_remark" boolean);
 ALTER TABLE "payroll_reports"."upload_headers" ADD CONSTRAINT "chk_only_one_header_type" CHECK ((       CASE WHEN paycode_type IS NOT NULL THEN 1 ELSE 0 END +       CASE WHEN aggregate_paycode_type IS NOT NULL THEN 1 ELSE 0 END +       CASE WHEN meta_field_type IS NOT NULL THEN 1 ELSE 0 END +       CASE WHEN is_remark THEN 1 ELSE 0 END      ) <= 1);
 COMMENT ON CONSTRAINT "chk_only_one_header_type" ON "payroll_reports"."upload_headers" IS $pga$If no type present/truthy, it's ignored; cannot have more than one active at once$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('014_add_constraint', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$014_add_constraint$pga$, NOW());
 
 
 ### MIGRATION 015_add_constraint_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('015_add_constraint_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$015_add_constraint_test$pga$, NOW());
 
 
 ### MIGRATION 016_rename_constraint (UP) ###
 ALTER TABLE "t1" RENAME CONSTRAINT "chck_nmbr" TO "chck_nmbr_new";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('016_rename_constraint', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$016_rename_constraint$pga$, NOW());
 
 
 ### MIGRATION 017_drop_constraint (UP) ###
 ALTER TABLE "t1" DROP CONSTRAINT "chck_nmbr_new";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('017_drop_constraint', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$017_drop_constraint$pga$, NOW());
 
 
 ### MIGRATION 018_drop_constraint_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('018_drop_constraint_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$018_drop_constraint_test$pga$, NOW());
 
 
 ### MIGRATION 019_add_index (UP) ###
 CREATE UNIQUE INDEX "t1_nmbr_unique_index" ON "t1" ("nmbr");
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('019_add_index', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$019_add_index$pga$, NOW());
 
 
 ### MIGRATION 020_drop_index (UP) ###
 CREATE INDEX "idx" ON "t1" ("nmbr");
 DROP INDEX "idx";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('020_drop_index', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$020_drop_index$pga$, NOW());
 
 
 ### MIGRATION 021_add_type (UP) ###
 CREATE TYPE "list" AS ENUM ($pga$a$pga$, $pga$b$pga$, $pga$c$pga$);
 CREATE TYPE "obj" AS ("id" integer);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('021_add_type', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$021_add_type$pga$, NOW());
 
 
 ### MIGRATION 022_add_type_test (UP) ###
 CREATE TEMPORARY TABLE t_list_1 (l list);
 INSERT INTO t_list_1 (l) VALUES ('a');
 SELECT (ROW(1)::obj).id;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('022_add_type_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$022_add_type_test$pga$, NOW());
 
 
 ### MIGRATION 023_add_type_attribute (UP) ###
 ALTER TYPE "obj" ADD ATTRIBUTE "string" text;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('023_add_type_attribute', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$023_add_type_attribute$pga$, NOW());
 
 
 ### MIGRATION 024_add_type_attribute_test (UP) ###
 SELECT (ROW(1, 'x')::obj).string;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('024_add_type_attribute_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$024_add_type_attribute_test$pga$, NOW());
 
 
 ### MIGRATION 025_set_type_attribute (UP) ###
 ALTER TYPE "obj" ALTER ATTRIBUTE "id" SET DATA TYPE smallint;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('025_set_type_attribute', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$025_set_type_attribute$pga$, NOW());
 
 
 ### MIGRATION 026_set_type_attribute_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('026_set_type_attribute_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$026_set_type_attribute_test$pga$, NOW());
 
 
 ### MIGRATION 027_add_type_value (UP) ###
 COMMIT;
 ALTER TYPE "list" ADD VALUE IF NOT EXISTS $pga$d$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('027_add_type_value', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$027_add_type_value$pga$, NOW());
 BEGIN;
 
 
 ### MIGRATION 028_add_type_value_test (UP) ###
 CREATE TEMPORARY TABLE t_list_2 (l list);
 INSERT INTO t_list_2 (l) VALUES ('d');
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('028_add_type_value_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$028_add_type_value_test$pga$, NOW());
 
 
 ### MIGRATION 029_rename_type_attribute (UP) ###
 ALTER TYPE "obj" RENAME ATTRIBUTE "string" TO "str";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('029_rename_type_attribute', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$029_rename_type_attribute$pga$, NOW());
 
 
 ### MIGRATION 030_rename_type_attribute_test (UP) ###
 SELECT (ROW(1, 'x')::obj).str;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('030_rename_type_attribute_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$030_rename_type_attribute_test$pga$, NOW());
 
 
 ### MIGRATION 031_drop_type_attribute (UP) ###
 ALTER TYPE "obj" DROP ATTRIBUTE "str";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('031_drop_type_attribute', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$031_drop_type_attribute$pga$, NOW());
 
 
 ### MIGRATION 032_drop_type_attribute_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('032_drop_type_attribute_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$032_drop_type_attribute_test$pga$, NOW());
 
 
 ### MIGRATION 033_drop_type (UP) ###
 CREATE TYPE "list_for_drop" AS ENUM ($pga$a$pga$, $pga$b$pga$, $pga$c$pga$);
 DROP TYPE "list_for_drop";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('033_drop_type', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$033_drop_type$pga$, NOW());
 
 
 ### MIGRATION 034_drop_type_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('034_drop_type_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$034_drop_type_test$pga$, NOW());
 
 
 ### MIGRATION 035_role_add (UP) ###
 CREATE ROLE "r" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD $pga$p$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('035_role_add', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$035_role_add$pga$, NOW());
 
 
 ### MIGRATION 036_role_alter (UP) ###
 ALTER ROLE "r" WITH NOLOGIN;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('036_role_alter', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$036_role_alter$pga$, NOW());
 
 
 ### MIGRATION 037_role_rename (UP) ###
 ALTER ROLE "r" RENAME TO "rx";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('037_role_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$037_role_rename$pga$, NOW());
 
 
 ### MIGRATION 038_role_drop (UP) ###
 DROP ROLE "rx";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('038_role_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$038_role_drop$pga$, NOW());
 
 
 ### MIGRATION 039_function_create (UP) ###
@@ -310,21 +310,21 @@ BEGIN
   RETURN passed;
 END;
 $pga$ VOLATILE LANGUAGE plpgsql SECURITY DEFINER;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('039_function_create', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$039_function_create$pga$, NOW());
 
 
 ### MIGRATION 040_function_rename (UP) ###
 ALTER FUNCTION "f"(integer, in "arg2" integer) RENAME TO "add";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('040_function_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$040_function_rename$pga$, NOW());
 
 
 ### MIGRATION 041_function_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('041_function_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$041_function_test$pga$, NOW());
 
 
 ### MIGRATION 042_function_drop (UP) ###
 DROP FUNCTION "add"(integer, in "arg2" integer);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('042_function_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$042_function_drop$pga$, NOW());
 
 
 ### MIGRATION 043_trigger_create_rename (UP) ###
@@ -338,61 +338,61 @@ END;
 CREATE TRIGGER "t" before insert ON "tt" FOR EACH row EXECUTE PROCEDURE "t"();
 ALTER TRIGGER "t" ON "tt" RENAME TO "trig";
 ALTER FUNCTION "t"() RENAME TO "trig";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('043_trigger_create_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$043_trigger_create_rename$pga$, NOW());
 
 
 ### MIGRATION 044_trigger_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('044_trigger_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$044_trigger_test$pga$, NOW());
 
 
 ### MIGRATION 045_trigger_drop (UP) ###
 DROP TRIGGER "trig" ON "tt";
 DROP FUNCTION "trig"();
 DROP TABLE "tt";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('045_trigger_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$045_trigger_drop$pga$, NOW());
 
 
 ### MIGRATION 046_domain_create_rename (UP) ###
 CREATE DOMAIN "d" AS integer CHECK (VALUE BETWEEN 0 AND 10);
 ALTER DOMAIN "d" RENAME TO "dom";
 CREATE TABLE "td" ("d" dom);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('046_domain_create_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$046_domain_create_rename$pga$, NOW());
 
 
 ### MIGRATION 047_domain_check (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('047_domain_check', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$047_domain_check$pga$, NOW());
 
 
 ### MIGRATION 048_domain_drop (UP) ###
 DROP TABLE "td";
 DROP DOMAIN "dom";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('048_domain_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$048_domain_drop$pga$, NOW());
 
 
 ### MIGRATION 049_sequence_create_rename (UP) ###
 CREATE SEQUENCE "s" MINVALUE 10;
 ALTER SEQUENCE "s" RENAME TO "seq";
 CREATE TABLE "ts" ("id" integer DEFAULT nextval('seq'));
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('049_sequence_create_rename', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$049_sequence_create_rename$pga$, NOW());
 
 
 ### MIGRATION 050_sequence_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('050_sequence_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$050_sequence_test$pga$, NOW());
 
 
 ### MIGRATION 051_sequence_alter (UP) ###
 ALTER SEQUENCE "seq" RESTART WITH 20;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('051_sequence_alter', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$051_sequence_alter$pga$, NOW());
 
 
 ### MIGRATION 052_sequence_alter_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('052_sequence_alter_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$052_sequence_alter_test$pga$, NOW());
 
 
 ### MIGRATION 053_sequence_drop (UP) ###
 DROP TABLE "ts";
 DROP SEQUENCE "seq";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('053_sequence_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$053_sequence_drop$pga$, NOW());
 
 
 ### MIGRATION 054_operator_create (UP) ###
@@ -403,18 +403,18 @@ BEGIN
 END;
   $pga$ VOLATILE LANGUAGE plpgsql;
 CREATE OPERATOR + (PROCEDURE = "complex_add", LEFTARG = "complex", RIGHTARG = "complex", COMMUTATOR = +);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('054_operator_create', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$054_operator_create$pga$, NOW());
 
 
 ### MIGRATION 055_operator_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('055_operator_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$055_operator_test$pga$, NOW());
 
 
 ### MIGRATION 056_operator_drop (UP) ###
 DROP OPERATOR +("complex", "complex");
 DROP FUNCTION "complex_add"(complex, complex);
 DROP TYPE "complex";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('056_operator_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$056_operator_drop$pga$, NOW());
 
 
 ### MIGRATION 057_policy_create (UP) ###
@@ -428,11 +428,11 @@ CREATE POLICY "user_select_policy" ON "tp" FOR SELECT TO PUBLIC USING (current_u
 CREATE POLICY "user_update_policy" ON "tp" FOR UPDATE TO PUBLIC USING (current_user = user_name) WITH CHECK (current_user = user_name);
 GRANT USAGE ON SCHEMA "public" TO PUBLIC;
 GRANT ALL ON "tp" TO PUBLIC;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('057_policy_create', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$057_policy_create$pga$, NOW());
 
 
 ### MIGRATION 058_policy_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('058_policy_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$058_policy_test$pga$, NOW());
 
 
 ### MIGRATION 059_policy_drop (UP) ###
@@ -442,34 +442,34 @@ DROP POLICY "user_update_policy" ON "tp";
 DROP TABLE "tp";
 DROP ROLE "admin";
 DROP ROLE "alice";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('059_policy_drop', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$059_policy_drop$pga$, NOW());
 
 
 ### MIGRATION 060_column_comment (UP) ###
 CREATE SCHEMA "test";
 CREATE TABLE "test"."tcc" ("id" serial PRIMARY KEY);
 COMMENT ON COLUMN "test"."tcc"."id" IS $pga$comment on column id$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('060_column_comment', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$060_column_comment$pga$, NOW());
 
 
 ### MIGRATION 061_column_comment_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('061_column_comment_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$061_column_comment_test$pga$, NOW());
 
 
 ### MIGRATION 062_view (UP) ###
 CREATE TABLE "tv" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL);
 CREATE VIEW "v"("id", "str") AS SELECT id, string FROM tv;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('062_view', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$062_view$pga$, NOW());
 
 
 ### MIGRATION 063_view_test (UP) ###
 SELECT id, str FROM v;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('063_view_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$063_view_test$pga$, NOW());
 
 
 ### MIGRATION 064_alter_view_column (UP) ###
 ALTER VIEW "v" ALTER COLUMN "str" SET DEFAULT $pga$some default value$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('064_alter_view_column', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$064_alter_view_column$pga$, NOW());
 
 
 ### MIGRATION 065_materialized_view (UP) ###
@@ -478,17 +478,17 @@ CREATE MATERIALIZED VIEW "mvx"("id", "strx") WITH (autovacuum_enabled, autovacuu
 ALTER MATERIALIZED VIEW "mvx" RENAME TO "mv";
 ALTER MATERIALIZED VIEW "mv" RENAME COLUMN "strx" TO "str";
 REFRESH MATERIALIZED VIEW "mv";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('065_materialized_view', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$065_materialized_view$pga$, NOW());
 
 
 ### MIGRATION 066_materialized_view_test (UP) ###
 SELECT id, str FROM mv;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('066_materialized_view_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$066_materialized_view_test$pga$, NOW());
 
 
 ### MIGRATION 067_materialized_view_alter (UP) ###
 ALTER MATERIALIZED VIEW "mv" SET (autovacuum_enabled = false, autovacuum_vacuum_threshold = 10);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('067_materialized_view_alter', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$067_materialized_view_alter$pga$, NOW());
 
 
 ### MIGRATION 068_extension (UP) ###
@@ -496,27 +496,27 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 DROP EXTENSION "uuid-ossp";
 CREATE EXTENSION "uuid-ossp";
 DROP EXTENSION "uuid-ossp";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('068_extension', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$068_extension$pga$, NOW());
 
 
 ### MIGRATION 069_comments (UP) ###
 CREATE TABLE "test-comment" ("id" serial);
 COMMENT ON TABLE "test-comment" IS $pga$table's comment$pga$;
 DROP TABLE "test-comment";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('069_comments', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$069_comments$pga$, NOW());
 
 
 ### MIGRATION 070_extension_schema (UP) ###
 CREATE SCHEMA "extension-test";
 CREATE EXTENSION "ltree" SCHEMA "extension-test";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('070_extension_schema', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$070_extension_schema$pga$, NOW());
 
 
 ### MIGRATION 071_constraint_name_for_foreign_key (UP) ###
 CREATE TABLE "ft1" ("id" serial PRIMARY KEY);
 CREATE TABLE "ft2" ("id" integer NOT NULL CONSTRAINT "my_constraint_name" REFERENCES "ft1");
 ALTER TABLE "ft2" RENAME CONSTRAINT "my_constraint_name" TO "better_constraint_name";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('071_constraint_name_for_foreign_key', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$071_constraint_name_for_foreign_key$pga$, NOW());
 
 
 ### MIGRATION 072_alter_column_comment (UP) ###
@@ -524,17 +524,17 @@ CREATE SCHEMA "comment_schema";
 CREATE TABLE "comment_schema"."t" ("id" serial PRIMARY KEY);
 ALTER TABLE "comment_schema"."t" ALTER "id" SET DATA TYPE text;
 COMMENT ON COLUMN "comment_schema"."t"."id" IS $pga$This is my comment$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('072_alter_column_comment', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$072_alter_column_comment$pga$, NOW());
 
 
 ### MIGRATION 073_alter_column_comment_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('073_alter_column_comment_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$073_alter_column_comment_test$pga$, NOW());
 
 
 ### MIGRATION 074_rename_type_value (UP) ###
 CREATE TYPE "list2" AS ENUM ($pga$a$pga$, $pga$d$pga$, $pga$c$pga$);
 ALTER TYPE "list2" RENAME VALUE $pga$d$pga$ TO $pga$b$pga$;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('074_rename_type_value', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$074_rename_type_value$pga$, NOW());
 
 
 ### MIGRATION 075_drop_index_schema (UP) ###
@@ -544,24 +544,24 @@ CREATE INDEX "bar_baz_index" ON "foo"."bar" ("baz");
 DROP INDEX "foo"."bar_baz_index";
 DROP TABLE "foo"."bar";
 DROP SCHEMA "foo";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('075_drop_index_schema', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$075_drop_index_schema$pga$, NOW());
 
 
 ### MIGRATION 076_create_table_like (UP) ###
 CREATE TABLE "t_like" (LIKE "t1" INCLUDING COMMENTS INCLUDING CONSTRAINTS EXCLUDING INDEXES EXCLUDING STORAGE);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('076_create_table_like', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$076_create_table_like$pga$, NOW());
 
 
 ### MIGRATION 077_create_table_generated_column (UP) ###
 CREATE TABLE "t_generated" ("id" serial PRIMARY KEY, "gen" integer NOT NULL GENERATED BY DEFAULT AS IDENTITY (INCREMENT BY 2));
 INSERT INTO "t_generated" DEFAULT VALUES;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('077_create_table_generated_column', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$077_create_table_generated_column$pga$, NOW());
 
 
 ### MIGRATION 078_add_column_if_not_exists (UP) ###
 ALTER TABLE "t1" ADD IF NOT EXISTS "string" text;
 ALTER TABLE "t1" ADD IF NOT EXISTS "string" text;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('078_add_column_if_not_exists', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$078_add_column_if_not_exists$pga$, NOW());
 
 
 ### MIGRATION 079_drop_index_schema (UP) ###
@@ -571,7 +571,7 @@ CREATE INDEX "idx" ON "a.b::c"."bar" ("baz");
 DROP INDEX "a.b::c"."idx";
 DROP TABLE "a.b::c"."bar";
 DROP SCHEMA "a.b::c";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('079_drop_index_schema', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$079_drop_index_schema$pga$, NOW());
 
 
 ### MIGRATION 080_create_table_generated_column_take_2 (UP) ###
@@ -579,12 +579,12 @@ CREATE TABLE "t_sequenceGenerated" ("id" serial PRIMARY KEY, "gen" integer NOT N
 INSERT INTO "t_sequenceGenerated" DEFAULT VALUES;
 CREATE TABLE "t_expressionGenerated" ("id" serial PRIMARY KEY, "gen" integer NOT NULL GENERATED ALWAYS AS (id + 1) STORED);
 INSERT INTO "t_expressionGenerated" DEFAULT VALUES;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('080_create_table_generated_column_take_2', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$080_create_table_generated_column_take_2$pga$, NOW());
 
 
 ### MIGRATION 081_temporary_table (UP) ###
 CREATE TEMPORARY TABLE "tmp" ("id" serial PRIMARY KEY);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('081_temporary_table', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$081_temporary_table$pga$, NOW());
 
 
 ### MIGRATION 082_view_options (UP) ###
@@ -592,20 +592,20 @@ CREATE TABLE "tvo" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" t
 CREATE VIEW "vo"("id", "str") WITH (check_option = LOCAL) AS SELECT id, string FROM tvo;
 ALTER VIEW "vo" SET (check_option = CASCADED);
 ALTER VIEW "vo" RESET (check_option);
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('082_view_options', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$082_view_options$pga$, NOW());
 
 
 ### MIGRATION 083_alter_column_sequence (UP) ###
 CREATE TABLE "t083" ("id" integer NOT NULL);
 ALTER TABLE "t083" ALTER "id" ADD GENERATED ALWAYS AS IDENTITY;
 ALTER TABLE "t083" ALTER "id" DROP IDENTITY;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('083_alter_column_sequence', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$083_alter_column_sequence$pga$, NOW());
 
 
 ### MIGRATION 084_drop_unique_index (UP) ###
 CREATE TABLE "t_uniq_index" ("id" serial, "name" text);
 CREATE UNIQUE INDEX "t_uniq_index_name_unique_index" ON "t_uniq_index" ("name");
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('084_drop_unique_index', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$084_drop_unique_index$pga$, NOW());
 
 
 ### MIGRATION 085_grant_tables_schemas_roles (UP) ###
@@ -616,22 +616,22 @@ GRANT SELECT, UPDATE ON "test_grant_table" TO "test_grant_bob1";
 CREATE SCHEMA "test_grant_schema";
 GRANT USAGE ON SCHEMA "test_grant_schema" TO "test_grant_bob1";
 GRANT "test_grant_bob1" TO "test_grant_bob2";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('085_grant_tables_schemas_roles', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$085_grant_tables_schemas_roles$pga$, NOW());
 
 
 ### MIGRATION 086_grant_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('086_grant_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$086_grant_test$pga$, NOW());
 
 
 ### MIGRATION 087_revoke_tables_schemas_roles (UP) ###
 REVOKE "test_grant_bob1" FROM "test_grant_bob2";
 REVOKE USAGE ON SCHEMA "test_grant_schema" FROM "test_grant_bob1";
 REVOKE SELECT, UPDATE ON "test_grant_table" FROM "test_grant_bob1";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('087_revoke_tables_schemas_roles', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$087_revoke_tables_schemas_roles$pga$, NOW());
 
 
 ### MIGRATION 088_revoke_test (UP) ###
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('088_revoke_test', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$088_revoke_test$pga$, NOW());
 
 
 ### MIGRATION 089_grant_reverse (UP) ###
@@ -642,7 +642,7 @@ GRANT SELECT, UPDATE ON "test_grant_reverse_table" TO "test_grant_reverse_bob1";
 CREATE SCHEMA "test_grant_reverse_schema";
 GRANT USAGE ON SCHEMA "test_grant_reverse_schema" TO "test_grant_reverse_bob1";
 GRANT "test_grant_reverse_bob1" TO "test_grant_reverse_bob2";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('089_grant_reverse', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$089_grant_reverse$pga$, NOW());
 
 
 ### MIGRATION 090_create_cast (UP) ###
@@ -653,7 +653,7 @@ BEGIN
 END;
   $pga$ VOLATILE LANGUAGE plpgsql;
 CREATE CAST (text AS integer) WITH FUNCTION "text_to_integer"(text) AS ASSIGNMENT;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('090_create_cast', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$090_create_cast$pga$, NOW());
 
 
 ### MIGRATION 091_function_set (UP) ###
@@ -666,19 +666,19 @@ BEGIN
   RETURN passed;
 END;
 $pga$ VOLATILE LANGUAGE plpgsql SECURITY DEFINER SET "search_path" TO '';
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('091_function_set', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$091_function_set$pga$, NOW());
 
 
 ### MIGRATION 092_partition (UP) ###
 CREATE TABLE "t_partition" ("id" serial, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL, CONSTRAINT "t_partition_pkey" PRIMARY KEY ("id", "created")) PARTITION BY RANGE ("created");
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('092_partition', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$092_partition$pga$, NOW());
 
 
 ### MIGRATION 093_alter_column_expression (UP) ###
 CREATE TABLE "t093" ("id" integer NOT NULL, "other" integer NOT NULL, "col1" integer GENERATED ALWAYS AS (other + 1) STORED, "col2" integer GENERATED ALWAYS AS (other + 1) STORED);
 ALTER TABLE "t093" ALTER "col1" SET EXPRESSION AS (other + 2);
 ALTER TABLE "t093" ALTER "col2" DROP EXPRESSION;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('093_alter_column_expression', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$093_alter_column_expression$pga$, NOW());
 
 
 ### MIGRATION 094_unlogged_table (UP) ###
@@ -687,13 +687,13 @@ COMMENT ON TABLE "t_unlogged" IS $pga$comment on unlogged table t_unlogged$pga$;
 CREATE TABLE "t_regular" ("id" serial PRIMARY KEY, "description" text NOT NULL);
 COMMENT ON TABLE "t_regular" IS $pga$comment on regular table t_regular$pga$;
 ALTER TABLE "t_regular" SET LOGGED;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('094_unlogged_table', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$094_unlogged_table$pga$, NOW());
 
 
 ### MIGRATION 095_index_nulls (UP) ###
 CREATE TABLE "t095" ("id" integer);
 CREATE UNIQUE INDEX "t095_id_unique_index" ON "t095" ("id") NULLS NOT DISTINCT;
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('095_index_nulls', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$095_index_nulls$pga$, NOW());
 
 
 ### MIGRATION 096_expression_index (UP) ###
@@ -718,7 +718,7 @@ CREATE INDEX "pgm_users_meta_remove_key_operator_idx" ON "pgm_users" ((meta - 'i
 CREATE INDEX "pgm_users_meta_remove_path_operator_idx" ON "pgm_users" ((meta #- '{a,b}'));
 CREATE INDEX "pgm_users_meta_path_exists_operator_idx" ON "pgm_users" ((meta @? '$.id ? (@ == 1)'));
 CREATE INDEX "pgm_users_meta_path_predicate_operator_idx" ON "pgm_users" ((meta @@ '$.id == 1'));
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('096_expression_index', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$096_expression_index$pga$, NOW());
 
 
 ### MIGRATION 097_drop_constraint_if_table_exists (UP) ###
@@ -726,13 +726,13 @@ CREATE TABLE "drop_constraint_if_table_exists" ("id" serial PRIMARY KEY, "value"
 ALTER TABLE "drop_constraint_if_table_exists" ADD CONSTRAINT "drop_constraint_if_table_exists_check" CHECK (value > 0);
 DROP TABLE "drop_constraint_if_table_exists";
 ALTER TABLE IF EXISTS "drop_constraint_if_table_exists" DROP CONSTRAINT IF EXISTS "drop_constraint_if_table_exists_check";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('097_drop_constraint_if_table_exists', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$097_drop_constraint_if_table_exists$pga$, NOW());
 
 
 ### MIGRATION 098_rename_index (UP) ###
 CREATE INDEX "idxfoo" ON "t1" ("nmbr");
 ALTER INDEX "idxfoo" RENAME TO "quxfoo";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('098_rename_index', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$098_rename_index$pga$, NOW());
 
 
 ### MIGRATION 099_schema_qualified_renames (UP) ###
@@ -756,7 +756,7 @@ CREATE TABLE "object_rename_schema"."indexed_table" ("value" integer);
 CREATE INDEX "old_index" ON "object_rename_schema"."indexed_table" ("value");
 ALTER INDEX "object_rename_schema"."old_index" RENAME TO "middle_index";
 ALTER INDEX "object_rename_schema"."middle_index" RENAME TO "new_index";
-INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ('099_schema_qualified_renames', NOW());
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$099_schema_qualified_renames$pga$, NOW());
 
 
 Migrations complete!
