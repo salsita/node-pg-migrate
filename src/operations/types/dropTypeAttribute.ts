@@ -19,7 +19,7 @@ export function dropTypeAttribute(
     const typeNameStr = mOptions.literal(typeName);
     const attributeNameStr = mOptions.literal(attributeName);
 
-    return `ALTER TYPE ${typeNameStr} DROP ATTRIBUTE ${attributeNameStr}${ifExistsStr};`;
+    return `ALTER TYPE ${typeNameStr} DROP ATTRIBUTE${ifExistsStr} ${attributeNameStr};`;
   };
 
   return _drop;
