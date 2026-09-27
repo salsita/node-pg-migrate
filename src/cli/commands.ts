@@ -159,7 +159,7 @@ export async function runMigration(
       dryRun,
       // The spread of the loosely typed config connection cannot be proven to
       // produce a `ClientConfig`.
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      // oxlint-disable typescript/no-unsafe-type-assertion
       databaseUrl: {
         // oxlint-disable-next-line typescript/no-misused-spread
         ...databaseUrl,
@@ -174,6 +174,7 @@ export async function runMigration(
             }
           : undefined),
       } as ClientConfig,
+      // oxlint-enable typescript/no-unsafe-type-assertion
       dir: config.migrationsDir,
       useGlob: config.useGlob,
       ignorePattern: config.ignorePattern,
