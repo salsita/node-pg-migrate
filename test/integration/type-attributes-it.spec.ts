@@ -142,6 +142,27 @@ describe.each(PG_VERSIONS)(
       expect(await history()).toEqual([]);
     });
 
+    it('rejects a missing type even with ifExists', async () => {
+      await writeFile(
+        join(dir, `${migrationName}.mjs`),
+        `export function up(pgm) {
+          pgm.dropTypeAttribute(
+            { schema: 'type_attributes', name: 'missing_type' },
+            'f3',
+            { ifExists: true }
+          );
+        }`
+      );
+
+      await expect(migrate('up')).rejects.toMatchObject({
+        code: '42P01',
+        message: expect.stringContaining('missing_type'),
+      });
+
+      expect(await catalog()).toEqual([{ name: 'a' }]);
+      expect(await history()).toEqual([]);
+    });
+
     it.each(['present', 'already removed'])(
       'automatically rolls back an attribute that is %s and its history',
       async (attribute) => {
