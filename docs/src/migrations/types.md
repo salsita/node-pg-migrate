@@ -91,9 +91,9 @@ Provide the corresponding SQL in your down migration to reverse that move.
 `ADD ATTRIBUTE` itself takes no options - these are forwarded to the reverse
 operation (`dropTypeAttribute`) when the migration is rolled back.
 
-| Option     | Type      | Description                       |
-| ---------- | --------- | --------------------------------- |
-| `ifExists` | `boolean` | drops attribute only if it exists |
+| Option     | Type      | Description                                          |
+| ---------- | --------- | ---------------------------------------------------- |
+| `ifExists` | `boolean` | rollback drops the attribute only if it still exists |
 
 ### Example
 

@@ -78,6 +78,18 @@ describe('operations', () => {
           );
         });
 
+        it('should qualify the schema and escape identifiers without IF EXISTS', () => {
+          const statement = addTypeAttributeFn.reverse(
+            { schema: 'my"schema', name: 'comp"foo' },
+            'f"3',
+            PgType.INT
+          );
+
+          expect(statement).toBe(
+            'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE "f""3";'
+          );
+        });
+
         it('should qualify the schema and escape identifiers with IF EXISTS', () => {
           const statement = addTypeAttributeFn.reverse(
             { schema: 'my"schema', name: 'comp"foo' },

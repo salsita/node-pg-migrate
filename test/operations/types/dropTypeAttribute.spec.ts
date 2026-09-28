@@ -31,6 +31,17 @@ describe('operations', () => {
         );
       });
 
+      it('should qualify the schema and escape identifiers without IF EXISTS', () => {
+        const statement = dropTypeAttributeFn(
+          { schema: 'my"schema', name: 'comp"foo' },
+          'b"ar'
+        );
+
+        expect(statement).toBe(
+          'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE "b""ar";'
+        );
+      });
+
       it('should qualify the schema and escape identifiers with IF EXISTS', () => {
         const statement = dropTypeAttributeFn(
           { schema: 'my"schema', name: 'comp"foo' },
