@@ -12,6 +12,7 @@ import {
   expect,
   it,
 } from 'vitest';
+import type { CreateIndexOptions } from '../../src';
 import { runner } from '../../src';
 import {
   INTEGRATION_TIMEOUT,
@@ -20,6 +21,18 @@ import {
 } from './utils';
 
 const migrationName = '1000000000000_index_storage_parameters';
+
+interface IndexTestCase {
+  title: string;
+  operation: 'createIndex' | 'addIndex';
+  column: string;
+  options: CreateIndexOptions;
+  noTransaction: boolean;
+  method: string;
+  parameters: string[];
+  totalColumns: number;
+  predicate: string | null;
+}
 
 describe.each(PG_VERSIONS)(
   'index storage parameters (PG %s)',
@@ -106,7 +119,7 @@ describe.each(PG_VERSIONS)(
       return runner({
         databaseUrl: container.getConnectionUri(),
         dir,
-        schema: 'index_storage_parameters',
+        schema: 'public',
         migrationsSchema: 'index_storage_parameters',
         migrationsTable: 'pgmigrations',
         count: 1,
@@ -122,9 +135,12 @@ describe.each(PG_VERSIONS)(
           'numeric and boolean parameters on a partial covering B-tree index',
         operation: 'createIndex',
         column: 'id',
-        options: `include: 'payload', where: 'id > 0',
-          storageParameters: { fillfactor: 70, deduplicate_items: true }`,
-        transaction: '',
+        options: {
+          include: 'payload',
+          where: 'id > 0',
+          storageParameters: { fillfactor: 70, deduplicate_items: true },
+        },
+        noTransaction: false,
         method: 'btree',
         parameters: ['fillfactor=70', 'deduplicate_items=true'],
         totalColumns: 2,
@@ -134,8 +150,8 @@ describe.each(PG_VERSIONS)(
         title: 'a false boolean parameter on a GIN index through addIndex',
         operation: 'addIndex',
         column: 'tags',
-        options: `method: 'gin', storageParameters: { fastupdate: false }`,
-        transaction: '',
+        options: { method: 'gin', storageParameters: { fastupdate: false } },
+        noTransaction: false,
         method: 'gin',
         parameters: ['fastupdate=false'],
         totalColumns: 1,
@@ -145,8 +161,8 @@ describe.each(PG_VERSIONS)(
         title: 'a string parameter on a GiST index',
         operation: 'createIndex',
         column: 'location',
-        options: `method: 'gist', storageParameters: { buffering: 'off' }`,
-        transaction: '',
+        options: { method: 'gist', storageParameters: { buffering: 'off' } },
+        noTransaction: false,
         method: 'gist',
         parameters: ['buffering=off'],
         totalColumns: 1,
@@ -156,20 +172,20 @@ describe.each(PG_VERSIONS)(
         title: 'parameters on a concurrent B-tree index outside a transaction',
         operation: 'createIndex',
         column: 'id',
-        options: `concurrently: true, storageParameters: { fillfactor: 80 }`,
-        transaction: 'pgm.noTransaction();',
+        options: { concurrently: true, storageParameters: { fillfactor: 80 } },
+        noTransaction: true,
         method: 'btree',
         parameters: ['fillfactor=80'],
         totalColumns: 1,
         predicate: null,
       },
-    ])(
+    ] satisfies IndexTestCase[])(
       'creates and automatically reverses $title',
       async ({
         operation,
         column,
         options,
-        transaction,
+        noTransaction,
         method,
         parameters,
         totalColumns,
@@ -178,11 +194,11 @@ describe.each(PG_VERSIONS)(
         await writeFile(
           join(dir, `${migrationName}.mjs`),
           `export function up(pgm) {
-            ${transaction}
+            ${noTransaction ? 'pgm.noTransaction();' : ''}
             pgm.${operation}(
               { schema: 'index_storage_parameters', name: 'records' },
               '${column}',
-              { name: 'records_storage_index', ${options} }
+              ${JSON.stringify({ name: 'records_storage_index', ...options })}
             );
           }`
         );

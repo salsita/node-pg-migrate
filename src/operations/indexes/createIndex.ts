@@ -7,6 +7,8 @@ import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';
 import { generateColumnsString, generateIndexName } from './shared';
 
+export type IndexStorageParameters = Record<string, string | number | boolean>;
+
 export interface CreateIndexOptions extends IfNotExistsOption {
   name?: string;
 
@@ -22,7 +24,7 @@ export interface CreateIndexOptions extends IfNotExistsOption {
 
   nulls?: 'distinct' | 'not distinct';
 
-  storageParameters?: Record<string, string | number | boolean>;
+  storageParameters?: IndexStorageParameters;
 }
 
 export type CreateIndexFn = (

@@ -97,6 +97,7 @@ export type {
   DropIndex,
   DropIndexOptions,
   IndexColumn,
+  IndexStorageParameters,
 } from './operations/indexes';
 export type {
   AlterMaterializedView,

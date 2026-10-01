@@ -44,6 +44,8 @@ without decamelization. An empty `storageParameters` object omits the `WITH`
 clause. PostgreSQL validates which parameters and values the selected index
 method supports; see [Index Storage Parameters](https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-STORAGE-PARAMETERS).
 
+The exported `IndexStorageParameters` type can be used for reusable parameter maps.
+
 When using `concurrently: true`, call [`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction)
 in the migration. Regular index creation supports transactions, including when
 storage parameters are specified.
