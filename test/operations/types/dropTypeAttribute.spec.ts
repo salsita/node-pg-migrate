@@ -25,7 +25,6 @@ describe('operations', () => {
           ifExists: true,
         });
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "bar";'
         );

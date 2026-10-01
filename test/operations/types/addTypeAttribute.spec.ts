@@ -15,7 +15,6 @@ describe('operations', () => {
       it('should return sql statement', () => {
         const statement = addTypeAttributeFn('compfoo', 'f3', PgType.INT);
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -26,7 +25,6 @@ describe('operations', () => {
           ifExists: true,
         });
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -39,7 +37,6 @@ describe('operations', () => {
           'int'
         );
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "myschema"."compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -72,7 +69,6 @@ describe('operations', () => {
             { ifExists: true }
           );
 
-          expect(statement).toBeTypeOf('string');
           expect(statement).toBe(
             'ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "f3";'
           );

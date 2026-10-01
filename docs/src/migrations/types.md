@@ -95,7 +95,7 @@ operation (`dropTypeAttribute`) when the migration is rolled back.
 | ---------- | --------- | ---------------------------------------------------- |
 | `ifExists` | `boolean` | rollback drops the attribute only if it still exists |
 
-### Example
+### Example: automatic rollback
 
 For an existing composite type, pass `ifExists` as the fourth argument to make
 automatic rollback tolerate an already removed attribute:
@@ -130,10 +130,12 @@ With no explicit `down`, rollback generates
 | ---------- | --------- | --------------------------------- |
 | `ifExists` | `boolean` | drops attribute only if it exists |
 
-### Example
+### Example: conditional removal
 
 ```js
-pgm.dropTypeAttribute('compfoo', 'f3', { ifExists: true });
+export const up = (pgm) => {
+  pgm.dropTypeAttribute('compfoo', 'f3', { ifExists: true });
+};
 ```
 
 This generates `ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "f3";`.

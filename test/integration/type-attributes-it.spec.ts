@@ -100,31 +100,32 @@ describe.each(PG_VERSIONS)(
       });
     }
 
-    it.each(['present', 'absent'])(
-      'drops an attribute that is %s with ifExists',
-      async (attribute) => {
-        if (attribute === 'present') {
-          await client.query(
-            'ALTER TYPE type_attributes.compfoo ADD ATTRIBUTE f3 integer'
-          );
-        }
-        await writeFile(
-          join(dir, `${migrationName}.mjs`),
-          `export function up(pgm) {
-            pgm.dropTypeAttribute(
-              { schema: 'type_attributes', name: 'compfoo' },
-              'f3',
-              { ifExists: true }
-            );
-          }`
-        );
-
-        await migrate('up');
-
-        expect(await catalog()).toEqual([{ name: 'a' }]);
-        expect(await history()).toEqual([{ name: migrationName }]);
+    it.each([
+      {
+        state: 'present',
+        setup: 'ALTER TYPE type_attributes.compfoo ADD ATTRIBUTE f3 integer',
+      },
+      { state: 'absent', setup: null },
+    ])('drops an attribute that is $state with ifExists', async ({ setup }) => {
+      if (setup) {
+        await client.query(setup);
       }
-    );
+      await writeFile(
+        join(dir, `${migrationName}.mjs`),
+        `export function up(pgm) {
+          pgm.dropTypeAttribute(
+            { schema: 'type_attributes', name: 'compfoo' },
+            'f3',
+            { ifExists: true }
+          );
+        }`
+      );
+
+      await migrate('up');
+
+      expect(await catalog()).toEqual([{ name: 'a' }]);
+      expect(await history()).toEqual([{ name: migrationName }]);
+    });
 
     it('rejects a missing attribute without ifExists', async () => {
       await writeFile(
@@ -163,9 +164,15 @@ describe.each(PG_VERSIONS)(
       expect(await history()).toEqual([]);
     });
 
-    it.each(['present', 'already removed'])(
-      'automatically rolls back an attribute that is %s and its history',
-      async (attribute) => {
+    it.each([
+      { state: 'present', beforeRollback: null },
+      {
+        state: 'already removed',
+        beforeRollback: 'ALTER TYPE type_attributes.compfoo DROP ATTRIBUTE f3',
+      },
+    ])(
+      'automatically rolls back an attribute that is $state and its history',
+      async ({ beforeRollback }) => {
         await writeFile(
           join(dir, `${migrationName}.mjs`),
           `export function up(pgm) {
@@ -177,25 +184,17 @@ describe.each(PG_VERSIONS)(
             );
           }`
         );
-        const originalAttributes = await catalog();
-        expect(originalAttributes).toEqual([{ name: 'a' }]);
-
         await migrate('up');
-        expect(await catalog()).toEqual([
-          ...originalAttributes,
-          { name: 'f3' },
-        ]);
+        expect(await catalog()).toEqual([{ name: 'a' }, { name: 'f3' }]);
         expect(await history()).toEqual([{ name: migrationName }]);
 
-        if (attribute === 'already removed') {
-          await client.query(
-            'ALTER TYPE type_attributes.compfoo DROP ATTRIBUTE f3'
-          );
+        if (beforeRollback) {
+          await client.query(beforeRollback);
         }
 
         await migrate('down');
 
-        expect(await catalog()).toEqual(originalAttributes);
+        expect(await catalog()).toEqual([{ name: 'a' }]);
         expect(await history()).toEqual([]);
       }
     );
