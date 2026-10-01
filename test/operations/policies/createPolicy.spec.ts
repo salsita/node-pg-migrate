@@ -47,6 +47,38 @@ describe('operations', () => {
         );
       });
 
+      it.each(['PERMISSIVE', 'RESTRICTIVE'] as const)(
+        'should create an explicitly %s policy',
+        (as) => {
+          const statement = createPolicyFn('my_table', 'p1', { as });
+
+          expect(statement).toBe(
+            `CREATE POLICY "p1" ON "my_table" AS ${as} FOR ALL TO PUBLIC;`
+          );
+        }
+      );
+
+      it.each(['PERMISSIVE', 'RESTRICTIVE'] as const)(
+        'should place AS %s before the command and other clauses',
+        (as) => {
+          const statement = createPolicyFn(
+            { schema: 'my"schema', name: 'my"table' },
+            'my"policy',
+            {
+              as,
+              command: 'UPDATE',
+              role: ['CURRENT_USER', 'SESSION_USER'],
+              using: 'id > 0',
+              check: 'id < 10',
+            }
+          );
+
+          expect(statement).toBe(
+            `CREATE POLICY "my""policy" ON "my""schema"."my""table" AS ${as} FOR UPDATE TO CURRENT_USER, SESSION_USER USING (id > 0) WITH CHECK (id < 10);`
+          );
+        }
+      );
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(createPolicyFn.reverse).toBeTypeOf('function');
@@ -58,6 +90,21 @@ describe('operations', () => {
           expect(statement).toBeTypeOf('string');
           expect(statement).toBe('DROP POLICY "p1" ON "my_table";');
         });
+
+        it.each(['PERMISSIVE', 'RESTRICTIVE'] as const)(
+          'should reverse an explicitly %s policy with drop options',
+          (as) => {
+            const statement = createPolicyFn.reverse(
+              { schema: 'my"schema', name: 'my"table' },
+              'my"policy',
+              { as, ifExists: true }
+            );
+
+            expect(statement).toBe(
+              'DROP POLICY IF EXISTS "my""policy" ON "my""schema"."my""table";'
+            );
+          }
+        );
       });
     });
   });
