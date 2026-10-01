@@ -11,21 +11,45 @@ describe('operations', () => {
         expect(dropTypeAttributeFn).toBeTypeOf('function');
       });
 
-      it('should return sql statement', () => {
-        const statement = dropTypeAttributeFn('compfoo', 'bar', {});
+      it.each([undefined, {}, { ifExists: false }])(
+        'should return sql statement without IF EXISTS for %j',
+        (options) => {
+          const statement = dropTypeAttributeFn('compfoo', 'bar', options);
 
-        expect(statement).toBeTypeOf('string');
-        expect(statement).toBe('ALTER TYPE "compfoo" DROP ATTRIBUTE "bar";');
-      });
+          expect(statement).toBe('ALTER TYPE "compfoo" DROP ATTRIBUTE "bar";');
+        }
+      );
 
       it('should return sql statement with dropOptions', () => {
         const statement = dropTypeAttributeFn('compfoo', 'bar', {
           ifExists: true,
         });
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER TYPE "compfoo" DROP ATTRIBUTE "bar" IF EXISTS;'
+          'ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "bar";'
+        );
+      });
+
+      it('should qualify the schema and escape identifiers without IF EXISTS', () => {
+        const statement = dropTypeAttributeFn(
+          { schema: 'my"schema', name: 'comp"foo' },
+          'b"ar'
+        );
+
+        expect(statement).toBe(
+          'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE "b""ar";'
+        );
+      });
+
+      it('should qualify the schema and escape identifiers with IF EXISTS', () => {
+        const statement = dropTypeAttributeFn(
+          { schema: 'my"schema', name: 'comp"foo' },
+          'b"ar',
+          { ifExists: true }
+        );
+
+        expect(statement).toBe(
+          'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE IF EXISTS "b""ar";'
         );
       });
     });

@@ -15,7 +15,6 @@ describe('operations', () => {
       it('should return sql statement', () => {
         const statement = addTypeAttributeFn('compfoo', 'f3', PgType.INT);
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -26,7 +25,6 @@ describe('operations', () => {
           ifExists: true,
         });
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -39,7 +37,6 @@ describe('operations', () => {
           'int'
         );
 
-        expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
           'ALTER TYPE "myschema"."compfoo" ADD ATTRIBUTE "f3" integer;'
         );
@@ -50,16 +47,19 @@ describe('operations', () => {
           expect(addTypeAttributeFn.reverse).toBeTypeOf('function');
         });
 
-        it('should return sql statement', () => {
-          const statement = addTypeAttributeFn.reverse(
-            'compfoo',
-            'f3',
-            PgType.INT
-          );
+        it.each([undefined, {}, { ifExists: false }])(
+          'should return sql statement without IF EXISTS for %j',
+          (options) => {
+            const statement = addTypeAttributeFn.reverse(
+              'compfoo',
+              'f3',
+              PgType.INT,
+              options
+            );
 
-          expect(statement).toBeTypeOf('string');
-          expect(statement).toBe('ALTER TYPE "compfoo" DROP ATTRIBUTE "f3";');
-        });
+            expect(statement).toBe('ALTER TYPE "compfoo" DROP ATTRIBUTE "f3";');
+          }
+        );
 
         it('should return sql statement with attributeOptions', () => {
           const statement = addTypeAttributeFn.reverse(
@@ -69,9 +69,33 @@ describe('operations', () => {
             { ifExists: true }
           );
 
-          expect(statement).toBeTypeOf('string');
           expect(statement).toBe(
-            'ALTER TYPE "compfoo" DROP ATTRIBUTE "f3" IF EXISTS;'
+            'ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "f3";'
+          );
+        });
+
+        it('should qualify the schema and escape identifiers without IF EXISTS', () => {
+          const statement = addTypeAttributeFn.reverse(
+            { schema: 'my"schema', name: 'comp"foo' },
+            'f"3',
+            PgType.INT
+          );
+
+          expect(statement).toBe(
+            'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE "f""3";'
+          );
+        });
+
+        it('should qualify the schema and escape identifiers with IF EXISTS', () => {
+          const statement = addTypeAttributeFn.reverse(
+            { schema: 'my"schema', name: 'comp"foo' },
+            'f"3',
+            PgType.INT,
+            { ifExists: true }
+          );
+
+          expect(statement).toBe(
+            'ALTER TYPE "my""schema"."comp""foo" DROP ATTRIBUTE IF EXISTS "f""3";'
           );
         });
       });
