@@ -98,6 +98,7 @@
 > - 097_drop_constraint_if_table_exists
 > - 098_rename_index
 > - 099_schema_qualified_renames
+> - 100_index_storage_parameters
 ### MIGRATION 001_noop (UP) ###
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$001_noop$pga$, NOW());
 
@@ -754,6 +755,14 @@ CREATE INDEX "old_index" ON "object_rename_schema"."indexed_table" ("value");
 ALTER INDEX "object_rename_schema"."old_index" RENAME TO "middle_index";
 ALTER INDEX "object_rename_schema"."middle_index" RENAME TO "new_index";
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$099_schema_qualified_renames$pga$, NOW());
+
+
+### MIGRATION 100_index_storage_parameters (UP) ###
+CREATE TABLE "t100" ("id" integer, "payload" text, "tags" text[], "location" point);
+CREATE INDEX "t100_id_index" ON "t100" ("id") INCLUDE ("payload") WITH ("fillfactor" = 70, "deduplicate_items" = false) WHERE id > 0;
+CREATE INDEX "t100_tags_index" ON "t100" USING gin ("tags") WITH ("fastupdate" = false, "gin_pending_list_limit" = 64);
+CREATE INDEX "t100_location_index" ON "t100" USING gist ("location") WITH ("buffering" = $pga$off$pga$);
+INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$100_index_storage_parameters$pga$, NOW());
 
 
 Migrations complete!

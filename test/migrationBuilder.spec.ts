@@ -1,7 +1,32 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { IndexStorageParameters } from '../src';
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it.each(['createIndex', 'addIndex'] as const)(
+    'exposes storage parameters through %s',
+    (operation) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console,
+        false
+      );
+
+      const storageParameters: IndexStorageParameters = {
+        fillfactor: 70,
+        deduplicate_items: false,
+      };
+
+      pgm[operation]('films', 'title', { storageParameters });
+
+      expect(pgm.getSql()).toBe(
+        'CREATE INDEX "films_title_index" ON "films" ("title") WITH ("fillfactor" = 70, "deduplicate_items" = false);\n'
+      );
+    }
+  );
+
   it('should expose MigrationBuilder to allow using as sql builder', () => {
     const pgm = new MigrationBuilder(
       {

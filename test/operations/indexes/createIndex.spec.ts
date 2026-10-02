@@ -187,6 +187,82 @@ describe('operations', () => {
         ).toThrow('The "nulls" option can only be used with unique indexes.');
       });
 
+      describe('storage parameters', () => {
+        it.each([
+          [{ fillfactor: 70 }, '"fillfactor" = 70'],
+          [{ gin_pending_list_limit: 0 }, '"gin_pending_list_limit" = 0'],
+          [{ deduplicate_items: true }, '"deduplicate_items" = true'],
+          [{ fastupdate: false }, '"fastupdate" = false'],
+          [{ buffering: 'off' }, '"buffering" = $pga$off$pga$'],
+        ])('renders %j', (storageParameters, expected) => {
+          expect(createIndexFn('films', 'title', { storageParameters })).toBe(
+            `CREATE INDEX "films_title_index" ON "films" ("title") WITH (${expected});`
+          );
+        });
+
+        it('places multiple parameters after INCLUDE and NULLS and before WHERE', () => {
+          expect(
+            createIndexFn('films', 'title', {
+              name: 'title_idx',
+              unique: true,
+              concurrently: true,
+              ifNotExists: true,
+              method: 'btree',
+              include: ['director', 'rating'],
+              nulls: 'not distinct',
+              storageParameters: { fillfactor: 70, deduplicate_items: false },
+              where: 'rating > 0',
+            })
+          ).toBe(
+            'CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS "title_idx" ON "films" USING btree ("title") INCLUDE ("director", "rating") NULLS NOT DISTINCT WITH ("fillfactor" = 70, "deduplicate_items" = false) WHERE rating > 0;'
+          );
+        });
+
+        it('omits WITH for an empty object', () => {
+          expect(
+            createIndexFn('films', 'title', { storageParameters: {} })
+          ).toBe('CREATE INDEX "films_title_index" ON "films" ("title");');
+        });
+
+        it('escapes parameter names and string values', () => {
+          expect(
+            createIndexFn('films', 'title', {
+              storageParameters: {
+                'custom"parameter': "off'); DROP TABLE films; -- $pga$",
+              },
+            })
+          ).toBe(
+            'CREATE INDEX "films_title_index" ON "films" ("title") WITH ("custom""parameter" = $pgb$off\'); DROP TABLE films; -- $pga$$pgb$);'
+          );
+        });
+
+        it('preserves parameter names and values when decamelizing identifiers', () => {
+          const create = createIndex(options2);
+          expect(
+            create({ schema: 'mySchema', name: 'myTable' }, 'myColumn', {
+              storageParameters: { customParameter: 'someValue' },
+            })
+          ).toBe(
+            'CREATE INDEX "my_table_my_column_index" ON "my_schema"."my_table" ("my_column") WITH ("customParameter" = $pga$someValue$pga$);'
+          );
+        });
+
+        it('reverses without including storage parameters in DROP INDEX', () => {
+          expect(
+            createIndexFn.reverse(
+              { schema: 'mySchema', name: 'films' },
+              'title',
+              {
+                name: 'title_idx',
+                unique: true,
+                concurrently: true,
+                storageParameters: { fillfactor: 70 },
+              }
+            )
+          ).toBe('DROP INDEX CONCURRENTLY "mySchema"."title_idx";');
+        });
+      });
+
       describe.each([
         {
           title: 'inferred',
