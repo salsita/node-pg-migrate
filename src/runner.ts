@@ -74,9 +74,10 @@ export interface RunnerOptionConfig {
   checkOrder?: boolean;
 
   /**
-   * Direction of migration-run.
+   * Direction of migration-run. `redo` reverts the selected migrations, then applies all
+   * pending migrations using the same connection and advisory lock.
    */
-  direction: MigrationDirection;
+  direction: MigrationDirection | 'redo';
 
   /**
    * Number of migration to run.
@@ -124,9 +125,10 @@ export interface RunnerOptionConfig {
   createMigrationsSchema?: boolean;
 
   /**
-   * Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back.
+   * Combines the migrations into a single transaction so that if any migration fails, all will be rolled back.
+   * Includes both phases of `redo`.
    *
-   * @default true
+   * @default false
    */
   singleTransaction?: boolean;
 
@@ -853,35 +855,90 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       checkOrder(runNames, migrations);
     }
 
-    const toRun: Migration[] = getMigrationsToRun(
-      options,
+    const direction = options.direction === 'redo' ? 'down' : options.direction;
+    let toRun: Migration[] = getMigrationsToRun(
+      { ...options, direction },
       runNames,
       migrations
     );
 
-    if (toRun.length === 0) {
+    if (toRun.length === 0 && options.direction !== 'redo') {
       logger.info('No migrations to run!');
       return [];
     }
 
-    // TODO: add some fancy colors to logging
-    logger.info('> Migrating files:');
-    for (const m of toRun) {
-      logger.info(`> - ${m.name}`);
-    }
+    const method = options.fake ? 'markAsRun' : 'apply';
+    const run = async (
+      batch: Migration[],
+      batchDirection: MigrationDirection
+    ) => {
+      if (batch.length === 0) {
+        logger.info('No migrations to run!');
+        return;
+      }
+
+      logger.info('> Migrating files:');
+      for (const migration of batch) {
+        logger.info(`> - ${migration.name}`);
+      }
+      await runMigrations(batch, method, batchDirection);
+    };
+
+    const applyMigrations = async () => {
+      await run(toRun, direction);
+
+      if (options.direction === 'redo') {
+        // Keep the history location even if reverting emptied its table. Reload migration
+        // instances because automatic down generation mutates their action state.
+        const upOptions: RunnerOption = {
+          ...options,
+          direction: 'up',
+          count: Number.POSITIVE_INFINITY,
+          timestamp: false,
+          migrationsSchema: getMigrationTableSchema(options),
+          createMigrationsSchema: false,
+        };
+        if (options.schema) {
+          const schemas = getSchemas(options.schema);
+          if (options.createSchema) {
+            await createSchemas(db, schemas, dryRun, logger);
+          }
+          await db.query(
+            `SET search_path TO ${schemas.map((schema) => `"${schema}"`).join(', ')}`
+          );
+        }
+        const remainingNames =
+          hasMigrationsTable || !dryRun
+            ? await getRunMigrations(db, upOptions)
+            : [];
+        const upMigrations = await loadMigrations(db, upOptions, logger);
+
+        if (options.checkOrder !== false) {
+          checkOrder(remainingNames, upMigrations);
+        }
+
+        const toApply = getMigrationsToRun(
+          upOptions,
+          remainingNames,
+          upMigrations
+        );
+        await run(toApply, 'up');
+        toRun = [...toRun, ...toApply];
+      }
+    };
 
     try {
-      if (options.fake) {
-        await runMigrations(toRun, 'markAsRun', options.direction);
+      if (options.fake && options.direction !== 'redo') {
+        await applyMigrations();
       } else if (dryRun || !options.singleTransaction) {
         // A dry run is already inside its own read-only transaction; opening another one
         // and committing it would end exactly the guarantee it is there to provide.
-        await runMigrations(toRun, 'apply', options.direction);
+        await applyMigrations();
       } else {
         await db.query('BEGIN');
 
         try {
-          await runMigrations(toRun, 'apply', options.direction);
+          await applyMigrations();
           await db.query('COMMIT');
         } catch (error) {
           logger.warn('> Rolling back attempted migration ...');

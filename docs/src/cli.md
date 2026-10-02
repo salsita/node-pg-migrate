@@ -78,6 +78,18 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
 | `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
 
+`redo` uses one connection and advisory lock for both phases. With the default
+`--single-transaction`, it commits only after both phases succeed. If reapplying a migration
+fails, the reverted changes and migration-history rows are rolled back together. Retrying
+therefore selects the same migrations instead of reverting earlier ones.
+
+As before, the `up` phase applies all pending migrations, including migrations that were
+pending before `redo`. When selecting a migration by name, the `up` phase remains limited to
+that migration. `--no-single-transaction` runs each migration in its own transaction,
+so completed migrations remain committed after a later failure. A migration that calls
+[`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction) also breaks the shared
+transaction; changes committed before or during that migration cannot be rolled back.
+
 ## Dry Runs
 
 `node-pg-migrate up --dry-run` prints the SQL a real run would execute and applies none of

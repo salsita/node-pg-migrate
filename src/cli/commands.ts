@@ -6,7 +6,6 @@ import type { ClientConfig } from 'pg';
 // TODO causes tests to fail when `.js` is removed
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
-import { getMigrationTableSchema } from '../utils';
 import { resolveConfig } from './config';
 import type { CliOptions } from './options';
 
@@ -63,24 +62,6 @@ export async function runCreate(
     });
 
   handleForceExit(options);
-}
-
-/**
- * `redo` is two runs. The `up` run continues the history the `down` run just used, even when
- * reverting left its migrations table empty: pinned there, it does not look for a history in
- * another schema and refuse, which would leave the reverted migrations unapplied.
- *
- * Pinning must not also create that schema: the `down` run has just used it, and
- * `CREATE SCHEMA IF NOT EXISTS` checks for the privilege to create schemas before it checks
- * whether the schema exists, so a role without it would fail halfway through the redo.
- */
-async function redo(down: RunnerOption, up: RunnerOption): Promise<void> {
-  await migrationRunner(down);
-  await migrationRunner({
-    ...up,
-    migrationsSchema: getMigrationTableSchema(down),
-    createMigrationsSchema: false,
-  });
 }
 
 /**
@@ -147,14 +128,7 @@ export async function runMigration(
       ? { connectionString: dbConnection }
       : dbConnection;
 
-  const buildOptions: (
-    direction: 'up' | 'down',
-    count?: number,
-    timestamp?: boolean
-  ) => RunnerOption = (direction, _count, _timestamp) => {
-    const count = _count === undefined ? numMigrations : _count;
-    const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
-
+  const buildOptions = (direction: 'up' | 'down' | 'redo'): RunnerOption => {
     return {
       dryRun,
       // The spread of the loosely typed config connection cannot be proven to
@@ -184,8 +158,8 @@ export async function runMigration(
       migrationsSchema: config.migrationsSchema,
       createMigrationsSchema: config.createMigrationsSchema,
       migrationsTable: config.migrationsTable,
-      count,
-      timestamp,
+      count: numMigrations,
+      timestamp: TIMESTAMP,
       file: migrationName,
       checkOrder: config.checkOrder,
       verbose: config.verbose,
@@ -201,13 +175,7 @@ export async function runMigration(
     };
   };
 
-  const promise =
-    action === 'redo'
-      ? redo(
-          buildOptions('down'),
-          buildOptions('up', Number.POSITIVE_INFINITY, false)
-        )
-      : migrationRunner(buildOptions(action));
+  const promise = migrationRunner(buildOptions(action));
   promise
     .then(() => {
       console.log(
