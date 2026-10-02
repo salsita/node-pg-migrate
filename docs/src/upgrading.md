@@ -22,6 +22,21 @@ run also need manual reconciliation before retrying.
 
 ### Breaking changes
 
+#### The programmatic API validates migrationsTable
+
+`runner()` now rejects a missing, empty or non-string `migrationsTable` with a
+`TypeError` before accessing the database. This option was already required by
+the TypeScript API. JavaScript callers must also supply it explicitly; the CLI
+continues to default to `pgmigrations`.
+
+Earlier versions could create a history table named `"undefined"` when this
+option was omitted. Before changing your configuration, inspect the existing
+history in the schema where migrations were run. To continue using that history,
+pass `migrationsTable: 'undefined'`, or deliberately rename the existing table
+while preserving its rows and then configure the new name. Switching directly
+to `pgmigrations` without transferring the history can replay already-applied
+migrations. This validation does not rename or repair existing history tables.
+
 #### The CLI now uses subcommands
 
 The command-line parser was rewritten around idiomatic subcommands. Options now

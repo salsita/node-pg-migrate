@@ -36,6 +36,12 @@ await runner({
 > [!NOTE]
 > If you use `dbClient`, you should not use `databaseUrl` at the same time and vice versa.
 
+`migrationsTable` is required and must be a non-empty string. Unlike the CLI,
+the programmatic API does not default to `pgmigrations`. An omitted or invalid
+value causes `runner()` to reject with a `TypeError` before connecting to the
+database or issuing queries. See the [upgrade guide](upgrading.md#the-programmatic-api-validates-migrationstable)
+if an earlier version created a table named `"undefined"`.
+
 | Option                      | Type                                        | Description                                                                                                                                                                                                                                                                                                                            |
 | --------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `databaseUrl`               | `string or object`                          | Connection string or client config which is passed to [new pg.Client](https://node-postgres.com/api/client#constructor)                                                                                                                                                                                                                |

@@ -19,6 +19,7 @@ type AdvisoryLockMode = 'fail' | 'wait';
 export interface RunnerOptionConfig {
   /**
    * The table storing which migrations have been run.
+   * Required; must be a non-empty string. The programmatic API has no default.
    */
   migrationsTable: string;
 
@@ -785,6 +786,13 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
 
   if (connection == null) {
     throw new Error('You must provide either a databaseUrl or a dbClient');
+  }
+
+  if (
+    typeof options.migrationsTable !== 'string' ||
+    options.migrationsTable.length === 0
+  ) {
+    throw new TypeError('migrationsTable must be a non-empty string');
   }
 
   const db = Db(connection, logger);
