@@ -11,6 +11,7 @@ export { getNumericPrefix, getSuffixFromFileName } from './fileNameUtils';
 export { formatLines } from './formatLines';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
+export { formatQueryError } from './formatQueryError';
 export { formatBlock, formatSeparator } from './formatSql';
 export { getMigrationTableName } from './getMigrationTableName';
 export { getMigrationTableSchema } from './getMigrationTableSchema';
