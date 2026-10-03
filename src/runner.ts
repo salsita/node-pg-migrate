@@ -944,6 +944,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         !options.singleTransaction
       ) {
         // Preserve fake up/down behavior; fake redo honors singleTransaction across both phases.
+        //
         // A dry run is already inside its own read-only transaction; opening another one
         // and committing it would end exactly the guarantee it is there to provide.
         applied = await applyMigrations();

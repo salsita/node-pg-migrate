@@ -90,9 +90,9 @@ so completed migrations remain committed after a later failure. A migration that
 [`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction) also breaks the shared
 transaction; changes committed before or during that migration cannot be rolled back.
 
-CockroachDB [does not provide full atomicity for DDL](https://github.com/cockroachdb/docs/blob/main/src/current/v25.3/online-schema-changes.md).
-With `autocommit_before_ddl` enabled (the [v25 default](https://github.com/cockroachdb/docs/blob/main/src/current/_includes/v25.3/misc/session-vars.md)),
-DDL commits individually, so a failed `redo` can retain reverted changes and history updates.
+CockroachDB [does not provide full atomicity for DDL](https://www.cockroachlabs.com/docs/v25.3/online-schema-changes).
+With `autocommit_before_ddl` enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
+DDL commits individually, so a failed run, including a failed `redo`, can retain changes and history updates.
 
 ## Dry Runs
 
