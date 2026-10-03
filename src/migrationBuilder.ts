@@ -772,6 +772,24 @@ export class MigrationBuilder {
   ) => void;
 
   /**
+   * Define access privileges on sequences.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-grant.html
+   */
+  public readonly grantOnSequences: (
+    ...args: Parameters<grants.GrantOnSequences>
+  ) => void;
+
+  /**
+   * Remove access privileges on sequences.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-revoke.html
+   */
+  public readonly revokeOnSequences: (
+    ...args: Parameters<grants.RevokeOnSequences>
+  ) => void;
+
+  /**
    * Define a new cast.
    *
    * @see https://www.postgresql.org/docs/current/sql-createcast.html
@@ -967,6 +985,8 @@ export class MigrationBuilder {
     this.revokeOnSchemas = wrap(grants.revokeOnSchemas(options));
     this.grantOnTables = wrap(grants.grantOnTables(options));
     this.revokeOnTables = wrap(grants.revokeOnTables(options));
+    this.grantOnSequences = wrap(grants.grantOnSequences(options));
+    this.revokeOnSequences = wrap(grants.revokeOnSequences(options));
 
     this.createCast = wrap(casts.createCast(options));
     this.dropCast = wrap(casts.dropCast(options));

@@ -3,6 +3,56 @@ import type { IndexStorageParameters } from '../src';
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it.each([
+    [
+      'grantOnSequences',
+      'GRANT SELECT, USAGE ON SEQUENCE "app"."ids" TO "reader";\n',
+    ],
+    [
+      'revokeOnSequences',
+      'REVOKE SELECT, USAGE ON SEQUENCE "app"."ids" FROM "reader";\n',
+    ],
+  ] as const)('exposes %s', (operation, expectedSql) => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+
+    pgm[operation]({
+      sequences: { schema: 'app', name: 'ids' },
+      roles: 'reader',
+      privileges: ['SELECT', 'USAGE'],
+    });
+
+    expect(pgm.getSql()).toBe(expectedSql);
+  });
+
+  it('automatically reverses sequence grants', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+    pgm.enableReverseMode();
+
+    pgm.grantOnSequences({
+      sequences: 'ALL',
+      schema: 'app',
+      roles: 'reader',
+      privileges: 'ALL',
+      cascade: true,
+    });
+
+    expect(pgm.getSql()).toBe(
+      'REVOKE ALL ON ALL SEQUENCES IN SCHEMA "app" FROM "reader" CASCADE;\n'
+    );
+  });
+
   it.each(['createIndex', 'addIndex'] as const)(
     'exposes storage parameters through %s',
     (operation) => {

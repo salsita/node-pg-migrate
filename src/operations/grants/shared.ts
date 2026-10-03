@@ -29,6 +29,25 @@ export type TablePrivilege =
 
 export type SchemaPrivilege = 'CREATE' | 'USAGE';
 
+export type SequencePrivilege = 'SELECT' | 'UPDATE' | 'USAGE';
+
+export interface CommonOnSequencesOptions {
+  privileges: SequencePrivilege | SequencePrivilege[] | 'ALL';
+  roles: Name | Name[];
+}
+
+export type CommonGrantOnSequencesOptions = CommonOnSequencesOptions &
+  WithGrantOption;
+
+export interface SomeSequencesOptions {
+  sequences: Name | Name[];
+}
+
+export interface AllSequencesOptions {
+  sequences: 'ALL';
+  schema: string;
+}
+
 export interface CommonOnTablesOptions {
   privileges: TablePrivilege | TablePrivilege[] | 'ALL';
   roles: Name | Name[];
@@ -70,4 +89,13 @@ export function asTablesStr(
   return isAllTablesOptions(options)
     ? `ALL TABLES IN SCHEMA ${mOptions.literal(options.schema)}`
     : toArray(options.tables).map(mOptions.literal).join(', ');
+}
+
+export function asSequencesStr(
+  options: AllSequencesOptions | SomeSequencesOptions,
+  mOptions: MigrationOptions
+): string {
+  return options.sequences === 'ALL' && 'schema' in options
+    ? `ALL SEQUENCES IN SCHEMA ${mOptions.literal(options.schema)}`
+    : `SEQUENCE ${toArray(options.sequences).map(mOptions.literal).join(', ')}`;
 }

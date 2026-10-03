@@ -197,6 +197,7 @@ DELETE FROM "public"."pgmigrations" WHERE name=$pga$090_create_cast$pga$;
 REVOKE "test_grant_reverse_bob1" FROM "test_grant_reverse_bob2";
 REVOKE USAGE ON SCHEMA "test_grant_reverse_schema" FROM "test_grant_reverse_bob1";
 DROP SCHEMA "test_grant_reverse_schema";
+REVOKE SELECT, USAGE ON SEQUENCE "test_grant_reverse_table_id_seq" FROM "test_grant_reverse_bob1";
 REVOKE SELECT, UPDATE ON "test_grant_reverse_table" FROM "test_grant_reverse_bob1";
 DROP ROLE "test_grant_reverse_bob2";
 DROP ROLE "test_grant_reverse_bob1";
