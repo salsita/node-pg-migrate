@@ -237,8 +237,15 @@ describe.each(PG_VERSIONS)(
       await expect(
         reader.query("SELECT nextval('sequence_privileges.created_later')")
       ).rejects.toMatchObject({ code: '42501' });
+      await client.query(
+        'GRANT USAGE ON SEQUENCE sequence_privileges.created_later TO sequence_reader'
+      );
+      await reader.query("SELECT nextval('sequence_privileges.created_later')");
 
       await migrate('down');
+      await expect(
+        reader.query("SELECT nextval('sequence_privileges.created_later')")
+      ).rejects.toMatchObject({ code: '42501' });
       for (const role of ['sequence_reader', 'sequence_delegate']) {
         for (const sequence of ['records_id_seq', 'standalone']) {
           expect(

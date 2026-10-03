@@ -138,7 +138,9 @@ sequence. `sequences: 'ALL'` together with `schema` affects existing sequences
 only; it does not set default privileges for future sequences. Without `schema`,
 `'ALL'` is treated as a literal sequence name, as with `grantOnTables`.
 
-The operation reverses automatically with `revokeOnSequences`.
+The operation reverses automatically with `revokeOnSequences`. A schema-wide
+reversal revokes privileges on all sequences present when it runs, including
+sequences created after the grant that received privileges independently.
 
 ## Reverse Operation: `revokeOnSequences`
 
@@ -171,6 +173,13 @@ pgm.revokeOnSequences({
   privileges: 'USAGE',
 });
 ```
+
+> [!NOTE]
+> CockroachDB 23.2.28, 24.3.23, and 25.3.5 support named and schema-wide sequence grants
+> and revocations, including grant options, but do not support `CASCADE`. Leave
+> `cascade` at its default `false`, including on grants that reverse automatically.
+> `ALL` uses the database's full set of sequence privileges, which is broader on
+> [CockroachDB](https://www.cockroachlabs.com/docs/v25.3/grant) than on PostgreSQL.
 
 ## Operation: `grantOnSchemas`
 
