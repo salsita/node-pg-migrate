@@ -75,8 +75,24 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate up {N}`                  |                                      runs N up migrations from the current state.                                       |
 | `node-pg-migrate down`                    |                                              runs a single down migration.                                              |
 | `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
-| `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
-| `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
+| `node-pg-migrate redo`                    |                              reverts the last migration, then applies pending migrations.                               |
+| `node-pg-migrate redo {N}`                |                             reverts the last N migrations, then applies pending migrations.                             |
+
+`redo` uses one connection and advisory lock for both phases. On PostgreSQL, with the default
+`--single-transaction`, it commits only after both phases succeed. If reapplying a migration
+fails, the reverted changes and migration-history rows are rolled back together. Retrying
+therefore selects the same migrations instead of reverting earlier ones.
+
+As before, the `up` phase applies all pending migrations, including migrations that were
+pending before `redo`. When selecting a migration by name, the `up` phase remains limited to
+that migration. `--no-single-transaction` runs each migration in its own transaction,
+so completed migrations remain committed after a later failure. A migration that calls
+[`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction) also breaks the shared
+transaction; changes committed before or during that migration cannot be rolled back.
+
+CockroachDB [does not provide full atomicity for DDL](https://www.cockroachlabs.com/docs/v25.3/online-schema-changes).
+With `autocommit_before_ddl` enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
+DDL commits individually, so a failed run, including a failed `redo`, can retain changes and history updates.
 
 ## Dry Runs
 
@@ -95,6 +111,10 @@ than by `node-pg-migrate` itself:
 Reading the database still works, so `pgm.db.select(...)` inside a migration behaves as
 usual.
 
+`redo --dry-run` prints the selected `down` migrations followed by the pending `up`
+migrations. It calculates the remaining migration history in memory without changing the
+stored history or applying either phase.
+
 ### Limitations
 
 A dry run prints; it does not validate. Because nothing is applied, a migration cannot see
@@ -104,8 +124,8 @@ what an earlier pending migration would have created:
   will fail;
 - a migration that writes through `pgm.db.query(...)` fails with a message pointing at that
   write - the read-only transaction refuses it;
-- `redo --dry-run` prints the `down` migrations and then reports `No migrations to run!` for
-  the `up` half, because the `down` half was never applied.
+- during `redo --dry-run`, direct database reads still see the unchanged database, not the
+  state the `down` phase would have produced.
 
 ## Migration History
 
@@ -185,7 +205,7 @@ apply to the `up`, `down` and `redo` commands:
 | `envPath`                   |         | `same level where it's invoked` | Retrieve the path to a .env file. This feature proves handy when dealing with nested projects or when referencing a global .env file.                                                                                                                                                   |
 | `timestamp`                 |         | `false`                         | Treats number argument to up/down migration as timestamp (running up migrations less or equal to timestamp or down migrations greater or equal to timestamp)                                                                                                                            |
 | `check-order`               |         | `true`                          | Check order of migrations before running them, to switch it off supply `--no-check-order`                                                                                                                                                                                               |
-| `single-transaction`        |         | `true`                          | Combines all pending migrations into a single transaction so that if any migration fails, all will be rolled back, to switch it off supply `--no-single-transaction`                                                                                                                    |
+| `single-transaction`        |         | `true`                          | Runs migrations in a shared transaction, including both phases of `redo`; to switch it off supply `--no-single-transaction`. See the transaction limitations above                                                                                                                      |
 | `no-lock`                   |         | `false`                         | Disables locking mechanism and checks                                                                                                                                                                                                                                                   |
 | `advisory-lock-mode`        |         | `fail`                          | Specify behavior when the migration advisory lock is already held by another process (`fail`, `wait`)                                                                                                                                                                                   |
 | `fake`                      |         | `false`                         | Mark migrations as run without actually performing them, (use with caution!)                                                                                                                                                                                                            |
