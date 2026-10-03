@@ -82,52 +82,60 @@ describe('loadMigrations regression behavior', () => {
     });
   });
 
-  it('keeps init before next when 001_init.sql is split into 001_init.up/down.sql', async () => {
-    await withTempDir(async (dir) => {
-      const initUpPath = await writeMigrationFile(
-        dir,
-        '001_init.up.sql',
-        'CREATE TABLE init_table(id serial primary key);\n'
-      );
-      const initDownPath = await writeMigrationFile(
-        dir,
-        '001_init.down.sql',
-        'DROP TABLE init_table;\n'
-      );
-      const nextPath = await writeMigrationFile(
-        dir,
-        '002_next.sql',
-        '-- up migration\nSELECT 2;\n'
-      );
+  it.each([
+    ['sql', 'sql'],
+    ['SQL', 'SQL'],
+    ['SqL', 'sQl'],
+    ['sql', 'SQL'],
+  ])(
+    'keeps init before next when split into .up.%s / .down.%s',
+    async (upExtension, downExtension) => {
+      await withTempDir(async (dir) => {
+        const initUpPath = await writeMigrationFile(
+          dir,
+          `001_init.up.${upExtension}`,
+          'CREATE TABLE init_table(id serial primary key);\n'
+        );
+        const initDownPath = await writeMigrationFile(
+          dir,
+          `001_init.down.${downExtension}`,
+          'DROP TABLE init_table;\n'
+        );
+        const nextPath = await writeMigrationFile(
+          dir,
+          '002_next.sql',
+          '-- up migration\nSELECT 2;\n'
+        );
 
-      const db: DBConnection = {} as never;
-      const options: RunnerOption = {
-        dir,
-        ignorePattern: undefined,
-        useGlob: false,
-        migrationsTable: 'migrations',
-        direction: 'up',
-        databaseUrl: 'postgres://user:pass@localhost/db',
-        migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
-      };
+        const db: DBConnection = {} as never;
+        const options: RunnerOption = {
+          dir,
+          ignorePattern: undefined,
+          useGlob: false,
+          migrationsTable: 'migrations',
+          direction: 'up',
+          databaseUrl: 'postgres://user:pass@localhost/db',
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        };
 
-      const migrations = await loadMigrations(db, options, console);
+        const migrations = await loadMigrations(db, options, console);
 
-      expect(migrations).toHaveLength(2);
-      expect(migrations.map((migration) => migration.path)).toEqual([
-        join(dir, '001_init.sql'),
-        nextPath,
-      ]);
-      expect(migrations.map((migration) => migration.name)).toEqual([
-        '001_init',
-        '002_next',
-      ]);
+        expect(migrations).toHaveLength(2);
+        expect(migrations.map((migration) => migration.path)).toEqual([
+          join(dir, '001_init.sql'),
+          nextPath,
+        ]);
+        expect(migrations.map((migration) => migration.name)).toEqual([
+          '001_init',
+          '002_next',
+        ]);
 
-      // Ensure files are truly split and still represented as one ordered migration.
-      expect(initUpPath).toContain('.up.sql');
-      expect(initDownPath).toContain('.down.sql');
-    });
-  });
+        // Ensure files are truly split and still represented as one ordered migration.
+        expect(initUpPath).toContain(`.up.${upExtension}`);
+        expect(initDownPath).toContain(`.down.${downExtension}`);
+      });
+    }
+  );
 
   it('falls back to default loader for unmatched extensions when only .sql strategy is configured', async () => {
     await withTempDir(async (dir) => {

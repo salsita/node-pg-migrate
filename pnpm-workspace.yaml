@@ -11,4 +11,4 @@ overrides:
 patchedDependencies:
   # VitePress strips static HTML from lean page chunks with a greedy regex that can span two
   # calls on one line, which breaks the home page's chunk; drop once fixed upstream
-  vitepress@2.0.0-alpha.19: patches/vitepress@2.0.0-alpha.19.patch
+  vitepress@2.0.0-alpha.20: patches/vitepress@2.0.0-alpha.20.patch

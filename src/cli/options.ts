@@ -255,7 +255,7 @@ export function addRunnerOptions(command: Command): Command {
     .addOption(
       new Option(
         `--no-${singleTransactionArg}`,
-        'Combines all pending migrations into a single database transaction so that if any migration fails, all will be rolled back'
+        'Runs each migration in its own transaction instead of a shared transaction'
       )
     )
     .addOption(

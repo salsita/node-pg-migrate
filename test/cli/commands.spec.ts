@@ -55,40 +55,79 @@ describe('cli', () => {
 
     describe('redo', () => {
       it.each([
-        { given: {}, pinned: 'public' },
-        { given: { schema: ['app', 'public'] }, pinned: 'app' },
+        { given: {} },
+        { given: { schema: ['app', 'public'] } },
         {
           given: { schema: ['app'], migrationsSchema: 'meta' },
-          pinned: 'meta',
         },
-        { given: { createMigrationsSchema: true }, pinned: 'public' },
+        { given: { createMigrationsSchema: true } },
       ])(
-        'should re-apply into the migrations table the down run used ($pinned)',
-        async ({ given, pinned }) => {
+        'should delegate both phases to one runner call for %j',
+        async ({ given }) => {
           await runMigration('redo', [], {
             databaseUrlVar: 'DATABASE_URL',
             ...given,
           });
 
           await vi.waitFor(() => {
-            expect(runnerMock).toHaveBeenCalledTimes(2);
+            expect(runnerMock).toHaveBeenCalledTimes(1);
           });
-          expect(runnerMock).toHaveBeenNthCalledWith(
-            1,
+          expect(runnerMock).toHaveBeenCalledWith(
             expect.objectContaining({
-              direction: 'down',
+              direction: 'redo',
               createMigrationsSchema: given.createMigrationsSchema,
+              migrationsSchema: given.migrationsSchema,
+              schema: given.schema ?? ['public'],
             })
           );
-          // Reverting can leave that table empty; pinned, the up run does not go looking
-          // for a history in another schema and refuse halfway through the redo. Nor does
-          // it create the schema the down run has just used, which needs more privileges.
-          expect(runnerMock).toHaveBeenNthCalledWith(
-            2,
+        }
+      );
+
+      it.each([
+        {
+          positional: ['2'],
+          options: {},
+          expected: { count: 2, timestamp: undefined, file: undefined },
+        },
+        {
+          positional: ['1234567890'],
+          options: { timestamp: true },
+          expected: { count: 1234567890, timestamp: true, file: undefined },
+        },
+        {
+          positional: ['001_selected'],
+          options: {},
+          expected: {
+            count: undefined,
+            timestamp: undefined,
+            file: '001_selected',
+          },
+        },
+      ])(
+        'should pass selection and transaction options to redo for %j',
+        async ({ positional, options, expected }) => {
+          await runMigration('redo', positional, {
+            databaseUrlVar: 'DATABASE_URL',
+            singleTransaction: true,
+            fake: true,
+            dryRun: true,
+            lock: true,
+            lockValue: 42,
+            ...options,
+          });
+
+          await vi.waitFor(() => {
+            expect(runnerMock).toHaveBeenCalledTimes(1);
+          });
+          expect(runnerMock).toHaveBeenCalledWith(
             expect.objectContaining({
-              direction: 'up',
-              migrationsSchema: pinned,
-              createMigrationsSchema: false,
+              direction: 'redo',
+              singleTransaction: true,
+              fake: true,
+              dryRun: true,
+              noLock: false,
+              lockValue: 42,
+              ...expected,
             })
           );
         }

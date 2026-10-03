@@ -19,10 +19,27 @@
 
 | Option    | Type                | Description                                        |
 | --------- | ------------------- | -------------------------------------------------- |
+| `as`      | `string`            | `PERMISSIVE` (default) or `RESTRICTIVE`            |
 | `command` | `string`            | `ALL`, `SELECT`, `INSERT`, `UPDATE`, or `DELETE`   |
 | `role`    | `string` or `array` | the role(s) to which the policy is to be applied   |
 | `using`   | `string`            | SQL conditional expression for visibility check    |
 | `check`   | `string`            | SQL conditional expression for insert/update check |
+
+Permissive policies combine with `OR`; restrictive policies combine with `AND`.
+At least one permissive policy must grant access for restrictive policies to
+allow any rows. Omitting `as` preserves PostgreSQL's default permissive behavior.
+
+```js
+pgm.createPolicy('accounts', 'active_accounts', {
+  as: 'RESTRICTIVE',
+  command: 'SELECT',
+  using: 'active = true',
+});
+```
+
+The policy mode can only be set by `createPolicy`. To change it, drop and recreate
+the policy; `alterPolicy` cannot change whether a policy is permissive or
+restrictive.
 
 ## Reverse Operation: `dropPolicy`
 

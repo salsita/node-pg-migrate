@@ -27,16 +27,28 @@
 
 #### Options
 
-| Option         | Type                        | Description                                                               |
-| -------------- | --------------------------- | ------------------------------------------------------------------------- |
-| `name`         | `string`                    | name for the index (one will be inferred from table/columns if undefined) |
-| `unique`       | `boolean`                   | set to true if this is a unique index                                     |
-| `where`        | `string`                    | raw sql for where clause of index                                         |
-| `concurrently` | `boolean`                   | create this index concurrently                                            |
-| `ifNotExists`  | `boolean`                   | default false                                                             |
-| `method`       | `string`                    | btree \| hash \| gist \| spgist \| gin                                    |
-| `include`      | `string` or `array[string]` | columns to add to the include clause                                      |
-| `nulls`        | `string`                    | distinct \| not distinct (for unique indexes only)                        |
+| Option              | Type                        | Description                                                                                 |
+| ------------------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| `name`              | `string`                    | name for the index (one will be inferred from table/columns if undefined)                   |
+| `unique`            | `boolean`                   | set to true if this is a unique index                                                       |
+| `where`             | `string`                    | raw sql for where clause of index                                                           |
+| `concurrently`      | `boolean`                   | create this index concurrently                                                              |
+| `ifNotExists`       | `boolean`                   | default false                                                                               |
+| `method`            | `string`                    | btree \| hash \| gist \| spgist \| gin                                                      |
+| `include`           | `string` or `array[string]` | columns to add to the include clause                                                        |
+| `nulls`             | `string`                    | distinct \| not distinct (for unique indexes only)                                          |
+| `storageParameters` | `object`                    | index storage parameters for the `WITH` clause; values can be strings, numbers, or booleans |
+
+Storage parameter names and string values are escaped and used as supplied,
+without decamelization. An empty `storageParameters` object omits the `WITH`
+clause. PostgreSQL validates which parameters and values the selected index
+method supports; see [Index Storage Parameters](https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-STORAGE-PARAMETERS).
+
+The exported `IndexStorageParameters` type can be used for reusable parameter maps.
+
+When using `concurrently: true`, call [`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction)
+in the migration. Regular index creation supports transactions, including when
+storage parameters are specified.
 
 ### Examples
 
@@ -78,6 +90,23 @@ pgm.createIndex('table', [
   { name: 'col1', opclass: { schema: 'schema', name: 'opclass' }, sort: 'ASC' },
 ]);
 //expected output: CREATE INDEX ON "table" ("col1" "schema"."opclass" ASC)
+```
+
+```ts [storage parameters]
+pgm.createIndex('films', 'title', {
+  name: 'title_idx',
+  storageParameters: { fillfactor: 70, deduplicate_items: false },
+});
+//expected output: CREATE INDEX "title_idx" ON "films" ("title") WITH ("fillfactor" = 70, "deduplicate_items" = false);
+```
+
+```ts [GiST storage parameters]
+pgm.createIndex('locations', 'position', {
+  name: 'position_idx',
+  method: 'gist',
+  storageParameters: { buffering: 'off' },
+});
+//expected output: CREATE INDEX "position_idx" ON "locations" USING gist ("position") WITH ("buffering" = $pga$off$pga$);
 ```
 
 :::

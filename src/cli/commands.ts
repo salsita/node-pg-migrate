@@ -3,7 +3,6 @@ import type { RunnerOption } from 'node-pg-migrate';
 import { Migration, runner as migrationRunner } from 'node-pg-migrate';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
-import { getMigrationTableSchema } from '../utils';
 import { resolveConfig } from './config';
 import { requireDbConnection } from './connection';
 import type { CliOptions } from './options';
@@ -64,24 +63,6 @@ export async function runCreate(
 }
 
 /**
- * `redo` is two runs. The `up` run continues the history the `down` run just used, even when
- * reverting left its migrations table empty: pinned there, it does not look for a history in
- * another schema and refuse, which would leave the reverted migrations unapplied.
- *
- * Pinning must not also create that schema: the `down` run has just used it, and
- * `CREATE SCHEMA IF NOT EXISTS` checks for the privilege to create schemas before it checks
- * whether the schema exists, so a role without it would fail halfway through the redo.
- */
-async function redo(down: RunnerOption, up: RunnerOption): Promise<void> {
-  await migrationRunner(down);
-  await migrationRunner({
-    ...up,
-    migrationsSchema: getMigrationTableSchema(down),
-    createMigrationsSchema: false,
-  });
-}
-
-/**
  * Handler for the `up`, `down` and `redo` actions.
  */
 export async function runMigration(
@@ -129,19 +110,12 @@ export async function runMigration(
       ? { connectionString: dbConnection }
       : dbConnection;
 
-  const buildOptions: (
-    direction: 'up' | 'down',
-    count?: number,
-    timestamp?: boolean
-  ) => RunnerOption = (direction, _count, _timestamp) => {
-    const count = _count === undefined ? numMigrations : _count;
-    const timestamp = _timestamp === undefined ? TIMESTAMP : _timestamp;
-
+  const buildOptions = (direction: 'up' | 'down' | 'redo'): RunnerOption => {
     return {
       dryRun,
       // The spread of the loosely typed config connection cannot be proven to
       // produce a `ClientConfig`.
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      // oxlint-disable typescript/no-unsafe-type-assertion
       databaseUrl: {
         // oxlint-disable-next-line typescript/no-misused-spread
         ...databaseUrl,
@@ -156,6 +130,7 @@ export async function runMigration(
             }
           : undefined),
       } as ClientConfig,
+      // oxlint-enable typescript/no-unsafe-type-assertion
       dir: config.migrationsDir,
       useGlob: config.useGlob,
       ignorePattern: config.ignorePattern,
@@ -165,8 +140,8 @@ export async function runMigration(
       migrationsSchema: config.migrationsSchema,
       createMigrationsSchema: config.createMigrationsSchema,
       migrationsTable: config.migrationsTable,
-      count,
-      timestamp,
+      count: numMigrations,
+      timestamp: TIMESTAMP,
       file: migrationName,
       checkOrder: config.checkOrder,
       verbose: config.verbose,
@@ -182,13 +157,7 @@ export async function runMigration(
     };
   };
 
-  const promise =
-    action === 'redo'
-      ? redo(
-          buildOptions('down'),
-          buildOptions('up', Number.POSITIVE_INFINITY, false)
-        )
-      : migrationRunner(buildOptions(action));
+  const promise = migrationRunner(buildOptions(action));
   promise
     .then(() => {
       console.log(

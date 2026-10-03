@@ -367,10 +367,11 @@ export function parseConstraints(
 
     // `unique` accepts a single column, a column set, or a list of column sets,
     // which the element type cannot express once the sets are nested.
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    // oxlint-disable typescript/no-unsafe-type-assertion
     for (const uniqueSet of (isArrayOfArrays
       ? uniqueArray
       : [uniqueArray]) as Array<Name | Name[]>) {
+      // oxlint-enable typescript/no-unsafe-type-assertion
       const cols = toArray(uniqueSet);
       const name = literal(
         optionName || `${tableName}_uniq_${cols.map(getNameString).join('_')}`

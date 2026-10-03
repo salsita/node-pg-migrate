@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RunnerOption } from '../src';
 import type { DBConnection } from '../src/db';
 import type { LogFn, Logger } from '../src/logger';
+import type { MigrationAction } from '../src/migration';
 import {
   FilenameFormat,
   getMigrationFilePaths,
@@ -35,8 +36,86 @@ describe('migration', () => {
   let queryMock: Mock;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     queryMock = vi.fn();
     dbMock.query = queryMock;
+  });
+
+  describe.each(['apply', 'markAsRun'] as const)('%s bookkeeping', (method) => {
+    describe.each(['up', 'down'] as const)('%s', (direction) => {
+      it.each([
+        ["0001_user's-table", "$pga$0001_user's-table$pga$"],
+        ["0001_users''table", "$pga$0001_users''table$pga$"],
+        ["0001_' OR '1'='1", "$pga$0001_' OR '1'='1$pga$"],
+        ['0001_tag$pga$', '$pgb$0001_tag$pga$$pgb$'],
+        ['0001_tag$pga', '$pgb$0001_tag$pga$pgb$'],
+        ['0001_tag$pga$pgb', '$pgc$0001_tag$pga$pgb$pgc$'],
+      ])('should treat %s as a literal name', async (name, literal) => {
+        const migration = new Migration(
+          dbMock,
+          `${name}.cjs`,
+          { up: () => {}, down: () => {} },
+          {
+            ...options,
+            migrationsSchema: 'my"App',
+            migrationsTable: 'pg"Migrations',
+            decamelize: true,
+          },
+          {},
+          logger
+        );
+        const table = '"my""App"."pg""Migrations"';
+
+        await migration[method](direction);
+
+        expect(queryMock).toHaveBeenCalledWith(
+          direction === 'up'
+            ? `INSERT INTO ${table} (name, run_on) VALUES (${literal}, NOW());`
+            : `DELETE FROM ${table} WHERE name=${literal};`
+        );
+        expect(migration.name).toBe(name);
+      });
+
+      it('should print the escaped name without executing a dry run', async () => {
+        const migration = new Migration(
+          dbMock,
+          "0001_user's-table.cjs",
+          { up: () => {}, down: () => {} },
+          { ...options, dryRun: true },
+          {},
+          logger
+        );
+
+        await migration[method](direction);
+
+        expect(queryMock).not.toHaveBeenCalled();
+        expect(logger.info).toHaveBeenCalledWith(
+          expect.stringContaining("$pga$0001_user's-table$pga$")
+        );
+      });
+    });
+  });
+
+  it('should escape history names during automatic rollback', async () => {
+    const migration = new Migration(
+      dbMock,
+      "0001_user's-table.cjs",
+      {
+        up: (pgm) => {
+          pgm.createTable('users', { id: 'integer' });
+        },
+      },
+      options,
+      {},
+      logger
+    );
+
+    await migration.apply('down');
+
+    expect(queryMock).toHaveBeenCalledWith('DROP TABLE "users";');
+    expect(queryMock).toHaveBeenCalledWith(
+      'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_user\'s-table$pga$;'
+    );
   });
 
   describe('getMigrationFilePaths', () => {
@@ -46,7 +125,7 @@ describe('migration', () => {
       const filePaths = await getMigrationFilePaths(dir, { logger });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths.length).toMatchInlineSnapshot(`99`);
+      expect(filePaths.length).toMatchInlineSnapshot(`100`);
       expect(filePaths).not.toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -67,7 +146,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths.length).toMatchInlineSnapshot(`74`);
+      expect(filePaths.length).toMatchInlineSnapshot(`75`);
 
       for (const filePath of filePaths) {
         expect(isAbsolute(filePath)).toBeTruthy();
@@ -83,7 +162,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths.length).toMatchInlineSnapshot(`112`);
+      expect(filePaths.length).toMatchInlineSnapshot(`113`);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -103,7 +182,7 @@ describe('migration', () => {
       });
 
       expect(Array.isArray(filePaths)).toBeTruthy();
-      expect(filePaths.length).toMatchInlineSnapshot(`111`);
+      expect(filePaths.length).toMatchInlineSnapshot(`112`);
       expect(filePaths).toContainEqual(expect.stringContaining('nested'));
 
       for (const filePath of filePaths) {
@@ -133,7 +212,7 @@ describe('migration', () => {
         ignorePattern
       );
 
-      expect(nextPrefix).toMatchInlineSnapshot(`"100"`);
+      expect(nextPrefix).toMatchInlineSnapshot(`"101"`);
     });
 
     it('should fail to get the next index with invalid filenames', async () => {
@@ -411,6 +490,180 @@ describe('migration', () => {
       expect(queryMock).not.toHaveBeenCalled();
       expect(logger.info).toHaveBeenCalledWith(
         expect.stringContaining(`DELETE FROM "public"."${migrationsTable}"`)
+      );
+    });
+  });
+
+  describe('transaction cleanup', () => {
+    beforeEach(() => {
+      vi.mocked(logger.warn).mockClear();
+    });
+
+    function migration(
+      overrides: Partial<RunnerOption> = {},
+      up: MigrationAction = (pgm) => {
+        pgm.sql('SELECT 1');
+      },
+      down: MigrationAction = (pgm) => {
+        pgm.sql('SELECT 1');
+      }
+    ) {
+      return new Migration(
+        dbMock,
+        '1000_cleanup.js',
+        { up, down },
+        { ...options, ...overrides },
+        {},
+        logger
+      );
+    }
+
+    describe.each([false, undefined])(
+      'singleTransaction=%s',
+      (singleTransaction) => {
+        describe.each(['up', 'down'] as const)('%s', (direction) => {
+          it.each(['statement', 'history', 'commit'] as const)(
+            'rolls back a failed %s and preserves its error',
+            async (step) => {
+              const error = new Error(`${step} failed`);
+              const history =
+                direction === 'up' ? 'INSERT INTO' : 'DELETE FROM';
+              const steps = ['BEGIN;', 'SELECT 1;', history, 'COMMIT;'];
+              const expectedSteps = [
+                'BEGIN;',
+                'SELECT 1;',
+                expect.stringMatching(`^${history} `),
+                'COMMIT;',
+              ];
+              const failedIndex =
+                ['statement', 'history', 'commit'].indexOf(step) + 1;
+              queryMock.mockImplementation((sql: string) => {
+                if (sql.startsWith(steps[failedIndex])) {
+                  return Promise.reject(error);
+                }
+                return Promise.resolve({ rows: [] });
+              });
+
+              await expect(
+                migration({ singleTransaction }).apply(direction)
+              ).rejects.toBe(error);
+              expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+                ...expectedSteps.slice(0, failedIndex + 1),
+                'ROLLBACK;',
+              ]);
+            }
+          );
+        });
+      }
+    );
+
+    it.each([new Error('rollback failed'), 'rollback failed'])(
+      'preserves the migration error when rollback rejects with %s',
+      async (rollbackError) => {
+        const error = new Error('statement failed');
+        queryMock
+          .mockResolvedValueOnce({ rows: [] })
+          .mockRejectedValueOnce(error)
+          .mockRejectedValueOnce(rollbackError);
+
+        await expect(migration().apply('up')).rejects.toBe(error);
+        expect(queryMock).toHaveBeenLastCalledWith('ROLLBACK;');
+        expect(logger.warn).toHaveBeenCalledWith('rollback failed');
+      }
+    );
+
+    it('rolls back a failed automatically reversed migration', async () => {
+      const error = new Error('drop failed');
+      queryMock.mockImplementation((sql: string) => {
+        if (sql.startsWith('DROP TABLE')) {
+          return Promise.reject(error);
+        }
+        return Promise.resolve({ rows: [] });
+      });
+      const subject = new Migration(
+        dbMock,
+        '1000_cleanup.js',
+        {
+          up: (pgm) => {
+            pgm.createTable('cleanup', { id: 'integer' });
+          },
+        },
+        options,
+        {},
+        logger
+      );
+
+      await expect(subject.apply('down')).rejects.toBe(error);
+      expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+        'BEGIN;',
+        'DROP TABLE "cleanup";',
+        'ROLLBACK;',
+      ]);
+    });
+
+    it('does not roll back when BEGIN fails', async () => {
+      const error = new Error('begin failed');
+      queryMock.mockRejectedValue(error);
+
+      await expect(migration().apply('up')).rejects.toBe(error);
+      expect(queryMock).toHaveBeenCalledExactlyOnceWith('BEGIN;');
+    });
+
+    it.each(['synchronous', 'asynchronous'])(
+      'does not open or roll back a transaction after a %s preparation failure',
+      async (mode) => {
+        const error = new Error('preparation failed');
+        const action: MigrationAction = () => {
+          if (mode === 'asynchronous') {
+            return Promise.reject(error);
+          }
+          throw error;
+        };
+
+        await expect(migration({}, action).apply('up')).rejects.toBe(error);
+        expect(queryMock).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([false, true])(
+      'does not roll back noTransaction SQL locally (singleTransaction=%s)',
+      async (singleTransaction) => {
+        const error = new Error('statement failed');
+        queryMock.mockImplementation((sql: string) => {
+          if (sql === 'SELECT 1;') {
+            return Promise.reject(error);
+          }
+          return Promise.resolve({ rows: [] });
+        });
+        const action: MigrationAction = (pgm) => {
+          pgm.noTransaction();
+          pgm.sql('SELECT 1');
+        };
+
+        await expect(
+          migration({ singleTransaction }, action).apply('up')
+        ).rejects.toBe(error);
+        expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual(
+          singleTransaction ? ['COMMIT;', 'SELECT 1;'] : ['SELECT 1;']
+        );
+      }
+    );
+
+    it('leaves rollback of the global transaction to the runner', async () => {
+      const error = new Error('statement failed');
+      queryMock.mockRejectedValue(error);
+
+      await expect(
+        migration({ singleTransaction: true }).apply('up')
+      ).rejects.toBe(error);
+      expect(queryMock).toHaveBeenCalledExactlyOnceWith('SELECT 1;');
+    });
+
+    it('does not execute transaction control during a dry run', async () => {
+      await migration({ dryRun: true }).apply('up');
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('BEGIN;\nSELECT 1;')
       );
     });
   });

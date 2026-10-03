@@ -1,11 +1,13 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { toArray } from '../../utils';
+import { escapeValue, quote, toArray } from '../../utils';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import { isNameObject } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
 import { dropIndex } from './dropIndex';
 import type { IndexColumn } from './shared';
 import { generateColumnsString, generateIndexName } from './shared';
+
+export type IndexStorageParameters = Record<string, string | number | boolean>;
 
 export interface CreateIndexOptions extends IfNotExistsOption {
   name?: string;
@@ -21,6 +23,8 @@ export interface CreateIndexOptions extends IfNotExistsOption {
   include?: string | string[];
 
   nulls?: 'distinct' | 'not distinct';
+
+  storageParameters?: IndexStorageParameters;
 }
 
 export type CreateIndexFn = (
@@ -41,6 +45,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       where,
       include,
       nulls,
+      storageParameters = {},
     } = options;
 
     if (nulls && !unique) {
@@ -60,6 +65,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     ifNotExists - optionally create index
     options.method -  [ btree | hash | gist | spgist | gin ]
     nulls - nulls distinct or not distinct (for unique indexes only)
+    storageParameters - index storage parameters for the WITH clause
     */
     const columns = toArray(rawColumns);
 
@@ -79,10 +85,16 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       ? ` INCLUDE (${toArray(include).map(mOptions.literal).join(', ')})`
       : '';
     const nullsStr = nulls ? ` NULLS ${nulls.toUpperCase()}` : '';
+    const storageOptions = Object.entries(storageParameters)
+      .map(([key, value]) => `${quote(key)} = ${escapeValue(value)}`)
+      .join(', ');
+    const storageParametersStr = storageOptions
+      ? ` WITH (${storageOptions})`
+      : '';
     const indexNameStr = mOptions.literal(indexName);
     const tableNameStr = mOptions.literal(tableName);
 
-    return `CREATE${uniqueStr} INDEX${concurrentlyStr}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${methodStr} (${columnsString})${includeStr}${nullsStr}${whereStr};`;
+    return `CREATE${uniqueStr} INDEX${concurrentlyStr}${ifNotExistsStr} ${indexNameStr} ON ${tableNameStr}${methodStr} (${columnsString})${includeStr}${nullsStr}${storageParametersStr}${whereStr};`;
   };
 
   _create.reverse = dropIndex(mOptions);

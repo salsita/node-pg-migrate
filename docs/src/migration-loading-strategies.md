@@ -44,9 +44,18 @@ await runner({
 With this configuration:
 
 - `001_init.up.sql` + `001_init.down.sql` are treated as one migration (`001_init`)
-- The migration `id` is normalized to the equivalent `.sql` form (`001_init.up.sql` / `001_init.down.sql` -> `001_init.sql`). This means you can switch from a single `001_init.sql` migration to split `.up/.down` files (or vice versa) without creating a second entry in `migrationsTable`.
+- The final SQL extension is case-insensitive: `001_init.up.SQL` + `001_init.down.SqL` also form one migration. Filename stems and source paths retain their case.
+- The `.up` and `.down` direction tokens must be lowercase. Names such as `001_init.UP.SQL` or `001_init.Down.sql` throw an error before migration SQL is read or executed.
+- The split migration `id` always ends in lowercase `.sql`, regardless of the files' extension case (`001_init.up.SQL` / `001_init.down.SqL` -> `001_init.sql`). This means you can switch from a single `001_init.sql` migration to split `.up/.down` files (or vice versa) without creating a second entry in `migrationsTable`.
 - `001_init.sql` still works as a single-file SQL migration
 - mixing `001_init.sql` with `001_init.up.sql` / `001_init.down.sql` throws an error
+
+If you already applied uppercase or mixed-case extension split files with
+`loader: 'sql'`, their history may contain separate `001_init.up` and
+`001_init.down` entries. Before upgrading, rename the applied up entry to
+`001_init` and remove the corresponding down entry if present. See the
+[upgrade instructions](upgrading#grouped-sql-filenames-and-existing-history)
+for the required history and filename adjustments.
 
 ## Example: Custom Loader
 

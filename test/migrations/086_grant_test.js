@@ -1,7 +1,15 @@
 import { constants } from './085_grant_tables_schemas_roles.js';
 
-const { schema, table, role1, role2, tablePrivileges, schemaPrivilege } =
-  constants;
+const {
+  schema,
+  table,
+  sequence,
+  role1,
+  role2,
+  tablePrivileges,
+  sequencePrivileges,
+  schemaPrivilege,
+} = constants;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
@@ -21,6 +29,25 @@ const hasTablePrivileges = async (pgm, role, tableName, privileges) => {
   return privileges.reduce(
     (acc, privilege) => acc && foundPrivileges.has(privilege),
     true
+  );
+};
+
+/**
+ * @param pgm {import('node-pg-migrate').MigrationBuilder}
+ * @param role {string}
+ * @param sequenceName {string}
+ * @param privileges {string[]}
+ */
+const hasSequencePrivileges = async (pgm, role, sequenceName, privileges) => {
+  /** @type {Array<{ has_sequence_privilege: boolean }>} */
+  const rows = await pgm.db.select(
+    `SELECT has_sequence_privilege($1, $2, privilege)
+    FROM unnest($3::text[]) AS privilege`,
+    [role, sequenceName, privileges]
+  );
+  return (
+    rows.length === privileges.length &&
+    rows.every((row) => row.has_sequence_privilege)
   );
 };
 
@@ -55,7 +82,12 @@ const isMemberOf = async (pgm, role, roleGroups) => {
   );
 };
 
-export const utils = { hasTablePrivileges, hasSchemaPrivilege, isMemberOf };
+export const utils = {
+  hasTablePrivileges,
+  hasSequencePrivileges,
+  hasSchemaPrivilege,
+  isMemberOf,
+};
 
 export const up = async (pgm) => {
   const hasGrantedTablePrivileges = await hasTablePrivileges(
@@ -67,6 +99,21 @@ export const up = async (pgm) => {
 
   if (!hasGrantedTablePrivileges) {
     throw new Error(`${role1} misses granted table privileges`);
+  }
+
+  const hasGrantedSequencePrivileges = await hasSequencePrivileges(
+    pgm,
+    role1,
+    sequence,
+    sequencePrivileges
+  );
+
+  if (!hasGrantedSequencePrivileges) {
+    throw new Error(`${role1} misses granted sequence privileges`);
+  }
+
+  if (await hasSequencePrivileges(pgm, role1, sequence, ['UPDATE'])) {
+    throw new Error(`${role1} has an unrequested UPDATE sequence privilege`);
   }
 
   const hasGrantedSchemaPrivilege = await hasSchemaPrivilege(

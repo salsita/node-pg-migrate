@@ -41,6 +41,23 @@ describe('utils', () => {
       expect(actual).toBe(77.7);
     });
 
+    it.each([
+      ["user's table", "$pga$user's table$pga$"],
+      [String.raw`user\'s table`, String.raw`$pga$user\'s table$pga$`],
+      ['tag$pga$', '$pgb$tag$pga$$pgb$'],
+      ['tag$pga', '$pgb$tag$pga$pgb$'],
+      ['tag$pga$pgb', '$pgc$tag$pga$pgb$pgc$'],
+      ['tag$pga$pgb$', '$pgc$tag$pga$pgb$$pgc$'],
+    ])('should preserve the string %s inside its delimiter', (value, sql) => {
+      expect(escapeValue(value)).toBe(sql);
+    });
+
+    it('should avoid delimiter overlaps in nested array strings', () => {
+      expect(escapeValue([['tag$pga'], ['tag$pga$pgb']])).toBe(
+        'ARRAY[[$pgb$tag$pga$pgb$],[$pgc$tag$pga$pgb$pgc$]]'
+      );
+    });
+
     it('should parse array to ARRAY constructor syntax string', () => {
       const value = [[1], [2]];
 

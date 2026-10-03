@@ -91,9 +91,23 @@ Provide the corresponding SQL in your down migration to reverse that move.
 `ADD ATTRIBUTE` itself takes no options - these are forwarded to the reverse
 operation (`dropTypeAttribute`) when the migration is rolled back.
 
-| Option     | Type      | Description                       |
-| ---------- | --------- | --------------------------------- |
-| `ifExists` | `boolean` | drops attribute only if it exists |
+| Option     | Type      | Description                                          |
+| ---------- | --------- | ---------------------------------------------------- |
+| `ifExists` | `boolean` | rollback drops the attribute only if it still exists |
+
+### Example: automatic rollback
+
+For an existing composite type, pass `ifExists` as the fourth argument to make
+automatic rollback tolerate an already removed attribute:
+
+```js
+export const up = (pgm) => {
+  pgm.addTypeAttribute('compfoo', 'f3', 'integer', { ifExists: true });
+};
+```
+
+With no explicit `down`, rollback generates
+`ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "f3";`.
 
 ## Reverse Operation: `dropTypeAttribute`
 
@@ -115,6 +129,17 @@ operation (`dropTypeAttribute`) when the migration is rolled back.
 | Option     | Type      | Description                       |
 | ---------- | --------- | --------------------------------- |
 | `ifExists` | `boolean` | drops attribute only if it exists |
+
+### Example: conditional removal
+
+```js
+export const up = (pgm) => {
+  pgm.dropTypeAttribute('compfoo', 'f3', { ifExists: true });
+};
+```
+
+This generates `ALTER TYPE "compfoo" DROP ATTRIBUTE IF EXISTS "f3";`.
+`ifExists` suppresses an error for a missing attribute; the type must still exist.
 
 ## Operation: `alterType`
 
