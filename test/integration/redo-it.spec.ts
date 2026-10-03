@@ -364,14 +364,31 @@ describe.each(PG_VERSIONS)(
       await expectReusable();
     });
 
-    it('prints a dry run without changing history, data or acquiring a lock', async () => {
+    it('prints both dry-run phases in order without changing history, data or acquiring a lock', async () => {
       await standardMigrations();
       await runner({ ...options(), dbClient: client, direction: 'up' });
       await seedData();
       const before = await history();
       const logs: string[] = [];
+      async function expectPreview(output: string) {
+        const down = `MIGRATION ${second} (DOWN)`;
+        const up = `MIGRATION ${second} (UP)`;
+        expect(output).toContain(down);
+        expect(output).toContain(up);
+        expect(output.indexOf(down)).toBeLessThan(output.indexOf(up));
+        expect(output).toContain('DROP TABLE');
+        expect(output).toContain('CREATE TABLE');
+        expect(output.indexOf('DROP TABLE')).toBeLessThan(
+          output.indexOf('CREATE TABLE')
+        );
+        expect(await history()).toEqual(before);
+        await expectDataPreserved();
+        expect(await events()).toEqual([]);
+      }
       await observer.query('SELECT pg_advisory_lock($1)', [lockValue]);
       try {
+        const { stdout } = await cli('redo', ['--dry-run']);
+        await expectPreview(stdout);
         await runner({
           ...options(),
           dbClient: client,
@@ -382,11 +399,7 @@ describe.each(PG_VERSIONS)(
             logs.push(message);
           },
         });
-        expect(logs.join('\n')).toContain(`MIGRATION ${second} (DOWN)`);
-        expect(logs.join('\n')).not.toContain(`MIGRATION ${second} (UP)`);
-        expect(await history()).toEqual(before);
-        await expectDataPreserved();
-        expect(await events()).toEqual([]);
+        await expectPreview(logs.join('\n'));
       } finally {
         await observer.query('SELECT pg_advisory_unlock($1)', [lockValue]);
       }

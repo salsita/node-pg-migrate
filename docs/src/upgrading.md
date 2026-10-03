@@ -20,6 +20,15 @@ first. Disabling order checking does not repair old names and can replay an
 already-applied migration. Schema changes left unrecorded by an earlier failed
 run also need manual reconciliation before retrying.
 
+### Programmatic redo
+
+`runner()` now supports `direction: 'redo'` to revert the selected migrations and reapply
+pending migrations using one connection and advisory lock. See the [Programmatic API](api).
+
+`RunnerOptionConfig.direction` now accepts `MigrationDirection | 'redo'`. TypeScript code
+that reads this option and passes it to an API accepting `MigrationDirection` (`'up'` or
+`'down'`) must narrow out `'redo'` first.
+
 ### Breaking changes
 
 #### The programmatic API validates migrationsTable

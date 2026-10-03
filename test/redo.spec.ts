@@ -329,15 +329,30 @@ describe('redo', () => {
   });
 
   it('returns no migrations when neither phase has migrations to run', async () => {
-    const { run, actions } = await setup({ history: [], files: {} });
+    const { run, actions, logger } = await setup({ history: [], files: {} });
 
     await expect(run()).resolves.toEqual([]);
 
     expect(actions()).toEqual([]);
+    expect(logger.info.mock.calls).toEqual([
+      ['No migrations to revert!'],
+      ['No migrations to run!'],
+    ]);
   });
 
+  it.each(['up', 'down'] as const)(
+    'retains the empty message for a standalone %s run',
+    async (direction) => {
+      const { run, logger } = await setup({ history: [], files: {} });
+
+      await expect(run({ direction })).resolves.toEqual([]);
+
+      expect(logger.info).toHaveBeenCalledWith('No migrations to run!');
+    }
+  );
+
   it('applies pending migrations when the down phase has nothing to revert', async () => {
-    const { run, history, actions, transactions } = await setup({
+    const { run, history, actions, transactions, logger } = await setup({
       history: [],
     });
 
@@ -349,6 +364,8 @@ describe('redo', () => {
     ]);
     expect(transactions()).toEqual(['BEGIN', 'COMMIT']);
     expect(history).toEqual([FIRST, SECOND]);
+    expect(logger.info).toHaveBeenCalledWith('No migrations to revert!');
+    expect(logger.info).not.toHaveBeenCalledWith('No migrations to run!');
   });
 
   it('keeps fake bookkeeping for both phases in one transaction without running migration SQL', async () => {
@@ -381,7 +398,7 @@ describe('redo', () => {
     const { run, history, logger, statements, actions, transactions } =
       await setup();
 
-    await run({ dryRun: true });
+    const result = await run({ dryRun: true, count: 2 });
 
     expect(actions()).toEqual([]);
     expect(transactions()).toEqual(['BEGIN', 'ROLLBACK']);
@@ -391,8 +408,126 @@ describe('redo', () => {
       statements().some((sql) => /^(DELETE FROM|INSERT INTO)/.test(sql))
     ).toBe(false);
     expect(history).toEqual([FIRST, SECOND]);
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.stringContaining(`SELECT 'down ${SECOND}'`)
+    expect(
+      logger.info.mock.calls
+        .map(([message]) => message)
+        .join('\n')
+        .match(/SELECT '(?:down|up) [^']+';/g)
+    ).toEqual([
+      `SELECT 'down ${SECOND}';`,
+      `SELECT 'down ${FIRST}';`,
+      `SELECT 'up ${FIRST}';`,
+      `SELECT 'up ${SECOND}';`,
+    ]);
+    expect(result.map(({ name }) => name)).toEqual([
+      SECOND,
+      FIRST,
+      FIRST,
+      SECOND,
+    ]);
+    expect(
+      statements().filter((sql) => sql.startsWith('SELECT name FROM'))
+    ).toHaveLength(1);
+  });
+
+  it.each([
+    {
+      options: { count: -1 },
+      expected: [
+        `SELECT 'down ${SECOND}';`,
+        `SELECT 'up ${SECOND}';`,
+        `SELECT 'up ${THIRD}';`,
+      ],
+    },
+    {
+      options: { count: 2, timestamp: true },
+      expected: [
+        `SELECT 'down ${SECOND}';`,
+        `SELECT 'up ${SECOND}';`,
+        `SELECT 'up ${THIRD}';`,
+      ],
+    },
+    {
+      options: { file: SECOND },
+      expected: [`SELECT 'down ${SECOND}';`, `SELECT 'up ${SECOND}';`],
+    },
+  ])(
+    'prints the selected redo and pending migrations for %j',
+    async ({ options, expected }) => {
+      const { run, logger, history, statements } = await setup({
+        files: {
+          [FIRST]: migrationSource(FIRST),
+          [SECOND]: migrationSource(SECOND),
+          [THIRD]: migrationSource(THIRD),
+        },
+      });
+
+      await run({ dryRun: true, ...options });
+
+      expect(
+        logger.info.mock.calls
+          .map(([message]) => message)
+          .join('\n')
+          .match(/SELECT '(?:down|up) [^']+';/g)
+      ).toEqual(expected);
+      expect(history).toEqual([FIRST, SECOND]);
+      expect(
+        statements().filter((sql) => sql.startsWith('SELECT name FROM'))
+      ).toHaveLength(1);
+      expect(
+        statements().some((sql) => /^(DELETE FROM|INSERT INTO)/.test(sql))
+      ).toBe(false);
+    }
+  );
+
+  it('prints both fake dry-run bookkeeping phases without executing or rereading history', async () => {
+    const { run, logger, history, statements, actions } = await setup();
+
+    await run({ dryRun: true, fake: true, count: 2 });
+
+    expect(
+      logger.info.mock.calls
+        .flatMap(([message]) => message.split('\n'))
+        .filter((sql) => /^(DELETE FROM|INSERT INTO)/.test(sql))
+    ).toEqual([
+      `DELETE FROM "public"."pgmigrations" WHERE name=${escapeValue(SECOND)};`,
+      `DELETE FROM "public"."pgmigrations" WHERE name=${escapeValue(FIRST)};`,
+      `INSERT INTO "public"."pgmigrations" (name, run_on) VALUES (${escapeValue(FIRST)}, NOW());`,
+      `INSERT INTO "public"."pgmigrations" (name, run_on) VALUES (${escapeValue(SECOND)}, NOW());`,
+    ]);
+    expect(actions()).toEqual([]);
+    expect(
+      statements().some((sql) => /^(DELETE FROM|INSERT INTO)/.test(sql))
+    ).toBe(false);
+    expect(history).toEqual([FIRST, SECOND]);
+    expect(
+      statements().filter((sql) => sql.startsWith('SELECT name FROM'))
+    ).toHaveLength(1);
+    expect(statements().some((sql) => sql.includes('advisory'))).toBe(false);
+  });
+
+  it('prints a fresh up operation after automatically inferring the dry-run down operation', async () => {
+    const { run, logger, history, statements } = await setup({
+      history: [FIRST],
+      files: {
+        [FIRST]:
+          "exports.up = (pgm) => pgm.createTable('redo_table', { id: 'integer' });",
+      },
+    });
+
+    await run({ dryRun: true });
+
+    expect(
+      logger.info.mock.calls
+        .flatMap(([message]) => message.split('\n'))
+        .filter((sql) => /^(DROP|CREATE) TABLE/.test(sql))
+    ).toEqual([
+      'DROP TABLE "redo_table";',
+      'CREATE TABLE "redo_table" ("id" integer);',
+    ]);
+    expect(history).toEqual([FIRST]);
+    expect(statements().some((sql) => /^(DROP|CREATE) TABLE/.test(sql))).toBe(
+      false
     );
   });
 });

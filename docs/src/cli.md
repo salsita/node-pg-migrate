@@ -75,10 +75,10 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate up {N}`                  |                                      runs N up migrations from the current state.                                       |
 | `node-pg-migrate down`                    |                                              runs a single down migration.                                              |
 | `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
-| `node-pg-migrate redo`                    |                     redoes last migration (runs a single down migration, then single up migration).                     |
-| `node-pg-migrate redo {N}`                |                        redoes N last migrations (runs N down migrations, then N up migrations).                         |
+| `node-pg-migrate redo`                    |                              reverts the last migration, then applies pending migrations.                               |
+| `node-pg-migrate redo {N}`                |                             reverts the last N migrations, then applies pending migrations.                             |
 
-`redo` uses one connection and advisory lock for both phases. With the default
+`redo` uses one connection and advisory lock for both phases. On PostgreSQL, with the default
 `--single-transaction`, it commits only after both phases succeed. If reapplying a migration
 fails, the reverted changes and migration-history rows are rolled back together. Retrying
 therefore selects the same migrations instead of reverting earlier ones.
@@ -89,6 +89,10 @@ that migration. `--no-single-transaction` runs each migration in its own transac
 so completed migrations remain committed after a later failure. A migration that calls
 [`pgm.noTransaction()`](/migrations/misc#operation-pgm-notransaction) also breaks the shared
 transaction; changes committed before or during that migration cannot be rolled back.
+
+CockroachDB [does not provide full atomicity for DDL](https://github.com/cockroachdb/docs/blob/main/src/current/v25.3/online-schema-changes.md).
+With `autocommit_before_ddl` enabled (the [v25 default](https://github.com/cockroachdb/docs/blob/main/src/current/_includes/v25.3/misc/session-vars.md)),
+DDL commits individually, so a failed `redo` can retain reverted changes and history updates.
 
 ## Dry Runs
 
@@ -107,6 +111,10 @@ than by `node-pg-migrate` itself:
 Reading the database still works, so `pgm.db.select(...)` inside a migration behaves as
 usual.
 
+`redo --dry-run` prints the selected `down` migrations followed by the pending `up`
+migrations. It calculates the remaining migration history in memory without changing the
+stored history or applying either phase.
+
 ### Limitations
 
 A dry run prints; it does not validate. Because nothing is applied, a migration cannot see
@@ -116,8 +124,8 @@ what an earlier pending migration would have created:
   will fail;
 - a migration that writes through `pgm.db.query(...)` fails with a message pointing at that
   write - the read-only transaction refuses it;
-- `redo --dry-run` prints the `down` migrations and then reports `No migrations to run!` for
-  the `up` half, because the `down` half was never applied.
+- during `redo --dry-run`, direct database reads still see the unchanged database, not the
+  state the `down` phase would have produced.
 
 ## Migration History
 

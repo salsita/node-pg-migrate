@@ -35,12 +35,22 @@ For `direction: 'redo'`, the runner reverts the migrations selected by `count`, 
 or `file`, then applies pending migrations on the same connection while retaining its
 advisory lock. With `file`, reapplication remains limited to that migration; otherwise, it
 includes all pending migrations. Set `singleTransaction: true` explicitly to wrap both phases in one
-transaction: a failure in either phase rolls back the attempted changes and history updates.
+transaction. On PostgreSQL, a failure in either phase rolls back the attempted changes and
+history updates.
 The result lists reverted migrations followed by applied migrations.
 
 With `singleTransaction: false` or an omitted option, migrations use individual transactions.
 Calling `pgm.noTransaction()` also breaks a shared transaction. These modes can retain
 committed changes after a later failure. See the [CLI transaction behavior](cli).
+
+CockroachDB [does not provide full atomicity for DDL](https://github.com/cockroachdb/docs/blob/main/src/current/v25.3/online-schema-changes.md).
+With `autocommit_before_ddl` enabled (the [v25 default](https://github.com/cockroachdb/docs/blob/main/src/current/_includes/v25.3/misc/session-vars.md)),
+DDL commits individually, so a failed `redo` can retain reverted changes and history updates.
+
+Both phases share a session. Session-level `SET` statements in a down migration carry over
+into reapplication, including changes to the role or `lock_timeout`. When `schema` is
+configured, the runner reapplies its schema setup and `search_path` before the up phase;
+otherwise, changes to `search_path` also carry over.
 
 ## Options
 
@@ -69,7 +79,7 @@ if an earlier version created a table named `"undefined"`.
 | `timestamp`                 | `boolean`                                   | Treats `count` as timestamp                                                                                                                                                                                                                                                                                                            |
 | `ignorePattern`             | `string or array[string]`                   | Regex pattern for file names to ignore (ignores files starting with `.` by default). Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern or an array of glob patterns and set `isGlob = true`. Note: enabling glob will read both, `dir` _and_ `ignorePattern` as glob patterns                                |
 | `file`                      | `string`                                    | Run-only migration with this name                                                                                                                                                                                                                                                                                                      |
-| `singleTransaction`         | `boolean`                                   | Combines the migrations into a single transaction so that if any migration fails, all will be rolled back. Includes both phases of `redo`. Defaults to `false` in the API; the CLI defaults to `true`                                                                                                                                  |
+| `singleTransaction`         | `boolean`                                   | Runs the migrations in a shared transaction, including both phases of `redo`. Defaults to `false` in the API; the CLI defaults to `true`. See the transaction limitations above                                                                                                                                                        |
 | `createSchema`              | `boolean`                                   | Creates the configured schema if it doesn't exist                                                                                                                                                                                                                                                                                      |
 | `createMigrationsSchema`    | `boolean`                                   | Creates the configured migration schema if it doesn't exist                                                                                                                                                                                                                                                                            |
 | `noLock`                    | `boolean`                                   | Disables locking mechanism and checks                                                                                                                                                                                                                                                                                                  |
