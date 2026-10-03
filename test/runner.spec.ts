@@ -161,88 +161,96 @@ describe('runner', () => {
     );
   });
 
-  describe('migrationsTable validation', () => {
-    beforeEach(() => {
-      vi.spyOn(db, 'db').mockImplementation(() => {
-        throw new Error('Database must not be initialized');
+  describe('migrationsTable', () => {
+    describe('rejects', () => {
+      beforeEach(() => {
+        vi.spyOn(db, 'db').mockImplementation(() => {
+          throw new Error('Database must not be initialized');
+        });
       });
+
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
+      it.each([false, true])(
+        'rejects an omitted migrationsTable before using an external client (dryRun=%s)',
+        async (dryRun) => {
+          const query = vi.fn();
+          const end = vi.fn();
+          const dbClient = { query, end } as unknown as ClientBase;
+
+          await expect(
+            // @ts-expect-error: JavaScript callers can omit migrationsTable
+            runner({
+              dbClient,
+              dir: 'test/migrations',
+              direction: 'up',
+              dryRun,
+            })
+          ).rejects.toThrow(
+            new TypeError('migrationsTable must be a non-empty string')
+          );
+
+          expect(db.db).not.toHaveBeenCalled();
+          expect(query).not.toHaveBeenCalled();
+          expect(end).not.toHaveBeenCalled();
+        }
+      );
+
+      it.each([undefined, null, '', 42, false, {}, []].map((value) => [value]))(
+        'rejects invalid migrationsTable %j before creating a database client',
+        async (migrationsTable) => {
+          await expect(
+            runner({
+              databaseUrl: 'postgres://localhost/unused',
+              dir: 'test/migrations',
+              direction: 'up',
+              migrationsTable: migrationsTable as string,
+            })
+          ).rejects.toThrow(
+            new TypeError('migrationsTable must be a non-empty string')
+          );
+
+          expect(db.db).not.toHaveBeenCalled();
+        }
+      );
     });
 
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it.each([false, true])(
-      'rejects an omitted migrationsTable before using an external client (dryRun=%s)',
-      async (dryRun) => {
-        const query = vi.fn();
-        const end = vi.fn();
-        const dbClient = { query, end } as unknown as ClientBase;
-
-        await expect(
-          // @ts-expect-error: JavaScript callers can omit migrationsTable
-          runner({ dbClient, dir: 'test/migrations', direction: 'up', dryRun })
-        ).rejects.toThrow(
-          new TypeError('migrationsTable must be a non-empty string')
-        );
-
-        expect(db.db).not.toHaveBeenCalled();
-        expect(query).not.toHaveBeenCalled();
-        expect(end).not.toHaveBeenCalled();
-      }
-    );
-
-    it.each([undefined, null, '', 42, false, {}, []].map((value) => [value]))(
-      'rejects invalid migrationsTable %j before creating a database client',
+    // Checks that explicitly supplied names are not trimmed.
+    it.each(['undefined', ' '])(
+      'accepts the explicit migrations table name %j without changing it',
       async (migrationsTable) => {
+        const query = vi.fn().mockResolvedValue({ rows: [] });
+        const dbClient = { query } as unknown as ClientBase;
+
         await expect(
           runner({
-            databaseUrl: 'postgres://localhost/unused',
-            dir: 'test/migrations',
+            dbClient,
+            dir: 'test/dry-run-migrations',
             direction: 'up',
-            migrationsTable: migrationsTable as string,
+            migrationsTable,
+            noLock: true,
+            fake: true,
+            logger: {
+              info: vi.fn<LogFn>(),
+              warn: vi.fn<LogFn>(),
+              error: vi.fn<LogFn>(),
+            },
           })
-        ).rejects.toThrow(
-          new TypeError('migrationsTable must be a non-empty string')
-        );
+        ).resolves.toHaveLength(1);
 
-        expect(db.db).not.toHaveBeenCalled();
+        expect(query).toHaveBeenCalledWith(MIGRATIONS_TABLE_EXISTS, [
+          migrationsTable,
+          'public',
+        ]);
+        expect(query).toHaveBeenCalledWith(
+          `CREATE TABLE "public"."${migrationsTable}" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`,
+          undefined
+        );
       }
     );
   });
-
-  it.each(['undefined', ' '])(
-    'accepts the explicit migrations table name %j without changing it',
-    async (migrationsTable) => {
-      const query = vi.fn().mockResolvedValue({ rows: [] });
-      const dbClient = { query } as unknown as ClientBase;
-
-      await expect(
-        runner({
-          dbClient,
-          dir: 'test/dry-run-migrations',
-          direction: 'up',
-          migrationsTable,
-          noLock: true,
-          fake: true,
-          logger: {
-            info: vi.fn<LogFn>(),
-            warn: vi.fn<LogFn>(),
-            error: vi.fn<LogFn>(),
-          },
-        })
-      ).resolves.toHaveLength(1);
-
-      expect(query).toHaveBeenCalledWith(MIGRATIONS_TABLE_EXISTS, [
-        migrationsTable,
-        'public',
-      ]);
-      expect(query).toHaveBeenCalledWith(
-        `CREATE TABLE "public"."${migrationsTable}" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`,
-        undefined
-      );
-    }
-  );
 
   it('should execute a basic up migration', async () => {
     const executedMigrations: Array<{

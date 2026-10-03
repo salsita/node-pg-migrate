@@ -37,6 +37,19 @@ while preserving its rows and then configure the new name. Switching directly
 to `pgmigrations` without transferring the history can replay already-applied
 migrations. This validation does not rename or repair existing history tables.
 
+If `pgmigrations` does not already exist, rename the existing table with:
+
+```sql
+ALTER TABLE "public"."undefined" RENAME TO pgmigrations;
+```
+
+Use the schema containing the existing history: `migrationsSchema` when set,
+otherwise `schema` (its first non-empty entry if it is a list), or `public` by
+default. Renaming preserves the rows and the `id` sequence. If `pgmigrations`
+already exists in that schema, inspect the applied migrations and reconcile
+duplicate names and execution order before merging the two histories and
+switching to it, instead of renaming over the existing table.
+
 #### The CLI now uses subcommands
 
 The command-line parser was rewritten around idiomatic subcommands. Options now
