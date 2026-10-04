@@ -37,6 +37,7 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       constraint = false,
       condition,
       operation,
+      updateOf = [],
       deferrable = false,
       deferred = false,
       functionParams = [],
@@ -44,7 +45,8 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
 
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
 
-    const operations = toArray(operation).join(' OR ');
+    const operationList = toArray(operation);
+    let operations = operationList.join(' OR ');
     if (constraint) {
       when = 'AFTER';
     }
@@ -74,6 +76,33 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       throw new Error(
         '"operation" (INSERT/UPDATE[ OF ...]/DELETE/TRUNCATE) have to be specified'
       );
+    }
+
+    const columns = toArray(updateOf);
+    if (columns.length > 0) {
+      const normalizedOperations = operationList.map((event) =>
+        event.trim().toUpperCase()
+      );
+      if (normalizedOperations.some((event) => /^UPDATE\s+OF\b/.test(event))) {
+        throw new Error(
+          '"updateOf" cannot be combined with UPDATE OF in "operation"'
+        );
+      }
+      if (!normalizedOperations.includes('UPDATE')) {
+        throw new Error('"updateOf" requires an UPDATE operation');
+      }
+      if (isInsteadOf) {
+        throw new Error('INSTEAD OF trigger cannot have "updateOf" specified');
+      }
+
+      const columnList = columns.map(mOptions.literal).join(', ');
+      operations = operationList
+        .map((event, index) =>
+          normalizedOperations[index] === 'UPDATE'
+            ? `UPDATE OF ${columnList}`
+            : event
+        )
+        .join(' OR ');
     }
 
     const nl = formatSeparator(mOptions.pretty, '  ');
