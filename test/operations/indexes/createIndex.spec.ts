@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { CreateIndexOptions } from '../../../src';
 import { PgLiteral } from '../../../src';
 import { createIndex } from '../../../src/operations/indexes';
 import { options1, options2 } from '../../presetMigrationOptions';
@@ -185,6 +186,21 @@ describe('operations', () => {
         expect(() =>
           createIndexFn('films', ['title'], { nulls: 'distinct' })
         ).toThrow('The "nulls" option can only be used with unique indexes.');
+      });
+
+      it('creates and reverses a BRIN index with storage parameters', () => {
+        const options: CreateIndexOptions = {
+          method: 'brin',
+          storageParameters: { pages_per_range: 32, autosummarize: true },
+        };
+        const table = { schema: 'analytics', name: 'events' };
+
+        expect(createIndexFn(table, 'created_at', options)).toBe(
+          'CREATE INDEX "events_created_at_index" ON "analytics"."events" USING brin ("created_at") WITH ("pages_per_range" = 32, "autosummarize" = true);'
+        );
+        expect(createIndexFn.reverse(table, 'created_at', options)).toBe(
+          'DROP INDEX "analytics"."events_created_at_index";'
+        );
       });
 
       describe('storage parameters', () => {
