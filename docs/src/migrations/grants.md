@@ -69,6 +69,11 @@
 | `withGrantOption` | `boolean`                                  | default `false`                             |
 | `cascade`         | `boolean`                                  | default `false`                             |
 
+Use `{ schema: 'app', name: 'foo' }` to select a schema-qualified table. The
+top-level `schema` option is used only with `tables: 'ALL'`; named selections
+ignore it. The same selection rules apply to `revokeOnTables` and automatic
+grant reversal.
+
 ## Reverse Operation: `revokeOnTables`
 
 #### `pgm.revokeOnTables( revoke_options )`
