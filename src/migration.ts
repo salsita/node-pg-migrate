@@ -325,18 +325,18 @@ export class Migration implements RunMigration {
     }
   }
 
-  _getMarkAsRun(action: MigrationAction): string {
+  _getMarkAsRun(direction: MigrationDirection): string {
     const fullTableName = getMigrationTableName(this.options);
 
     const name = escapeValue(this.name);
 
-    switch (action) {
-      case this.down: {
+    switch (direction) {
+      case 'down': {
         this.logger.info(`### MIGRATION ${this.name} (DOWN) ###`);
         return `DELETE FROM ${fullTableName} WHERE name=${name};`;
       }
 
-      case this.up: {
+      case 'up': {
         this.logger.info(`### MIGRATION ${this.name} (UP) ###`);
         return `INSERT INTO ${fullTableName} (name, run_on) VALUES (${name}, NOW());`;
       }
@@ -349,7 +349,8 @@ export class Migration implements RunMigration {
 
   async _apply(
     action: MigrationAction,
-    pgm: MigrationBuilder
+    pgm: MigrationBuilder,
+    direction: MigrationDirection
   ): Promise<unknown> {
     await (action.length === 2
       ? new Promise<void>((resolve) => {
@@ -359,7 +360,7 @@ export class Migration implements RunMigration {
 
     const sqlSteps = pgm.getSqlSteps();
 
-    sqlSteps.push(this._getMarkAsRun(action));
+    sqlSteps.push(this._getMarkAsRun(direction));
 
     const ownTransaction =
       !this.options.singleTransaction && pgm.isUsingTransaction();
@@ -421,11 +422,10 @@ export class Migration implements RunMigration {
   }
 
   _getAction(direction: MigrationDirection): MigrationAction {
-    if (direction === 'down' && this.down === undefined) {
-      this.down = this.up;
-    }
-
-    const action: MigrationAction | false | undefined = this[direction];
+    const action: MigrationAction | false | undefined =
+      direction === 'down' && this.down === undefined
+        ? this.up
+        : this[direction];
 
     if (action === false) {
       throw new Error(
@@ -452,16 +452,17 @@ export class Migration implements RunMigration {
     );
     const action = this._getAction(direction);
 
-    if (this.down === this.up) {
+    if (direction === 'down' && this.down === undefined) {
       // automatically infer the down migration by running the up migration in reverse mode...
       pgm.enableReverseMode();
     }
 
-    return this._apply(action, pgm);
+    return this._apply(action, pgm, direction);
   }
 
   async markAsRun(direction: MigrationDirection): Promise<void> {
-    const sql = this._getMarkAsRun(this._getAction(direction));
+    this._getAction(direction);
+    const sql = this._getMarkAsRun(direction);
 
     if (this.options.dryRun) {
       this.logger.info(`${sql}\n`);
