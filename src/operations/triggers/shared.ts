@@ -8,7 +8,7 @@ export interface TriggerOptions {
   /**
    * Columns that cause the UPDATE event to fire, quoted and decamelized like
    * other identifiers. Pass column names without SQL quoting. An empty array
-   * leaves UPDATE unrestricted. Requires a standalone UPDATE event and cannot
+   * leaves the events unchanged. Requires a standalone UPDATE event and cannot
    * be combined with UPDATE OF in operation or with INSTEAD OF triggers.
    */
   updateOf?: string | string[];
