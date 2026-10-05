@@ -1,8 +1,60 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { IndexStorageParameters } from '../src';
+import type { GrantOnTablesOptions, IndexStorageParameters } from '../src';
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it.each([
+    ['grantOnTables', 'GRANT SELECT ON "foo" TO "reader";\n'],
+    ['revokeOnTables', 'REVOKE SELECT ON "foo" FROM "reader";\n'],
+  ] as const)(
+    'preserves named tables through %s with an extra schema',
+    (operation, expectedSql) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console,
+        false
+      );
+      const options: GrantOnTablesOptions & { schema: string } = {
+        tables: 'foo',
+        schema: 'app',
+        roles: 'reader',
+        privileges: 'SELECT',
+      };
+
+      pgm[operation](options);
+
+      expect(pgm.getSql()).toBe(expectedSql);
+    }
+  );
+
+  it('preserves named tables when automatically reversing a grant with an extra schema', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+    const options: GrantOnTablesOptions & { schema: string } = {
+      tables: { schema: 'app', name: 'foo' },
+      schema: 'other_schema',
+      roles: 'reader',
+      privileges: 'SELECT',
+      withGrantOption: true,
+      onlyGrantOption: true,
+      cascade: true,
+    };
+    pgm.enableReverseMode();
+
+    pgm.grantOnTables(options);
+
+    expect(pgm.getSql()).toBe(
+      'REVOKE GRANT OPTION FOR SELECT ON "app"."foo" FROM "reader" CASCADE;\n'
+    );
+  });
+
   it.each([
     [
       'grantOnSequences',

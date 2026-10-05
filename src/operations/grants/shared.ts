@@ -70,7 +70,7 @@ export type RevokeOnObjectsOptions = OnlyGrantOption & CascadeOption;
 export function isAllTablesOptions(
   options: AllTablesOptions | SomeTablesOptions
 ): options is AllTablesOptions {
-  return 'schema' in options;
+  return options.tables === 'ALL' && 'schema' in options;
 }
 
 export function asRolesStr(

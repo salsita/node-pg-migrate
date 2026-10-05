@@ -229,6 +229,26 @@ applied, reconcile their case-sensitive history names using the same process.
 The default and `legacySql` loaders are unchanged. See
 [Migration Loading Strategies](migration-loading-strategies#example-use-grouped-sql-loader).
 
+#### Named table grants ignore the top-level `schema`
+
+`grantOnTables` and `revokeOnTables` used to treat any top-level `schema` as
+`ALL TABLES IN SCHEMA`, even when `tables` named specific tables. Now `schema`
+applies only with `tables: 'ALL'`. Named tables are used as given; qualify them
+with `{ schema: 'app', name: 'foo' }`. Unqualified names resolve through the
+connection's `search_path`, which the runner's `schema` option sets when
+supplied. If no matching table is visible through that path, replay or rollback
+can now fail with `relation "foo" does not exist`.
+
+If a migration already applied with v9 combined named `tables` with `schema`,
+its automatic rollback now revokes only the named tables, leaving privileges
+on the other tables behind. Upgrading does not remove those privileges
+automatically. Inspect existing grants and revoke remaining unintended
+privileges with a new corrective migration. Use
+`tables: 'ALL', schema: 'app'` only if revoking the specified privileges from
+every table in that schema is intended; select individual tables when
+independently granted privileges must remain. See
+[Grant Operations](migrations/grants).
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript
