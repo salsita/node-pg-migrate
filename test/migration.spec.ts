@@ -118,6 +118,203 @@ describe('migration', () => {
     );
   });
 
+  describe.each(['apply', 'markAsRun'] as const)('%s direction', (method) => {
+    it.each([false, true])(
+      'should reuse an up-only instance without changing its actions (dryRun=%s)',
+      async (dryRun) => {
+        const up = vi.fn<MigrationAction>((pgm) => {
+          pgm.createTable('users', { id: 'integer' });
+        });
+        const migration = new Migration(
+          dbMock,
+          '0001_users.cjs',
+          { up },
+          { ...options, dryRun },
+          {},
+          logger
+        );
+
+        for (const direction of [
+          'down',
+          'down',
+          'up',
+          'up',
+          'down',
+          'up',
+        ] as const) {
+          queryMock.mockClear();
+          vi.mocked(logger.info).mockClear();
+          up.mockClear();
+
+          await migration[method](direction);
+
+          const history =
+            direction === 'up'
+              ? 'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$0001_users$pga$, NOW());'
+              : 'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_users$pga$;';
+          const expected = {
+            apply: {
+              statements: [
+                'BEGIN;',
+                direction === 'up'
+                  ? 'CREATE TABLE "users" ("id" integer);'
+                  : 'DROP TABLE "users";',
+                history,
+                'COMMIT;',
+              ],
+              actionCalls: 1,
+            },
+            markAsRun: { statements: [history], actionCalls: 0 },
+          }[method];
+
+          expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual(
+            dryRun ? [] : expected.statements
+          );
+          expect(up).toHaveBeenCalledTimes(expected.actionCalls);
+          const banner = `### MIGRATION 0001_users (${direction.toUpperCase()}) ###`;
+          expect(
+            vi.mocked(logger.info).mock.calls.map(([message]) => message)
+          ).toEqual(
+            dryRun ? [banner, `${expected.statements.join('\n')}\n`] : [banner]
+          );
+        }
+
+        expect(migration.up).toBe(up);
+        expect(migration.down).toBeUndefined();
+      }
+    );
+
+    it.each([false, true])(
+      'should preserve explicit actions and record the requested direction (shared=%s)',
+      async (shared) => {
+        const up = vi.fn<MigrationAction>((pgm) => {
+          pgm.createTable('users', { id: 'integer' });
+        });
+        const down = shared
+          ? up
+          : vi.fn<MigrationAction>((pgm) => {
+              pgm.dropTable('users');
+            });
+        const migration = new Migration(
+          dbMock,
+          '0001_users.cjs',
+          { up, down },
+          options,
+          {},
+          logger
+        );
+
+        await migration[method]('down');
+        await migration[method]('up');
+
+        const deletion =
+          'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_users$pga$;';
+        const insertion =
+          'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$0001_users$pga$, NOW());';
+        const expected = {
+          apply: {
+            statements: [
+              'BEGIN;',
+              shared
+                ? 'CREATE TABLE "users" ("id" integer);'
+                : 'DROP TABLE "users";',
+              deletion,
+              'COMMIT;',
+              'BEGIN;',
+              'CREATE TABLE "users" ("id" integer);',
+              insertion,
+              'COMMIT;',
+            ],
+            actionCalls: shared ? 2 : 1,
+          },
+          markAsRun: { statements: [deletion, insertion], actionCalls: 0 },
+        }[method];
+
+        expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual(
+          expected.statements
+        );
+        expect(up).toHaveBeenCalledTimes(expected.actionCalls);
+        expect(down).toHaveBeenCalledTimes(expected.actionCalls);
+      }
+    );
+
+    it.each([
+      ['up', { up: false }, 'disabled'],
+      ['down', { up: () => {}, down: false }, 'disabled'],
+      ['down', { up: false }, 'disabled'],
+      ['up', {}, 'invalid'],
+      ['down', {}, 'invalid'],
+      [
+        'down',
+        { up: () => {}, down: null as unknown as MigrationAction },
+        'invalid',
+      ],
+    ] as const)(
+      'should preserve the %s action error for %j',
+      async (direction, actions, reason) => {
+        const migration = new Migration(
+          dbMock,
+          '0001_invalid.cjs',
+          actions,
+          options,
+          {},
+          logger
+        );
+        const error =
+          reason === 'disabled'
+            ? new Error(
+                `User has disabled ${direction} migration on file: 0001_invalid`
+              )
+            : new TypeError(
+                `Unknown value for direction: ${direction}. Is the migration 0001_invalid exporting a '${direction}' function?`
+              );
+
+        const expectActionError = {
+          apply() {
+            expect(() => migration.apply(direction)).toThrow(error);
+          },
+          async markAsRun() {
+            await expect(migration.markAsRun(direction)).rejects.toThrow(error);
+          },
+        }[method];
+
+        await expectActionError();
+        expect(queryMock).not.toHaveBeenCalled();
+      }
+    );
+  });
+
+  it.each([
+    ['callback', actionsCallback.up],
+    ['promise', actionsPromise.up],
+  ] as const)(
+    'should reuse an inferred %s action for a subsequent up migration',
+    async (_, up) => {
+      const migration = new Migration(
+        dbMock,
+        '0001_names.cjs',
+        { up },
+        options,
+        {},
+        logger
+      );
+
+      await migration.apply('down');
+      await migration.apply('up');
+
+      expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+        'BEGIN;',
+        'DROP TABLE "names";',
+        'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_names$pga$;',
+        'COMMIT;',
+        'BEGIN;',
+        expect.stringMatching(/^CREATE TABLE "names" /),
+        'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$0001_names$pga$, NOW());',
+        'COMMIT;',
+      ]);
+    }
+  );
+
   describe('getMigrationFilePaths', () => {
     it('should resolve files directly in `dir`', async () => {
       const dir = 'test/migrations';
@@ -295,6 +492,10 @@ describe('migration', () => {
       expect(queryMock).toHaveBeenNthCalledWith(
         2,
         expect.stringMatching('DROP TABLE')
+      );
+      expect(queryMock).toHaveBeenNthCalledWith(
+        3,
+        expect.stringMatching(`INSERT INTO "public"."${migrationsTable}"`)
       );
     });
 
@@ -598,6 +799,17 @@ describe('migration', () => {
         'BEGIN;',
         'DROP TABLE "cleanup";',
         'ROLLBACK;',
+      ]);
+
+      queryMock.mockClear();
+
+      await subject.apply('up');
+
+      expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+        'BEGIN;',
+        'CREATE TABLE "cleanup" ("id" integer);',
+        'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$1000_cleanup$pga$, NOW());',
+        'COMMIT;',
       ]);
     });
 

@@ -903,8 +903,6 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
 
       if (options.direction === 'redo') {
         // Keep the history location even if reverting emptied its table.
-        // Reload migration instances: inferring down sets `down = up`, after which the
-        // same instance would run up in reverse and record it as a DELETE.
         const upOptions: RunnerOption = {
           ...options,
           direction: 'up',
