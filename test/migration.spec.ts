@@ -152,26 +152,31 @@ describe('migration', () => {
             direction === 'up'
               ? 'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$0001_users$pga$, NOW());'
               : 'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_users$pga$;';
-          const statements =
-            method === 'apply'
-              ? [
-                  'BEGIN;',
-                  direction === 'up'
-                    ? 'CREATE TABLE "users" ("id" integer);'
-                    : 'DROP TABLE "users";',
-                  history,
-                  'COMMIT;',
-                ]
-              : [history];
+          const expected = {
+            apply: {
+              statements: [
+                'BEGIN;',
+                direction === 'up'
+                  ? 'CREATE TABLE "users" ("id" integer);'
+                  : 'DROP TABLE "users";',
+                history,
+                'COMMIT;',
+              ],
+              actionCalls: 1,
+            },
+            markAsRun: { statements: [history], actionCalls: 0 },
+          }[method];
 
           expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual(
-            dryRun ? [] : statements
+            dryRun ? [] : expected.statements
           );
-          expect(up).toHaveBeenCalledTimes(method === 'apply' ? 1 : 0);
+          expect(up).toHaveBeenCalledTimes(expected.actionCalls);
           const banner = `### MIGRATION 0001_users (${direction.toUpperCase()}) ###`;
           expect(
             vi.mocked(logger.info).mock.calls.map(([message]) => message)
-          ).toEqual(dryRun ? [banner, `${statements.join('\n')}\n`] : [banner]);
+          ).toEqual(
+            dryRun ? [banner, `${expected.statements.join('\n')}\n`] : [banner]
+          );
         }
 
         expect(migration.up).toBe(up);
@@ -206,28 +211,30 @@ describe('migration', () => {
           'DELETE FROM "public"."pgmigrations" WHERE name=$pga$0001_users$pga$;';
         const insertion =
           'INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$0001_users$pga$, NOW());';
+        const expected = {
+          apply: {
+            statements: [
+              'BEGIN;',
+              shared
+                ? 'CREATE TABLE "users" ("id" integer);'
+                : 'DROP TABLE "users";',
+              deletion,
+              'COMMIT;',
+              'BEGIN;',
+              'CREATE TABLE "users" ("id" integer);',
+              insertion,
+              'COMMIT;',
+            ],
+            actionCalls: shared ? 2 : 1,
+          },
+          markAsRun: { statements: [deletion, insertion], actionCalls: 0 },
+        }[method];
+
         expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual(
-          method === 'apply'
-            ? [
-                'BEGIN;',
-                shared
-                  ? 'CREATE TABLE "users" ("id" integer);'
-                  : 'DROP TABLE "users";',
-                deletion,
-                'COMMIT;',
-                'BEGIN;',
-                'CREATE TABLE "users" ("id" integer);',
-                insertion,
-                'COMMIT;',
-              ]
-            : [deletion, insertion]
+          expected.statements
         );
-        expect(up).toHaveBeenCalledTimes(
-          method === 'apply' ? (shared ? 2 : 1) : 0
-        );
-        expect(down).toHaveBeenCalledTimes(
-          method === 'apply' ? (shared ? 2 : 1) : 0
-        );
+        expect(up).toHaveBeenCalledTimes(expected.actionCalls);
+        expect(down).toHaveBeenCalledTimes(expected.actionCalls);
       }
     );
 

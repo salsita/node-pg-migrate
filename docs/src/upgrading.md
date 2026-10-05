@@ -20,6 +20,18 @@ first. Disabling order checking does not repair old names and can replay an
 already-applied migration. Schema changes left unrecorded by an earlier failed
 run also need manual reconciliation before retrying.
 
+### Migration action direction
+
+`Migration` instances can now be reused after an inferred `down`: subsequent
+`up` calls execute forward SQL and insert their history rows. If `up` and `down`
+explicitly share a function, it now executes as written in both directions,
+with history recording the requested direction instead of always deleting.
+
+The underscore-prefixed internal helpers also changed: `_getMarkAsRun(direction)`
+accepts a direction instead of an action function, and `_apply(action, pgm, direction)`
+requires a third parameter. Callers should use `apply(direction)` or
+`markAsRun(direction)` rather than relying on these internal helpers.
+
 ### Programmatic redo
 
 `runner()` now supports `direction: 'redo'` to revert the selected migrations and reapply

@@ -421,11 +421,12 @@ export class Migration implements RunMigration {
     }
   }
 
+  _isInferredDown(direction: MigrationDirection): boolean {
+    return direction === 'down' && this.down === undefined;
+  }
+
   _getAction(direction: MigrationDirection): MigrationAction {
-    const action: MigrationAction | false | undefined =
-      direction === 'down' && this.down === undefined
-        ? this.up
-        : this[direction];
+    const action = this._isInferredDown(direction) ? this.up : this[direction];
 
     if (action === false) {
       throw new Error(
@@ -452,7 +453,7 @@ export class Migration implements RunMigration {
     );
     const action = this._getAction(direction);
 
-    if (direction === 'down' && this.down === undefined) {
+    if (this._isInferredDown(direction)) {
       // automatically infer the down migration by running the up migration in reverse mode...
       pgm.enableReverseMode();
     }
@@ -461,6 +462,7 @@ export class Migration implements RunMigration {
   }
 
   async markAsRun(direction: MigrationDirection): Promise<void> {
+    // Validate the action so disabled/missing migrations fail like `apply`.
     this._getAction(direction);
     const sql = this._getMarkAsRun(direction);
 
