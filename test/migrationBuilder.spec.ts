@@ -129,6 +129,26 @@ describe('migrationBuilder', () => {
     }
   );
 
+  it.each(['createIndex', 'addIndex'] as const)(
+    'exposes the BRIN method through %s',
+    (operation) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console,
+        false
+      );
+
+      pgm[operation]('events', 'created_at', {
+        method: 'brin',
+        storageParameters: { pages_per_range: 32, autosummarize: true },
+      });
+
+      expect(pgm.getSql()).toContain('USING brin');
+    }
+  );
+
   it('should expose MigrationBuilder to allow using as sql builder', () => {
     const pgm = new MigrationBuilder(
       {

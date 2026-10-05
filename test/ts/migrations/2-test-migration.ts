@@ -12,4 +12,10 @@ export function up(pgm: MigrationBuilder): void {
       default: pgm.func('current_timestamp'),
     },
   });
+
+  pgm.createIndex('t1', 'created', {
+    method: 'brin',
+    storageParameters: { pages_per_range: 32, autosummarize: true },
+  });
+  pgm.addIndex('t3', 'created', { method: 'brin' });
 }

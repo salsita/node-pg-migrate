@@ -169,6 +169,35 @@ describe.each(PG_VERSIONS)(
         predicate: null,
       },
       {
+        title: 'numeric and true boolean parameters on a BRIN index',
+        operation: 'createIndex',
+        column: 'id',
+        options: {
+          method: 'brin',
+          storageParameters: { pages_per_range: 32, autosummarize: true },
+        },
+        noTransaction: false,
+        method: 'brin',
+        parameters: ['pages_per_range=32', 'autosummarize=true'],
+        totalColumns: 1,
+        predicate: null,
+      },
+      {
+        title:
+          'numeric and false boolean parameters on a BRIN index through addIndex',
+        operation: 'addIndex',
+        column: 'id',
+        options: {
+          method: 'brin',
+          storageParameters: { pages_per_range: 64, autosummarize: false },
+        },
+        noTransaction: false,
+        method: 'brin',
+        parameters: ['pages_per_range=64', 'autosummarize=false'],
+        totalColumns: 1,
+        predicate: null,
+      },
+      {
         title: 'parameters on a concurrent B-tree index outside a transaction',
         operation: 'createIndex',
         column: 'id',
