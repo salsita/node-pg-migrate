@@ -2,7 +2,7 @@
 
 ## Preconditions
 
-- Node.js 22 or higher
+- Node.js 22.12.0 or higher
 - PostgreSQL 14 or higher (lower versions may work but are not supported officially)
 
 If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a
@@ -50,8 +50,11 @@ $ bun add -D node-pg-migrate
 
 :::
 
+If you run migrations in an environment that skips dev dependencies (for example `npm ci --omit=dev` in a production image),
+add `node-pg-migrate` and `pg` to `dependencies` instead.
+
 Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g
-option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate.js`
+option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
 
 ## Quick Example
 
@@ -94,7 +97,7 @@ npm run migrate create my-first-migration
 ```
 
 ```bash [TypeScript]
-npm run migrate create my-first-migration -j ts
+npm run migrate -- create my-first-migration -j ts
 # creates migrations/xxx_my-first-migration.ts
 ```
 
@@ -181,7 +184,8 @@ You should now have two tables in your DB :tada:
 
 If you want to change your schema later, you can e.g., add a lead paragraph to posts:
 
-Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
+Run `npm run migrate create posts_lead`, edit `xxx_posts-lead.js`.
+For TypeScript, run `npm run migrate -- create posts_lead -j ts` and edit `xxx_posts-lead.ts`:
 
 ::: code-group
 
@@ -205,6 +209,32 @@ export const up = (pgm: MigrationBuilder) => {
 
 :::
 
+If `posts` already contains rows, add `lead` without `notNull`, populate it, then set `notNull`:
+
+::: code-group
+
+```js [JavaScript]
+export const up = (pgm) => {
+  pgm.addColumns('posts', { lead: { type: 'text' } });
+  pgm.sql(`UPDATE posts SET lead = left(body, 200)`);
+  pgm.alterColumn('posts', 'lead', { notNull: true });
+};
+```
+
+```ts [TypeScript]
+import { MigrationBuilder } from 'node-pg-migrate';
+
+export const up = (pgm: MigrationBuilder) => {
+  pgm.addColumns('posts', { lead: { type: 'text' } });
+  pgm.sql(`UPDATE posts SET lead = left(body, 200)`);
+  pgm.alterColumn('posts', 'lead', { notNull: true });
+};
+```
+
+:::
+
+If an empty string is suitable for existing and future rows, use `notNull: true` and `default: ''` when adding `lead` instead.
+
 Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 
 ## Want to know more?
@@ -213,3 +243,4 @@ Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 - [Programmatic API](/api)
 - [Migration files](/migrations/)
 - [Migration loading strategies (including SQL)](/migration-loading-strategies)
+- [Upgrading guide](/upgrading)

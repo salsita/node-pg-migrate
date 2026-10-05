@@ -49,7 +49,7 @@ npm add pg
 npm add --save-dev node-pg-migrate
 ```
 
-If migrations run where development dependencies are omitted, install `node-pg-migrate` and `pg` as regular dependencies instead.
+If you run migrations in an environment that skips dev dependencies (for example `npm ci --omit=dev` in a production image), add `node-pg-migrate` and `pg` to `dependencies` instead.
 
 Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
 
@@ -109,7 +109,17 @@ export const up = (pgm) => {
 };
 ```
 
-If `posts` already contains rows, add `lead` without `notNull`, populate it, then use `pgm.alterColumn('posts', 'lead', { notNull: true })`.
+If `posts` already contains rows, add `lead` without `notNull`, populate it, then set `notNull`:
+
+```js
+export const up = (pgm) => {
+  pgm.addColumns('posts', { lead: { type: 'text' } });
+  pgm.sql(`UPDATE posts SET lead = left(body, 200)`);
+  pgm.alterColumn('posts', 'lead', { notNull: true });
+};
+```
+
+If an empty string is suitable for existing and future rows, use `notNull: true` and `default: ''` when adding `lead` instead.
 
 Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 
