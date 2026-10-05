@@ -445,6 +445,82 @@ describe('migration', () => {
   });
 
   describe('self.applyUp', () => {
+    describe('async migrations', () => {
+      it('should wait for an async migration to finish before executing queued SQL', async () => {
+        let resolvePending = () => {};
+        const pending = new Promise<void>((resolve) => {
+          resolvePending = resolve;
+        });
+        const migration = new Migration(
+          dbMock,
+          promiseMigration,
+          {
+            up: async (pgm) => {
+              pgm.createTable('names', { id: 'integer' });
+              await pending;
+              pgm.sql('SELECT 1;');
+            },
+          },
+          options,
+          {},
+          logger
+        );
+
+        const applied = migration.apply('up');
+
+        expect(queryMock).not.toHaveBeenCalled();
+
+        resolvePending();
+        await applied;
+
+        expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+          'BEGIN;',
+          'CREATE TABLE "names" ("id" integer);',
+          'SELECT 1;',
+          expect.stringContaining('INSERT INTO "public"."pgmigrations"'),
+          'COMMIT;',
+        ]);
+      });
+
+      it('should execute direct database queries before queued SQL', async () => {
+        let resolvePending = () => {};
+        const pending = new Promise<void>((resolve) => {
+          resolvePending = resolve;
+        });
+        queryMock.mockReturnValueOnce(pending);
+        const migration = new Migration(
+          dbMock,
+          promiseMigration,
+          {
+            up: async (pgm) => {
+              pgm.createTable('names', { id: 'integer' });
+              await pgm.db.query('SELECT 1;');
+              pgm.sql('SELECT 2;');
+            },
+          },
+          options,
+          {},
+          logger
+        );
+
+        const applied = migration.apply('up');
+
+        expect(queryMock.mock.calls).toEqual([['SELECT 1;']]);
+
+        resolvePending();
+        await applied;
+
+        expect(queryMock.mock.calls.map(([sql]) => sql)).toEqual([
+          'SELECT 1;',
+          'BEGIN;',
+          'CREATE TABLE "names" ("id" integer);',
+          'SELECT 2;',
+          expect.stringContaining('INSERT INTO "public"."pgmigrations"'),
+          'COMMIT;',
+        ]);
+      });
+    });
+
     it('should call db.query on normal operations', async () => {
       const migration = new Migration(
         dbMock,

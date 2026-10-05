@@ -47,8 +47,10 @@ for a given shorthand name
 if it is used in current and all following migrations (until changed again).
 
 > [!IMPORTANT]
-> Calling the migration functions on `pgm` doesn't migrate your database. These functions just add sql commands to a
-> stack that is run.
+> Migration operations such as `pgm.createTable()` and `pgm.sql()` queue SQL
+> statements. The runner executes them in order after `up` or `down` completes:
+> when a synchronous function returns, its returned Promise resolves, or its
+> `run()` callback is called.
 
 ## Automatic Down Migrations
 
@@ -59,10 +61,9 @@ back. In this case, you can set `export const down = false` to tell node-pg-migr
 
 ## Async Migrations
 
-In some cases, you may want to perform some async operation during a migration, for example, fetching some information
-from an external server, or inserting some data into the database. To make a migration block operate in async mode, add
-another callback argument to the function signature. However, be aware that NONE of the pgm operations will be executed
-until `run()` is called. Here's an example:
+Use an async migration when you need to wait for asynchronous work, such as
+fetching information from an external server. You can add a second argument to
+receive a callback and call it when that work is complete:
 
 ```javascript
 export const up = function up(pgm, run) {
@@ -78,8 +79,7 @@ function. Example:
 ```javascript
 export const up = function (pgm) {
   return new Promise((resolve) => {
-    // doSomethingAsync
-    resolve();
+    doSomethingAsync(() => resolve());
   });
 };
 ```
@@ -88,9 +88,27 @@ or
 
 ```javascript
 export const up = async (pgm) => {
-  // doSomethingAsync
+  await doSomethingAsync();
+
+  pgm.createTable('names', { id: 'serial', name: 'text' });
+  pgm.sql("INSERT INTO names (name) VALUES ('Ada');");
 };
 ```
+
+Both SQL statements in this example are queued and executed after the Promise
+returned by `up` resolves. Adding `async` does not change how migration operations
+work. These operations return `void`, so awaiting `pgm.createTable()` or
+`pgm.sql()` does not execute the queued SQL.
+
+[`pgm.db.query()` and `pgm.db.select()`](misc.md#operation-pgm-db) execute queries
+directly and return Promises. Await them, or return their Promise, so the migration
+waits for them to finish. A direct query cannot depend on a table or column that
+an earlier queued operation has yet to create. To insert data into a table
+created in the same migration, queue the insert with `pgm.sql()`, as above.
+
+Direct queries also run before the migration's own `BEGIN`, so unless migrations
+share a single transaction (`singleTransaction`, the CLI default), a write made
+with `pgm.db.query()` is not rolled back if a queued statement fails.
 
 ## Using schemas
 
