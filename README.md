@@ -13,7 +13,7 @@
 
 </div>
 
-Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
+Node.js database migration management built exclusively for postgres. (Also tested with [CockroachDB](https://github.com/cockroachdb/cockroach).)
 
 ## Maintainers
 
@@ -34,7 +34,7 @@ Node.js database migration management built exclusively for postgres. (But can a
 
 ## Preconditions
 
-- Node.js 22 or higher
+- Node.js 22.12.0 or higher
 - PostgreSQL 14 or higher (lower versions may work but are not supported officially)
 
 If you don't already have the [`pg`](https://node-postgres.com/) library installed, you will need to add pg as either a direct or dev dependency
@@ -49,7 +49,9 @@ npm add pg
 npm add --save-dev node-pg-migrate
 ```
 
-Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate.js`
+If you run migrations in an environment that skips dev dependencies (for example `npm ci --omit=dev` in a production image), add `node-pg-migrate` and `pg` to `dependencies` instead.
+
+Installing this module adds a runnable file into your `node_modules/.bin` directory. If installed globally (with the -g option), you can run `node-pg-migrate` and if not, you can run `./node_modules/.bin/node-pg-migrate`
 
 ## Quick Example
 
@@ -97,7 +99,7 @@ You should now have two tables in your DB :tada:
 
 If you want to change your schema later, you can e.g. add lead paragraph to posts:
 
-Run `npm run migrate create posts_lead`, edit `xxx_posts_lead.js`:
+Run `npm run migrate create posts_lead`, edit `xxx_posts-lead.js`:
 
 ```js
 export const up = (pgm) => {
@@ -107,6 +109,18 @@ export const up = (pgm) => {
 };
 ```
 
+If `posts` already contains rows, add `lead` without `notNull`, populate it, then set `notNull`:
+
+```js
+export const up = (pgm) => {
+  pgm.addColumns('posts', { lead: { type: 'text' } });
+  pgm.sql(`UPDATE posts SET lead = left(body, 200)`);
+  pgm.alterColumn('posts', 'lead', { notNull: true });
+};
+```
+
+If an empty string is suitable for existing and future rows, use `notNull: true` and `default: ''` when adding `lead` instead.
+
 Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 
 Want to know more? Read docs:
@@ -114,6 +128,8 @@ Want to know more? Read docs:
 ## Docs
 
 Full docs are available at https://salsita.github.io/node-pg-migrate
+
+For changes between major versions, see the [Upgrading guide](https://salsita.github.io/node-pg-migrate/upgrading).
 
 ## Explanation & Goals
 
@@ -125,7 +141,7 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 ## Contributing
 
-[![GitHub repo Good Issues for newbies](https://img.shields.io/github/issues/salsita/node-pg-migrate/good%20first%20issue?style=flat&logo=github&logoColor=green&label=Good%20First%20issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) [![GitHub Help Wanted issues](https://img.shields.io/github/issues/salsita/node-pg-migrate/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub Help Wanted PRs](https://img.shields.io/github/issues-pr/salsita/node-pg-migrate/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20PRs)](https://github.com/salsita/node-pg-migrate/pulls?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub repo Issues](https://img.shields.io/github/issues/salsita/node-pg-migrate?style=flat&logo=github&logoColor=red&label=Issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen)
+[![GitHub repo Good Issues for newbies](https://img.shields.io/github/issues/salsita/node-pg-migrate/good%20first%20issue?style=flat&logo=github&logoColor=green&label=Good%20First%20issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) [![GitHub Help Wanted issues](https://img.shields.io/github/issues/salsita/node-pg-migrate/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) [![GitHub Help Wanted PRs](https://img.shields.io/github/issues-pr/salsita/node-pg-migrate/help%20wanted?style=flat&logo=github&logoColor=b545d1&label=%22Help%20Wanted%22%20PRs)](https://github.com/salsita/node-pg-migrate/pulls?q=is%3Aopen+is%3Apr+label%3A%22help+wanted%22) [![GitHub repo Issues](https://img.shields.io/github/issues/salsita/node-pg-migrate?style=flat&logo=github&logoColor=red&label=Issues)](https://github.com/salsita/node-pg-migrate/issues?q=is%3Aopen)
 
 👋 **Welcome, new contributors!**
 
