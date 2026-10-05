@@ -1,6 +1,6 @@
 {
   "name": "node-pg-migrate",
-  "version": "10.0.0-alpha.3",
+  "version": "10.0.0-alpha.4",
   "description": "PostgreSQL database migration management tool for node.js",
   "scripts": {
     "clean": "git clean -fdx --exclude .claude --exclude local",
@@ -100,10 +100,10 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
-    "@shikijs/vitepress-twoslash": "4.4.3",
-    "@testcontainers/postgresql": "12.1.0",
+    "@shikijs/vitepress-twoslash": "4.5.0",
+    "@testcontainers/postgresql": "12.2.0",
     "@types/config": "4.4.0",
-    "@types/node": "26.6.2",
+    "@types/node": "26.6.4",
     "@types/pg": "8.23.1",
     "@vitest/coverage-v8": "5.0.3",
     "@vitest/ui": "5.0.3",
@@ -116,8 +116,8 @@
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",
-    "pg": "8.23.0",
-    "testcontainers": "12.1.0",
+    "pg": "8.23.1",
+    "testcontainers": "12.2.0",
     "tsdown": "0.23.0",
     "typescript": "7.0.2",
     "typescript-6": "npm:typescript@6.0.3",
@@ -133,14 +133,14 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@12.7.0",
+  "packageManager": "pnpm@12.8.2",
   "engines": {
     "node": ">=22.12.0"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.7.0",
+      "version": "12.8.2",
       "onFail": "download"
     }
   }

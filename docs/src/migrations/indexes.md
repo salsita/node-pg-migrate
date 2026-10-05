@@ -34,7 +34,7 @@
 | `where`             | `string`                    | raw sql for where clause of index                                                           |
 | `concurrently`      | `boolean`                   | create this index concurrently                                                              |
 | `ifNotExists`       | `boolean`                   | default false                                                                               |
-| `method`            | `string`                    | btree \| hash \| gist \| spgist \| gin                                                      |
+| `method`            | `string`                    | btree \| hash \| gist \| spgist \| gin \| brin                                              |
 | `include`           | `string` or `array[string]` | columns to add to the include clause                                                        |
 | `nulls`             | `string`                    | distinct \| not distinct (for unique indexes only)                                          |
 | `storageParameters` | `object`                    | index storage parameters for the `WITH` clause; values can be strings, numbers, or booleans |
@@ -107,6 +107,14 @@ pgm.createIndex('locations', 'position', {
   storageParameters: { buffering: 'off' },
 });
 //expected output: CREATE INDEX "position_idx" ON "locations" USING gist ("position") WITH ("buffering" = $pga$off$pga$);
+```
+
+```ts [BRIN storage parameters]
+pgm.createIndex('events', 'created_at', {
+  method: 'brin',
+  storageParameters: { pages_per_range: 32, autosummarize: true },
+});
+//expected output: CREATE INDEX "events_created_at_index" ON "events" USING brin ("created_at") WITH ("pages_per_range" = 32, "autosummarize" = true);
 ```
 
 :::

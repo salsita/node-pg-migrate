@@ -1,6 +1,6 @@
 # What is node-pg-migrate?
 
-Node.js database migration management built exclusively for postgres. (But can also be used for other DBs conforming to SQL standard - e.g. [CockroachDB](https://github.com/cockroachdb/cockroach).)
+Node.js database migration management built exclusively for postgres. (Also tested with [CockroachDB](https://github.com/cockroachdb/cockroach).)
 
 ## Maintainers
 

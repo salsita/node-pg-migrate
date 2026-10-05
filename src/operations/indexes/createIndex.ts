@@ -18,7 +18,7 @@ export interface CreateIndexOptions extends IfNotExistsOption {
 
   concurrently?: boolean;
 
-  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin';
+  method?: 'btree' | 'hash' | 'gist' | 'spgist' | 'gin' | 'brin';
 
   include?: string | string[];
 
@@ -63,7 +63,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
     where - where clause
     concurrently -
     ifNotExists - optionally create index
-    options.method -  [ btree | hash | gist | spgist | gin ]
+    options.method -  [ btree | hash | gist | spgist | gin | brin ]
     nulls - nulls distinct or not distinct (for unique indexes only)
     storageParameters - index storage parameters for the WITH clause
     */

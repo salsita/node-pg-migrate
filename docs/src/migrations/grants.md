@@ -69,6 +69,12 @@
 | `withGrantOption` | `boolean`                                  | default `false`                             |
 | `cascade`         | `boolean`                                  | default `false`                             |
 
+Use `{ schema: 'app', name: 'foo' }` to select a schema-qualified table. The
+top-level `schema` option is used only with `tables: 'ALL'`; named selections
+ignore it. Unqualified names resolve through the connection's `search_path`,
+which the runner's `schema` option sets when supplied. The same selection rules
+apply to `revokeOnTables` and automatic grant reversal.
+
 ## Reverse Operation: `revokeOnTables`
 
 #### `pgm.revokeOnTables( revoke_options )`
@@ -84,14 +90,14 @@
 
 #### revoke_options
 
-| Option            | Type                                       | Description                                 |
-| ----------------- | ------------------------------------------ | ------------------------------------------- |
-| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                             |
-| `schema`          | `string`                                   | if tables ALL, then schema name is required |
-| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                          |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                              |
-| `withGrantOption` | `boolean`                                  | default `false`                             |
-| `cascade`         | `boolean`                                  | drops also dependent objects                |
+| Option            | Type                                       | Description                                   |
+| ----------------- | ------------------------------------------ | --------------------------------------------- |
+| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                               |
+| `schema`          | `string`                                   | if tables ALL, then schema name is required   |
+| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                            |
+| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                                |
+| `onlyGrantOption` | `boolean`                                  | Revoke only the grant option; default `false` |
+| `cascade`         | `boolean`                                  | Revoke dependent grants; default `false`      |
 
 ## Operation: `grantOnSequences`
 
