@@ -46,7 +46,6 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
     let { when, level = 'STATEMENT', function: functionName } = triggerOptions;
 
     const operationList = toArray(operation);
-    let operations = operationList.join(' OR ');
     if (constraint) {
       when = 'AFTER';
     }
@@ -72,14 +71,26 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
       throw new Error("INSTEAD OF trigger can't have condition specified");
     }
 
-    if (!operations) {
+    if (
+      operationList.length === 0 ||
+      (operationList.length === 1 &&
+        (operationList[0] === '' || operationList[0] == null))
+    ) {
       throw new Error(
         '"operation" (INSERT/UPDATE[ OF ...]/DELETE/TRUNCATE) have to be specified'
       );
     }
 
     const columns = toArray(updateOf);
+    let renderedOperations = operationList;
     if (columns.length > 0) {
+      if (isInsteadOf) {
+        throw new Error('INSTEAD OF trigger cannot have "updateOf" specified');
+      }
+      if (columns.some((column) => column === '')) {
+        throw new Error('"updateOf" column names must not be empty');
+      }
+
       const normalizedOperations = operationList.map((event) =>
         event.trim().toUpperCase()
       );
@@ -89,21 +100,19 @@ export function createTrigger(mOptions: MigrationOptions): CreateTrigger {
         );
       }
       if (!normalizedOperations.includes('UPDATE')) {
-        throw new Error('"updateOf" requires an UPDATE operation');
-      }
-      if (isInsteadOf) {
-        throw new Error('INSTEAD OF trigger cannot have "updateOf" specified');
+        throw new Error(
+          '"updateOf" requires a standalone UPDATE event in "operation"; pass multiple events as an array'
+        );
       }
 
       const columnList = columns.map(mOptions.literal).join(', ');
-      operations = operationList
-        .map((event, index) =>
-          normalizedOperations[index] === 'UPDATE'
-            ? `UPDATE OF ${columnList}`
-            : event
-        )
-        .join(' OR ');
+      renderedOperations = operationList.map((event, index) =>
+        normalizedOperations[index] === 'UPDATE'
+          ? `UPDATE OF ${columnList}`
+          : event
+      );
     }
+    const operations = renderedOperations.join(' OR ');
 
     const nl = formatSeparator(mOptions.pretty, '  ');
     const defferStr = constraint

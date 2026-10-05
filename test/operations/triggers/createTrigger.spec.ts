@@ -134,6 +134,8 @@ CREATE CONSTRAINT TRIGGER "check_update" AFTER UPDATE ON "myschema"."accounts" N
           { columns: 'a,b', sql: '"a,b"' },
           { columns: 'a"b', sql: '"a""b"' },
           { columns: 'Straße', sql: '"Straße"' },
+          { columns: 'a.b', sql: '"a.b"' },
+          { columns: '   ', sql: '"   "' },
         ])('should quote $columns as identifiers', ({ columns, sql }) => {
           expect(
             create('accounts', 'check_update', {
@@ -175,6 +177,8 @@ CREATE CONSTRAINT TRIGGER "check_update" AFTER UPDATE ON "myschema"."accounts" N
           { operation: 'UPDATE', sql: 'UPDATE' },
           { operation: 'DELETE', sql: 'DELETE' },
           { operation: 'TRUNCATE', sql: 'TRUNCATE' },
+          { operation: '   ', sql: '   ' },
+          { operation: ['', ''], sql: ' OR ' },
           {
             operation: ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE'],
             sql: 'INSERT OR UPDATE OR DELETE OR TRUNCATE',
@@ -222,10 +226,33 @@ CREATE CONSTRAINT TRIGGER "check_update" AFTER UPDATE ON "myschema"."accounts" N
           }
         );
 
+        it.each(['', [], ['']].map((operation) => ({ operation })))(
+          'should reject the empty operation $operation',
+          ({ operation }) => {
+            for (const updateOf of [undefined, [], 'name']) {
+              expect(() =>
+                create('accounts', 'check_update', {
+                  ...defaults,
+                  operation,
+                  updateOf,
+                })
+              ).toThrow(
+                new Error(
+                  '"operation" (INSERT/UPDATE[ OF ...]/DELETE/TRUNCATE) have to be specified'
+                )
+              );
+            }
+          }
+        );
+
         it.each(
-          ['INSERT', ['INSERT', 'DELETE'], 'UPDATE OR INSERT'].map(
-            (operation) => ({ operation })
-          )
+          [
+            'INSERT',
+            ['INSERT', 'DELETE'],
+            'INSERT OR UPDATE',
+            'UPDATE OR INSERT',
+            'INSERT OR UPDATE OF x',
+          ].map((operation) => ({ operation }))
         )(
           'should reject updateOf without a standalone UPDATE event: $operation',
           ({ operation }) => {
@@ -235,7 +262,23 @@ CREATE CONSTRAINT TRIGGER "check_update" AFTER UPDATE ON "myschema"."accounts" N
                 operation,
                 updateOf: 'name',
               })
-            ).toThrow('"updateOf" requires an UPDATE operation');
+            ).toThrow(
+              new Error(
+                '"updateOf" requires a standalone UPDATE event in "operation"; pass multiple events as an array'
+              )
+            );
+          }
+        );
+
+        it.each(['', ['a', '']].map((updateOf) => ({ updateOf })))(
+          'should reject empty column names in $updateOf',
+          ({ updateOf }) => {
+            expect(() =>
+              create('accounts', 'check_update', {
+                ...defaults,
+                updateOf,
+              })
+            ).toThrow(new Error('"updateOf" column names must not be empty'));
           }
         );
 
@@ -260,15 +303,26 @@ CREATE CONSTRAINT TRIGGER "check_update" AFTER UPDATE ON "myschema"."accounts" N
           }
         );
 
-        it('should reject column lists for INSTEAD OF triggers', () => {
-          expect(() =>
-            create('accounts', 'check_update', {
-              ...defaults,
-              when: 'INSTEAD OF',
-              updateOf: 'name',
-            })
-          ).toThrow('INSTEAD OF trigger cannot have "updateOf" specified');
-        });
+        it.each([
+          { operation: 'UPDATE', updateOf: 'name' },
+          { operation: 'INSERT', updateOf: 'name' },
+          { operation: 'UPDATE OF name', updateOf: 'name' },
+          { operation: 'UPDATE', updateOf: '' },
+        ])(
+          'should reject INSTEAD OF before validating $operation and $updateOf',
+          ({ operation, updateOf }) => {
+            expect(() =>
+              create('accounts', 'check_update', {
+                ...defaults,
+                when: 'INSTEAD OF',
+                operation,
+                updateOf,
+              })
+            ).toThrow(
+              new Error('INSTEAD OF trigger cannot have "updateOf" specified')
+            );
+          }
+        );
 
         it('should allow an empty column list for INSTEAD OF triggers', () => {
           expect(

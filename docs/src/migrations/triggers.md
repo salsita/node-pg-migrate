@@ -54,8 +54,11 @@ option or an empty array leaves the events unchanged. An update targeting a
 listed column fires the trigger even if the column's value does not change.
 
 A nonempty `updateOf` requires a standalone `UPDATE` event in `operation`
-(case-insensitive). For multiple events, use an array as above. It cannot be
-combined with an existing `UPDATE OF` event or an `INSTEAD OF` trigger.
+(case-insensitive). Column names must not be empty strings. For multiple events,
+use an array as above. It cannot be combined with an existing `UPDATE OF` event
+or an `INSTEAD OF` trigger.
+
+[CockroachDB 24.3+ does not support column-specific UPDATE triggers](https://www.cockroachlabs.com/docs/stable/triggers#known-limitations).
 
 Existing SQL strings such as `operation: 'UPDATE OF "CamelCaseColumn"'` remain
 supported and are passed through unchanged, without automatic quoting or
