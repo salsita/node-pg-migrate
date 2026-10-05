@@ -79,8 +79,7 @@ function. Example:
 ```javascript
 export const up = function (pgm) {
   return new Promise((resolve) => {
-    // doSomethingAsync
-    resolve();
+    doSomethingAsync(() => resolve());
   });
 };
 ```
@@ -106,6 +105,10 @@ directly and return Promises. Await them, or return their Promise, so the migrat
 waits for them to finish. A direct query cannot depend on a table or column that
 an earlier queued operation has yet to create. To insert data into a table
 created in the same migration, queue the insert with `pgm.sql()`, as above.
+
+Direct queries also run before the migration's own `BEGIN`, so unless migrations
+share a single transaction (`singleTransaction`, the CLI default), a write made
+with `pgm.db.query()` is not rolled back if a queued statement fails.
 
 ## Using schemas
 
