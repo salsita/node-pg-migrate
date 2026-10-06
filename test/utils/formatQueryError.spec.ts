@@ -172,6 +172,14 @@ describe('formatQueryError', () => {
         logged([lines[0], lines[1], caret, lines[2]])
       );
     });
+
+    it('should put no caret under a prepared statement run by its name alone', () => {
+      const error = Object.assign(new Error(message), { position: '8' });
+
+      expect(formatQueryError(undefined, error)).toBe(
+        `Error executing:\n(a prepared statement, run by its name)\nError: ${message}\n`
+      );
+    });
   });
 
   describe('without an error position', () => {
@@ -233,9 +241,9 @@ describe('formatQueryError', () => {
       );
     });
 
-    it('should show `undefined` for a prepared statement run by its name alone', () => {
+    it('should name a prepared statement run by its name alone', () => {
       expect(formatQueryError(undefined, new Error('boom'))).toBe(
-        'Error executing:\nundefined\nError: boom\n'
+        'Error executing:\n(a prepared statement, run by its name)\nError: boom\n'
       );
     });
   });
