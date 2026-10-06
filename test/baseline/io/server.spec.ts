@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BaselineError } from '../../../src/baseline/errors';
 import { readServerFacts } from '../../../src/baseline/io/server';
 import { messageOf, rejectionOf } from '../helpers';
 import type { FakeServerOptions, FakeTable } from './fakeServer';
@@ -185,6 +186,47 @@ describe('readServerFacts', () => {
       recordedMigrations: 1,
     });
     expect(facts.migrationsSequence).toBeUndefined();
+  });
+
+  it('reads the history of a migrations table with an id column when the table is required', async () => {
+    const server = new FakeServer({
+      ...POSTGRES_18,
+      tables: [MIGRATIONS_TABLE],
+    });
+
+    await expect(
+      readServerFacts(server.db, DEFAULT_TABLE, { requireTable: true })
+    ).resolves.toMatchObject({
+      migrationsTableExists: true,
+      recordedMigrations: 3,
+      migrationsSequence: { schema: 'public', name: 'pgmigrations_id_seq' },
+    });
+    expectReadOnlyRun(server.statements);
+  });
+
+  it('refuses a required migrations table without an id column', async () => {
+    const server = new FakeServer({
+      ...POSTGRES_18,
+      tables: [
+        {
+          schema: 'public',
+          name: 'pgmigrations',
+          rows: 1,
+          columns: ['name', 'run_on'],
+        },
+      ],
+    });
+    const error = await rejectionOf(
+      readServerFacts(server.db, DEFAULT_TABLE, { requireTable: true })
+    );
+
+    expect(error).toBeInstanceOf(BaselineError);
+    expect(error).toMatchObject({ code: 'INVALID_MIGRATIONS_TABLE' });
+    expect(messageOf(error)).toContain('"public"."pgmigrations"');
+    expect(messageOf(error)).toMatch(/\bid column\b/);
+    expect(messageOf(error)).toContain('--migrations-table');
+    expect(server.statements.join('\n')).not.toMatch(/pg_get_serial_sequence/);
+    expect(server.statements.at(-1)).toMatch(/^\s*ROLLBACK\b/i);
   });
 
   it('stops after SELECT version() on CockroachDB, without a transaction', async () => {

@@ -628,11 +628,36 @@ export class Parser {
       return { kind: 'in', expr: left, list, negated };
     }
 
-    const op = ['=', '<>', '!='].find((candidate) => this.#acceptOp(candidate));
+    const op = this.#comparisonOperator();
 
     return op === undefined
       ? left
       : { kind: 'binary', op, left, right: this.#concatenation() };
+  }
+
+  /**
+   * A comparison operator, as it is (`=`) or schema-qualified
+   * (`OPERATOR(pg_catalog.=)`), or `undefined` when none follows.
+   */
+  #comparisonOperator(): string | undefined {
+    const comparisons = ['=', '<>', '!=', '>'];
+    if (!this.#acceptWord('operator')) {
+      return comparisons.find((candidate) => this.#acceptOp(candidate));
+    }
+
+    this.#expectOp('(');
+    if (this.#acceptWord('pg_catalog')) {
+      this.#expectOp('.');
+    }
+
+    const op = comparisons.find((candidate) => this.#acceptOp(candidate));
+    if (op === undefined) {
+      throw new Error('fake server: unsupported OPERATOR()');
+    }
+
+    this.#expectOp(')');
+
+    return op;
   }
 
   #concatenation(): Expr {

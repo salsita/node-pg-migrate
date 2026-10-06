@@ -253,6 +253,29 @@ describe.each(PG_VERSIONS)(
       expect(await listFiles(dir)).toEqual([]);
     });
 
+    it('refuses an ordinary pgmigrations table without an id column', async () => {
+      const url = await databaseWith(
+        'no_id_column',
+        'CREATE TABLE public.pgmigrations (name text, run_on timestamp);'
+      );
+      const dir = join(await workDir(), 'migrations');
+
+      const error = await rejectionOf(
+        baseline({
+          databaseUrl: url,
+          pgDump: await pgDumpShimForTest(container),
+          dir,
+          logger: recordingLogger(),
+        })
+      );
+
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'INVALID_MIGRATIONS_TABLE' });
+      expect(messageOf(error)).toContain('pgmigrations');
+      expect(messageOf(error)).toMatch(/\bid column\b/);
+      expect(await listFiles(dir)).toEqual([]);
+    });
+
     it('reads the history of a partitioned pgmigrations table like an ordinary one', async () => {
       const url = await databaseWith(
         'partitioned',
