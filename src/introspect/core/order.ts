@@ -768,7 +768,7 @@ function cycleError(
 
   return new BaselineError(
     'UNSUPPORTED_OBJECTS',
-    `These objects depend on each other, so no migration can create them one after the other: ${cycles.join('; ')}. Use --format sql for this database.`
+    `These objects depend on each other, so no migration can create them one after the other: ${cycles.join('; ')}. Use the SQL baseline (the default format) for this database.`
   );
 }
 
