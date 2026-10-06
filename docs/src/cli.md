@@ -106,7 +106,8 @@ node-pg-migrate up 1789084800000_baseline --fake   # on databases that already h
 node-pg-migrate up                                 # on blank databases
 ```
 
-`--from-file` uses a dump you made yourself. See [Adopting an Existing Database](baseline) for the steps and
+`--format ts` writes TypeScript `pgm` calls instead (experimental), and `--from-file` uses a dump
+you made yourself. See [Adopting an Existing Database](baseline) for the steps and
 [every option](baseline#options).
 
 ## Dry Runs
