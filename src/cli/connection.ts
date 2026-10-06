@@ -1,5 +1,6 @@
 import type { ClientConfig } from 'pg';
-// TODO causes tests to fail when `.js` is removed
+// The `.js` suffix is required: ESM resolution does not add an extension to a
+// deep import, so the bare path fails under the test runner.
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
 import type { ResolvedConfig } from './config';
