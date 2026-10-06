@@ -103,7 +103,7 @@
     "node-pg-migrate": "link:.",
     "npm-run-all2": "9.0.3",
     "oxfmt": "0.70.0",
-    "oxlint": "1.85.0",
+    "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2003",
     "pg": "8.23.1",
     "testcontainers": "12.2.0",
