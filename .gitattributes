@@ -7,3 +7,7 @@
 *.gif binary
 *.webp binary
 *.ico binary
+
+# pg_dump archives, test fixtures of baseline
+*.dump binary
+*.tar binary
