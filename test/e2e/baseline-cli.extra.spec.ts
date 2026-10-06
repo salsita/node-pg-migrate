@@ -468,6 +468,21 @@ describe.each(PG_VERSIONS)(
       expect(existsSync(join(cwd, 'migrations'))).toBe(false);
     });
 
+    it('refuses a -t table without an id column', async () => {
+      const { result, cwd } = await baselineOf(
+        'history_without_id',
+        'CREATE TABLE public.audit_log (name text, run_on timestamp);',
+        ['-t', 'audit_log']
+      );
+
+      expectRefusal(result, [
+        '"public"."audit_log"',
+        'no id column',
+        '--migrations-table',
+      ]);
+      expect(existsSync(join(cwd, 'migrations'))).toBe(false);
+    });
+
     it('refuses --include-schema names that match no schema, naming each', async () => {
       const { result, cwd } = await baselineOf(
         'include_unknown',
