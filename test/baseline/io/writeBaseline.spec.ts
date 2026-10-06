@@ -128,6 +128,17 @@ describe('planBaselineFile', () => {
       );
     }
   );
+
+  it('names the first file by code units, whatever the locale', async () => {
+    writeFileSync(join(root, 'a.sql'), '');
+    writeFileSync(join(root, 'Z.sql'), '');
+
+    const error = await rejectionOf(
+      planBaselineFile({ dir: root, name: 'baseline' })
+    );
+
+    expect(messageOf(error)).toContain('starting with Z.sql');
+  });
 });
 
 describe('writeBaselineFile', () => {

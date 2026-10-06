@@ -46,6 +46,36 @@ export interface FakeTable {
    * schema-qualified sequence name, e.g. `public.pgmigrations_id_seq`.
    */
   readonly serialSequence?: string;
+
+  /**
+   * Its `pg_class.relkind`, e.g. `v` for a view.
+   *
+   * @default 'r'
+   */
+  readonly relkind?: string;
+
+  /**
+   * The names of its columns, in order, as `pg_attribute` lists them.
+   *
+   * @default ['id', 'name', 'run_on']
+   */
+  readonly columns?: ReadonlyArray<string>;
+}
+
+/**
+ * The columns of a {@link FakeTable} without `columns`: those of a migrations
+ * table.
+ */
+const MIGRATIONS_COLUMNS: ReadonlyArray<string> = ['id', 'name', 'run_on'];
+
+/**
+ * Whether a relation named in SQL is the catalog `pg_catalog.<name>`.
+ */
+function isCatalog(ref: RelationRef, name: string): boolean {
+  return (
+    ref.name === name &&
+    (ref.schema === undefined || ref.schema === 'pg_catalog')
+  );
 }
 
 /**
@@ -85,6 +115,11 @@ interface EvaluationContext {
   readonly params: ReadonlyArray<unknown>;
   readonly row: Row;
   readonly group: ReadonlyArray<Row>;
+
+  /**
+   * The columns of the outer queries, for a subquery: `row` comes first.
+   */
+  readonly outer: Row;
 }
 
 /**
@@ -196,13 +231,15 @@ function castValue(
  * TRANSACTION`, `ROLLBACK`, `COMMIT`), `SHOW <setting>`, and `SELECT` lists
  * of literals, `$n` parameters, column references, casts (`::int` gives a
  * number, `::bigint` and `::numeric` a string, like node-postgres), `||`,
- * comparisons, `AND` / `OR` / `NOT`, `IS [NOT] NULL`, `[NOT] IN (…)`,
- * `CASE`, scalar subqueries, `EXISTS (…)` and the functions `version`,
- * `current_setting`, `to_regclass`, `pg_get_serial_sequence`, `format`,
- * `quote_ident`, `quote_literal`, `coalesce`, `nullif`, `lower`, `upper`,
- * `split_part`, `concat` and `count`, `FROM` one of its tables or
- * `pg_settings`, with an optional `WHERE`. Anything else fails with
- * `fake server: unsupported …`.
+ * comparisons (also as `OPERATOR(pg_catalog.=)`), `AND` / `OR` / `NOT`,
+ * `IS [NOT] NULL`, `[NOT] IN (…)`, `CASE`, scalar subqueries, `EXISTS (…)`
+ * (both may refer to the columns of the outer query) and the functions
+ * `version`, `current_setting`, `to_regclass`, `pg_get_serial_sequence`,
+ * `format`, `quote_ident`, `quote_literal`, `coalesce`, `nullif`, `lower`,
+ * `upper`, `split_part`, `concat` and `count`, `FROM` one of its tables,
+ * `pg_settings`, `pg_class` (`oid`, `relkind`) or `pg_attribute` (`attrelid`,
+ * `attname`, `attnum`, `attisdropped`), with an optional `WHERE`. Anything
+ * else fails with `fake server: unsupported …`.
  *
  * Like PostgreSQL, it fails on missing relations, and after an error inside
  * a transaction it refuses every statement but `ROLLBACK`.
@@ -400,16 +437,34 @@ export class FakeServer {
       return [{}];
     }
 
-    if (
-      from.name === 'pg_settings' &&
-      (from.schema === undefined || from.schema === 'pg_catalog')
-    ) {
+    if (isCatalog(from, 'pg_settings')) {
       return Object.entries(this.#options.settings).map(([name, setting]) => ({
         name,
         setting,
         unit: null,
         vartype: /^-?\d+$/.test(setting) ? 'integer' : 'string',
       }));
+    }
+
+    // An `oid` here is the table's `regclass` text, which `to_regclass()`
+    // returns too.
+    const tables = this.#options.tables ?? [];
+    if (isCatalog(from, 'pg_class')) {
+      return tables.map((table) => ({
+        oid: regclassText(table),
+        relkind: table.relkind ?? 'r',
+      }));
+    }
+
+    if (isCatalog(from, 'pg_attribute')) {
+      return tables.flatMap((table) =>
+        (table.columns ?? MIGRATIONS_COLUMNS).map((attname, index) => ({
+          attrelid: regclassText(table),
+          attname,
+          attnum: index + 1,
+          attisdropped: false,
+        }))
+      );
     }
 
     const table = this.#existingTable(from);
@@ -421,12 +476,25 @@ export class FakeServer {
     }));
   }
 
-  #select(statement: SelectStatement, params: ReadonlyArray<unknown>): Rows {
+  /**
+   * Runs a `SELECT`. A subquery passes the columns of its outer queries as
+   * `outer`, which it can refer to when its own rows have no such column.
+   */
+  #select(
+    statement: SelectStatement,
+    params: ReadonlyArray<unknown>,
+    outer: Row = {}
+  ): Rows {
     const source = this.#rowsOf(statement.from);
     const filtered = source.filter(
       (row) =>
         statement.where === undefined ||
-        this.#evaluate(statement.where, { params, row, group: source }) === true
+        this.#evaluate(statement.where, {
+          params,
+          row,
+          group: source,
+          outer,
+        }) === true
     );
     const aggregate = statement.items.some((item) =>
       containsAggregate(item.expr)
@@ -445,6 +513,7 @@ export class FakeServer {
               params,
               row,
               group: filtered,
+              outer,
             });
           }
         }
@@ -469,11 +538,12 @@ export class FakeServer {
       }
 
       case 'column': {
-        if (!(expr.name in context.row)) {
+        const row = expr.name in context.row ? context.row : context.outer;
+        if (!(expr.name in row)) {
           throw new Error(`column "${expr.name}" does not exist`);
         }
 
-        return context.row[expr.name];
+        return row[expr.name];
       }
 
       case 'star': {
@@ -525,7 +595,10 @@ export class FakeServer {
       }
 
       case 'subquery': {
-        const { rows, columns } = this.#select(expr.select, context.params);
+        const { rows, columns } = this.#select(expr.select, context.params, {
+          ...context.outer,
+          ...context.row,
+        });
         if (rows.length > 1) {
           throw new Error(
             'more than one row returned by a subquery used as an expression'
@@ -536,7 +609,12 @@ export class FakeServer {
       }
 
       case 'exists': {
-        return this.#select(expr.select, context.params).rows.length > 0;
+        return (
+          this.#select(expr.select, context.params, {
+            ...context.outer,
+            ...context.row,
+          }).rows.length > 0
+        );
       }
 
       case 'call': {
@@ -582,6 +660,10 @@ export class FakeServer {
 
     if (expr.op === '<>' || expr.op === '!=') {
       return stringOf(left) !== stringOf(right);
+    }
+
+    if (expr.op === '>') {
+      return Number(left) > Number(right);
     }
 
     throw new Error(`fake server: unsupported operator ${expr.op}`);
@@ -689,12 +771,13 @@ export class FakeServer {
     }
 
     const found = this.#existingTable(parseRelationText(stringOf(table)));
-    if (stringOf(column) !== 'id') {
+    const name = stringOf(column);
+    if (!(found.columns ?? MIGRATIONS_COLUMNS).includes(name)) {
       throw new Error(
-        `column "${stringOf(column)}" of relation "${found.name}" does not exist`
+        `column "${name}" of relation "${found.name}" does not exist`
       );
     }
 
-    return found.serialSequence ?? null;
+    return name === 'id' ? (found.serialSequence ?? null) : null;
   }
 }

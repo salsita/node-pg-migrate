@@ -12,6 +12,13 @@ import { BaselineError } from '../errors';
 const FIRST_INDEX_PREFIX = '0001';
 
 /**
+ * Compares by UTF-16 code units: the order must not depend on the locale.
+ */
+function compareCodeUnits(a: string, b: string): number {
+  return Number(a > b) - Number(a < b);
+}
+
+/**
  * The entries of `dir` with no leading-dot files, or `null` when `dir` does
  * not exist (which counts as empty: a refused baseline must not have created
  * it, see {@link writeBaselineFile}).
@@ -67,7 +74,7 @@ export async function planBaselineFile(options: {
   // Subdirectories count too: with `--use-glob`, the runner finds the
   // migrations in them.
   const entries = await migrationEntries(dir);
-  const files = (entries ?? []).toSorted((a, b) => a.localeCompare(b));
+  const files = (entries ?? []).toSorted(compareCodeUnits);
   if (files.length > 0) {
     throw new BaselineError(
       'MIGRATIONS_EXIST',

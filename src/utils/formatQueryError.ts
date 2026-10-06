@@ -4,6 +4,9 @@ const RADIUS = 10;
 /** Queries with at most this many lines are shown in full. */
 const MAX_LINES = 2 * RADIUS + 1;
 
+/** What is shown for a query pg ran by the name of a prepared statement. */
+const PREPARED_STATEMENT = '(a prepared statement, run by its name)';
+
 /** An error a query failed with, like pg's `DatabaseError`. */
 interface QueryError extends Error {
   /**
@@ -77,6 +80,9 @@ function excerptWithCaret(
  * Only `\n` separates lines: a `\r` before it stays part of the line, as it is
  * in the query.
  *
+ * A query pg ran by the name of a prepared statement alone has no text: it is
+ * shown as `(a prepared statement, run by its name)`, without a caret.
+ *
  * @param sql The text of the query that failed, `undefined` when pg ran a
  * prepared statement by its name alone.
  * @param error The error the query failed with.
@@ -86,7 +92,14 @@ export function formatQueryError(
   sql: string | undefined,
   error: QueryError
 ): string {
-  const lines = String(sql).split('\n');
+  if (sql === undefined) {
+    return `Error executing:
+${PREPARED_STATEMENT}
+${error}
+`;
+  }
+
+  const lines = sql.split('\n');
   const position = Number(error.position);
 
   if (error.message && position >= 1) {
