@@ -25,8 +25,9 @@ export interface InstalledExtension {
  * `$1`, quoted and schema-qualified.
  *
  * `pg_get_serial_sequence()` fails for a missing table, so it only runs when
- * the table exists. (It fails for a missing `id` column too, but the runner
- * cannot use a migrations table without one either.)
+ * the table exists. It fails for a table without an `id` column too: with
+ * `check.requireTable`, {@link assertMigrationsTableKind} refuses such a
+ * table before this query runs.
  *
  * The settings stay text: a database may define its own casts from text, and
  * the queries of this file must not run code of the database.
@@ -43,11 +44,19 @@ const FACTS_QUERY = `SELECT
 
 /**
  * The `relkind` of the relation with the migrations table's name (`$1`,
- * quoted and schema-qualified): one row, or none when no relation has that
- * name. It only reads `pg_class`, never the relation itself, so a view's
- * definition, a foreign table's wrapper, etc. never run.
+ * quoted and schema-qualified), and whether it has a column named `id`: one
+ * row, or none when no relation has that name. It only reads `pg_class` and
+ * `pg_attribute`, never the relation itself, so a view's definition, a
+ * foreign table's wrapper, etc. never run.
  */
-const RELKIND_QUERY = `SELECT c.relkind
+const RELKIND_QUERY = `SELECT c.relkind,
+  EXISTS (
+    SELECT 1 FROM pg_catalog.pg_attribute AS a
+    WHERE a.attrelid OPERATOR(pg_catalog.=) c.oid
+      AND a.attname OPERATOR(pg_catalog.=) 'id'
+      AND a.attnum OPERATOR(pg_catalog.>) 0
+      AND NOT a.attisdropped
+  ) AS has_id
 FROM pg_catalog.pg_class AS c
 WHERE c.oid OPERATOR(pg_catalog.=) pg_catalog.to_regclass($1)`;
 
@@ -153,11 +162,26 @@ function invalidMigrationsTable(table: string, relkind: string): BaselineError {
 }
 
 /**
+ * The refusal for an ordinary or partitioned table with the migrations
+ * table's name that has no `id` column, which every migrations table of
+ * node-pg-migrate has.
+ *
+ * @param table The table, quoted and schema-qualified.
+ */
+function tableWithoutId(table: string): BaselineError {
+  return new BaselineError(
+    'INVALID_MIGRATIONS_TABLE',
+    `${table} has no id column, so it is not a node-pg-migrate migrations table and baseline cannot read the migration history from it. Point baseline at the real migrations table (--migrations-table, --migrations-schema).`
+  );
+}
+
+/**
  * Refuses a relation with the migrations table's name that exists but is not
- * an ordinary or partitioned table, with a `BaselineError` with code
- * `INVALID_MIGRATIONS_TABLE`. It decides from `pg_class` alone (see
- * {@link RELKIND_QUERY}), so none of the relation's code runs. A missing
- * relation passes: it means there is no history.
+ * an ordinary or partitioned table, or is one without an `id` column, with a
+ * `BaselineError` with code `INVALID_MIGRATIONS_TABLE`. It decides from
+ * `pg_class` and `pg_attribute` alone (see {@link RELKIND_QUERY}), so none of
+ * the relation's code runs. A missing relation passes: it means there is no
+ * history.
  *
  * @param db The database connection.
  * @param table The relation, quoted and schema-qualified.
@@ -166,13 +190,21 @@ async function assertMigrationsTableKind(
   db: DBConnection,
   table: string
 ): Promise<void> {
-  const rows: Array<{ relkind: string }> = await db.select({
+  const rows: Array<{ relkind: string; has_id: boolean }> = await db.select({
     text: RELKIND_QUERY,
     values: [table],
   });
-  const relkind = rows[0]?.relkind;
-  if (relkind !== undefined && !TABLE_RELKINDS.has(relkind)) {
-    throw invalidMigrationsTable(table, relkind);
+  const relation = rows[0];
+  if (relation === undefined) {
+    return;
+  }
+
+  if (!TABLE_RELKINDS.has(relation.relkind)) {
+    throw invalidMigrationsTable(table, relation.relkind);
+  }
+
+  if (!relation.has_id) {
+    throw tableWithoutId(table);
   }
 }
 
@@ -187,11 +219,12 @@ async function assertMigrationsTableKind(
  *
  * With `check.requireTable`, which `baseline()` always sets, a relation with
  * the migrations table's name that exists but is not an ordinary or
- * partitioned table (a view, a materialized view, a foreign table, …) makes
- * it throw a `BaselineError` with code `INVALID_MIGRATIONS_TABLE`. That is
- * decided from `pg_class` first, before any other query names the relation,
- * so none of its code runs. Without it, whatever relation has that name is
- * counted as the migrations table.
+ * partitioned table (a view, a materialized view, a foreign table, …), or is
+ * one without an `id` column, makes it throw a `BaselineError` with code
+ * `INVALID_MIGRATIONS_TABLE`. That is decided from `pg_class` and
+ * `pg_attribute` first, before any other query names the relation, so none
+ * of its code runs. Without it, whatever relation has that name is counted
+ * as the migrations table.
  *
  * The connection must not be in a transaction already: the rollback would end
  * it.
@@ -200,7 +233,7 @@ async function assertMigrationsTableKind(
  * @param options Where the migrations table is.
  * @param check What to check before the history is read.
  * @param check.requireTable Whether to refuse a migrations relation that is
- * not an ordinary or partitioned table.
+ * not an ordinary or partitioned table with an `id` column.
  */
 export async function readServerFacts(
   db: DBConnection,
@@ -237,7 +270,8 @@ export async function readServerFacts(
   await db.query('BEGIN READ ONLY');
   try {
     // Before anything else names the relation: pg_get_serial_sequence() would
-    // fail on a view without an `id` column, and counting would run its code.
+    // fail on a relation without an `id` column, and counting a view would
+    // run its code.
     if (check.requireTable === true) {
       await assertMigrationsTableKind(db, table);
     }
