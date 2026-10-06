@@ -43,3 +43,7 @@ jobs:
         env:
           PGM_E2E_STRESS: '1' # the spec is skipped without it
           PGM_VERSIONS: '18' # Postgres version to test against
+
+      - name: Benchmarks
+        if: ${{ !cancelled() }}
+        run: pnpm run bench
