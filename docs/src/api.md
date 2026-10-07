@@ -44,8 +44,14 @@ Calling `pgm.noTransaction()` also breaks a shared transaction. These modes can 
 committed changes after a later failure. See the [CLI transaction behavior](cli).
 
 CockroachDB [does not provide full atomicity for DDL](https://www.cockroachlabs.com/docs/v25.3/online-schema-changes).
-With `autocommit_before_ddl` enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
-DDL commits individually, so a failed run, including a failed `redo`, can retain changes and history updates.
+For `singleTransaction: true` and dry runs, the runner disables and verifies
+`autocommit_before_ddl` before setup or migrations, refusing to continue if it cannot be disabled.
+If the runner changes this setting on a supplied `dbClient`, it restores the enabled setting
+after cleanup, on success or failure; restoration failures are logged without replacing the run's result or error.
+This prevents DDL from ending the shared transaction early, but schema changes can still fail
+at commit with `XXA00` after other changes have committed. The runner preserves that error and
+warns that rollback cannot undo committed changes: inspect the schema, data and migration history
+before retrying. `pgm.noTransaction()` still explicitly breaks the shared transaction.
 
 Both phases share a session. Session-level `SET` statements in a down migration carry over
 into reapplication, including changes to the role or `lock_timeout`. When `schema` is
