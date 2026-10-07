@@ -817,6 +817,12 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     throw new TypeError('migrationsTable must be a non-empty string');
   }
 
+  if (options.migrationsSchema === '') {
+    throw new TypeError(
+      'migrationsSchema must be a non-empty string when supplied'
+    );
+  }
+
   const db = Db(connection, logger);
   const dryRun = Boolean(options.dryRun);
   let readOnlyTransaction = false;
