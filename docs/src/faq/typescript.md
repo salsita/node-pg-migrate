@@ -28,19 +28,19 @@ Now you can run migrations with:
 ::: code-group
 
 ```bash [npm]
-npm run migrate
+npm run migrate up
 ```
 
 ```bash [pnpm]
-pnpm run migrate
+pnpm run migrate up
 ```
 
 ```bash [yarn]
-yarn migrate
+yarn migrate up
 ```
 
 ```bash [bun]
-bun run migrate
+bun run migrate up
 ```
 
 :::
