@@ -96,7 +96,8 @@ if an earlier version created a table named `"undefined"`.
 
 An explicitly empty `migrationsSchema` rejects with `TypeError` before the database is accessed,
 including in dry runs. Omit the option or use `undefined` to retain the existing schema default.
-Non-empty schema names are used as supplied, including whitespace and quoted identifiers.
+Non-empty schema names are used as supplied, including whitespace and embedded double-quote characters.
+The library quotes the identifier itself.
 
 ### MigrationLoaderStrategy
 
