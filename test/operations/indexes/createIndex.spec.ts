@@ -318,6 +318,78 @@ describe('operations', () => {
         }
       );
 
+      describe.each([
+        { title: 'string', asColumns: (name: string) => name },
+        { title: 'object', asColumns: (name: string) => [{ name }] },
+      ])('Unicode $title columns', ({ asColumns }) => {
+        it.each([
+          'Straße',
+          'straße',
+          'größe-id',
+          '日本語',
+          '日本語-id',
+          'größe.id',
+          'État_id',
+          'e\u0301-id',
+          '😀-id',
+          '1größe',
+          'Straße$1',
+          'größe$1-id',
+          'Case$1',
+        ])('quotes %s and preserves inferred names and reversal', (column) => {
+          const table = { schema: 'mySchema', name: 'measurements' };
+          const columns = asColumns(column);
+
+          expect(createIndexFn(table, columns, { unique: true })).toBe(
+            `CREATE UNIQUE INDEX "measurements_${column}_unique_index" ON "mySchema"."measurements" ("${column}");`
+          );
+          expect(createIndexFn.reverse(table, columns, { unique: true })).toBe(
+            `DROP INDEX "mySchema"."measurements_${column}_unique_index";`
+          );
+        });
+      });
+
+      it('decamelizes Unicode identifiers with column options', () => {
+        const create = createIndex(options2);
+        const table = { schema: 'mySchema', name: 'myTable' };
+        const columns = [{ name: 'größeId', sort: 'DESC' as const }];
+
+        expect(create(table, columns)).toBe(
+          'CREATE INDEX "my_table_größe_id_index" ON "my_schema"."my_table" ("größe_id" DESC);'
+        );
+        expect(create.reverse(table, columns)).toBe(
+          'DROP INDEX "my_schema"."my_table_größe_id_index";'
+        );
+      });
+
+      it.each([
+        ['"Straße"', '("Straße")'],
+        ['"größe-id"', '("größe-id")'],
+        ['"größe""id"', '("größe""id")'],
+        ['straße - id', '(straße - id)'],
+        ['(größe-id)', '(größe-id)'],
+        ['日本語+id', '(日本語+id)'],
+        ['日本語*2', '(日本語*2)'],
+        ['日本語/2', '(日本語/2)'],
+        ['lower("Straße")', '(lower("Straße"))'],
+        ["日本語->>'id'", "(日本語->>'id')"],
+        ['日本語::text', '(日本語::text)'],
+        ['$$Straße$$', '($$Straße$$)'],
+        ['$tag$Straße$tag$', '($tag$Straße$tag$)'],
+      ])('preserves Unicode SQL input: %s', (column, sql) => {
+        expect(
+          createIndexFn('measurements', column, { name: 'unicode_idx' })
+        ).toBe(`CREATE INDEX "unicode_idx" ON "measurements" (${sql});`);
+      });
+
+      it('preserves legacy quoting of an ASCII name containing quote characters', () => {
+        // Unlike the Unicode and hyphenated SQL workarounds, this input has
+        // historically denoted an identifier whose name includes the quotes.
+        expect(createIndexFn('measurements', '"user_id"')).toBe(
+          'CREATE INDEX "measurements_""user_id""_index" ON "measurements" ("""user_id""");'
+        );
+      });
+
       it.each([
         {
           title: 'without decamelization',

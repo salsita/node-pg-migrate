@@ -22,7 +22,7 @@ import {
 const migrationName = '1000000000000_unique_measurement';
 
 describe.each(PG_VERSIONS)(
-  'hyphenated index columns (PG %s)',
+  'index columns (PG %s)',
   { timeout: INTEGRATION_TIMEOUT },
   (version) => {
     let container: StartedPostgreSqlContainer;
@@ -51,7 +51,11 @@ describe.each(PG_VERSIONS)(
       dir = await mkdtemp(join(tmpdir(), 'pgm-index-columns-'));
       await client.query('CREATE SCHEMA index_columns');
       await client.query(`CREATE TABLE index_columns.measurements (
-        a integer, b integer, "a-b" integer
+        a integer, b integer, "a-b" integer,
+        "Straße" integer, "straße" integer, "größe" integer, id integer,
+        "größe-id" integer, "日本語" integer, "日本語.id" integer,
+        "e\u0301" integer, "😀_id" integer, "größe""id" integer, "データ" jsonb,
+        "Straße$1" integer, "größe$1-id" integer, "Case$1" integer
       )`);
     });
 
@@ -85,32 +89,34 @@ describe.each(PG_VERSIONS)(
       ).rows;
     }
 
+    async function writeMigration(body: string) {
+      await writeFile(
+        join(dir, `${migrationName}.mjs`),
+        `export function up(pgm) { ${body} }`
+      );
+
+      return {
+        databaseUrl: container.getConnectionUri(),
+        dir,
+        schema: 'index_columns',
+        migrationsSchema: 'index_columns',
+        migrationsTable: 'pgmigrations',
+        count: 1,
+        log: () => {},
+      };
+    }
+
     it.each([
       { title: 'string', columns: '"a-b"' },
       { title: 'object', columns: '[{ name: "a-b" }]' },
     ])(
       'enforces uniqueness and reverses a $title-form column',
       async ({ columns }) => {
-        await writeFile(
-          join(dir, `${migrationName}.mjs`),
-          `export function up(pgm) {
-          pgm.createIndex(
+        const options = await writeMigration(`pgm.createIndex(
             { schema: 'index_columns', name: 'measurements' },
             ${columns},
             { unique: true }
-          );
-        }`
-        );
-
-        const options = {
-          databaseUrl: container.getConnectionUri(),
-          dir,
-          schema: 'index_columns',
-          migrationsSchema: 'index_columns',
-          migrationsTable: 'pgmigrations',
-          count: 1,
-          log: () => {},
-        };
+          );`);
         expect(await catalog()).toEqual([]);
 
         await runner({ ...options, direction: 'up' });
@@ -160,5 +166,159 @@ describe.each(PG_VERSIONS)(
         ]);
       }
     );
+
+    it('preserves Straße as a distinct indexed column from straße', async () => {
+      const options = await writeMigration(`pgm.createIndex(
+        { schema: 'index_columns', name: 'measurements' },
+        'Straße'
+      );`);
+
+      await runner({ ...options, direction: 'up' });
+      expect(await catalog()).toEqual([
+        {
+          name: 'measurements_Straße_index',
+          column: 'Straße',
+          expression: null,
+          unique: false,
+          definition: '"Straße"',
+        },
+      ]);
+
+      await runner({ ...options, direction: 'down' });
+      expect(await catalog()).toEqual([]);
+    });
+
+    it.each([
+      { title: 'string', columns: 'column' },
+      { title: 'object', columns: '[{ name: column }]' },
+    ])(
+      'indexes the exact Unicode and ASCII $title-form columns and reverses',
+      async ({ columns }) => {
+        const names = [
+          'a',
+          'Straße',
+          'straße',
+          'größe-id',
+          '日本語',
+          '日本語.id',
+          'e\u0301',
+          '😀_id',
+          'Straße$1',
+          'größe$1-id',
+          'Case$1',
+        ];
+        const options = await writeMigration(`
+          for (const column of ${JSON.stringify(names)}) {
+            pgm.createIndex(
+              { schema: 'index_columns', name: 'measurements' },
+              ${columns}
+            );
+          }
+        `);
+
+        await runner({ ...options, direction: 'up' });
+        const indexes = await catalog();
+        expect(indexes).toHaveLength(names.length);
+        expect(indexes).toEqual(
+          expect.arrayContaining(
+            names.map((column) => ({
+              name: `measurements_${column}_index`,
+              column,
+              expression: null,
+              unique: false,
+              definition: column === 'a' ? 'a' : `"${column}"`,
+            }))
+          )
+        );
+
+        await runner({ ...options, direction: 'down' });
+        expect(await catalog()).toEqual([]);
+      }
+    );
+
+    it('preserves quoted Unicode columns and their legacy inferred index names', async () => {
+      const quotedColumns = [
+        { input: '"Straße"', column: 'Straße' },
+        { input: '"größe-id"', column: 'größe-id' },
+        { input: '"größe""id"', column: 'größe"id' },
+      ];
+      const options = await writeMigration(`
+        for (const { input } of ${JSON.stringify(quotedColumns)}) {
+          pgm.createIndex(
+            { schema: 'index_columns', name: 'measurements' },
+            input
+          );
+        }
+      `);
+
+      await runner({ ...options, direction: 'up' });
+      const indexes = await catalog();
+      expect(indexes).toHaveLength(quotedColumns.length);
+      expect(indexes).toEqual(
+        expect.arrayContaining(
+          quotedColumns.map(({ input, column }) => ({
+            name: `measurements_${input}_index`,
+            column,
+            expression: null,
+            unique: false,
+            definition: input,
+          }))
+        )
+      );
+
+      await runner({ ...options, direction: 'down' });
+      expect(await catalog()).toEqual([]);
+    });
+
+    it('preserves Unicode SQL expressions and explicit subtraction literals', async () => {
+      const expressions = [
+        { name: 'subtraction', input: '"Straße" - "straße"' },
+        { name: 'function_call', input: 'abs("Straße")' },
+        { name: 'json_operator', input: '"データ"->>\'id\'' },
+        { name: 'dollar_constant', input: '$$Straße$$::text' },
+      ];
+      const options = await writeMigration(`
+        for (const { name, input } of ${JSON.stringify(expressions)}) {
+          pgm.createIndex(
+            { schema: 'index_columns', name: 'measurements' },
+            input,
+            { name }
+          );
+        }
+        pgm.createIndex(
+          { schema: 'index_columns', name: 'measurements' },
+          pgm.func('("größe" - id)'),
+          { name: 'literal_subtraction' }
+        );
+      `);
+
+      await runner({ ...options, direction: 'up' });
+      const indexes = await catalog();
+      expect(indexes).toHaveLength(5);
+      expect(indexes).toEqual(
+        expect.arrayContaining(
+          [
+            ['subtraction', '("Straße" - "straße")', '(("Straße" - "straße"))'],
+            ['function_call', 'abs("Straße")', 'abs("Straße")'],
+            [
+              'json_operator',
+              '("データ" ->> \'id\'::text)',
+              '(("データ" ->> \'id\'::text))',
+            ],
+            ['dollar_constant', "'Straße'::text", "('Straße'::text)"],
+            ['literal_subtraction', '("größe" - id)', '(("größe" - id))'],
+          ].map(([name, expression, definition]) => ({
+            name,
+            column: null,
+            expression,
+            unique: false,
+            definition,
+          }))
+        )
+      );
+
+      await runner({ ...options, direction: 'down' });
+      expect(await catalog()).toEqual([]);
+    });
   }
 );

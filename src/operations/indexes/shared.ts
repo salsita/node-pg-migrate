@@ -74,10 +74,13 @@ export function generateColumnString(
   }
 
   const name = mOptions.schemalize(column);
-  // Bare hyphenated names are identifiers. Keep quotes and hyphens in separate
-  // patterns so that already quoted names like '"a-b"' stay on the expression
-  // path: literal() would escape their quotes again.
-  const isIdentifier = /^[\w".]*$/.test(name) || /^[\w.-]+$/.test(name);
+  // The non-ASCII range matches isSingleIdentifier's PostgreSQL identifiers.
+  // Allow $ only after the first character to preserve dollar-quoted expressions.
+  // Keep the legacy quote pattern separate: quoted Unicode or hyphenated SQL
+  // names must stay expressions, since literal() would escape their quotes again.
+  const isIdentifier =
+    /^[\w".]*$/.test(name) ||
+    /^[\w.\u0080-\u{10FFFF}-][\w.$\u0080-\u{10FFFF}-]*$/u.test(name);
   if (isIdentifier) {
     return mOptions.literal(name);
   }
