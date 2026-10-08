@@ -55,7 +55,12 @@ export function createOperatorClass(
     indexMethod,
     operatorList,
     options
-  ) => dropOperatorClass(mOptions)(operatorClassName, indexMethod, options);
+  ) =>
+    dropOperatorClass(mOptions)(
+      operatorClassName,
+      mOptions.literal(indexMethod),
+      options
+    );
 
   return _create;
 }

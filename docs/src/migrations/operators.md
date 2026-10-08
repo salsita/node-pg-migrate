@@ -68,6 +68,11 @@
 | `operator_list`       | `array`                   | of [operator objects](#operator-list-definitions) |
 | `options`             | `object`                  | Check below for available options                 |
 
+`createOperatorClass` quotes `index_method` as an identifier and applies the
+migration's `decamelize` option. Its automatic reverse uses the same identifier.
+For example, `myMethod` becomes `"my_method"` in both directions when decamelization
+is enabled, and `"myMethod"` in both directions when it is disabled.
+
 ### Options
 
 | Option    | Type      | Description           |
@@ -78,6 +83,10 @@
 ## Reverse Operation: `dropOperatorClass`
 
 #### `pgm.dropOperatorClass( operator_class_name, index_methoddrop_options )`
+
+An explicit `dropOperatorClass` call uses `index_method` as SQL identifier text,
+without extra quoting or decamelization. Use `'"myMethod"'` to drop a class for a
+case-sensitive access method, or `'my_method'` for an already normalized name.
 
 > [IMPORTANT]
 > Drop a operator class - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopclass.html)
