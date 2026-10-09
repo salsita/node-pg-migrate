@@ -15,7 +15,7 @@ export function createTransformer(
         val === undefined
           ? ''
           : typeof val === 'string' || isNameObject(val)
-            ? literal(val)
+            ? literal(val).replaceAll('$', '$$$$')
             : String(escapeValue(val)).replaceAll('$', '$$$$')
       );
     }, statement);
