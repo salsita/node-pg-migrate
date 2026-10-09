@@ -18,9 +18,9 @@ For a directory structure of
 this will run migrations from `migrations/` directory:
 
 ```javascript
+import { runner } from 'node-pg-migrate';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runner } from 'node-pg-migrate';
 
 await runner({
   databaseUrl: process.env.DATABASE_URL,
