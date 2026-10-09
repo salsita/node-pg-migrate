@@ -252,6 +252,136 @@ describe('runner', () => {
     );
   });
 
+  describe('migrationsSchema', () => {
+    describe('rejects', () => {
+      beforeEach(() => {
+        vi.spyOn(db, 'db').mockImplementation(() => {
+          throw new Error('Database must not be initialized');
+        });
+      });
+
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
+      it.each([false, true])(
+        'rejects an empty schema before creating a database client (dryRun=%s)',
+        async (dryRun) => {
+          await expect(
+            runner({
+              databaseUrl: 'postgres://localhost/unused',
+              dir: 'test/migrations',
+              direction: 'up',
+              migrationsTable: 'pgmigrations',
+              migrationsSchema: '',
+              dryRun,
+            })
+          ).rejects.toThrow(
+            new TypeError(
+              'migrationsSchema must be a non-empty string when supplied'
+            )
+          );
+          expect(db.db).not.toHaveBeenCalled();
+        }
+      );
+
+      it.each([false, true])(
+        'rejects an empty schema without using an external client (dryRun=%s)',
+        async (dryRun) => {
+          const query = vi.fn();
+          const end = vi.fn();
+          const dbClient = { query, end } as unknown as ClientBase;
+          await expect(
+            runner({
+              dbClient,
+              dir: 'test/migrations',
+              direction: 'up',
+              migrationsTable: 'pgmigrations',
+              migrationsSchema: '',
+              dryRun,
+            })
+          ).rejects.toThrow(
+            new TypeError(
+              'migrationsSchema must be a non-empty string when supplied'
+            )
+          );
+          expect(db.db).not.toHaveBeenCalled();
+          expect(query).not.toHaveBeenCalled();
+          expect(end).not.toHaveBeenCalled();
+        }
+      );
+
+      it('preserves missing connection error precedence', async () => {
+        await expect(
+          // @ts-expect-error: a JavaScript caller can omit the connection
+          runner({
+            dir: 'test/migrations',
+            direction: 'up',
+            migrationsTable: 'pgmigrations',
+            migrationsSchema: '',
+          })
+        ).rejects.toThrow(
+          'You must provide either a databaseUrl or a dbClient'
+        );
+        expect(db.db).not.toHaveBeenCalled();
+      });
+
+      it('preserves migrations table error precedence', async () => {
+        await expect(
+          runner({
+            databaseUrl: 'postgres://localhost/unused',
+            dir: 'test/migrations',
+            direction: 'up',
+            migrationsTable: '',
+            migrationsSchema: '',
+          })
+        ).rejects.toThrow(
+          new TypeError('migrationsTable must be a non-empty string')
+        );
+        expect(db.db).not.toHaveBeenCalled();
+      });
+    });
+
+    it.each([
+      [undefined, undefined, 'public', '"public"'],
+      [undefined, 'app', 'app', '"app"'],
+      ['history', 'app', 'history', '"history"'],
+      [' ', undefined, ' ', '" "'],
+      ['hi"story', undefined, 'hi"story', '"hi""story"'],
+    ])(
+      'preserves the schema %j with application schema %j',
+      async (migrationsSchema, schema, expected, quoted) => {
+        const query = vi.fn().mockResolvedValue({ rows: [] });
+        const dbClient = { query } as unknown as ClientBase;
+        await expect(
+          runner({
+            dbClient,
+            dir: 'test/dry-run-migrations',
+            direction: 'up',
+            migrationsTable: 'pgmigrations',
+            migrationsSchema,
+            schema,
+            noLock: true,
+            fake: true,
+            logger: {
+              info: vi.fn<LogFn>(),
+              warn: vi.fn<LogFn>(),
+              error: vi.fn<LogFn>(),
+            },
+          })
+        ).resolves.toHaveLength(1);
+        expect(query).toHaveBeenCalledWith(MIGRATIONS_TABLE_EXISTS, [
+          'pgmigrations',
+          expected,
+        ]);
+        expect(query).toHaveBeenCalledWith(
+          `CREATE TABLE ${quoted}."pgmigrations" (id SERIAL PRIMARY KEY, name varchar(255) NOT NULL, run_on timestamp NOT NULL)`,
+          undefined
+        );
+      }
+    );
+  });
+
   it('should execute a basic up migration', async () => {
     const executedMigrations: Array<{
       id: number;
