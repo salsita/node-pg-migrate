@@ -94,6 +94,11 @@ if an earlier version created a table named `"undefined"`.
 | `pretty`                    | `boolean`                                   | Formats the generated SQL statements with linebreaks and indentation for better readability. When `false` (the default), each statement is emitted as a single line                                                                                                                                                                    |
 | `migrationLoaderStrategies` | `MigrationLoaderStrategy[]`                 | Allows custom loading strategies based on file extensions. If omitted, default behavior is used. See [Migration Loading Strategies](migration-loading-strategies).                                                                                                                                                                     |
 
+An explicitly empty `migrationsSchema` rejects with `TypeError` before the database is accessed,
+including in dry runs. Omit the option or use `undefined` to retain the existing schema default.
+Non-empty schema names are used as supplied, including whitespace and embedded double-quote characters.
+The library quotes the identifier itself.
+
 ### MigrationLoaderStrategy
 
 ```ts
