@@ -9,6 +9,8 @@ import { toPgEnv } from './core/pgEnv';
 import { sanitizeDump } from './core/sanitize';
 import { assertPgDumpCompatible } from './core/version';
 import { BaselineError } from './errors';
+import type { CatalogBaseline } from './io/catalogBaseline';
+import { generateCatalogBaseline } from './io/catalogBaseline';
 import { getPgDumpVersion, runPgDump } from './io/pgDump';
 import { readDumpFile } from './io/readDump';
 import type { InstalledExtension } from './io/server';
@@ -20,6 +22,7 @@ import {
 import { planBaselineFile, writeBaselineFile } from './io/writeBaseline';
 import type {
   BaselineSettings,
+  CatalogPlan,
   Connection,
   FileDumpPlan,
   PgDumpPlan,
@@ -274,18 +277,44 @@ async function dumpDatabase(
 }
 
 /**
+ * Generates a TypeScript or JavaScript baseline from the catalogs of the
+ * database (see `generateCatalogBaseline()`), through a connection that is
+ * closed again unless it is the caller's client.
+ *
+ * @param settings The settings of the baseline.
+ * @param plan The database, the language and what to refuse.
+ * @param migrationName The migration name.
+ */
+async function generateFromCatalogs(
+  settings: BaselineSettings,
+  plan: CatalogPlan,
+  migrationName: string
+): Promise<CatalogBaseline> {
+  const db = connect(plan.connection, settings.logger);
+  try {
+    return await generateCatalogBaseline(db, settings, plan, migrationName);
+  } finally {
+    await db.close();
+  }
+}
+
+/**
  * Tells the user where the baseline is and what to do with it.
  *
  * @param logger Where to write.
  * @param path The baseline migration.
  * @param fakeCommand The command that records it without running it.
- * @param warnings What the user should know about it.
+ * @param messages What the user should know about it: notes (logged as
+ * info), then warnings.
  */
 function report(
   logger: Logger,
   path: string,
   fakeCommand: string,
-  warnings: ReadonlyArray<string>
+  messages: {
+    readonly notes?: ReadonlyArray<string>;
+    readonly warnings: ReadonlyArray<string>;
+  }
 ): void {
   logger.info(`> Wrote ${relative(process.cwd(), path)}`);
   logger.info(
@@ -293,9 +322,44 @@ function report(
   );
   logger.info(`>   ${fakeCommand}`);
   logger.info('> Blank databases run it with a normal `node-pg-migrate up`.');
-  for (const warning of warnings) {
+  for (const note of messages.notes ?? []) {
+    logger.info(`> Note: ${note}`);
+  }
+
+  for (const warning of messages.warnings) {
     logger.warn(`> Warning: ${warning}`);
   }
+}
+
+/**
+ * Writes a TypeScript or JavaScript baseline: reads the catalogs, generates
+ * `pgm` calls (see `generateCatalogBaseline()`) and writes them.
+ *
+ * @param settings The settings of the baseline.
+ * @param plan The database, the language and what to refuse.
+ * @param file Where the migration goes, and its name.
+ */
+async function generateBaseline(
+  settings: BaselineSettings,
+  plan: CatalogPlan,
+  file: { readonly path: string; readonly migrationName: string }
+): Promise<BaselineResult> {
+  const { path, migrationName } = file;
+  const { content, ...generated } = await generateFromCatalogs(
+    settings,
+    plan,
+    migrationName
+  );
+
+  await writeBaselineFile(path, content);
+  report(settings.logger, path, generated.fakeCommand, {
+    notes: [
+      `--format ${plan.language} is experimental; review the generated migration.`,
+    ],
+    warnings: generated.warnings,
+  });
+
+  return { path, ...generated };
 }
 
 /**
@@ -303,12 +367,15 @@ function report(
  * existing database, so that node-pg-migrate can manage a database it did not
  * create.
  *
- * The schema comes from `pg_dump --schema-only`, which either runs against
- * the database or was run before (`fromFile`), and is cleaned up to run
- * inside node-pg-migrate's migration transaction. Databases that already
- * have the schema record the migration without running it (see
- * `BaselineResult.fakeCommand`); blank databases run it like any other
- * migration.
+ * With `format` `'sql'` (the default), the schema comes from `pg_dump
+ * --schema-only`, which either runs against the database or was run before
+ * (`fromFile`), and is cleaned up to run inside node-pg-migrate's migration
+ * transaction. With `format` `'ts'` or `'js'` (experimental), it comes from
+ * the catalogs of the database, and the migration is made of `pgm` calls,
+ * with `pgm.sql(…)` fallbacks for what they cannot express (see
+ * `BaselineResult.fallbacks`). Databases that already have the schema record
+ * the migration without running it (see `BaselineResult.fakeCommand`); blank
+ * databases run it like any other migration.
  *
  * Throws a `BaselineError` when the options, the database or the dump are not
  * suitable for a baseline; its message says why and what to do.
@@ -321,7 +388,15 @@ export async function baseline(
 ): Promise<BaselineResult> {
   const settings = resolveSettings(options);
   const { dump: from } = settings;
-  const { path, migrationName } = await planBaselineFile(settings);
+  const file = await planBaselineFile({
+    ...settings,
+    extension: from.kind === 'catalogs' ? from.language : 'sql',
+  });
+  if (from.kind === 'catalogs') {
+    return generateBaseline(settings, from, file);
+  }
+
+  const { path, migrationName } = file;
   const dump =
     from.kind === 'file'
       ? await readDump(settings, from)
@@ -358,7 +433,7 @@ export async function baseline(
       ...locks,
     }) + sanitized.sql
   );
-  report(settings.logger, path, fakeCommand, warnings);
+  report(settings.logger, path, fakeCommand, { warnings });
 
   return {
     path,

@@ -98,6 +98,7 @@ describe('resolveSettings', () => {
         schema: ['app', 'audit'],
         fromFile: '-',
         dbClient: CLIENT,
+        format: 'sql',
         logger,
       })
     ).toEqual({
@@ -172,6 +173,17 @@ describe('resolveSettings', () => {
         excludeSchemas: [],
       }).dump
     ).toMatchObject({ kind: 'file' });
+  });
+
+  it.each(['ts', 'js'] as const)('refuses the %s format', (format) => {
+    const error = refusalOf({
+      dir: 'migrations',
+      fromFile: 'dump.sql',
+      format,
+    });
+
+    expect(error.code).toBe('INVALID_OPTIONS');
+    expect(error.message).toContain(format);
   });
 
   it.each([

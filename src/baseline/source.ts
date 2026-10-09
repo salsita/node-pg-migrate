@@ -1,6 +1,7 @@
-// This module imports nothing, so that `DumpSource` can be used without the
-// types of `baseline()`'s Node.js options (`src/baseline/types.ts` imports
-// pg's).
+// This module imports nothing, so that the Node.js-free entry
+// `node-pg-migrate/baseline/catalogs` (`src/baseline/catalogs.ts`) can export
+// `DumpSource` without the types of `baseline()`'s Node.js options
+// (`src/baseline/types.ts` imports pg's).
 
 /**
  * Where the schema of a baseline came from. Unknown parts are left out.

@@ -1,24 +1,34 @@
 import { basename } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
+import type { OutputLanguage } from '../codegen/types';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
+import { quoteShellWord } from './core/fakeCommand';
 import { toPgDumpPattern } from './core/identifiers';
 import { buildPgDumpArgs } from './core/pgDumpArgs';
-import type { SchemaSettings } from './core/plan';
+import type { CatalogSettings, SchemaSettings } from './core/plan';
 import {
   assertNoEmptyOption,
   assertSafeMigrationName,
   invalidOptions,
+  resolveCatalogSettings,
   resolveSchemaSettings,
 } from './core/plan';
 import type { InstalledExtension } from './io/server';
 import type { BaselineOptions, PgDumpVersion, QualifiedName } from './types';
 
-export { assertCanBaseline, locksNeeded, migrationsObjects } from './core/plan';
+export {
+  assertCanBaseline,
+  assertDecamelizeKeepsNames,
+  fallbackWarnings,
+  locksNeeded,
+  migrationsObjects,
+} from './core/plan';
 
 // What `baseline()` decides from its options and from what it reads, without
-// any I/O of its own. The part that needs no Node.js is in `core/plan.ts`,
-// which this module re-exports.
+// any I/O of its own. What a TypeScript or JavaScript baseline needs of it is
+// in `core/plan.ts`, without Node.js, so that the Node.js-free entry
+// (`src/baseline/catalogs.ts`) decides the same; this module re-exports it.
 
 /**
  * The first pg_dump version with `--extension`.
@@ -49,6 +59,11 @@ const NON_EMPTY_OPTIONS = [
   'pgDump',
   'lockWaitTimeout',
 ] as const;
+
+/**
+ * The languages a baseline can be written in (`format`).
+ */
+const FORMATS: ReadonlySet<string> = new Set(['sql', 'ts', 'js']);
 
 /**
  * A database to connect to: a caller-provided client (`dbClient`), or a
@@ -100,6 +115,19 @@ export interface PgDumpPlan {
 }
 
 /**
+ * Reads the catalogs of the database and writes `pgm` calls (`format` `ts` or
+ * `js`).
+ */
+export interface CatalogPlan extends CatalogSettings {
+  readonly kind: 'catalogs';
+
+  /**
+   * The database to read.
+   */
+  readonly connection: Connection;
+}
+
+/**
  * The options of `baseline()`, checked, with their defaults.
  */
 export interface BaselineSettings extends SchemaSettings {
@@ -109,9 +137,10 @@ export interface BaselineSettings extends SchemaSettings {
   readonly logger: Logger;
 
   /**
-   * Where the schema comes from: a dump file, or pg_dump.
+   * Where the schema comes from: a dump or pg_dump for a SQL migration, the
+   * catalogs for a TypeScript or JavaScript one.
    */
-  readonly dump: FileDumpPlan | PgDumpPlan;
+  readonly dump: FileDumpPlan | PgDumpPlan | CatalogPlan;
 }
 
 /**
@@ -158,6 +187,63 @@ function dumpPlan(options: BaselineOptions): FileDumpPlan | PgDumpPlan {
 }
 
 /**
+ * Reads the catalogs of the database for a TypeScript or JavaScript
+ * migration, which needs a live connection and no dump.
+ *
+ * @param options The options of `baseline()`.
+ * @param language The language of the migration.
+ */
+function catalogPlan(
+  options: BaselineOptions,
+  language: OutputLanguage
+): CatalogPlan {
+  if (options.fromFile !== undefined) {
+    throw invalidOptions(
+      `--format ${language} reads the schema from the catalogs of a live database, so it cannot use a dump file with --from-file. To use --format ${language} with this dump, load it into a scratch database (createdb scratch && psql -d scratch -f ${quoteShellWord(options.fromFile)}) and run baseline against that database. To clean up the dump as a SQL baseline, use --format sql.`
+    );
+  }
+
+  const connection = options.dbClient ?? options.databaseUrl;
+  if (connection === undefined) {
+    throw invalidOptions(
+      `--format ${language} reads the schema from the catalogs of a live database: pass a database connection (databaseUrl or dbClient).`
+    );
+  }
+
+  return {
+    kind: 'catalogs',
+    ...resolveCatalogSettings(options, language),
+    connection,
+  };
+}
+
+/**
+ * Where the schema comes from, for the language of the migration.
+ *
+ * @param options The options of `baseline()`.
+ */
+function sourcePlan(
+  options: BaselineOptions
+): FileDumpPlan | PgDumpPlan | CatalogPlan {
+  const format = options.format ?? 'sql';
+  if (!FORMATS.has(format)) {
+    throw invalidOptions(`format must be sql, ts or js, not ${format}.`);
+  }
+
+  if (format !== 'sql') {
+    return catalogPlan(options, format);
+  }
+
+  if (options.strict === true) {
+    throw invalidOptions(
+      '--strict only applies to --format ts and --format js, which fall back to raw SQL for what pgm calls cannot express: a --format sql baseline is all SQL.'
+    );
+  }
+
+  return dumpPlan(options);
+}
+
+/**
  * Checks the options of `baseline()` and applies their defaults.
  *
  * Throws a `BaselineError` with code `INVALID_OPTIONS` when they are
@@ -179,7 +265,7 @@ export function resolveSettings(options: BaselineOptions): BaselineSettings {
     filenameFormat: options.filenameFormat ?? 'timestamp',
     ...resolveSchemaSettings(options),
     logger: options.logger ?? console,
-    dump: dumpPlan(options),
+    dump: sourcePlan(options),
   };
 }
 
