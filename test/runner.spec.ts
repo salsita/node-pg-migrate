@@ -141,9 +141,8 @@ describe('runner', () => {
     const AUTOCOMMIT_SETTING =
       "SELECT current_setting('autocommit_before_ddl', true) AS setting";
     const DISABLE_AUTOCOMMIT = 'SET autocommit_before_ddl = false';
-    const RESTORE_AUTOCOMMIT = 'SET autocommit_before_ddl = true';
-    const REFUSAL =
-      'Refusing to run with singleTransaction: this server auto-commits DDL';
+    const RESTORE_AUTOCOMMIT = 'SET autocommit_before_ddl = $pga$on$pga$';
+    const REFUSAL = 'Refusing to run with singleTransaction';
     const MIGRATION_NAME = '1000_dry_run_table';
 
     function setup(
@@ -188,11 +187,14 @@ describe('runner', () => {
             ? (options.verifiedSetting ?? null)
             : 'off';
         }
-        if (sql === RESTORE_AUTOCOMMIT) {
+        if (
+          sql.startsWith('SET autocommit_before_ddl = ') &&
+          sql !== DISABLE_AUTOCOMMIT
+        ) {
           if (restorationError !== undefined) {
             return rejectRestoration();
           }
-          setting = 'on';
+          setting = autocommitBeforeDdl;
         }
         if (failedSql !== undefined && sql.startsWith(failedSql)) {
           return Promise.reject(migrationError);
@@ -286,7 +288,11 @@ describe('runner', () => {
 
         expect(statements()).toContain(AUTOCOMMIT_SETTING);
         expect(statements()).not.toContain(DISABLE_AUTOCOMMIT);
-        expect(statements()).not.toContain(RESTORE_AUTOCOMMIT);
+        expect(
+          statements().filter((sql) =>
+            sql.startsWith('SET autocommit_before_ddl = ')
+          )
+        ).toEqual([]);
       }
     );
 
@@ -299,15 +305,19 @@ describe('runner', () => {
       }
     );
 
-    it.each(['true', 'ON'])(
-      'disables an enabled setting reported as %s',
-      async (autocommitBeforeDdl) => {
+    it.each([
+      ['on', 'SET autocommit_before_ddl = $pga$on$pga$'],
+      ['true', 'SET autocommit_before_ddl = $pga$true$pga$'],
+      ['ON', 'SET autocommit_before_ddl = $pga$on$pga$'],
+    ])(
+      'restores the captured enabled setting reported as %s',
+      async (autocommitBeforeDdl, restoreSql) => {
         const { run, statements } = setup({ autocommitBeforeDdl });
 
         await expect(run()).resolves.toHaveLength(1);
 
         expect(statements()).toContain(DISABLE_AUTOCOMMIT);
-        expect(statements().at(-1)).toBe(RESTORE_AUTOCOMMIT);
+        expect(statements().at(-1)).toBe(restoreSql);
       }
     );
 
@@ -354,7 +364,15 @@ describe('runner', () => {
       async (verifiedSetting) => {
         const { run, statements } = setup({ verifiedSetting });
 
-        await expect(run()).rejects.toThrow(REFUSAL);
+        const error: unknown = await run().catch((error: unknown) => error);
+
+        expect(error).toBeInstanceOf(Error);
+        expect(String(error)).toContain(REFUSAL);
+        expect(String(error)).toContain('--single-transaction');
+        expect(String(error)).toContain('role or database');
+        expect(String(error)).toContain('autocommit_before_ddl');
+        expect(String(error)).toContain('singleTransaction: false');
+        expect(String(error)).toContain('--no-single-transaction');
 
         expectNoUnsafeSetup(statements());
       }

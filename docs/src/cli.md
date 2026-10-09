@@ -98,6 +98,17 @@ commit with `XXA00` after other changes have committed; rollback cannot undo tho
 The runner reports this condition, and you should inspect the schema, data and migration history
 before retrying.
 
+The shared transaction follows CockroachDB's [transactional DDL limitations](https://www.cockroachlabs.com/docs/v25.3/online-schema-changes#schema-changes-within-transactions).
+For a table that existed before the transaction, an `UPDATE` cannot reference a column
+added during that transaction, including by another migration in the same run. For this pattern, use
+`pgm.noTransaction()`, or `--no-single-transaction` with `autocommit_before_ddl` enabled.
+Both opt-outs can retain committed changes after a later failure.
+
+Outside dry runs, `--no-single-transaction` leaves `autocommit_before_ddl` unchanged.
+When enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
+DDL commits the preceding transaction before executing, even inside a migration's own
+transaction; a failed run can retain changes and history updates.
+
 ## Dry Runs
 
 `node-pg-migrate up --dry-run` prints the SQL a real run would execute and applies none of

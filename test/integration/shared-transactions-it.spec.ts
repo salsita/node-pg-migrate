@@ -313,6 +313,71 @@ describe.each(targets)(
       await expectReusable(setting);
     });
 
+    it.each([
+      { mode: 'shared', singleTransaction: true, noTransaction: false },
+      { mode: 'noTransaction', singleTransaction: true, noTransaction: true },
+      { mode: 'per-migration', singleTransaction: false, noTransaction: false },
+    ])(
+      'handles a new-column backfill on an existing table ($mode)',
+      async ({ singleTransaction, noTransaction }) => {
+        const setting = await autocommit();
+        await observer.query(
+          `CREATE TABLE ${schema}.accounts (name text PRIMARY KEY)`
+        );
+        await observer.query(
+          `INSERT INTO ${schema}.accounts VALUES ('existing')`
+        );
+        await writeFile(
+          join(dir, `${first}.cjs`),
+          `exports.up = (pgm) => {
+            ${noTransaction ? 'pgm.noTransaction();' : ''}
+            pgm.addColumns('accounts', { status: 'text' });
+            pgm.sql("UPDATE ${schema}.accounts SET status = 'active'");
+            pgm.alterColumn('accounts', 'status', { notNull: true });
+          };`
+        );
+
+        // CockroachDB cannot use a newly added column on an existing table until commit.
+        // With no shared transaction, an enabled DDL autocommit lets the backfill proceed;
+        // older versions without that setting still require pgm.noTransaction().
+        const fails =
+          'url' in target &&
+          !noTransaction &&
+          (singleTransaction || setting === null);
+        const outcome = await runner({
+          ...options('up'),
+          singleTransaction,
+          dbClient: client,
+        }).then(
+          () => ({ applied: true }),
+          (error: unknown) => ({ error })
+        );
+
+        expect(outcome).toMatchObject(
+          fails ? { error: { code: '42703' } } : { applied: true }
+        );
+        expect((await history()).map(({ name }) => name)).toEqual(
+          fails ? [] : [first]
+        );
+        expect(
+          (await observer.query(`SELECT * FROM ${schema}.accounts`)).rows
+        ).toEqual(
+          fails
+            ? [{ name: 'existing' }]
+            : [{ name: 'existing', status: 'active' }]
+        );
+        expect(
+          (
+            await observer.query(
+              "SELECT is_nullable FROM information_schema.columns WHERE table_schema = $1 AND table_name = 'accounts' AND column_name = 'status'",
+              [schema]
+            )
+          ).rows
+        ).toEqual(fails ? [] : [{ is_nullable: 'NO' }]);
+        await expectReusable(setting);
+      }
+    );
+
     it('also rolls back when the runner owns the connection', async () => {
       await migrations();
       await observer.query(`UPDATE ${schema}.control SET fail_up = true`);

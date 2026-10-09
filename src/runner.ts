@@ -8,6 +8,7 @@ import type { MigrationLoaderConfig } from './migrationLoader';
 import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
 import {
+  escapeValue,
   getMigrationTableName,
   getMigrationTableSchema,
   getSchemas,
@@ -300,6 +301,9 @@ async function unlock(
  */
 const READ_ONLY_SQLSTATE = '25006';
 
+/** CockroachDB schema changes failed after other transaction changes committed. */
+const PARTIALLY_COMMITTED_SQLSTATE = 'XXA00';
+
 const AUTOCOMMIT_BEFORE_DDL = 'autocommit_before_ddl';
 
 /**
@@ -354,7 +358,7 @@ async function assertTransactionIsEnforceable(
     throw new Error(
       dryRun
         ? `Refusing to dry run: this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the read-only transaction and be applied for real.`
-        : `Refusing to run with singleTransaction: this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the shared transaction.`
+        : `Refusing to run with singleTransaction (--single-transaction): this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the shared transaction. Disable it for the role or database (e.g. ALTER ROLE ... SET ${AUTOCOMMIT_BEFORE_DDL} = false), or run without a shared transaction (singleTransaction: false / --no-single-transaction).`
     );
   }
 }
@@ -976,7 +980,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
           await db.query('COMMIT');
         } catch (error) {
           logger.warn(
-            hasSqlState(error, 'XXA00')
+            hasSqlState(error, PARTIALLY_COMMITTED_SQLSTATE)
               ? '> CockroachDB reported a partially committed transaction (XXA00). ROLLBACK cannot undo committed changes; inspect schema, data and migration history before retrying.'
               : '> Rolling back attempted migration ...'
           );
@@ -1028,7 +1032,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         !isSettingOff(ddlAutocommit)
       ) {
         await db
-          .query(`SET ${AUTOCOMMIT_BEFORE_DDL} = true`)
+          .query(`SET ${AUTOCOMMIT_BEFORE_DDL} = ${escapeValue(ddlAutocommit)}`)
           .catch((error: unknown) => {
             logger.warn(
               `Unable to restore ${AUTOCOMMIT_BEFORE_DDL}: ${error instanceof Error ? error.message : String(error)}`
