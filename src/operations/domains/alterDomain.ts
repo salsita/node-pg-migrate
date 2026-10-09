@@ -38,7 +38,7 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
 
     if (check) {
       actions.push(
-        `${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}CHECK (${check})`
+        `ADD ${constraintName ? `CONSTRAINT ${mOptions.literal(constraintName)} ` : ''}CHECK (${check})`
       );
     }
 

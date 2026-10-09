@@ -18,5 +18,25 @@ describe('operations', () => {
       expect(statement).toBeTypeOf('string');
       expect(statement).toBe('SELECT * FROM users WHERE id = 1;');
     });
+
+    it.each(['$$', '$&', '$`', "$'"])(
+      'preserves replacement-like dollar text in string identifiers: %s',
+      (token) => {
+        expect(sqlFn('SELECT * FROM {table}', { table: `cost${token}` })).toBe(
+          `SELECT * FROM "cost${token}";`
+        );
+      }
+    );
+
+    it.each(['$$', '$&', '$`', "$'"])(
+      'preserves replacement-like dollar text in schema-qualified identifiers: %s',
+      (token) => {
+        expect(
+          sqlFn('SELECT * FROM {table}', {
+            table: { schema: `schema${token}`, name: `table${token}` },
+          })
+        ).toBe(`SELECT * FROM "schema${token}"."table${token}";`);
+      }
+    );
   });
 });

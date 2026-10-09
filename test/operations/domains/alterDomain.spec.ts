@@ -56,7 +56,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER DOMAIN "zipcode" CHECK (char_length(VALUE) = 5);'
+          'ALTER DOMAIN "zipcode" ADD CHECK (char_length(VALUE) = 5);'
         );
       });
 
@@ -68,7 +68,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER DOMAIN "zipcode" CONSTRAINT "zipchk" CHECK (char_length(VALUE) = 5);'
+          'ALTER DOMAIN "zipcode" ADD CONSTRAINT "zipchk" CHECK (char_length(VALUE) = 5);'
         );
       });
     });

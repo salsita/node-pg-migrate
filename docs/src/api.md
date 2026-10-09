@@ -18,9 +18,9 @@ For a directory structure of
 this will run migrations from `migrations/` directory:
 
 ```javascript
+import { runner } from 'node-pg-migrate';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runner } from 'node-pg-migrate';
 
 await runner({
   databaseUrl: process.env.DATABASE_URL,
@@ -93,6 +93,11 @@ if an earlier version created a table named `"undefined"`.
 | `decamelize`                | `boolean`                                   | Runs [`decamelize`](https://github.com/salsita/node-pg-migrate/blob/main/src/utils/decamelize.ts) on table/column/etc. names used in migrations (not on `migrationsTable`, `migrationsSchema` or `schema`)                                                                                                                             |
 | `pretty`                    | `boolean`                                   | Formats the generated SQL statements with linebreaks and indentation for better readability. When `false` (the default), each statement is emitted as a single line                                                                                                                                                                    |
 | `migrationLoaderStrategies` | `MigrationLoaderStrategy[]`                 | Allows custom loading strategies based on file extensions. If omitted, default behavior is used. See [Migration Loading Strategies](migration-loading-strategies).                                                                                                                                                                     |
+
+An explicitly empty `migrationsSchema` rejects with `TypeError` before the database is accessed,
+including in dry runs. Omit the option or use `undefined` to retain the existing schema default.
+Non-empty schema names are used as supplied, including whitespace and embedded double-quote characters.
+The library quotes the identifier itself.
 
 ### MigrationLoaderStrategy
 
