@@ -1,7 +1,7 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
-export const shorthands = undefined;
+const shorthands = undefined;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
@@ -18,6 +18,7 @@ const up = (pgm) => {};
 const down = (pgm) => {};
 
 module.exports = {
+  shorthands,
   up,
   down,
 };
