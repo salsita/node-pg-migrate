@@ -127,7 +127,7 @@ describe.each(PG_VERSIONS)(
           JOIN pg_namespace n ON n.oid = o.opcnamespace
           JOIN pg_am a ON a.oid = o.opcmethod
           WHERE n.nspname = 'operator_class_reversal' AND o.opcname = $1
-          ORDER BY o.oid`,
+          ORDER BY a.amname`,
           [name]
         )
       ).rows;
@@ -217,14 +217,20 @@ describe.each(PG_VERSIONS)(
 
         await runner({ ...options, direction: 'up' });
         const created = await catalog(className);
-        expect(created).toEqual([
+        const expected = [
           ...decoy,
           {
             oid: expect.any(String),
             accessMethod,
             accessMethodOid,
           },
-        ]);
+        ].toSorted((left, right) => {
+          if (left.accessMethod === right.accessMethod) {
+            return 0;
+          }
+          return left.accessMethod < right.accessMethod ? -1 : 1;
+        });
+        expect(created).toEqual(expected);
         expect(await history()).toEqual([{ name: migrationName }]);
         const target = created.find(
           (operatorClass) => operatorClass.accessMethod === accessMethod
