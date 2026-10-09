@@ -10,6 +10,11 @@ import {
 import type { CreateIndexOptions } from './createIndex';
 import type { DropIndexOptions } from './dropIndex';
 
+// Bare column identifier: ASCII word chars, '.', '-', any non-ASCII code point
+// (as in isSingleIdentifier), and '$' after the first character.
+const BARE_COLUMN_IDENTIFIER =
+  /^[\w.\u0080-\u{10FFFF}-][\w.$\u0080-\u{10FFFF}-]*$/u;
+
 export interface IndexColumn {
   name: string;
 
@@ -74,13 +79,12 @@ export function generateColumnString(
   }
 
   const name = mOptions.schemalize(column);
-  // The non-ASCII range matches isSingleIdentifier's PostgreSQL identifiers.
-  // Allow $ only after the first character to preserve dollar-quoted expressions.
-  // Keep the legacy quote pattern separate: quoted Unicode or hyphenated SQL
-  // names must stay expressions, since literal() would escape their quotes again.
+  // The legacy pattern treats names containing quotes as identifiers only when
+  // they otherwise contain ASCII word chars or dots. Keep it separate so quoted
+  // Unicode or hyphenated SQL stays on the expression path: literal() would
+  // escape its quotes again.
   const isIdentifier =
-    /^[\w".]*$/.test(name) ||
-    /^[\w.\u0080-\u{10FFFF}-][\w.$\u0080-\u{10FFFF}-]*$/u.test(name);
+    /^[\w".]*$/.test(name) || BARE_COLUMN_IDENTIFIER.test(name);
   if (isIdentifier) {
     return mOptions.literal(name);
   }
