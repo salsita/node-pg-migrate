@@ -17,13 +17,20 @@
 | `options`   | `object`                    | Check below for available options                                 |
 
 > [!NOTE]
-> Bare names containing only ASCII letters, digits, `_`, `.` and `-` are quoted
-> as column identifiers. This includes `a-b` and `[{ name: 'a-b' }]`.
+> Bare names containing only ASCII letters, digits, non-ASCII characters, `_`,
+> `.` and `-` are quoted as column identifiers; `$` is also allowed after the
+> first character. This includes `Straße`, `日本語`, `größe-id` and
+> `[{ name: 'größe-id' }]`. Case is preserved unless `decamelize` is enabled.
+> For compatibility, names containing `"` are also quoted as identifiers when
+> their other characters are only ASCII letters, digits, `_` or `.`; the quotes
+> are treated as part of the column name. For example, `a"b` names the column
+> `"a""b"`, while `größe"id` follows the SQL expression path. To reference the
+> latter column, use explicitly quoted SQL such as `("größe""id")`.
 > Other unquoted inputs are treated as SQL expressions, with parentheses added
 > when needed: `a+b`, `a*b`, `a/b` and `a - b` remain expressions.
 > To make subtraction explicit, use `a - b` or `(a-b)`; an explicit index name is
-> recommended for string expressions, but is not required. Function calls and JSON
-> expressions retain their existing behavior.
+> recommended for string expressions, but is not required. Function calls, JSON
+> expressions and dollar-quoted SQL strings retain their existing behavior.
 
 #### Options
 
