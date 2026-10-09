@@ -1,5 +1,10 @@
 import { defineConfig } from 'tsdown';
 
+// Source maps are opt-in (`PGM_SOURCEMAP=1 pnpm run build`): the e2e coverage
+// report (test/e2e/report-coverage.mjs) needs them to map the V8 coverage of the
+// spawned CLI back to src/. Published builds stay without maps.
+const sourcemap = process.env.PGM_SOURCEMAP === '1';
+
 export default defineConfig([
   // build the executable
   // Source lives in the src/cli/ module (entry: src/cli/index.ts) but the whole
@@ -12,7 +17,7 @@ export default defineConfig([
     format: ['esm'],
     dts: false,
     minify: false,
-    sourcemap: false,
+    sourcemap,
     fixedExtension: false,
     // The CLI self-references the library by package name (see src/cli/config.ts)
     // so the emitted bin/ file resolves it through the `exports` map at runtime.
@@ -29,7 +34,7 @@ export default defineConfig([
     format: ['esm'],
     dts: true,
     minify: false,
-    sourcemap: false,
+    sourcemap,
     fixedExtension: false,
   },
 ]);

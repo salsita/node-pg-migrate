@@ -240,6 +240,7 @@ Run `npm run migrate up` and there will be a new column in `posts` table :tada:
 ## Want to know more?
 
 - [CLI commands](/cli)
+- [Adopting an existing database](/baseline)
 - [Programmatic API](/api)
 - [Migration files](/migrations/)
 - [Migration loading strategies (including SQL)](/migration-loading-strategies)
