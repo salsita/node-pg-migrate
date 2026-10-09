@@ -137,6 +137,413 @@ describe('runner', () => {
     });
   });
 
+  describe('CockroachDB transaction safety', () => {
+    const AUTOCOMMIT_SETTING =
+      "SELECT current_setting('autocommit_before_ddl', true) AS setting";
+    const DISABLE_AUTOCOMMIT = 'SET autocommit_before_ddl = false';
+    const RESTORE_AUTOCOMMIT = 'SET autocommit_before_ddl = $pga$on$pga$';
+    const REFUSAL = 'Refusing to run with singleTransaction';
+    const MIGRATION_NAME = '1000_dry_run_table';
+
+    function setup(
+      options: {
+        autocommitBeforeDdl?: string | null;
+        verifiedSetting?: string | null;
+        setError?: Error;
+        verificationError?: Error;
+        restorationError?: unknown;
+        failedSql?: string;
+        migrationError?: Error;
+        history?: string[];
+      } = {}
+    ) {
+      const {
+        autocommitBeforeDdl = 'on',
+        setError,
+        verificationError,
+        restorationError,
+        failedSql,
+        migrationError = new Error('migration failed'),
+        history = [],
+      } = options;
+      let setting = autocommitBeforeDdl;
+      let settingReads = 0;
+      const events: string[] = [];
+      const rejectRestoration = vi.fn().mockRejectedValue(restorationError);
+      const query = vi.fn((sql: string) => {
+        events.push(sql);
+        if (sql === AUTOCOMMIT_SETTING) {
+          settingReads += 1;
+          if (settingReads > 1 && verificationError !== undefined) {
+            return Promise.reject(verificationError);
+          }
+          return Promise.resolve({ rows: [{ setting }] });
+        }
+        if (sql === DISABLE_AUTOCOMMIT) {
+          if (setError !== undefined) {
+            return Promise.reject(setError);
+          }
+          setting = Object.hasOwn(options, 'verifiedSetting')
+            ? (options.verifiedSetting ?? null)
+            : 'off';
+        }
+        if (
+          sql.startsWith('SET autocommit_before_ddl = ') &&
+          sql !== DISABLE_AUTOCOMMIT
+        ) {
+          if (restorationError !== undefined) {
+            return rejectRestoration();
+          }
+          setting = autocommitBeforeDdl;
+        }
+        if (failedSql !== undefined && sql.startsWith(failedSql)) {
+          return Promise.reject(migrationError);
+        }
+        if (sql.includes('pg_try_advisory_lock')) {
+          return Promise.resolve({ rows: [{ lockObtained: true }] });
+        }
+        if (sql.includes('pg_advisory_unlock')) {
+          return Promise.resolve({ rows: [{ lockReleased: true }] });
+        }
+        if (sql === MIGRATIONS_TABLE_EXISTS) {
+          return Promise.resolve({ rows: history.length > 0 ? [{}] : [] });
+        }
+        if (sql === OTHER_MIGRATIONS_TABLES) {
+          return Promise.resolve({ rows: [] });
+        }
+        if (sql.startsWith('SELECT name FROM ')) {
+          return Promise.resolve({ rows: history.map((name) => ({ name })) });
+        }
+        if (sql.startsWith('DELETE FROM ')) {
+          history.splice(0);
+        }
+        return Promise.resolve({ rows: [{}] });
+      });
+      const end = vi.fn();
+      const dbClient = { query, end } as unknown as ClientBase;
+      const logger = {
+        info: vi.fn(),
+        warn: vi.fn((message: string) => {
+          events.push(message);
+        }),
+        error: vi.fn(),
+      };
+      const run = (runOptions: Partial<RunnerOptionConfig> = {}) =>
+        runner({
+          dbClient,
+          logger,
+          dir: 'test/dry-run-migrations',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          singleTransaction: true,
+          ...runOptions,
+        });
+      const statements = () => query.mock.calls.map(([sql]) => sql);
+      const transactions = () =>
+        statements().filter((sql) => /^(BEGIN|COMMIT|ROLLBACK);?$/.test(sql));
+
+      return {
+        run,
+        query,
+        logger,
+        dbClient,
+        end,
+        migrationError,
+        statements,
+        transactions,
+        events,
+      };
+    }
+
+    it.each(['up', 'down', 'redo'] as const)(
+      'disables DDL autocommit before setup and restores the caller session after %s',
+      async (direction) => {
+        const { run, statements, transactions, end } = setup({
+          history: direction === 'up' ? [] : [MIGRATION_NAME],
+        });
+
+        await expect(run({ direction })).resolves.toHaveLength(
+          direction === 'redo' ? 2 : 1
+        );
+
+        const sql = statements();
+        expect(sql.slice(0, 3)).toEqual([
+          AUTOCOMMIT_SETTING,
+          DISABLE_AUTOCOMMIT,
+          AUTOCOMMIT_SETTING,
+        ]);
+        expect(sql.at(-1)).toBe(RESTORE_AUTOCOMMIT);
+        expect(sql.at(-2)).toContain('pg_advisory_unlock');
+        expect(transactions()).toEqual(['BEGIN', 'COMMIT']);
+        expect(end).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([null, 'off', 'false', 'OFF'])(
+      'leaves disabled or unsupported autocommit_before_ddl unchanged (%s)',
+      async (autocommitBeforeDdl) => {
+        const { run, statements } = setup({ autocommitBeforeDdl });
+
+        await expect(run()).resolves.toHaveLength(1);
+
+        expect(statements()).toContain(AUTOCOMMIT_SETTING);
+        expect(statements()).not.toContain(DISABLE_AUTOCOMMIT);
+        expect(
+          statements().filter((sql) =>
+            sql.startsWith('SET autocommit_before_ddl = ')
+          )
+        ).toEqual([]);
+      }
+    );
+
+    it.each(['off', 'false', 'OFF'])(
+      'accepts a confirmed disabled setting (%s)',
+      async (verifiedSetting) => {
+        const { run } = setup({ verifiedSetting });
+
+        await expect(run()).resolves.toHaveLength(1);
+      }
+    );
+
+    it.each([
+      ['on', 'SET autocommit_before_ddl = $pga$on$pga$'],
+      ['true', 'SET autocommit_before_ddl = $pga$true$pga$'],
+      ['ON', 'SET autocommit_before_ddl = $pga$on$pga$'],
+    ])(
+      'restores the captured enabled setting reported as %s',
+      async (autocommitBeforeDdl, restoreSql) => {
+        const { run, statements } = setup({ autocommitBeforeDdl });
+
+        await expect(run()).resolves.toHaveLength(1);
+
+        expect(statements()).toContain(DISABLE_AUTOCOMMIT);
+        expect(statements().at(-1)).toBe(restoreSql);
+      }
+    );
+
+    function expectNoUnsafeSetup(sql: string[]): void {
+      expect(
+        sql.filter((statement) =>
+          /^(BEGIN|CREATE|ALTER|INSERT|DELETE|SET search_path)/.test(statement)
+        )
+      ).toEqual([]);
+      expect(
+        sql.some((statement) => statement.includes('pg_try_advisory_lock'))
+      ).toBe(false);
+      expect(
+        sql.some((statement) => statement.includes('pg_advisory_unlock'))
+      ).toBe(false);
+      expect(sql.at(-1)).toBe(RESTORE_AUTOCOMMIT);
+    }
+
+    it.each([
+      { setError: new Error('cannot set autocommit_before_ddl') },
+      { verificationError: new Error('cannot read autocommit_before_ddl') },
+    ])(
+      'preserves guard failures before locking or writing (%j)',
+      async (options) => {
+        const { run, statements } = setup(options);
+        const error =
+          'setError' in options ? options.setError : options.verificationError;
+
+        await expect(
+          run({
+            createSchema: true,
+            schema: 'app',
+            createMigrationsSchema: true,
+            migrationsSchema: 'meta',
+          })
+        ).rejects.toBe(error);
+
+        expectNoUnsafeSetup(statements());
+      }
+    );
+
+    it.each(['on', null, 'unexpected'])(
+      'refuses an unconfirmed disabled setting before locking or writing (%s)',
+      async (verifiedSetting) => {
+        const { run, statements } = setup({ verifiedSetting });
+
+        const error: unknown = await run().catch((error: unknown) => error);
+
+        expect(error).toBeInstanceOf(Error);
+        expect(String(error)).toContain(REFUSAL);
+        expect(String(error)).toContain('--single-transaction');
+        expect(String(error)).toContain('role or database');
+        expect(String(error)).toContain('autocommit_before_ddl');
+        expect(String(error)).toContain('singleTransaction: false');
+        expect(String(error)).toContain('--no-single-transaction');
+
+        expectNoUnsafeSetup(statements());
+      }
+    );
+
+    it('restores the caller session even when no migrations are pending', async () => {
+      const { run, statements, transactions } = setup({
+        history: [MIGRATION_NAME],
+      });
+
+      await expect(run()).resolves.toEqual([]);
+
+      expect(transactions()).toEqual([]);
+      expect(statements().at(-1)).toBe(RESTORE_AUTOCOMMIT);
+    });
+
+    it('rolls back and releases the lock before restoring the caller session after a failure', async () => {
+      const { run, statements, migrationError } = setup({
+        failedSql: 'CREATE TABLE "dry_run_table"',
+      });
+
+      await expect(run()).rejects.toBe(migrationError);
+
+      expect(statements().slice(-3)).toEqual([
+        'ROLLBACK',
+        'SELECT pg_advisory_unlock(7241865325823964) AS "lockReleased"',
+        RESTORE_AUTOCOMMIT,
+      ]);
+    });
+
+    it.each([false, true])(
+      'restores a dry-run caller session after cleanup (migration fails=%s)',
+      async (fails) => {
+        const { run, statements, migrationError } = setup({
+          failedSql: fails ? 'SET TRANSACTION READ ONLY' : undefined,
+        });
+
+        const error = await run({ dryRun: true }).then(
+          () => null,
+          (error: unknown) => error
+        );
+
+        expect(error).toBe(fails ? migrationError : null);
+
+        expect(statements().slice(-2)).toEqual([
+          'ROLLBACK',
+          RESTORE_AUTOCOMMIT,
+        ]);
+      }
+    );
+
+    it.each([new Error('restore failed'), 'restore failed'])(
+      'reports restoration failure without replacing the migration error (%s)',
+      async (restorationError) => {
+        const { run, logger, migrationError } = setup({
+          failedSql: 'CREATE TABLE "dry_run_table"',
+          restorationError,
+        });
+
+        await expect(run()).rejects.toBe(migrationError);
+
+        expect(logger.warn).toHaveBeenCalledWith(
+          expect.stringMatching(
+            /restor.*autocommit_before_ddl.*restore failed/i
+          )
+        );
+      }
+    );
+
+    it('keeps a successful result when restoring the caller session fails', async () => {
+      const { run, logger } = setup({
+        restorationError: new Error('restore failed'),
+      });
+
+      await expect(run()).resolves.toHaveLength(1);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringMatching(/restor.*autocommit_before_ddl.*restore failed/i)
+      );
+    });
+
+    it('preserves a guard refusal when restoring the caller session also fails', async () => {
+      const { run, logger } = setup({
+        verifiedSetting: 'on',
+        restorationError: new Error('restore failed'),
+      });
+
+      await expect(run()).rejects.toThrow(REFUSAL);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringMatching(/restor.*autocommit_before_ddl.*restore failed/i)
+      );
+    });
+
+    it('closes an owned connection instead of restoring its setting', async () => {
+      const { dbClient, logger, statements } = setup();
+      const connection = db.db(dbClient, logger);
+      const close = vi.spyOn(connection, 'close');
+      const createDb = vi.spyOn(db, 'db').mockReturnValue(connection);
+
+      try {
+        await expect(
+          runner({
+            databaseUrl: 'postgres://localhost/unused',
+            logger,
+            dir: 'test/dry-run-migrations',
+            migrationsTable: 'pgmigrations',
+            direction: 'up',
+            singleTransaction: true,
+          })
+        ).resolves.toHaveLength(1);
+
+        expect(statements()).toContain(DISABLE_AUTOCOMMIT);
+        expect(statements()).not.toContain(RESTORE_AUTOCOMMIT);
+        expect(close).toHaveBeenCalledOnce();
+      } finally {
+        createDb.mockRestore();
+      }
+    });
+
+    it.each([false, undefined])(
+      'preserves runs without a shared transaction (singleTransaction=%s)',
+      async (singleTransaction) => {
+        const { run, statements, transactions } = setup();
+
+        await expect(run({ singleTransaction })).resolves.toHaveLength(1);
+
+        expect(statements()).not.toContain(AUTOCOMMIT_SETTING);
+        expect(statements()).not.toContain(DISABLE_AUTOCOMMIT);
+        expect(statements()).not.toContain(RESTORE_AUTOCOMMIT);
+        expect(transactions()).toEqual(['BEGIN;', 'COMMIT;']);
+      }
+    );
+
+    it('preserves the explicit noTransaction escape from the shared transaction', async () => {
+      const { run, transactions, statements, logger } = setup();
+
+      await expect(
+        run({ dir: 'test/cockroach', file: '062_view' })
+      ).resolves.toHaveLength(1);
+
+      expect(transactions()).toEqual(['BEGIN', 'COMMIT;', 'BEGIN;', 'COMMIT']);
+      expect(logger.warn).toHaveBeenCalledWith(
+        '#> WARNING: Need to break single transaction! <'
+      );
+      expect(statements().at(-1)).toBe(RESTORE_AUTOCOMMIT);
+    });
+
+    it('warns that XXA00 may have committed changes before rolling back and preserves the error', async () => {
+      const migrationError = Object.assign(new Error('transaction committed'), {
+        code: 'XXA00',
+      });
+      const { run, logger, events } = setup({
+        failedSql: 'COMMIT',
+        migrationError,
+      });
+
+      await expect(run()).rejects.toBe(migrationError);
+
+      const warning = logger.warn.mock.calls
+        .map(([message]) => message)
+        .find((message) => message.includes('XXA00'));
+      expect(warning).toMatch(/partial.*commit|commit.*partial/i);
+      expect(warning).toMatch(/ROLLBACK cannot undo/i);
+      expect(warning).toMatch(/schema.*data.*history/i);
+      expect(events.indexOf(String(warning))).toBeLessThan(
+        events.indexOf('ROLLBACK')
+      );
+    });
+  });
+
   it('should return a function', () => {
     expect(runner).toBeTypeOf('function');
   });

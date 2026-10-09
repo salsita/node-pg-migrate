@@ -8,6 +8,7 @@ import type { MigrationLoaderConfig } from './migrationLoader';
 import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
 import {
+  escapeValue,
   getMigrationTableName,
   getMigrationTableSchema,
   getSchemas,
@@ -127,7 +128,8 @@ export interface RunnerOptionConfig {
   /**
    * Runs the migrations in a shared transaction, including both phases of `redo`.
    * On PostgreSQL, a failure rolls back the attempted changes unless a migration calls
-   * `pgm.noTransaction()`. CockroachDB DDL may commit outside the transaction.
+   * `pgm.noTransaction()`. The runner disables CockroachDB DDL autocommit, but schema
+   * changes can still fail at commit after other changes have committed (XXA00).
    *
    * @default false
    */
@@ -299,6 +301,9 @@ async function unlock(
  */
 const READ_ONLY_SQLSTATE = '25006';
 
+/** CockroachDB schema changes failed after other transaction changes committed. */
+const PARTIALLY_COMMITTED_SQLSTATE = 'XXA00';
+
 const AUTOCOMMIT_BEFORE_DDL = 'autocommit_before_ddl';
 
 /**
@@ -319,23 +324,28 @@ async function getSetting(
     : undefined;
 }
 
+function isSettingOff(value: string | undefined): boolean {
+  return value === 'off' || value === 'false';
+}
+
 /**
- * Make sure the database will really refuse the writes a dry run is not supposed to make.
+ * Make sure DDL cannot end a dry-run or shared transaction early.
  *
  * CockroachDB v25 and newer default `autocommit_before_ddl` to `on`, which commits DDL
- * immediately and escapes the surrounding transaction - including a read-only one. Measured
+ * after committing the preceding transaction - including a read-only one. Measured
  * on v25.3.5: a `CREATE TABLE` inside `BEGIN; SET TRANSACTION READ ONLY;` was applied for
  * real. Turning the setting off restores the correct behavior, but a dry run that might not
- * be dry has to fail closed rather than warn and continue.
+ * be dry, or a shared transaction that DDL could end early, has to fail closed.
  *
  * Servers that do not know the setting at all (PostgreSQL, CockroachDB v23.2) keep DDL
  * inside the transaction and reject it in a read-only one, so there is nothing to do there.
  */
-async function assertDryRunIsEnforceable(db: DBConnection): Promise<void> {
-  const isOff = (value: string | undefined): boolean =>
-    value === undefined || value === 'off' || value === 'false';
-
-  if (isOff(await getSetting(db, AUTOCOMMIT_BEFORE_DDL))) {
+async function assertTransactionIsEnforceable(
+  db: DBConnection,
+  dryRun: boolean,
+  setting: string | undefined
+): Promise<void> {
+  if (setting === undefined || isSettingOff(setting)) {
     return;
   }
 
@@ -343,9 +353,12 @@ async function assertDryRunIsEnforceable(db: DBConnection): Promise<void> {
 
   const value = await getSetting(db, AUTOCOMMIT_BEFORE_DDL);
 
-  if (!isOff(value)) {
+  // Once the server exposed the setting, require explicit confirmation that it is off.
+  if (!isSettingOff(value)) {
     throw new Error(
-      `Refusing to dry run: this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the read-only transaction and be applied for real.`
+      dryRun
+        ? `Refusing to dry run: this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the read-only transaction and be applied for real.`
+        : `Refusing to run with singleTransaction (--single-transaction): this server auto-commits DDL (${AUTOCOMMIT_BEFORE_DDL} = ${value}), so migrations could escape the shared transaction. Disable it for the role or database (e.g. ALTER ROLE ... SET ${AUTOCOMMIT_BEFORE_DDL} = false), or run without a shared transaction (singleTransaction: false / --no-single-transaction).`
     );
   }
 }
@@ -763,12 +776,12 @@ function runMigrations(
   );
 }
 
-function isReadOnlyViolation(error: unknown): boolean {
+function hasSqlState(error: unknown, code: string): boolean {
   return (
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    error.code === READ_ONLY_SQLSTATE
+    error.code === code
   );
 }
 
@@ -826,13 +839,19 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   const db = Db(connection, logger);
   const dryRun = Boolean(options.dryRun);
   let readOnlyTransaction = false;
+  let lockAcquired = false;
+  let ddlAutocommit: string | undefined;
 
   try {
     await db.createConnection();
 
-    if (dryRun) {
-      await assertDryRunIsEnforceable(db);
+    if (dryRun || options.singleTransaction) {
+      // Capture the caller's setting before SET, so even failed verification can restore it.
+      ddlAutocommit = await getSetting(db, AUTOCOMMIT_BEFORE_DDL);
+      await assertTransactionIsEnforceable(db, dryRun, ddlAutocommit);
+    }
 
+    if (dryRun) {
       // From here on the database itself refuses every write, including the ones we do not
       // control: a migration reaching for `pgm.db.query('DROP TABLE ...')` is stopped by
       // the server rather than by our own honor system.
@@ -845,6 +864,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     // able to block a real deployment while it prints.
     if (!options.noLock && !dryRun) {
       await lock(db, options.lockValue, options.advisoryLockMode);
+      lockAcquired = true;
     }
 
     // Before anything is created: a run that is refused must leave the database as it was.
@@ -959,7 +979,11 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
           applied = await applyMigrations();
           await db.query('COMMIT');
         } catch (error) {
-          logger.warn('> Rolling back attempted migration ...');
+          logger.warn(
+            hasSqlState(error, PARTIALLY_COMMITTED_SQLSTATE)
+              ? '> CockroachDB reported a partially committed transaction (XXA00). ROLLBACK cannot undo committed changes; inspect schema, data and migration history before retrying.'
+              : '> Rolling back attempted migration ...'
+          );
           await db.query('ROLLBACK').catch((rollbackError: unknown) => {
             logger.warn(
               rollbackError instanceof Error
@@ -971,7 +995,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         }
       }
     } catch (error) {
-      if (dryRun && isReadOnlyViolation(error)) {
+      if (dryRun && hasSqlState(error, READ_ONLY_SQLSTATE)) {
         throw new Error(
           'This migration writes to the database directly (e.g. through `pgm.db.query(...)`), which a dry run refuses: it holds a read-only transaction so that nothing can be applied. Run without `--dry-run` to apply it.',
           { cause: error }
@@ -996,10 +1020,24 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         });
       }
 
-      if (!options.noLock && !dryRun) {
+      if (lockAcquired) {
         await unlock(db, options.lockValue).catch((error: unknown) => {
           logger.warn(error instanceof Error ? error.message : String(error));
         });
+      }
+
+      if (
+        dbClient &&
+        ddlAutocommit !== undefined &&
+        !isSettingOff(ddlAutocommit)
+      ) {
+        await db
+          .query(`SET ${AUTOCOMMIT_BEFORE_DDL} = ${escapeValue(ddlAutocommit)}`)
+          .catch((error: unknown) => {
+            logger.warn(
+              `Unable to restore ${AUTOCOMMIT_BEFORE_DDL}: ${error instanceof Error ? error.message : String(error)}`
+            );
+          });
       }
 
       await db.close();
