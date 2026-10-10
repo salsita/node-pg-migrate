@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { makeComment } from '../../utils';
 import type { Name, Reversible } from '../generalTypes';
 import type { DropPolicyOptions } from './dropPolicy';
 import { dropPolicy } from './dropPolicy';
@@ -23,7 +24,7 @@ export type CreatePolicy = Reversible<CreatePolicyFn>;
 
 export function createPolicy(mOptions: MigrationOptions): CreatePolicy {
   const _create: CreatePolicy = (tableName, policyName, options = {}) => {
-    const { as, role = 'PUBLIC', command = 'ALL' } = options;
+    const { as, role = 'PUBLIC', command = 'ALL', comment } = options;
 
     const createOptions = {
       ...options,
@@ -39,7 +40,16 @@ export function createPolicy(mOptions: MigrationOptions): CreatePolicy {
     const policyNameStr = mOptions.literal(policyName);
     const tableNameStr = mOptions.literal(tableName);
 
-    return `CREATE POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`;
+    const queries = [
+      `CREATE POLICY ${policyNameStr} ON ${tableNameStr} ${clausesStr};`,
+    ];
+    if (comment !== undefined) {
+      queries.push(
+        makeComment('POLICY', `${policyNameStr} ON ${tableNameStr}`, comment)
+      );
+    }
+
+    return queries.join('\n');
   };
 
   _create.reverse = dropPolicy(mOptions);
