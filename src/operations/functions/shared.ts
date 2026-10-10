@@ -1,4 +1,4 @@
-import type { LiteralUnion, Value } from '../generalTypes';
+import type { LiteralUnion, Name, Value } from '../generalTypes';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
@@ -25,9 +25,15 @@ export interface FunctionOptions {
 
   security?: 'INVOKER' | 'DEFINER';
 
-  onNull?: boolean;
+  onNull?: boolean | 'CALLED' | 'RETURNS NULL';
 
   parallel?: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
+
+  cost?: number;
+
+  rows?: number;
+
+  support?: Name;
 
   set?: Array<{
     configurationParameter: string;
