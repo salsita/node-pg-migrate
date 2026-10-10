@@ -1,9 +1,20 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { applyType, escapeValue, makeComment, toArray } from '../../utils';
+import {
+  applyType,
+  escapeValue,
+  isPgLiteral,
+  makeComment,
+  toArray,
+} from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
-import type { IfNotExistsOption, Name, Value } from '../generalTypes';
-import { getNameString } from '../generalTypes';
+import type {
+  IfNotExistsOption,
+  Name,
+  Reference,
+  Value,
+} from '../generalTypes';
+import { getNameString, isNameObject } from '../generalTypes';
 import type { SequenceOptions } from '../sequences';
 import { parseSequenceOptions } from '../sequences';
 
@@ -19,7 +30,7 @@ export interface ReferencesOptions {
 
   referencesConstraintComment?: string;
 
-  references: Name;
+  references: Reference;
 
   onDelete?: Action;
 
@@ -140,12 +151,21 @@ export function parseReferences(
 ): string {
   const { references, match, onDelete, onUpdate } = options;
 
-  const clauses: string[] = [
+  const columns =
+    !isPgLiteral(references) &&
+    isNameObject(references) &&
+    'columns' in references &&
+    references.columns !== undefined
+      ? toArray(references.columns).map(literal)
+      : [];
+  const columnsStr = columns.length > 0 ? ` (${columns.join(', ')})` : '';
+  const table =
     typeof references === 'string' &&
     (references.startsWith('"') || references.endsWith(')'))
-      ? `REFERENCES ${references}`
-      : `REFERENCES ${literal(references)}`,
-  ];
+      ? references
+      : literal(references);
+
+  const clauses: string[] = [`REFERENCES ${table}${columnsStr}`];
 
   if (match) {
     clauses.push(`MATCH ${match}`);

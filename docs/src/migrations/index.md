@@ -136,7 +136,17 @@ CREATE TABLE "my_schema"."my_table_name" ("id" serial);
 
 ```ts
 type Name = string | { schema?: string; name: string } | PgLiteralValue;
+
+type Reference =
+  | Name
+  | { schema?: string; name: string; columns?: string | string[] };
 ```
+
+Use a `Reference` object to select the columns targeted by a foreign key.
+The table, schema, and column names are quoted and follow the `decamelize`
+option. Omit `columns`, or use an empty array, to reference the table's primary
+key. Explicit columns must match a primary key, unique constraint, or suitable
+unique index; composite foreign keys must supply matching columns in order.
 
 ## Renaming and schemas
 
