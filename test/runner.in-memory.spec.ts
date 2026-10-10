@@ -83,6 +83,22 @@ describe('in-memory migration options', () => {
       'migrations must be an object mapping names to actions or factories',
     ],
     [
+      { migrations: Promise.resolve({ '001_init': {} }) },
+      'migrations must be an object mapping names to actions or factories',
+    ],
+    [
+      { migrations: new Map([['001_init', {}]]) },
+      'migrations must be an object mapping names to actions or factories',
+    ],
+    [
+      { migrations: new Date(0) },
+      'migrations must be an object mapping names to actions or factories',
+    ],
+    [
+      { migrations: new Set(['001_init']) },
+      'migrations must be an object mapping names to actions or factories',
+    ],
+    [
       { migrations: {}, useGlob: false },
       'useGlob and ignorePattern require a dir source',
     ],
@@ -109,13 +125,41 @@ describe('in-memory migration options', () => {
   ])(
     'rejects invalid sources before constructing the DB: %o',
     async (source, message) => {
-      const createDb = vi.spyOn(dbModule, 'db');
+      const query = vi.fn();
+      const createDb = vi.spyOn(dbModule, 'db').mockImplementation(() => {
+        throw new Error('DB must not be constructed');
+      });
 
       await expect(
-        runner({ ...baseOptions, ...source } as RunnerOption)
+        runner({
+          ...baseOptions,
+          dbClient: { query } as never,
+          ...source,
+        } as RunnerOption)
       ).rejects.toThrow(message);
 
       expect(createDb).not.toHaveBeenCalled();
+      expect(query).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    {},
+    Object.setPrototypeOf({ '001_init': {} }, null),
+    // The map is not awaited, so `then` remains a valid migration identifier.
+    // oxlint-disable-next-line unicorn/no-thenable
+    { then: () => ({ up: () => {} }) },
+  ])(
+    'accepts ordinary and null-prototype maps, including a then identifier: %o',
+    async (migrations: MigrationMap) => {
+      const createDb = vi.spyOn(dbModule, 'db').mockImplementation(() => {
+        throw new Error('source validation passed');
+      });
+
+      await expect(runner({ ...baseOptions, migrations })).rejects.toThrow(
+        'source validation passed'
+      );
+      expect(createDb).toHaveBeenCalledOnce();
     }
   );
 

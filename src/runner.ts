@@ -257,6 +257,15 @@ function isMigrationActions(value: unknown): value is MigrationBuilderActions {
   );
 }
 
+function isMigrationMap(value: unknown): value is MigrationMap {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const prototype: unknown = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
 function validateMigrationSource(options: RunnerOption): void {
   const hasDirectory = options.dir !== undefined;
   const hasMigrations = options.migrations !== undefined;
@@ -270,11 +279,7 @@ function validateMigrationSource(options: RunnerOption): void {
   }
 
   const migrations = options.migrations;
-  if (
-    typeof migrations !== 'object' ||
-    migrations === null ||
-    Array.isArray(migrations)
-  ) {
+  if (!isMigrationMap(migrations)) {
     throw new TypeError(
       'migrations must be an object mapping names to actions or factories'
     );
