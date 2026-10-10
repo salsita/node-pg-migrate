@@ -14,7 +14,11 @@ type Options =
   | ({ dbClient: Client } & TestOptions);
 
 export const run = async (options: Options): Promise<boolean> => {
-  const opts: Omit<RunnerOption, 'direction'> & Options = {
+  const opts: Omit<
+    Extract<RunnerOption, { dir: string | string[] }>,
+    'direction'
+  > &
+    Options = {
     migrationsTable: 'migrations',
     dir: resolve(import.meta.dirname, 'migrations'),
     expectedUpLength: 2,
