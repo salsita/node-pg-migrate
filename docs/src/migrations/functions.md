@@ -30,16 +30,46 @@ If array of strings, it is interpreted as is, if array of objects:
 
 ### function_options
 
-| Option     | Type      | Description                          |
-| ---------- | --------- | ------------------------------------ |
-| `returns`  | `string`  | returns clause                       |
-| `language` | `string`  | language name of function definition |
-| `replace`  | `boolean` | create or replace function           |
-| `window`   | `boolean` | window function                      |
-| `behavior` | `string`  | `IMMUTABLE`, `STABLE`, or `VOLATILE` |
-| `security` | `string`  | `INVOKER` or `DEFINER`               |
-| `onNull`   | `boolean` | `RETURNS NULL ON NULL INPUT`         |
-| `parallel` | `string`  | `UNSAFE`, `RESTRICTED`, or `SAFE`    |
+| Option     | Type                      | Description                                                                |
+| ---------- | ------------------------- | -------------------------------------------------------------------------- |
+| `returns`  | `string`                  | returns clause                                                             |
+| `language` | `string`                  | language name of function definition                                       |
+| `replace`  | `boolean`                 | create or replace function                                                 |
+| `window`   | `boolean`                 | window function                                                            |
+| `behavior` | `string`                  | `IMMUTABLE`, `STABLE`, or `VOLATILE`                                       |
+| `security` | `string`                  | `INVOKER` or `DEFINER`                                                     |
+| `onNull`   | `boolean` or `string`     | `true` or `'RETURNS NULL'` for strict; `'CALLED'` for called on null input |
+| `parallel` | `string`                  | `UNSAFE`, `RESTRICTED`, or `SAFE`                                          |
+| `cost`     | `number`                  | positive finite estimated execution cost, in units of `cpu_operator_cost`  |
+| `rows`     | `number`                  | positive finite estimated result row count, for functions returning a set  |
+| `support`  | [Name](/migrations/#type) | planner support function name; requires superuser privileges               |
+
+Planner estimates are emitted only when supplied; otherwise PostgreSQL chooses
+its defaults. `rows` is valid only for a set-returning function. PostgreSQL
+validates the return type, support function signature, and privileges.
+
+Use `onNull: 'CALLED'` with `replace: true` to explicitly replace a strict
+function with one that executes on null input. The existing boolean behavior is
+preserved: `true` makes the function strict, and `false` omits the clause.
+
+```javascript
+pgm.createFunction(
+  { schema: 'app', name: 'series' },
+  ['integer', 'integer'],
+  {
+    language: 'internal',
+    returns: 'SETOF integer',
+    cost: 2.5,
+    rows: 100,
+    support: { schema: 'pg_catalog', name: 'generate_series_int4_support' },
+  },
+  'generate_series_int4'
+);
+```
+
+This example wraps PostgreSQL's built-in integer series function with its matching
+support function. A planner support function must implement the contract for the
+function it supports; see [PostgreSQL function optimization](https://www.postgresql.org/docs/current/xfunc-optimization.html).
 
 ## Reverse Operation: `dropFunction`
 

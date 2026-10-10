@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createFunction } from '../../../src/operations/functions';
+import { PgLiteral } from '../../../src/utils';
 import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
@@ -147,6 +148,115 @@ $pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
         ).toThrow(
           new Error('Language for function "add" have to be specified')
         );
+      });
+
+      it('renders planner options with a qualified support function', () => {
+        expect(
+          createFunctionFn(
+            { schema: 'app', name: 'series' },
+            ['integer', 'integer'],
+            {
+              language: 'internal',
+              returns: 'SETOF integer',
+              cost: 2.5,
+              rows: 4.5,
+              support: {
+                schema: 'pg_catalog',
+                name: 'generate_series_int4_support',
+              },
+            },
+            'generate_series_int4'
+          )
+        ).toBe(
+          'CREATE FUNCTION "app"."series"(integer, integer) RETURNS SETOF integer AS $pga$generate_series_int4$pga$ VOLATILE LANGUAGE internal COST 2.5 ROWS 4.5 SUPPORT "pg_catalog"."generate_series_int4_support";'
+        );
+      });
+
+      it('renders planner options separately when pretty is enabled', () => {
+        expect(
+          createFunction(options1Pretty)(
+            'series',
+            ['integer', 'integer'],
+            {
+              language: 'internal',
+              returns: 'SETOF integer',
+              cost: 1,
+              rows: 3,
+              support: new PgLiteral('pg_catalog.generate_series_int4_support'),
+              set: [
+                {
+                  configurationParameter: 'search_path',
+                  value: 'FROM CURRENT',
+                },
+              ],
+            },
+            'generate_series_int4'
+          )
+        ).toBe(`CREATE FUNCTION "series"(integer, integer)
+  RETURNS SETOF integer
+  AS $pga$generate_series_int4$pga$
+  VOLATILE
+  LANGUAGE internal
+  COST 1
+  ROWS 3
+  SUPPORT pg_catalog.generate_series_int4_support
+  SET "search_path" FROM CURRENT;`);
+      });
+
+      it.each(['cost', 'rows'] as const)(
+        'rejects invalid %s estimates',
+        (option) => {
+          for (const value of [
+            0,
+            -0,
+            -1,
+            Number.NaN,
+            Number.POSITIVE_INFINITY,
+            Number.NEGATIVE_INFINITY,
+          ]) {
+            expect(() =>
+              createFunctionFn(
+                'series',
+                [],
+                { language: 'sql', [option]: value },
+                'SELECT 1'
+              )
+            ).toThrow(`Function ${option} must be a positive finite number`);
+          }
+        }
+      );
+
+      it.each([
+        [true, 'RETURNS NULL ON NULL INPUT'],
+        ['RETURNS NULL', 'RETURNS NULL ON NULL INPUT'],
+        ['CALLED', 'CALLED ON NULL INPUT'],
+        [false, ''],
+        [undefined, ''],
+      ] as const)('renders explicit null handling %s', (onNull, clause) => {
+        expect(
+          createFunctionFn(
+            'example',
+            ['integer'],
+            { language: 'sql', replace: true, onNull },
+            'SELECT $1'
+          )
+        ).toBe(
+          `CREATE OR REPLACE FUNCTION "example"(integer) RETURNS void AS $pga$SELECT $1$pga$ VOLATILE LANGUAGE sql${clause ? ` ${clause}` : ''};`
+        );
+      });
+
+      it('quotes the support function name', () => {
+        expect(
+          createFunctionFn(
+            'example',
+            [],
+            {
+              language: 'sql',
+              support: { schema: 'odd"schema', name: 'odd"support' },
+            },
+            'SELECT 1'
+          )
+        ).toContain('SUPPORT "odd""schema"."odd""support";');
       });
 
       describe('reverse', () => {
