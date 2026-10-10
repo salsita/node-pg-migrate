@@ -29,6 +29,14 @@ describe('foreign key references', () => {
       'REFERENCES app.parents (code)',
     ],
     [
+      'literal with additional identifier properties',
+      Object.assign(new PgLiteral('app.parents (code)'), {
+        name: 'ignored',
+        columns: ['ignored'],
+      }),
+      'REFERENCES app.parents (code)',
+    ],
+    [
       'literal value',
       {
         literal: true,
