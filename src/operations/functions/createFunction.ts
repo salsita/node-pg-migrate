@@ -32,6 +32,9 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       security = 'INVOKER',
       onNull = false,
       parallel,
+      cost,
+      rows,
+      support,
       set,
     } = functionOptions;
 
@@ -57,12 +60,32 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       options.push('WINDOW');
     }
 
-    if (onNull) {
+    if (onNull === true || onNull === 'RETURNS NULL') {
       options.push('RETURNS NULL ON NULL INPUT');
+    } else if (onNull === 'CALLED') {
+      options.push('CALLED ON NULL INPUT');
     }
 
     if (parallel) {
       options.push(`PARALLEL ${parallel}`);
+    }
+
+    for (const [option, value] of [
+      ['cost', cost],
+      ['rows', rows],
+    ] as const) {
+      if (value !== undefined) {
+        if (!Number.isFinite(value) || value <= 0) {
+          throw new Error(
+            `Function ${option} must be a positive finite number`
+          );
+        }
+        options.push(`${option.toUpperCase()} ${value}`);
+      }
+    }
+
+    if (support !== undefined) {
+      options.push(`SUPPORT ${mOptions.literal(support)}`);
     }
 
     if (set) {
