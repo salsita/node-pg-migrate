@@ -6,28 +6,41 @@ The `createTable` and `addColumns` methods both take a `columns` argument that s
 It is an object (key/value) where each key is the name of the column,
 and the value is another object that defines the options for the column.
 
-| Option                        | Type                                  | Description                                                                                       |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `type`                        | `string`                              | Data type (use normal postgres types)                                                             |
-| `array`                       | `boolean` or `number`                 | Defines the column as a PostgreSQL array type. Use `true` for `ARRAY` or a number for `ARRAY[n]`. |
-| `collation`                   | `string`                              | Collation of data type                                                                            |
-| `unique`                      | `boolean`                             | Set to true to add a unique constraint on this column                                             |
-| `primaryKey`                  | `boolean`                             | Set to true to make this column the primary key                                                   |
-| `notNull`                     | `boolean`                             | Set to true to make this column not null                                                          |
-| `default`                     | `string`                              | Adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.      |
-| `check`                       | `string`                              | SQL for a check constraint for this column                                                        |
-| `references`                  | [Name](/migrations/#type) or `string` | A table name that this column is a foreign key to                                                 |
-| `referencesConstraintName`    | `string`                              | Name of the created constraint                                                                    |
-| `referencesConstraintComment` | `string`                              | Comment on the created constraint                                                                 |
-| `onDelete`                    | `string`                              | Adds ON DELETE constraint for a reference column                                                  |
-| `onUpdate`                    | `string`                              | Adds ON UPDATE constraint for a reference column                                                  |
-| `match`                       | `string`                              | `FULL` or `SIMPLE`                                                                                |
-| `deferrable`                  | `boolean`                             | Flag for deferrable column constraint                                                             |
-| `deferred`                    | `boolean`                             | Flag for initially deferred deferrable column constraint                                          |
-| `comment`                     | `string`                              | Adds comment on column                                                                            |
-| `expressionGenerated`         | `string`                              | Expression to compute column value                                                                |
-| `sequenceGenerated`           | `object`                              | Creates identity column see [sequence options section](sequences.md#sequence-options)             |
-| `precedence`                  | `string`                              | `ALWAYS` or `BY DEFAULT`                                                                          |
+| Option                        | Type                           | Description                                                                                       |
+| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `type`                        | `string`                       | Data type (use normal postgres types)                                                             |
+| `array`                       | `boolean` or `number`          | Defines the column as a PostgreSQL array type. Use `true` for `ARRAY` or a number for `ARRAY[n]`. |
+| `collation`                   | `string`                       | Collation of data type                                                                            |
+| `unique`                      | `boolean`                      | Set to true to add a unique constraint on this column                                             |
+| `primaryKey`                  | `boolean`                      | Set to true to make this column the primary key                                                   |
+| `notNull`                     | `boolean`                      | Set to true to make this column not null                                                          |
+| `default`                     | `string`                       | Adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.      |
+| `check`                       | `string`                       | SQL for a check constraint for this column                                                        |
+| `references`                  | [Reference](/migrations/#type) | Target table, optionally with explicit column names                                               |
+| `referencesConstraintName`    | `string`                       | Name of the created constraint                                                                    |
+| `referencesConstraintComment` | `string`                       | Comment on the created constraint                                                                 |
+| `onDelete`                    | `string`                       | Adds ON DELETE constraint for a reference column                                                  |
+| `onUpdate`                    | `string`                       | Adds ON UPDATE constraint for a reference column                                                  |
+| `match`                       | `string`                       | `FULL` or `SIMPLE`                                                                                |
+| `deferrable`                  | `boolean`                      | Flag for deferrable column constraint                                                             |
+| `deferred`                    | `boolean`                      | Flag for initially deferred deferrable column constraint                                          |
+| `comment`                     | `string`                       | Adds comment on column                                                                            |
+| `expressionGenerated`         | `string`                       | Expression to compute column value                                                                |
+| `sequenceGenerated`           | `object`                       | Creates identity column see [sequence options section](sequences.md#sequence-options)             |
+| `precedence`                  | `string`                       | `ALWAYS` or `BY DEFAULT`                                                                          |
+
+To reference a unique column other than the primary key, specify its name:
+
+```javascript
+pgm.addColumns('orders', {
+  customer_code: {
+    type: 'text',
+    references: { schema: 'app', name: 'customers', columns: 'code' },
+  },
+});
+```
+
+For composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
 
 ## Data types & Convenience Shorthand
 

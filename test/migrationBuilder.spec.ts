@@ -1,8 +1,43 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { GrantOnTablesOptions, IndexStorageParameters } from '../src';
+import type {
+  GrantOnTablesOptions,
+  IndexStorageParameters,
+  Reference,
+} from '../src';
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it.each([false, true])(
+    'queues explicit references and automatically reverses them (reverse: %s)',
+    (reverse) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console,
+        false
+      );
+      const references: Reference = {
+        schema: 'app',
+        name: 'parents',
+        columns: 'code',
+      };
+      if (reverse) {
+        pgm.enableReverseMode();
+      }
+      pgm.createTable('children', { id: 'integer' });
+      pgm.addColumns('children', { code: { type: 'text', references } });
+      pgm.createConstraint('children', 'code_fk', {
+        foreignKeys: { columns: 'code', references },
+      });
+      expect(pgm.getSql()).toBe(
+        reverse
+          ? 'ALTER TABLE "children" DROP CONSTRAINT "code_fk";\nALTER TABLE "children" DROP "code";\nDROP TABLE "children";\n'
+          : 'CREATE TABLE "children" ("id" integer);\nALTER TABLE "children" ADD "code" text REFERENCES "app"."parents" ("code");\nALTER TABLE "children" ADD CONSTRAINT "code_fk" FOREIGN KEY ("code") REFERENCES "app"."parents" ("code");\n'
+      );
+    }
+  );
+
   it.each([
     ['grantOnTables', 'GRANT SELECT ON "foo" TO "reader";\n'],
     ['revokeOnTables', 'REVOKE SELECT ON "foo" FROM "reader";\n'],
