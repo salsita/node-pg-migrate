@@ -1,8 +1,43 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { GrantOnTablesOptions, IndexStorageParameters } from '../src';
+import type {
+  GrantOnTablesOptions,
+  IndexStorageParameters,
+  PolicyOptions,
+} from '../src';
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it('queues policy comments through the public builder', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+    const options: PolicyOptions = { comment: 'initial note' };
+    pgm.createPolicy({ schema: 'app', name: 'records' }, 'p1', options);
+    pgm.alterPolicy({ schema: 'app', name: 'records' }, 'p1', {
+      comment: null,
+    });
+    expect(pgm.getSql()).toBe(
+      'CREATE POLICY "p1" ON "app"."records" FOR ALL TO PUBLIC;\nCOMMENT ON POLICY "p1" ON "app"."records" IS $pga$initial note$pga$;\nCOMMENT ON POLICY "p1" ON "app"."records" IS NULL;\n'
+    );
+  });
+
+  it('automatically reverses createPolicy with a comment', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+    pgm.enableReverseMode();
+    pgm.createPolicy('records', 'p1', { comment: 'note' });
+    expect(pgm.getSql()).toBe('DROP POLICY "p1" ON "records";\n');
+  });
+
   it.each([
     ['grantOnTables', 'GRANT SELECT ON "foo" TO "reader";\n'],
     ['revokeOnTables', 'REVOKE SELECT ON "foo" FROM "reader";\n'],
