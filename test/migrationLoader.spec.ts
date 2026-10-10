@@ -39,6 +39,100 @@ async function writeMigrationFile(
 }
 
 describe('loadMigrationUnits', () => {
+  it.each(['default', 'legacySql', 'sql'] as const)(
+    'honors the file directive with the %s SQL loader',
+    async (loader) => {
+      await withTempDir(async (dir) => {
+        const path = await writeMigrationFile(
+          dir,
+          '001_index.sql',
+          '-- description\n-- no transaction\n-- Up Migration\nSELECT 1;\n-- Down Migration\nSELECT 2;'
+        );
+        const config: MigrationLoaderConfig =
+          loader === 'default'
+            ? {}
+            : {
+                migrationLoaderStrategies: [{ extensions: ['.sql'], loader }],
+              };
+        const [unit] = await loadMigrationUnits(config, [path]);
+        for (const action of [unit.actions.up, unit.actions.down]) {
+          const noTransaction = vi.fn();
+          const sql = vi.fn();
+          expect(action).toBeTypeOf('function');
+          if (action) {
+            await action({ sql, noTransaction } as unknown as MigrationBuilder);
+          }
+          expect(noTransaction).toHaveBeenCalledExactlyOnceWith();
+          expect(noTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+            sql.mock.invocationCallOrder[0]
+          );
+        }
+      });
+    }
+  );
+
+  it.each([
+    [true, false],
+    [false, true],
+    [true, true],
+    [false, false],
+  ])(
+    'honors each grouped file header independently (up: %s, down: %s)',
+    async (upDirective, downDirective) => {
+      await withTempDir(async (dir) => {
+        const upSql = `${upDirective ? '-- noTransaction\n' : ''}SELECT 1;`;
+        const downSql = `${downDirective ? '-- no transaction\n' : ''}SELECT 2;`;
+        const paths = [
+          await writeMigrationFile(dir, '001_index.up.sql', upSql),
+          await writeMigrationFile(dir, '001_index.down.sql', downSql),
+        ];
+        const [unit] = await loadMigrationUnits(
+          {
+            migrationLoaderStrategies: [
+              { extensions: ['.sql'], loader: 'sql' },
+            ],
+          },
+          paths
+        );
+        for (const [action, content, directive] of [
+          [unit.actions.up, upSql, upDirective],
+          [unit.actions.down, downSql, downDirective],
+        ] as const) {
+          const noTransaction = vi.fn();
+          const sql = vi.fn();
+          if (action) {
+            await action({ sql, noTransaction } as unknown as MigrationBuilder);
+          }
+          expect(sql).toHaveBeenCalledExactlyOnceWith(content);
+          expect(noTransaction).toHaveBeenCalledTimes(directive ? 1 : 0);
+          expect(noTransaction.mock.invocationCallOrder[0] ?? 0).toBeLessThan(
+            sql.mock.invocationCallOrder[0]
+          );
+        }
+      });
+    }
+  );
+
+  it('keeps an empty grouped down file without an action', async () => {
+    await withTempDir(async (dir) => {
+      const paths = [
+        await writeMigrationFile(
+          dir,
+          '001_index.up.sql',
+          '-- noTransaction\nSELECT 1;'
+        ),
+        await writeMigrationFile(dir, '001_index.down.sql', ''),
+      ];
+      const [unit] = await loadMigrationUnits(
+        {
+          migrationLoaderStrategies: [{ extensions: ['.sql'], loader: 'sql' }],
+        },
+        paths
+      );
+      expect(unit.actions.down).toBeUndefined();
+    });
+  });
+
   it.each(sqlExtensions)(
     'keeps legacy SQL behavior for .up.%s / .down.%s by default',
     async (upExtension, downExtension) => {

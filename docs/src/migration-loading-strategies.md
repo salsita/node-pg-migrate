@@ -143,3 +143,35 @@ Behavior for a single `.sql` file:
 - when both markers are present, `up` and `down` sections are extracted
 - when no markers are present, the full file is treated as an `up` migration
 - if there is no `down` section, there is no actionable `down` migration
+
+### Running SQL outside a transaction
+
+Add `-- noTransaction` or `-- no transaction` on its own line in the file's
+leading header of blank lines and `--` comments. The directive is case-insensitive
+and must appear before the first SQL statement. UTF-8 BOMs and CRLF line endings
+are supported; an initial BOM is omitted before SQL is queued. Mentions in longer comments, SQL strings, function bodies, or
+comments after SQL do not enable this behavior.
+
+```sql
+-- noTransaction
+-- Up Migration
+CREATE INDEX CONCURRENTLY users_email_idx ON users (email);
+
+-- Down Migration
+DROP INDEX CONCURRENTLY users_email_idx;
+```
+
+For a single `.sql` file, the directive applies to both `up` and `down` actions.
+For grouped `.up.sql` / `.down.sql` files, each file has its own header; add the
+directive to each direction that needs it.
+
+The directive calls `pgm.noTransaction()` before queuing the SQL. This also breaks
+the surrounding transaction when `singleTransaction` is enabled, so those
+changes cannot be rolled back as part of the batch. SQL files without the directive
+keep their existing transaction behavior. A dry run still executes no migration
+SQL and changes no objects or migration history.
+
+PostgreSQL requires commands such as `CREATE INDEX CONCURRENTLY` and
+`DROP INDEX CONCURRENTLY` to run outside a transaction block. Keep such a command
+as the only SQL statement in its direction: PostgreSQL also places multiple
+statements submitted in one query in an implicit transaction.

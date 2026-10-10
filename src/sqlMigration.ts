@@ -6,6 +6,36 @@ function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
   return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
 }
 
+function hasNoTransactionDirective(content: string): boolean {
+  for (const line of content.split(/\r?\n/)) {
+    const headerLine = line.trim();
+    if (!headerLine) {
+      continue;
+    }
+    if (!headerLine.startsWith('--')) {
+      return false;
+    }
+    if (/^--[ \t]*no[ \t]*transaction[ \t]*$/i.test(headerLine)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Create an action, omitting only a leading UTF-8 encoding marker. */
+export function createSqlMigrationAction(
+  sql: string,
+  noTransaction = hasNoTransactionDirective(sql)
+): MigrationAction {
+  const sqlContent = sql.startsWith('\uFEFF') ? sql.slice(1) : sql;
+  return (pgm) => {
+    if (noTransaction) {
+      pgm.noTransaction();
+    }
+    pgm.sql(sqlContent);
+  };
+}
+
 export interface MigrationBuilderActions {
   up?: MigrationAction | false;
 
@@ -15,6 +45,7 @@ export interface MigrationBuilderActions {
 }
 
 export function getActions(content: string): MigrationBuilderActions {
+  const noTransaction = hasNoTransactionDirective(content);
   const upMigrationCommentRegex = createMigrationCommentRegex('up');
   const downMigrationCommentRegex = createMigrationCommentRegex('down');
 
@@ -38,16 +69,12 @@ export function getActions(content: string): MigrationBuilderActions {
       : undefined;
 
   return {
-    up: (pgm) => {
-      pgm.sql(upSql);
-    },
+    up: createSqlMigrationAction(upSql, noTransaction),
 
     down:
       downSql === undefined
         ? false
-        : (pgm) => {
-            pgm.sql(downSql);
-          },
+        : createSqlMigrationAction(downSql, noTransaction),
   };
 }
 
