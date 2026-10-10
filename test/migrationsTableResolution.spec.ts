@@ -92,7 +92,8 @@ function noop(): void {
 }
 
 async function runUp(
-  options: Partial<RunnerOption> & MockOptions = {}
+  options: Partial<Extract<RunnerOption, { dir: string | string[] }>> &
+    MockOptions = {}
 ): Promise<RecordedQuery[]> {
   const { runNames, migrationsTableExists, ...runnerOptions } = options;
   const { dbClient, queries } = createMockClient({

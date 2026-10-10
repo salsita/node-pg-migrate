@@ -31,7 +31,10 @@ describe('migration', () => {
     error: vi.fn<LogFn>(),
   };
 
-  const options = { migrationsTable } as RunnerOption;
+  const options = { migrationsTable } as Extract<
+    RunnerOption,
+    { dir: string | string[] }
+  >;
 
   let queryMock: Mock;
 
@@ -777,7 +780,9 @@ describe('migration', () => {
     });
 
     function migration(
-      overrides: Partial<RunnerOption> = {},
+      overrides: Partial<
+        Extract<RunnerOption, { dir: string | string[] }>
+      > = {},
       up: MigrationAction = (pgm) => {
         pgm.sql('SELECT 1');
       },

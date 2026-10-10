@@ -70,7 +70,7 @@ describe.each(PG_VERSIONS)(
 
     function migrate(
       direction: MigrationDirection,
-      options: Partial<RunnerOption> = {}
+      options: Partial<Extract<RunnerOption, { dir: string | string[] }>> = {}
     ) {
       return runner({
         databaseUrl: container.getConnectionUri(),
