@@ -1,5 +1,11 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { applyType, escapeValue, makeComment, toArray } from '../../utils';
+import {
+  applyType,
+  escapeValue,
+  isPgLiteral,
+  makeComment,
+  toArray,
+} from '../../utils';
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type {
@@ -146,6 +152,7 @@ export function parseReferences(
   const { references, match, onDelete, onUpdate } = options;
 
   const columns =
+    !isPgLiteral(references) &&
     isNameObject(references) &&
     'columns' in references &&
     references.columns !== undefined
