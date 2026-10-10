@@ -54,6 +54,40 @@ otherwise, changes to `search_path` also carry over.
 
 ## Options
 
+### TLS with a trusted certificate authority
+
+Pass a `pg.ClientConfig` object as `databaseUrl` to configure TLS. Load the trusted
+CA certificate's PEM contents into `ssl.ca`; keep certificate verification enabled:
+
+```javascript
+import { runner } from 'node-pg-migrate';
+import { readFileSync } from 'node:fs';
+
+await runner({
+  databaseUrl: {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      ca: readFileSync('/path/to/root-ca.crt', 'utf8'),
+      rejectUnauthorized: true,
+    },
+  },
+  dir: 'migrations',
+  migrationsTable: 'pgmigrations',
+  direction: 'up',
+});
+```
+
+Use the CA that issued the server certificate, rather than the server's private
+key or a client certificate. The server certificate must also match the hostname
+or IP address in the connection string.
+
+When using an explicit `ssl` object, leave `sslmode`, `sslrootcert`, `sslcert`, and
+`sslkey` out of the connection string: [node-postgres replaces the `ssl` object](https://node-postgres.com/features/ssl#usage-with-connectionstring)
+when those URL parameters are present. Alternatively, configure the trusted CA
+entirely through the connection URL as shown in the [CLI TLS example](cli#tls-with-a-trusted-certificate-authority).
+
+### Runner options
+
 > [!NOTE]
 > If you use `dbClient`, you should not use `databaseUrl` at the same time and vice versa.
 

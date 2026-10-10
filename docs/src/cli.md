@@ -59,6 +59,54 @@ Depending on your project's setup, it may make sense to write some custom grunt/
 var and run your migration commands.
 More on that below.
 
+### TLS with a trusted certificate authority
+
+The CLI accepts the same connection settings as `pg.Client`. To trust a private
+CA while checking the server certificate and hostname, use `sslrootcert` and
+`sslmode=verify-full` in `DATABASE_URL`. The path is on the machine running the
+CLI, and its query-parameter value must be URL-encoded:
+
+```sh
+DATABASE_URL='postgres://user:password@db.example.com/database?sslmode=verify-full&sslrootcert=%2Fpath%2Fto%2Froot-ca.crt' node-pg-migrate up
+```
+
+For JavaScript or TypeScript configuration, load the CA's PEM contents into
+`ssl.ca`. For example, `migrations.config.mjs` (the same code works in
+`migrations.config.ts`):
+
+```javascript
+import { readFileSync } from 'node:fs';
+
+export default {
+  'database-url-var': {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      ca: readFileSync('/path/to/root-ca.crt', 'utf8'),
+      rejectUnauthorized: true,
+    },
+  },
+};
+```
+
+```sh
+node-pg-migrate up --config-file migrations.config.mjs
+```
+
+Here, the configuration's `database-url-var` value is a connection object that
+replaces the connection read from the environment. It is distinct from the
+`--database-url-var NAME` CLI flag, which selects an environment variable.
+Putting only `ssl` next to top-level connection fields does not augment a
+`DATABASE_URL` that was already selected.
+
+For the configuration-object example, keep `DATABASE_URL` free of `sslmode`,
+`sslrootcert`, `sslcert`, and `sslkey`: [node-postgres replaces the explicit `ssl` object](https://node-postgres.com/features/ssl#usage-with-connectionstring)
+when any of these parameters appears in the URL. Use either the URL's TLS settings
+or the explicit object.
+
+Trust the CA that issued the server certificate and ensure that certificate's
+hostname or IP matches the connection. `--no-reject-unauthorized` disables this
+verification; providing the trusted CA keeps verification enabled.
+
 ## Available Commands
 
 `node-pg-migrate` uses subcommands. Each command exposes only its relevant
@@ -213,7 +261,7 @@ apply to the `up`, `down` and `redo` commands:
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names used in migrations (not on `migrations-table`, `migrations-schema` or `schema`)                                                                                                                                                            |
 | `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
-| `reject-unauthorized`       |         | `undefined`                     | Sets ssl `rejectUnauthorized` parameter. Use for e.g. self-signed certificates on the server. [see](https://node-postgres.com/announcements#2020-02-25)                                                                                                                                 |
+| `reject-unauthorized`       |         | `undefined`                     | Sets SSL `rejectUnauthorized`. Disabling it skips certificate verification; prefer configuring a [trusted CA](#tls-with-a-trusted-certificate-authority)                                                                                                                                |
 | `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
