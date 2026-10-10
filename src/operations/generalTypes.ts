@@ -26,6 +26,10 @@ export type Type = string | { type: string };
 
 export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
+export type Reference =
+  | Name
+  | { schema?: string; name: string; columns?: string | string[] };
+
 /**
  * Type guard for the object form of {@link Name}.
  *
