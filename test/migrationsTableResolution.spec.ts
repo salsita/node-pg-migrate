@@ -1,6 +1,6 @@
 import type { ClientBase, QueryConfig } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import type { RunnerOption } from '../src';
+import type { RunnerOptionDirectory } from '../src';
 import { runner } from '../src';
 
 /**
@@ -92,8 +92,7 @@ function noop(): void {
 }
 
 async function runUp(
-  options: Partial<Extract<RunnerOption, { dir: string | string[] }>> &
-    MockOptions = {}
+  options: Partial<RunnerOptionDirectory> & MockOptions = {}
 ): Promise<RecordedQuery[]> {
   const { runNames, migrationsTableExists, ...runnerOptions } = options;
   const { dbClient, queries } = createMockClient({

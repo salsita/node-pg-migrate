@@ -280,8 +280,10 @@ export { PgType } from './pgType';
 export { PG_MIGRATE_LOCK_ID, runner } from './runner';
 export type {
   MigrationMap,
+  MigrationModule,
   MigrationSource,
   RunnerOption,
+  RunnerOptionDirectory,
   RunnerOptionMigrations,
 } from './runner';
 export type { MigrationBuilderActions } from './sqlMigration';

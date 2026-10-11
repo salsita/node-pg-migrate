@@ -92,28 +92,57 @@ await runner({
 });
 ```
 
-Each entry is a `MigrationBuilderActions` object (`up`, `down`, and optional
-`shorthands`), or a synchronous or asynchronous factory returning one. String
-paths and promises supplied directly as entries are not supported. Wrap a lazy
-import in a factory as shown above. An empty object is a valid empty migration
-set.
+Each entry is a `MigrationModule`: a `MigrationBuilderActions` object (`up`,
+`down`, and optional `shorthands`), a module namespace with default-exported
+actions, or a synchronous or asynchronous factory returning either form. Named
+exports take precedence over properties of the default export, including
+`shorthands`, as with filesystem loading. String paths and promises supplied
+directly as entries are not supported. Wrap an import in a factory as shown
+above. An empty map is a valid empty migration set; an entry with no actions or
+shorthands is rejected.
+
+For [Vite glob imports](https://vite.dev/guide/features#glob-import), both lazy
+factories and eagerly imported namespaces work with named or default-exported
+actions:
+
+```typescript
+import type { MigrationMap, MigrationModule } from 'node-pg-migrate';
+
+// Deferred imports: the runner invokes every factory when loading migrations.
+const lazy: MigrationMap = import.meta.glob<MigrationModule>(
+  './migrations/*.ts'
+);
+
+// Imported eagerly by Vite; the runner receives the module namespaces directly.
+const eager: MigrationMap = import.meta.glob<MigrationModule>(
+  './migrations/*.ts',
+  { eager: true }
+);
+
+// Pass either map as the runner's `migrations` option.
+```
 
 Provide exactly one of `dir` or `migrations`. The runner rejects conflicting or
-missing sources before accessing the database. `useGlob` and `ignorePattern`
-require `dir`; [loading strategies](migration-loading-strategies) and
-`tsconfigPaths` only affect filesystem migrations. An in-memory map never scans
-directories or passes entries to filesystem loaders.
+missing sources before accessing the database. `useGlob`, `ignorePattern`,
+`migrationLoaderStrategies` and `tsconfigPaths` require `dir` and are rejected
+with an in-memory map, even when supplied as `false` or an empty array. An
+in-memory map never scans directories or passes entries to filesystem loaders.
 
-Keys use the same naming and numeric ordering as migration filenames. The
-basename without its final extension becomes the history name: both
+Keys require a numeric prefix and use the same naming and ordering as migration
+filenames. The basename without its final extension becomes the history name: both
 `001_create-users.js` and `bundled/001_create-users.js` record
-`001_create-users`. Duplicate history names are rejected before accessing the
-database. Keep these names stable when switching an existing migration from
-files to an in-memory map.
+`001_create-users`. Invalid prefixes and duplicate history names are rejected
+before accessing the database. Keep these names stable when switching an
+existing migration from files to an in-memory map. The returned
+`RunMigration.path` is the original map key, such as `bundled/001_create-users.js`;
+it does not need to identify a file on disk.
 
 Factories load sequentially in migration order, regardless of the insertion
 order of the map. Shorthands accumulate in that order, just as with migration
-files. Factories run each time migrations are loaded, including both phases of
+files. Every factory runs before filtering or applying the loaded migrations,
+including entries already recorded in history. Imports are deferred until the
+runner loads migrations, rather than skipped for already applied entries.
+Factories run each time migrations are loaded, including both phases of
 `redo`; keep them free of database writes and other side effects. The returned
 actions use the usual history tracking, filters, inferred down actions, fake
 runs, transactions, advisory locks, and read-only dry runs.

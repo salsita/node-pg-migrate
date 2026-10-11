@@ -1,7 +1,7 @@
 import { isAbsolute, resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { RunnerOption } from '../src';
+import type { RunnerOption, RunnerOptionDirectory } from '../src';
 import type { DBConnection } from '../src/db';
 import type { LogFn, Logger } from '../src/logger';
 import type { MigrationAction } from '../src/migration';
@@ -780,9 +780,7 @@ describe('migration', () => {
     });
 
     function migration(
-      overrides: Partial<
-        Extract<RunnerOption, { dir: string | string[] }>
-      > = {},
+      overrides: Partial<RunnerOptionDirectory> = {},
       up: MigrationAction = (pgm) => {
         pgm.sql('SELECT 1');
       },

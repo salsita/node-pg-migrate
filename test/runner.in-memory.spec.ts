@@ -1,15 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
+  MigrationBuilder,
   MigrationBuilderActions,
   MigrationMap,
+  MigrationModule,
   MigrationSource,
   RunnerOption,
+  RunnerOptionDirectory,
 } from '../src';
 import * as dbModule from '../src/db';
 import type { DBConnection } from '../src/db';
 import * as migrationModule from '../src/migration';
 import * as loaderModule from '../src/migrationLoader';
-import type { RunnerOptionConfig } from '../src/runner';
 import { loadMigrations, runner } from '../src/runner';
 
 const baseOptions = {
@@ -36,11 +38,12 @@ describe('in-memory migration options', () => {
       '001_direct': actions,
       '002_sync': source,
       '003_async': () => Promise.resolve(actions),
+      '004_default': { default: actions },
+      '005_default_factory': () => Promise.resolve({ default: actions }),
     };
     const options: RunnerOption = { ...baseOptions, migrations };
-    const directoryOptions: RunnerOptionConfig = {
-      migrationsTable: 'pgmigrations',
-      direction: 'up',
+    const directoryOptions: RunnerOptionDirectory = {
+      ...baseOptions,
       dir: 'migrations',
     };
     const directoryRunner: RunnerOption = {
@@ -60,8 +63,35 @@ describe('in-memory migration options', () => {
     acceptOptions({ ...baseOptions, migrations, useGlob: true });
     // @ts-expect-error Ignore patterns require directory migrations.
     acceptOptions({ ...baseOptions, migrations, ignorePattern: 'ignored' });
+    // @ts-expect-error Filesystem loading strategies require directory migrations.
+    acceptOptions({
+      ...baseOptions,
+      migrations,
+      migrationLoaderStrategies: [],
+    });
+    // @ts-expect-error Tsconfig resolution requires directory migrations, even when disabled.
+    acceptOptions({ ...baseOptions, migrations, tsconfigPaths: false });
     // @ts-expect-error Migration entries cannot be filesystem paths.
     acceptOptions({ ...baseOptions, migrations: { '001_path': './file.js' } });
+  });
+
+  it('supports directory wrappers using the public source variant', () => {
+    function defaults(
+      options: Partial<RunnerOptionDirectory> = {}
+    ): RunnerOption {
+      return { ...baseOptions, dir: 'migrations', ...options };
+    }
+
+    type Options = { databaseUrl: string };
+    const opts: Omit<RunnerOptionDirectory, 'direction'> & Options = {
+      migrationsTable: 'pgmigrations',
+      dir: 'migrations',
+      databaseUrl: baseOptions.databaseUrl,
+    };
+    const options: RunnerOption = { ...opts, direction: 'up' };
+
+    expect(defaults({ tsconfigPaths: false }).dir).toBe('migrations');
+    expect(options.dir).toBe('migrations');
   });
 
   it.each([
@@ -98,13 +128,18 @@ describe('in-memory migration options', () => {
       { migrations: new Set(['001_init']) },
       'migrations must be an object mapping names to actions or factories',
     ],
-    [
-      { migrations: {}, useGlob: false },
-      'useGlob and ignorePattern require a dir source',
-    ],
+    [{ migrations: {}, useGlob: false }, 'useGlob requires a dir source'],
     [
       { migrations: {}, ignorePattern: 'ignored' },
-      'useGlob and ignorePattern require a dir source',
+      'ignorePattern requires a dir source',
+    ],
+    [
+      { migrations: {}, migrationLoaderStrategies: [] },
+      'migrationLoaderStrategies requires a dir source',
+    ],
+    [
+      { migrations: {}, tsconfigPaths: false },
+      'tsconfigPaths requires a dir source',
     ],
     [
       { migrations: { '': {} } },
@@ -121,6 +156,48 @@ describe('in-memory migration options', () => {
     [
       { migrations: { '001_promise': Promise.resolve({}) } },
       'Migration 001_promise must contain actions or a factory',
+    ],
+    [
+      { migrations: { '001_typo': { upp: () => {} } } },
+      'Migration 001_typo must contain actions or a factory',
+    ],
+    [
+      { migrations: { '001_empty': {} } },
+      'Migration 001_empty must contain actions or a factory',
+    ],
+    [
+      { migrations: { '001_default': { default: { upp: () => {} } } } },
+      'Migration 001_default must contain actions or a factory',
+    ],
+    [
+      {
+        migrations: {
+          '001_named': { up: 'invalid', default: { up: () => {} } },
+        },
+      },
+      'Migration 001_named must contain actions or a factory',
+    ],
+    [
+      { migrations: { '001_undefined': { up: undefined } } },
+      'Migration 001_undefined must contain actions or a factory',
+    ],
+    [
+      { migrations: { '001_shorthands': { shorthands: [] } } },
+      'Migration 001_shorthands must contain actions or a factory',
+    ],
+    [
+      { migrations: { '20269999000000000_invalid.js': { up: () => {} } } },
+      'Migration 20269999000000000_invalid.js must have a valid numeric prefix',
+    ],
+    [
+      { migrations: { init: { up: () => {} } } },
+      'Cannot determine numeric prefix for "init"',
+    ],
+    [
+      // Deliberately malformed JavaScript input; it must be rejected before connecting.
+      // oxlint-disable-next-line unicorn/no-thenable
+      { migrations: { then: () => ({ up: () => {} }) } },
+      'Cannot determine numeric prefix for "then"',
     ],
   ])(
     'rejects invalid sources before constructing the DB: %o',
@@ -145,12 +222,10 @@ describe('in-memory migration options', () => {
 
   it.each([
     {},
-    Object.setPrototypeOf({ '001_init': {} }, null),
-    // The map is not awaited, so `then` remains a valid migration identifier.
-    // oxlint-disable-next-line unicorn/no-thenable
-    { then: () => ({ up: () => {} }) },
+    Object.setPrototypeOf({ '001_init': { up: () => {} } }, null),
+    { '001_shorthands.js': { shorthands: { title: 'text' } } },
   ])(
-    'accepts ordinary and null-prototype maps, including a then identifier: %o',
+    'accepts empty maps, null-prototype maps and shorthands-only modules: %o',
     async (migrations: MigrationMap) => {
       const createDb = vi.spyOn(dbModule, 'db').mockImplementation(() => {
         throw new Error('source validation passed');
@@ -206,8 +281,6 @@ describe('in-memory migration loading', () => {
           return { ...actions, shorthands: { title: 'varchar(20)' } };
         },
       },
-      migrationLoaderStrategies: [{ extensions: ['.js'], loader: 'sql' }],
-      tsconfigPaths: '/missing/tsconfig.json',
     };
     const paths = vi.spyOn(migrationModule, 'getMigrationFilePaths');
     const fileLoader = vi.spyOn(loaderModule, 'loadMigrationUnits');
@@ -251,6 +324,90 @@ describe('in-memory migration loading', () => {
     expect(paths).not.toHaveBeenCalled();
   });
 
+  it.each(['direct', 'factory'])(
+    'normalizes a %s default-only namespace before creating migrations',
+    async (source) => {
+      const up = vi.fn(() => {});
+      const actions: MigrationBuilderActions = { up, down: false };
+      const namespace: MigrationModule = { default: actions };
+      const migrations = await loadMigrations(
+        {} as DBConnection,
+        {
+          ...baseOptions,
+          migrations: {
+            '001_default.mjs':
+              source === 'direct'
+                ? namespace
+                : () => Promise.resolve(namespace),
+          },
+        },
+        logger
+      );
+
+      await migrations[0]._getAction('up')({} as MigrationBuilder);
+      expect(up).toHaveBeenCalledOnce();
+      expect(migrations[0]?.down).toBe(false);
+    }
+  );
+
+  it('preserves named exports over default actions and shorthands', async () => {
+    const up = () => {};
+    const down = vi.fn(() => {});
+    const migrations = await loadMigrations(
+      {} as DBConnection,
+      {
+        ...baseOptions,
+        migrations: {
+          '001_mixed': {
+            up,
+            shorthands: { title: 'text' },
+            default: { up: () => {}, down, shorthands: { title: 'integer' } },
+          },
+        },
+      },
+      logger
+    );
+
+    expect(migrations[0]?.up).toBe(up);
+    await migrations[0]._getAction('down')({} as MigrationBuilder);
+    expect(down).toHaveBeenCalledOnce();
+    expect(migrations[0]?.typeShorthands).toEqual({ title: 'text' });
+  });
+
+  it.each(['direct', 'factory'])(
+    'preserves the default object as this for %s namespace methods',
+    async (source) => {
+      const contexts: unknown[] = [];
+      const actions: MigrationBuilderActions = {
+        up() {
+          contexts.push(this);
+        },
+        down() {
+          contexts.push(this);
+        },
+      };
+      const namespace: MigrationModule = { default: actions };
+      const migrations = await loadMigrations(
+        {} as DBConnection,
+        {
+          ...baseOptions,
+          migrations: {
+            '001_methods':
+              source === 'direct'
+                ? namespace
+                : () => Promise.resolve(namespace),
+          },
+        },
+        logger
+      );
+      const pgm = {} as MigrationBuilder;
+
+      await migrations[0]._getAction('up')(pgm);
+      await migrations[0]._getAction('down')(pgm);
+      expect(contexts).toEqual([actions, actions]);
+    }
+  );
+
   it.each([
     {
       description: 'throwing',
@@ -279,6 +436,16 @@ describe('in-memory migration loading', () => {
     {
       description: 'null result',
       factory: () => null,
+      message: 'Migration factory 001_init must return migration actions',
+    },
+    {
+      description: 'misspelled action',
+      factory: () => ({ upp: () => {} }),
+      message: 'Migration factory 001_init must return migration actions',
+    },
+    {
+      description: 'invalid default action',
+      factory: () => ({ default: { upp: () => {} } }),
       message: 'Migration factory 001_init must return migration actions',
     },
   ])(

@@ -14,6 +14,7 @@ import {
   escapeValue,
   getMigrationTableName,
   getMigrationTableSchema,
+  getNumericPrefix,
   getSchemas,
   toArray,
 } from './utils';
@@ -205,16 +206,30 @@ export interface RunnerOptionClient {
 }
 
 /**
- * Migration actions, or a factory that loads them without filesystem discovery.
+ * Migration actions or a module namespace containing default-exported actions.
+ */
+export type MigrationModule =
+  | MigrationBuilderActions
+  | (MigrationBuilderActions & { default: MigrationBuilderActions });
+
+/**
+ * A migration module, or a factory that loads it without filesystem discovery.
  */
 export type MigrationSource =
-  | MigrationBuilderActions
-  | (() => MigrationBuilderActions | Promise<MigrationBuilderActions>);
+  | MigrationModule
+  | (() => MigrationModule | Promise<MigrationModule>);
 
 /**
  * Migration identifiers mapped to their actions or lazy factories.
  */
 export type MigrationMap = Record<string, MigrationSource>;
+
+/**
+ * Complete runner options for filesystem migrations.
+ */
+export type RunnerOptionDirectory = RunnerOptionConfig &
+  MigrationLoaderConfig &
+  (RunnerOptionClient | RunnerOptionUrl) & { migrations?: never };
 
 export type RunnerOptionMigrations = Omit<
   RunnerOptionConfig,
@@ -224,14 +239,11 @@ export type RunnerOptionMigrations = Omit<
   dir?: never;
   useGlob?: never;
   ignorePattern?: never;
-};
+  migrationLoaderStrategies?: never;
+  tsconfigPaths?: never;
+} & (RunnerOptionClient | RunnerOptionUrl);
 
-export type RunnerOption = (
-  | (RunnerOptionConfig & { migrations?: never })
-  | RunnerOptionMigrations
-) &
-  MigrationLoaderConfig &
-  (RunnerOptionClient | RunnerOptionUrl);
+export type RunnerOption = RunnerOptionDirectory | RunnerOptionMigrations;
 
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
@@ -247,6 +259,9 @@ function isMigrationActions(value: unknown): value is MigrationBuilderActions {
     typeof value === 'object' &&
     value !== null &&
     !Array.isArray(value) &&
+    (('up' in value && value.up !== undefined) ||
+      ('down' in value && value.down !== undefined) ||
+      ('shorthands' in value && value.shorthands !== undefined)) &&
     (!('up' in value) ||
       value.up === undefined ||
       value.up === false ||
@@ -255,8 +270,38 @@ function isMigrationActions(value: unknown): value is MigrationBuilderActions {
       value.down === undefined ||
       value.down === false ||
       typeof value.down === 'function') &&
+    (!('shorthands' in value) ||
+      value.shorthands === undefined ||
+      (typeof value.shorthands === 'object' &&
+        value.shorthands !== null &&
+        !Array.isArray(value.shorthands))) &&
     !('then' in value)
   );
+}
+
+function normalizeMigrationActions(
+  value: unknown
+): MigrationBuilderActions | undefined {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !('then' in value) &&
+    'default' in value &&
+    isMigrationActions(value.default)
+  ) {
+    // Match filesystem default interop: named exports take precedence over defaults.
+    const actions = { ...value.default, ...value };
+    for (const direction of ['up', 'down'] as const) {
+      const action = value.default[direction];
+      if (!(direction in value) && typeof action === 'function') {
+        actions[direction] = action.bind(value.default);
+      }
+    }
+    return isMigrationActions(actions) ? actions : undefined;
+  }
+
+  return isMigrationActions(value) ? value : undefined;
 }
 
 function isMigrationMap(value: unknown): value is MigrationMap {
@@ -268,7 +313,7 @@ function isMigrationMap(value: unknown): value is MigrationMap {
   return prototype === Object.prototype || prototype === null;
 }
 
-function validateMigrationSource(options: RunnerOption): void {
+function validateMigrationSource(options: RunnerOption, logger: Logger): void {
   const hasDirectory = options.dir !== undefined;
   const hasMigrations = options.migrations !== undefined;
 
@@ -287,8 +332,15 @@ function validateMigrationSource(options: RunnerOption): void {
     );
   }
 
-  if (options.useGlob !== undefined || options.ignorePattern !== undefined) {
-    throw new TypeError('useGlob and ignorePattern require a dir source');
+  for (const option of [
+    'useGlob',
+    'ignorePattern',
+    'migrationLoaderStrategies',
+    'tsconfigPaths',
+  ] as const) {
+    if (options[option] !== undefined) {
+      throw new TypeError(`${option} requires a dir source`);
+    }
   }
 
   const names = new Set<string>();
@@ -297,12 +349,15 @@ function validateMigrationSource(options: RunnerOption): void {
     if (name.length === 0) {
       throw new TypeError('Migration identifiers must have a non-empty name');
     }
+    if (!Number.isFinite(getNumericPrefix(name, logger))) {
+      throw new TypeError(`Migration ${id} must have a valid numeric prefix`);
+    }
     if (names.has(name)) {
       throw new TypeError(`Duplicate migration name: ${name}`);
     }
     names.add(name);
 
-    if (typeof source !== 'function' && !isMigrationActions(source)) {
+    if (typeof source !== 'function' && !normalizeMigrationActions(source)) {
       throw new TypeError(`Migration ${id} must contain actions or a factory`);
     }
   }
@@ -317,8 +372,10 @@ async function loadMemoryMigrationUnits(
   );
   const units: MigrationUnit[] = [];
   for (const [id, source] of entries) {
-    const actions = typeof source === 'function' ? await source() : source;
-    if (!isMigrationActions(actions)) {
+    const actions = normalizeMigrationActions(
+      typeof source === 'function' ? await source() : source
+    );
+    if (!actions) {
       throw new TypeError(
         `Migration factory ${id} must return migration actions`
       );
@@ -956,7 +1013,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     );
   }
 
-  validateMigrationSource(options);
+  validateMigrationSource(options, logger);
 
   const db = Db(connection, logger);
   const dryRun = Boolean(options.dryRun);

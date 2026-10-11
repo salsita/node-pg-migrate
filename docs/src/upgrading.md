@@ -43,6 +43,69 @@ that reads this option and passes it to an API accepting `MigrationDirection` (`
 
 ### Breaking changes
 
+#### Runner option wrappers distinguish migration sources
+
+`RunnerOption` is now a union of filesystem (`dir`) and in-memory (`migrations`)
+options. Applying `Partial` or `Omit` to that union can lose the relationship
+between the source and its options. A wrapper that supplies `dir` should use the
+public `RunnerOptionDirectory` type, which includes runner configuration,
+filesystem loaders and the database connection. For an in-memory wrapper, use
+`RunnerOptionMigrations` instead.
+
+Before:
+
+```typescript
+import { runner } from 'node-pg-migrate';
+import type { RunnerOption } from 'node-pg-migrate';
+
+function migrate(options: Partial<RunnerOption> = {}) {
+  return runner({
+    databaseUrl: 'postgres://localhost/app',
+    migrationsTable: 'pgmigrations',
+    dir: 'migrations',
+    direction: 'up',
+    ...options,
+  });
+}
+
+type Options = { databaseUrl: string };
+const opts: Omit<RunnerOption, 'direction'> & Options = {
+  migrationsTable: 'pgmigrations',
+  dir: 'migrations',
+  databaseUrl: 'postgres://localhost/app',
+};
+await runner({ ...opts, direction: 'up' });
+```
+
+After:
+
+```typescript
+import { runner } from 'node-pg-migrate';
+import type { RunnerOptionDirectory } from 'node-pg-migrate';
+
+function migrate(options: Partial<RunnerOptionDirectory> = {}) {
+  return runner({
+    databaseUrl: 'postgres://localhost/app',
+    migrationsTable: 'pgmigrations',
+    dir: 'migrations',
+    direction: 'up',
+    ...options,
+  });
+}
+
+type Options = { databaseUrl: string };
+const opts: Omit<RunnerOptionDirectory, 'direction'> & Options = {
+  migrationsTable: 'pgmigrations',
+  dir: 'migrations',
+  databaseUrl: 'postgres://localhost/app',
+};
+await runner({ ...opts, direction: 'up' });
+```
+
+`RunnerOptionConfig` retains its filesystem configuration shape. Calls that
+already provide `dir` remain valid. See [In-memory migrations](api#in-memory-migrations)
+for the new source and its validation rules.
+
 #### CockroachDB shared transactions disable DDL autocommit
 
 The runner now disables `autocommit_before_ddl` for shared transactions, including the

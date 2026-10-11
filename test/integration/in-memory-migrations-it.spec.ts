@@ -12,10 +12,11 @@ import {
 import type {
   MigrationBuilderActions,
   MigrationMap,
+  MigrationModule,
   RunnerOption,
+  RunnerOptionMigrations,
 } from '../../src';
 import { PG_MIGRATE_LOCK_ID, runner } from '../../src';
-import type { RunnerOptionMigrations } from '../../src/runner';
 import {
   cleanupDatabase,
   INTEGRATION_TIMEOUT,
@@ -174,6 +175,8 @@ describe.each(PG_VERSIONS)(
       const factory = vi.fn(() => Promise.resolve(actions));
       const migrations = { '001_items': factory };
       await migrate(migrations);
+      expect(await migrate(migrations)).toEqual([]);
+      expect(factory).toHaveBeenCalledTimes(2);
       const end = vi.spyOn(client, 'end');
       const options: RunnerOption = {
         dbClient: client,
@@ -191,7 +194,7 @@ describe.each(PG_VERSIONS)(
         '001_items',
         '001_items',
       ]);
-      expect(factory).toHaveBeenCalledTimes(3);
+      expect(factory).toHaveBeenCalledTimes(4);
       expect(end).not.toHaveBeenCalled();
       expect(await history()).toEqual(['001_items']);
       expect(await tables()).toEqual(['items', 'pgmigrations']);
@@ -202,6 +205,43 @@ describe.each(PG_VERSIONS)(
       expect(await history()).toEqual([]);
       expect(await tables()).toEqual(['pgmigrations']);
     });
+
+    it.each(['direct', 'factory'])(
+      'applies and reverses a %s default-only module after an earlier migration',
+      async (source) => {
+        const actions: MigrationBuilderActions & { tableName: string } = {
+          tableName: 'items',
+          up(pgm) {
+            pgm.createTable(this.tableName, { id: 'integer' });
+          },
+        };
+        const namespace: MigrationModule = { default: actions };
+        const migrations: MigrationMap = {
+          '001_users': {
+            up: (pgm) => {
+              pgm.createTable('users', { id: 'integer' });
+            },
+          },
+          '002_items.mjs':
+            source === 'direct' ? namespace : () => Promise.resolve(namespace),
+        };
+
+        const applied = await migrate(migrations);
+        expect(applied.map(({ path }) => path)).toEqual([
+          '001_users',
+          '002_items.mjs',
+        ]);
+        expect(await history()).toEqual(['001_users', '002_items']);
+        expect(await tables()).toEqual(['items', 'pgmigrations', 'users']);
+
+        await migrate(migrations, {
+          direction: 'down',
+          count: Number.POSITIVE_INFINITY,
+        });
+        expect(await history()).toEqual([]);
+        expect(await tables()).toEqual(['pgmigrations']);
+      }
+    );
 
     it('fakes both directions without executing the supplied actions', async () => {
       const action = vi.fn(() => {
@@ -236,6 +276,22 @@ describe.each(PG_VERSIONS)(
       await expectLockReleased();
       await migrate(tableMigrations());
       expect(await history()).toEqual(['001_users', '002_items']);
+    });
+
+    it('rejects a malformed factory result before committing earlier migrations', async () => {
+      const action = vi.fn(() => {});
+      const migrations: MigrationMap = {
+        '001_loaded': { up: action },
+        '002_typo': () =>
+          Promise.resolve({ upp: () => {} } as unknown as MigrationModule),
+      };
+
+      await expect(migrate(migrations)).rejects.toThrow(
+        'Error loading migrations: Migration factory 002_typo must return migration actions'
+      );
+      expect(action).not.toHaveBeenCalled();
+      expect(await tables()).toEqual([]);
+      await expectLockReleased();
     });
 
     it('rolls back shared redo when a factory fails during reapplication', async () => {

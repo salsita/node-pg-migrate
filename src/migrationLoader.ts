@@ -85,7 +85,8 @@ export interface MigrationLoaderConfig {
    * - `string`: explicit path to a `tsconfig.json` file
    * - `false` / `undefined` (default): disabled
    *
-   * Has no effect on the built-in SQL loaders or in-memory migrations.
+   * Has no effect on the built-in SQL loaders. Requires a filesystem `dir` source;
+   * it is rejected with in-memory migrations.
    *
    * @default false
    */

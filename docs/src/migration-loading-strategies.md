@@ -5,6 +5,7 @@
 These strategies and `tsconfigPaths` only apply when the runner uses `dir`.
 The programmatic API also accepts an [in-memory migration map](api#in-memory-migrations)
 through `migrations`; its entries bypass filesystem discovery and loaders.
+Supplying `migrationLoaderStrategies` or `tsconfigPaths` with that map is rejected.
 
 This is useful when you need custom loading behavior, or when you want SQL files to use the new grouped `.up.sql` / `.down.sql` strategy.
 

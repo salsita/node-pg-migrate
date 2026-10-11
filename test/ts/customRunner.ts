@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import type { Client } from 'pg';
-import type { RunnerOption } from '../../dist';
+import type { RunnerOptionDirectory } from '../../dist';
 import { runner } from '../../dist';
 
 type TestOptions = {
@@ -14,11 +14,7 @@ type Options =
   | ({ dbClient: Client } & TestOptions);
 
 export const run = async (options: Options): Promise<boolean> => {
-  const opts: Omit<
-    Extract<RunnerOption, { dir: string | string[] }>,
-    'direction'
-  > &
-    Options = {
+  const opts: Omit<RunnerOptionDirectory, 'direction'> & Options = {
     migrationsTable: 'migrations',
     dir: resolve(import.meta.dirname, 'migrations'),
     expectedUpLength: 2,
