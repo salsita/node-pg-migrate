@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { PolicyOptions } from '../../../src';
 import { createPolicy } from '../../../src/operations/policies';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options1Pretty } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('policies', () => {
@@ -79,6 +80,62 @@ describe('operations', () => {
         }
       );
 
+      describe('comments', () => {
+        it('exposes nullable comments', () => {
+          expectTypeOf<PolicyOptions['comment']>().toEqualTypeOf<
+            string | null | undefined
+          >();
+        });
+
+        it('quotes comments on a schema-qualified table', () => {
+          expect(
+            createPolicyFn(
+              { schema: 'app.schema', name: 'record"表' },
+              'policy"名',
+              { comment: 'note' }
+            )
+          ).toBe(
+            'CREATE POLICY "policy""名" ON "app.schema"."record""表" FOR ALL TO PUBLIC;\nCOMMENT ON POLICY "policy""名" ON "app.schema"."record""表" IS $pga$note$pga$;'
+          );
+        });
+
+        it.each([
+          ['string', 'description', '$pga$description$pga$'],
+          ['null', null, 'NULL'],
+          ['empty string', '', '$pga$$pga$'],
+        ] satisfies Array<[string, string | null, string]>)(
+          'renders %s without discarding the comment',
+          (_, comment, value) => {
+            expect(createPolicyFn('records', 'p1', { comment })).toBe(
+              `CREATE POLICY "p1" ON "records" FOR ALL TO PUBLIC;\nCOMMENT ON POLICY "p1" ON "records" IS ${value};`
+            );
+          }
+        );
+
+        it.each([options1, options1Pretty])(
+          'places comments after the policy statement (pretty: $pretty)',
+          (options) => {
+            expect(
+              createPolicy(options)('records', 'p1', {
+                role: 'reader',
+                using: 'id > 0',
+                check: 'id < 10',
+                comment: 'limited rows',
+                as: 'RESTRICTIVE',
+              })
+            ).toBe(
+              'CREATE POLICY "p1" ON "records" AS RESTRICTIVE FOR ALL TO reader USING (id > 0) WITH CHECK (id < 10);\nCOMMENT ON POLICY "p1" ON "records" IS $pga$limited rows$pga$;'
+            );
+          }
+        );
+
+        it('omits undefined comments', () => {
+          expect(createPolicyFn('records', 'p1', { comment: undefined })).toBe(
+            'CREATE POLICY "p1" ON "records" FOR ALL TO PUBLIC;'
+          );
+        });
+      });
+
       describe('reverse', () => {
         it('should contain a reverse function', () => {
           expect(createPolicyFn.reverse).toBeTypeOf('function');
@@ -105,6 +162,15 @@ describe('operations', () => {
             );
           }
         );
+
+        it('drops a commented policy during automatic reversal', () => {
+          expect(
+            createPolicyFn.reverse({ schema: 'app', name: 'records' }, 'p1', {
+              comment: 'note',
+              ifExists: true,
+            })
+          ).toBe('DROP POLICY IF EXISTS "p1" ON "app"."records";');
+        });
       });
     });
   });

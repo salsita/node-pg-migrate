@@ -280,6 +280,12 @@ export function addRunnerOptions(command: Command): Command {
     )
     .addOption(
       new Option(
+        `--no-${rejectUnauthorizedArg}`,
+        'Disables certificate verification unless URL TLS parameters override it'
+      )
+    )
+    .addOption(
+      new Option(
         `--${timestampArg}`,
         'Treats number argument to up/down migration as timestamp'
       ).default(false)
