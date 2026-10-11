@@ -24,7 +24,7 @@
 | `role`    | `string` or `array` | the role(s) to which the policy is to be applied   |
 | `using`   | `string`            | SQL conditional expression for visibility check    |
 | `check`   | `string`            | SQL conditional expression for insert/update check |
-| `comment` | `string` or `null`  | Comment on the policy; `null` or `''` removes it   |
+| `comment` | `string` or `null`  | Comment on the policy                              |
 
 Permissive policies combine with `OR`; restrictive policies combine with `AND`.
 At least one permissive policy must grant access for restrictive policies to
@@ -38,6 +38,8 @@ pgm.createPolicy('accounts', 'active_accounts', {
   comment: 'Only active accounts are visible',
 });
 ```
+
+Reversing `createPolicy` drops the policy and its comment.
 
 The policy mode can only be set by `createPolicy`. To change it, drop and recreate
 the policy; `alterPolicy` cannot change whether a policy is permissive or
@@ -99,7 +101,6 @@ pgm.alterPolicy({ schema: 'app', name: 'accounts' }, 'active_accounts', {
 
 Omitting `comment` preserves any existing comment. `alterPolicy` requires an
 explicit down migration to restore the previous comment or policy options.
-Reversing `createPolicy` drops the policy and its comment.
 
 ## Operation: `renamePolicy`
 
