@@ -110,13 +110,15 @@ Never interpolate user input into SQL directly.
 ```shell
 pnpm run build
 
-pnpm run test:unit
-pnpm run test:integration
-# or
-pnpm run test:coverage
+pnpm run test:unit --run
+pnpm run test:integration --run
+# or, with a coverage report for the unit tests
+pnpm run test:coverage --run
+pnpm run test:integration --run
 ```
 
-You can view a generated code coverage report at `coverage/index.html`.
+Without `--run`, Vitest starts in watch mode.
+You can view the generated code coverage report at `coverage/lcov-report/index.html`.
 The unit tests must keep the coverage thresholds defined in [vitest.config.ts](vitest.config.ts).
 
 ### Unit tests
@@ -156,7 +158,7 @@ The integration tests live in [test/integration](test/integration) and run again
 By default they use PostgreSQL 18; set `PGM_VERSIONS` to test other versions:
 
 ```shell
-PGM_VERSIONS=14,18 pnpm run test:integration
+PGM_VERSIONS=14,18 pnpm run test:integration --run
 ```
 
 If your change generates new SQL, please verify that PostgreSQL actually accepts it, either with an integration test or by adding a migration to [test/migrations](test/migrations).
@@ -177,13 +179,13 @@ DATABASE_URL=postgres://user:password@localhost:5432/database pnpm run migrate d
 
 If you add or change a feature, please update the related page in [docs/src](docs/src), e.g. [docs/src/migrations](docs/src/migrations) for operations, [docs/src/cli.md](docs/src/cli.md) for the CLI, or [docs/src/api.md](docs/src/api.md) for the programmatic API.
 
-The docs use [Twoslash](https://twoslash.netlify.app) and depend on the built `dist`, so build the project first:
+Use the dev server to edit them in live mode:
 
 ```shell
-pnpm run build
-
 pnpm run docs:dev
 ```
+
+The [Twoslash](https://twoslash.netlify.app) code blocks resolve `node-pg-migrate` from [src/index.ts](src/index.ts), so the docs don't need a build of the project.
 
 If you changed something heavily in the docs, check the static build as well, because it could differ from the dev version:
 
