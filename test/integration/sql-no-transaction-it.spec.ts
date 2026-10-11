@@ -85,15 +85,18 @@ describe.each(PG_VERSIONS)(
 
     async function writeMigration(
       loader: 'legacySql' | 'sql',
-      withDirective: boolean
+      withDirective: boolean,
+      downFirst = false
     ) {
       const header = withDirective
         ? '\uFEFF-- description\r\n-- noTransaction\r\n'
         : '';
       if (loader === 'legacySql') {
+        const up = `-- Up Migration\n${upSql}\n`;
+        const down = `-- Down Migration\n${downSql}\n`;
         await writeFile(
           join(dir, `${migrationName}.sql`),
-          `${header}-- Up Migration\n${upSql}\n-- Down Migration\n${downSql}\n`
+          header + (downFirst ? down + up : up + down)
         );
       } else {
         await writeFile(
@@ -132,6 +135,34 @@ describe.each(PG_VERSIONS)(
         expect(await history()).toEqual([{ name: migrationName }]);
 
         await runner({ ...options, singleTransaction, direction: 'down' });
+        expect(await indexExists()).toBe(false);
+        expect(await history()).toEqual([]);
+      }
+    );
+
+    it.each([false, true])(
+      'accepts only the legacy file header in either section order (down first: %s)',
+      async (downFirst) => {
+        await writeMigration('legacySql', true, downFirst);
+        await runner({ ...options, singleTransaction: true });
+        expect(await indexExists()).toBe(true);
+        await runner({
+          ...options,
+          singleTransaction: true,
+          direction: 'down',
+        });
+        expect(await indexExists()).toBe(false);
+        expect(await history()).toEqual([]);
+
+        const up = `-- Up Migration\n${downFirst ? '' : '-- noTransaction\n'}${upSql}\n`;
+        const down = `-- Down Migration\n${downFirst ? '-- noTransaction\n' : ''}${downSql}\n`;
+        await writeFile(
+          join(dir, `${migrationName}.sql`),
+          downFirst ? down + up : up + down
+        );
+        await expect(
+          runner({ ...options, singleTransaction: true })
+        ).rejects.toThrow('cannot run inside a transaction block');
         expect(await indexExists()).toBe(false);
         expect(await history()).toEqual([]);
       }

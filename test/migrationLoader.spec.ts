@@ -105,9 +105,13 @@ describe('loadMigrationUnits', () => {
           }
           expect(sql).toHaveBeenCalledExactlyOnceWith(content);
           expect(noTransaction).toHaveBeenCalledTimes(directive ? 1 : 0);
-          expect(noTransaction.mock.invocationCallOrder[0] ?? 0).toBeLessThan(
-            sql.mock.invocationCallOrder[0]
-          );
+          if (directive) {
+            // Ordering matters only when this file enables the directive.
+            // oxlint-disable-next-line vitest/no-conditional-expect
+            expect(noTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+              sql.mock.invocationCallOrder[0]
+            );
+          }
         }
       });
     }

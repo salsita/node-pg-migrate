@@ -7,8 +7,10 @@ describe('sqlMigration', () => {
     it.each([
       '-- noTransaction\n',
       '-- no transaction\n',
+      '-- notransaction\n',
+      '-- no\t\t transaction\n',
       '\uFEFF\r\n-- description\r\n  -- NO TRANSACTION \r\n',
-      '\n-- Up Migration\n-- another comment\n\t-- noTransaction\n',
+      '\n-- another comment\n\t-- noTransaction\n',
     ])('recognizes a standalone header directive %j', async (header) => {
       const content = `${header}SELECT 1;`;
       const { up, down } = getActions(content);
@@ -29,17 +31,20 @@ describe('sqlMigration', () => {
       expect(down).toBe(false);
     });
 
-    it('omits only an initial BOM and preserves the remaining SQL', async () => {
-      const content = "\uFEFF-- noTransaction\r\nSELECT '\uFEFF';\r\n";
-      const { up } = getActions(content);
-      const sql = vi.fn();
-      const noTransaction = vi.fn();
-      if (up) {
-        await up({ sql, noTransaction } as unknown as MigrationBuilder);
+    it.each([false, true])(
+      'omits only an initial BOM (directive: %s)',
+      async (directive) => {
+        const content = `\uFEFF${directive ? '-- noTransaction\r\n' : ''}SELECT '\uFEFF';\r\n`;
+        const { up } = getActions(content);
+        const sql = vi.fn();
+        const noTransaction = vi.fn();
+        if (up) {
+          await up({ sql, noTransaction } as unknown as MigrationBuilder);
+        }
+        expect(sql).toHaveBeenCalledExactlyOnceWith(content.slice(1));
+        expect(noTransaction).toHaveBeenCalledTimes(directive ? 1 : 0);
       }
-      expect(sql).toHaveBeenCalledExactlyOnceWith(content.slice(1));
-      expect(noTransaction).toHaveBeenCalledExactlyOnceWith();
-    });
+    );
 
     it.each([
       '-- no transaction is needed\nSELECT 1;',
@@ -93,19 +98,33 @@ describe('sqlMigration', () => {
       }
     );
 
-    it('ignores a directive in a later legacy section', async () => {
-      const { down } = getActions(
-        '-- Up Migration\nSELECT 1;\n-- Down Migration\n-- noTransaction\nSELECT 2;'
-      );
-      const noTransaction = vi.fn();
-      if (down) {
-        await down({
-          sql: vi.fn(),
-          noTransaction,
-        } as unknown as MigrationBuilder);
+    it.each([
+      [false, false],
+      [false, true],
+      [true, false],
+      [true, true],
+    ])(
+      'ignores section directives in either order (down first: %s, directive in first: %s)',
+      async (downFirst, directiveInFirst) => {
+        const upSection = `-- Up Migration\n${downFirst === directiveInFirst ? '' : '-- noTransaction\n'}SELECT 1;\n`;
+        const downSection = `-- Down Migration\n${downFirst === directiveInFirst ? '-- noTransaction\n' : ''}SELECT 2;\n`;
+        const { up, down } = getActions(
+          downFirst ? downSection + upSection : upSection + downSection
+        );
+        for (const [action, section] of [
+          [up, upSection],
+          [down, downSection],
+        ] as const) {
+          const noTransaction = vi.fn();
+          const sql = vi.fn();
+          if (action) {
+            await action({ sql, noTransaction } as unknown as MigrationBuilder);
+          }
+          expect(noTransaction).not.toHaveBeenCalled();
+          expect(sql).toHaveBeenCalledExactlyOnceWith(section);
+        }
       }
-      expect(noTransaction).not.toHaveBeenCalled();
-    });
+    );
 
     it('should migrate without comments', () => {
       const content = 'SELECT 1 FROM something';

@@ -6,9 +6,13 @@ function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
   return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
 }
 
-function hasNoTransactionDirective(content: string): boolean {
-  for (const line of content.split(/\r?\n/)) {
-    const headerLine = line.trim();
+export function hasNoTransactionDirective(content: string): boolean {
+  let lineStart = 0;
+  while (lineStart < content.length) {
+    const newline = content.indexOf('\n', lineStart);
+    const lineEnd = newline < 0 ? content.length : newline;
+    const headerLine = content.slice(lineStart, lineEnd).trim();
+    lineStart = lineEnd + 1;
     if (!headerLine) {
       continue;
     }
@@ -22,10 +26,13 @@ function hasNoTransactionDirective(content: string): boolean {
   return false;
 }
 
-/** Create an action, omitting only a leading UTF-8 encoding marker. */
+/**
+ * Queue SQL, disabling its transaction first when the caller found a header
+ * directive. Omit only a leading UTF-8 encoding marker from the queued SQL.
+ */
 export function createSqlMigrationAction(
   sql: string,
-  noTransaction = hasNoTransactionDirective(sql)
+  noTransaction: boolean
 ): MigrationAction {
   const sqlContent = sql.startsWith('\uFEFF') ? sql.slice(1) : sql;
   return (pgm) => {
@@ -45,12 +52,16 @@ export interface MigrationBuilderActions {
 }
 
 export function getActions(content: string): MigrationBuilderActions {
-  const noTransaction = hasNoTransactionDirective(content);
   const upMigrationCommentRegex = createMigrationCommentRegex('up');
   const downMigrationCommentRegex = createMigrationCommentRegex('down');
 
   const upMigrationStart = content.search(upMigrationCommentRegex);
   const downMigrationStart = content.search(downMigrationCommentRegex);
+  const headerEnd = Math.min(
+    upMigrationStart < 0 ? content.length : upMigrationStart,
+    downMigrationStart < 0 ? content.length : downMigrationStart
+  );
+  const noTransaction = hasNoTransactionDirective(content.slice(0, headerEnd));
 
   const upSql =
     upMigrationStart >= 0
