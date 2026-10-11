@@ -40,7 +40,9 @@ pgm.addColumns('orders', {
 });
 ```
 
-For composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
+A column-level foreign key must target a single column. Specify an explicit
+target with a string or a one-element array in `references.columns`. For
+composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
 
 ## Data types & Convenience Shorthand
 
