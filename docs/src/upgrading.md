@@ -217,6 +217,26 @@ expression. Inspect affected indexes with `pg_get_indexdef`, resolve any duplica
 column values, and use a new corrective migration to drop and recreate the
 intended unique index. See [Index Operations](migrations/indexes).
 
+#### Unicode index columns are quoted as identifiers
+
+Bare Unicode index columns now retain their identifier semantics, including
+case when `decamelize` is disabled. Previously, `createIndex('measurements',
+'Straße')` could silently index `"straße"` instead of `"Straße"`, and `größe-id`
+was interpreted as subtraction. Names such as `日本語` and `größe-id` are now
+quoted, including in `{ name: ... }` column entries. Bare names also allow `$`
+after the first character, so `Straße$1` and `Case$1` retain their case.
+
+To intentionally index a SQL expression, use explicit parentheses, for example
+`(größe-id)`, or spaced subtraction such as `größe - id`. Existing function,
+JSON and dollar-quoted expressions, quoted Unicode SQL inputs such as
+`"Straße"`, inferred index names, `dropIndex` and automatic reversal retain
+their behavior.
+
+Upgrading does not repair existing indexes. Inspect affected indexes with
+`pg_get_indexdef` and use a new corrective migration to drop and recreate any
+index on the wrong column or expression, checking duplicate values first for
+unique indexes. See [Index Operations](migrations/indexes).
+
 #### Grouped SQL filenames and existing history
 
 With `loader: 'sql'`, uppercase and mixed-case SQL extensions now group correctly:

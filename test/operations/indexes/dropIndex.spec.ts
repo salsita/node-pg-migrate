@@ -25,6 +25,16 @@ describe('operations', () => {
         );
       });
 
+      it.each(['Straße', 'straße', 'größe-id', '日本語', '"Straße"'])(
+        'preserves the legacy inferred name for %s independently of creation',
+        (column) => {
+          const name = column.replaceAll('"', '""');
+          expect(dropIndexFn('measurements', column, { unique: true })).toBe(
+            `DROP INDEX "measurements_${name}_unique_index";`
+          );
+        }
+      );
+
       it('should return sql statement with dropOptions', () => {
         const statement = dropIndexFn('title_idx', [], {
           concurrently: true,
