@@ -213,15 +213,18 @@ $pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
             Number.NaN,
             Number.POSITIVE_INFINITY,
             Number.NEGATIVE_INFINITY,
+            '1' as never,
           ]) {
             expect(() =>
               createFunctionFn(
-                'series',
+                { schema: 'app', name: 'series' },
                 [],
                 { language: 'sql', [option]: value },
                 'SELECT 1'
               )
-            ).toThrow(`Function ${option} must be a positive finite number`);
+            ).toThrow(
+              `Function "app"."series" ${option} must be a positive finite number, got ${String(value)}`
+            );
           }
         }
       );
@@ -244,6 +247,22 @@ $pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
           `CREATE OR REPLACE FUNCTION "example"(integer) RETURNS void AS $pga$SELECT $1$pga$ VOLATILE LANGUAGE sql${clause ? ` ${clause}` : ''};`
         );
       });
+
+      it.each(['STRICT', 'strict', 'called', 0, 1, null])(
+        'rejects unsupported null handling %s',
+        (onNull) => {
+          expect(() =>
+            createFunctionFn(
+              { schema: 'app', name: 'nullable' },
+              ['integer'],
+              { language: 'sql', replace: true, onNull: onNull as never },
+              'SELECT $1'
+            )
+          ).toThrow(
+            `Unsupported onNull value for function "app"."nullable": ${String(onNull)}`
+          );
+        }
+      );
 
       it('quotes the support function name', () => {
         expect(

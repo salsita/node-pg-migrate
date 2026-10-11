@@ -48,9 +48,12 @@ Planner estimates are emitted only when supplied; otherwise PostgreSQL chooses
 its defaults. `rows` is valid only for a set-returning function. PostgreSQL
 validates the return type, support function signature, and privileges.
 
-Use `onNull: 'CALLED'` with `replace: true` to explicitly replace a strict
-function with one that executes on null input. The existing boolean behavior is
+With `replace: true`, PostgreSQL resets omitted attributes to their defaults,
+including `onNull`, `cost`, and `rows`; omitting these options does not preserve
+their previous values. `onNull: 'CALLED'` emits `CALLED ON NULL INPUT` explicitly
+and behaves the same as omitting the clause. The existing boolean behavior is
 preserved: `true` makes the function strict, and `false` omits the clause.
+Unsupported `onNull` values are rejected.
 
 ```javascript
 pgm.createFunction(
@@ -68,7 +71,8 @@ pgm.createFunction(
 ```
 
 This example wraps PostgreSQL's built-in integer series function with its matching
-support function. A planner support function must implement the contract for the
+support function. Both `LANGUAGE internal` and `SUPPORT` require superuser
+privileges. A planner support function must implement the contract for the
 function it supports; see [PostgreSQL function optimization](https://www.postgresql.org/docs/current/xfunc-optimization.html).
 
 ## Reverse Operation: `dropFunction`

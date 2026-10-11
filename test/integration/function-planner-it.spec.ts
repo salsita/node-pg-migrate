@@ -185,5 +185,77 @@ describe.each(PG_VERSIONS)(
           .rows
       ).toEqual([{ value: null }]);
     });
+
+    it('resets omitted null handling and planner estimates when replacing a function', async () => {
+      const declaration = `const name = { schema: 'function_planner', name: 'defaulted' };`;
+      await writeFile(
+        join(dir, '1000000000000_estimates.mjs'),
+        `${declaration}
+        export function up(pgm) {
+          pgm.createFunction(name, ['integer'],
+            { language: 'sql', returns: 'SETOF integer', onNull: true, cost: 2.5, rows: 4.5 },
+            'SELECT COALESCE($1, 7)');
+        }
+      `
+      );
+      await writeFile(
+        join(dir, '1000000000001_defaults.mjs'),
+        `${declaration}
+        export function up(pgm) {
+          pgm.createFunction(name, ['integer'],
+            { language: 'sql', returns: 'SETOF integer', replace: true },
+            'SELECT COALESCE($1, 7)');
+        }
+        export function down(pgm) {
+          pgm.createFunction(name, ['integer'],
+            { language: 'sql', returns: 'SETOF integer', replace: true, onNull: true, cost: 2.5, rows: 4.5 },
+            'SELECT COALESCE($1, 7)');
+        }
+      `
+      );
+      async function catalog() {
+        return (
+          await client.query<{
+            oid: string;
+            strict: boolean;
+            cost: number;
+            rows: number;
+          }>(`
+        SELECT oid::text, proisstrict AS strict, procost AS cost, prorows AS rows
+        FROM pg_proc WHERE oid = 'function_planner.defaulted(integer)'::regprocedure
+      `)
+        ).rows;
+      }
+
+      await migrate('up');
+      const original = await catalog();
+      expect(original).toEqual([
+        { oid: expect.any(String), strict: true, cost: 2.5, rows: 4.5 },
+      ]);
+      expect(
+        (await client.query('SELECT function_planner.defaulted(NULL) AS value'))
+          .rows
+      ).toEqual([]);
+
+      await migrate('up');
+      expect(await catalog()).toEqual([
+        { oid: original[0].oid, strict: false, cost: 100, rows: 1000 },
+      ]);
+      expect(
+        (await client.query('SELECT function_planner.defaulted(NULL) AS value'))
+          .rows
+      ).toEqual([{ value: 7 }]);
+
+      await migrate('down');
+      expect(await catalog()).toEqual(original);
+      await migrate('down');
+      expect(
+        (
+          await client.query(
+            "SELECT to_regprocedure('function_planner.defaulted(integer)') AS value"
+          )
+        ).rows
+      ).toEqual([{ value: null }]);
+    });
   }
 );
