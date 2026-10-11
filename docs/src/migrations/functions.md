@@ -53,7 +53,9 @@ including `onNull`, `cost`, and `rows`; omitting these options does not preserve
 their previous values. `onNull: 'CALLED'` emits `CALLED ON NULL INPUT` explicitly
 and behaves the same as omitting the clause. The existing boolean behavior is
 preserved: `true` makes the function strict, and `false` omits the clause.
-Unsupported `onNull` values are rejected.
+Unsupported `onNull` values are rejected. This includes `null`, `0`, and `''`
+from JavaScript migrations, which were previously ignored; use `false` or omit
+the option instead.
 
 ```javascript
 pgm.createFunction(

@@ -248,7 +248,7 @@ $pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
         );
       });
 
-      it.each(['STRICT', 'strict', 'called', 0, 1, null])(
+      it.each(['STRICT', 'strict', 'called', '', 0, 1, null])(
         'rejects unsupported null handling %s',
         (onNull) => {
           expect(() =>
@@ -259,7 +259,7 @@ $pga$ VOLATILE LANGUAGE plpgsql SET "search_path" TO '';`
               'SELECT $1'
             )
           ).toThrow(
-            `Unsupported onNull value for function "app"."nullable": ${String(onNull)}`
+            `Unsupported onNull value for function "app"."nullable": ${String(onNull)} (expected true, false, 'RETURNS NULL', or 'CALLED')`
           );
         }
       );

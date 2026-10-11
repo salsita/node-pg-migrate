@@ -87,7 +87,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
         break;
       default:
         throw new Error(
-          `Unsupported onNull value for function ${functionNameStr}: ${String(onNull)}`
+          `Unsupported onNull value for function ${functionNameStr}: ${String(onNull)} (expected true, false, 'RETURNS NULL', or 'CALLED')`
         );
     }
 
