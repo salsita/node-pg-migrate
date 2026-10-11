@@ -1,11 +1,50 @@
 import { describe, expect, it } from 'vitest';
 import { createOperatorClass } from '../../../src/operations/operators';
-import { options1, options1Pretty } from '../../presetMigrationOptions';
+import {
+  options1,
+  options1Pretty,
+  options2,
+} from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('operators', () => {
     describe('createOperatorClass', () => {
       const createOperatorClassFn = createOperatorClass(options1);
+
+      it.each([
+        [false, 'btree', '"btree"'],
+        [true, 'btree', '"btree"'],
+        [false, 'myMethod', '"myMethod"'],
+        [true, 'myMethod', '"my_method"'],
+        [false, 'my_method', '"my_method"'],
+        [true, 'my_method', '"my_method"'],
+        [false, 'Custom.Method', '"Custom.Method"'],
+        [true, 'Custom.Method', '"custom.method"'],
+        [false, 'my"Method', '"my""Method"'],
+        [true, 'my"Method', '"my""method"'],
+      ])(
+        'should use the same access method for creation and reversal (decamelize: %s, method: %s)',
+        (shouldDecamelize, indexMethod, renderedMethod) => {
+          const mOptions = shouldDecamelize ? options2 : options1;
+          const create = createOperatorClass(mOptions);
+          const name = { schema: 'app', name: 'class_name' };
+
+          expect(create(name, 'int4', indexMethod, [], {})).toBe(
+            `CREATE OPERATOR CLASS "app"."class_name" FOR TYPE "int4" USING ${renderedMethod} AS ;`
+          );
+          expect(create.reverse(name, 'int4', indexMethod, [], {})).toBe(
+            `DROP OPERATOR CLASS "app"."class_name" USING ${renderedMethod};`
+          );
+          expect(
+            create.reverse(name, 'int4', indexMethod, [], {
+              ifExists: true,
+              cascade: true,
+            })
+          ).toBe(
+            `DROP OPERATOR CLASS IF EXISTS "app"."class_name" USING ${renderedMethod} CASCADE;`
+          );
+        }
+      );
 
       it('should return a function', () => {
         expect(createOperatorClassFn).toBeTypeOf('function');
@@ -431,7 +470,7 @@ describe('operations', () => {
 
           expect(statement).toBeTypeOf('string');
           expect(statement).toStrictEqual(
-            'DROP OPERATOR CLASS "gist__int_ops" USING gist;'
+            'DROP OPERATOR CLASS "gist__int_ops" USING "gist";'
           );
         });
       });

@@ -51,7 +51,7 @@
 | `left`     | [Name](/migrations/#type) | type of left argument          |
 | `right`    | [Name](/migrations/#type) | type of right argument         |
 
-## Operation: `renameOperator`
+## Operation: `createOperatorClass`
 
 #### `pgm.createOperatorClass( operator_class_name, type, index_method, operator_list, options )`
 
@@ -68,19 +68,21 @@
 | `operator_list`       | `array`                   | of [operator objects](#operator-list-definitions) |
 | `options`             | `object`                  | Check below for available options                 |
 
+`createOperatorClass` quotes `index_method` as an identifier and applies the migration's `decamelize` option. Its automatic reverse uses the same identifier. For example, `myMethod` becomes `"my_method"` in both directions when decamelization is enabled, and `"myMethod"` in both directions when it is disabled.
+
 ### Options
 
-| Option    | Type      | Description           |
-| --------- | --------- | --------------------- |
-| `default` | `boolean` | adds `DEFAULT` clause |
-| `family`  | `string`  | type of left argument |
+| Option    | Type      | Description                                 |
+| --------- | --------- | ------------------------------------------- |
+| `default` | `boolean` | adds `DEFAULT` clause                       |
+| `family`  | `string`  | name of operator family to add the class to |
 
 ## Reverse Operation: `dropOperatorClass`
 
-#### `pgm.dropOperatorClass( operator_class_name, index_methoddrop_options )`
+#### `pgm.dropOperatorClass( operator_class_name, index_method, drop_options )`
 
-> [IMPORTANT]
-> Drop a operator class - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopclass.html)
+> [!IMPORTANT]
+> Drop an operator class - [postgres docs](http://www.postgresql.org/docs/current/static/sql-dropopclass.html)
 
 ### Arguments
 
@@ -90,12 +92,14 @@
 | `index_method`        | `string`                  | name of the index method of operator class |
 | `drop_options`        | `object`                  | Check below for available options          |
 
+An explicit `dropOperatorClass` call uses `index_method` as SQL identifier text, without extra quoting or decamelization. Use `'"myMethod"'` to drop a class for a case-sensitive access method, or `'my_method'` for an already normalized name.
+
 ### Options
 
-| Option     | Type      | Description                    |
-| ---------- | --------- | ------------------------------ |
-| `ifExists` | `boolean` | drops schema only if it exists |
-| `cascade`  | `boolean` | drops also dependent objects   |
+| Option     | Type      | Description                            |
+| ---------- | --------- | -------------------------------------- |
+| `ifExists` | `boolean` | drops operator class only if it exists |
+| `cascade`  | `boolean` | drops also dependent objects           |
 
 ## Operation: `renameOperatorClass`
 

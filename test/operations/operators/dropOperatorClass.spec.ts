@@ -1,11 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { dropOperatorClass } from '../../../src/operations/operators';
-import { options1 } from '../../presetMigrationOptions';
+import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('operations', () => {
   describe('operators', () => {
     describe('dropOperatorClass', () => {
       const dropOperatorClassFn = dropOperatorClass(options1);
+
+      it.each([false, true])(
+        'should preserve explicit access-method SQL (decamelize: %s)',
+        (shouldDecamelize) => {
+          const mOptions = shouldDecamelize ? options2 : options1;
+          const drop = dropOperatorClass(mOptions);
+
+          expect(drop('class_name', 'myMethod')).toBe(
+            'DROP OPERATOR CLASS "class_name" USING myMethod;'
+          );
+          expect(drop('class_name', 'my_method')).toBe(
+            'DROP OPERATOR CLASS "class_name" USING my_method;'
+          );
+          expect(drop('class_name', 'BTREE')).toBe(
+            'DROP OPERATOR CLASS "class_name" USING BTREE;'
+          );
+          expect(drop('class_name', '"myMethod"')).toBe(
+            'DROP OPERATOR CLASS "class_name" USING "myMethod";'
+          );
+          expect(drop('class_name', '"my""Method"')).toBe(
+            'DROP OPERATOR CLASS "class_name" USING "my""Method";'
+          );
+        }
+      );
 
       it('should return a function', () => {
         expect(dropOperatorClassFn).toBeTypeOf('function');
