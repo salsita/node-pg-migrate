@@ -82,7 +82,7 @@ describe('foreign key references', () => {
       'REFERENCES "a.b"."parent""表" ("part.one", "part-two", "part""三")',
     ],
     [
-      'empty identifier',
+      'preserves empty identifiers for PostgreSQL validation instead of silently filtering them',
       { name: 'parents', columns: ['', 'code'] },
       'REFERENCES "parents" ("", "code")',
     ],
