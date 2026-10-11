@@ -64,7 +64,8 @@ More on that below.
 The CLI accepts the same connection settings as `pg.Client`. To trust a private
 CA while checking the server certificate and hostname, use `sslrootcert` and
 `sslmode=verify-full` in `DATABASE_URL`. The path is on the machine running the
-CLI, and its query-parameter value must be URL-encoded:
+CLI. Percent-encode the path, especially spaces, `&`, `#`, `%`, and literal `+`
+characters (for example, with `encodeURIComponent(path)`):
 
 ```sh
 DATABASE_URL='postgres://user:password@db.example.com/database?sslmode=verify-full&sslrootcert=%2Fpath%2Fto%2Froot-ca.crt' node-pg-migrate up
@@ -79,6 +80,7 @@ import { readFileSync } from 'node:fs';
 
 export default {
   'database-url-var': {
+    // This example explicitly reads DATABASE_URL, even if -d selects another variable.
     connectionString: process.env.DATABASE_URL,
     ssl: {
       ca: readFileSync('/path/to/root-ca.crt', 'utf8'),
@@ -95,8 +97,10 @@ node-pg-migrate up --config-file migrations.config.mjs
 Here, the configuration's `database-url-var` value is a connection object that
 replaces the connection read from the environment. It is distinct from the
 `--database-url-var NAME` CLI flag, which selects an environment variable.
-Putting only `ssl` next to top-level connection fields does not augment a
-`DATABASE_URL` that was already selected.
+The top-level `host`/`database`/`ssl` configuration and the `url` key are used only
+when no connection has been resolved yet. A set `DATABASE_URL` takes precedence
+over these forms; the configuration's `database-url-var` key overrides it.
+Without `DATABASE_URL`, the top-level connection form also accepts `ssl`.
 
 For the configuration-object example, keep `DATABASE_URL` free of `sslmode`,
 `sslrootcert`, `sslcert`, and `sslkey`: [node-postgres replaces the explicit `ssl` object](https://node-postgres.com/features/ssl#usage-with-connectionstring)
@@ -104,8 +108,13 @@ when any of these parameters appears in the URL. Use either the URL's TLS settin
 or the explicit object.
 
 Trust the CA that issued the server certificate and ensure that certificate's
-hostname or IP matches the connection. `--no-reject-unauthorized` disables this
-verification; providing the trusted CA keeps verification enabled.
+hostname or IP matches the connection. With an explicit `ssl` object and no TLS
+URL parameters, `--no-reject-unauthorized` disables certificate verification.
+When the URL contains `sslmode`, `sslrootcert`, `sslcert`, or `sslkey`, node-postgres
+replaces that object, so both `--reject-unauthorized` and
+`--no-reject-unauthorized` have no effect. Providing the trusted CA keeps
+verification enabled. Certificate verification defaults to enabled; the examples
+set `rejectUnauthorized: true` explicitly.
 
 ## Available Commands
 
@@ -255,7 +264,7 @@ apply to the `up`, `down` and `redo` commands:
 | `config-value`              |         | `db`                            | Name of config section with db options                                                                                                                                                                                                                                                  |
 | `schema`                    | `s`     | `public`                        | The schema(s) on which migration will be run, used to set `search_path`                                                                                                                                                                                                                 |
 | `create-schema`             |         | `false`                         | Create the configured schema if it doesn't exist                                                                                                                                                                                                                                        |
-| `database-url-var`          | `d`     | `DATABASE_URL`                  | Name of env variable with database url string                                                                                                                                                                                                                                           |
+| `database-url-var`          | `d`     | `DATABASE_URL`                  | CLI flag: name of the environment variable containing the database URL. In a config file, this key holds the connection URL string or client configuration object itself                                                                                                                |
 | `migrations-dir`            | `m`     | `migrations`                    | The directory containing your migration files. This path is resolved from `cwd()`. Alternatively, provide a [glob](https://www.npmjs.com/package/glob) pattern and set `--use-glob`. Note: enabling glob will read both, `--migrations-dir` _and_ `--ignore-pattern` as glob patterns   |
 | `use-glob`                  |         | `false`                         | Use [glob](https://www.npmjs.com/package/glob) to find migration files. This will use `--migrations-dir` _and_ `--ignore-pattern` to glob-search for migration files.                                                                                                                   |
 | `migrations-schema`         |         | same value as `schema`          | The schema storing table which migrations have been run, [see](#migration-history)                                                                                                                                                                                                      |
@@ -276,7 +285,7 @@ apply to the `up`, `down` and `redo` commands:
 | `decamelize`                |         | `false`                         | Runs `decamelize` on table/column/etc. names used in migrations (not on `migrations-table`, `migrations-schema` or `schema`)                                                                                                                                                            |
 | `pretty`                    |         | `false`                         | Formats the generated SQL statements with linebreaks and indentation, to switch it on supply `--pretty` (omit or use `--no-pretty` for single-line statements)                                                                                                                          |
 | `verbose`                   |         | `true`                          | Print all debug messages like DB queries run, to switch it off supply `--no-verbose`                                                                                                                                                                                                    |
-| `reject-unauthorized`       |         | `undefined`                     | Sets SSL `rejectUnauthorized`. Disabling it skips certificate verification; prefer configuring a [trusted CA](#tls-with-a-trusted-certificate-authority)                                                                                                                                |
+| `reject-unauthorized`       |         | `undefined`                     | Sets SSL `rejectUnauthorized` on an explicit SSL object; has no effect when TLS URL parameters replace that object. Prefer configuring a [trusted CA](#tls-with-a-trusted-certificate-authority)                                                                                        |
 | `tsconfig-paths`            |         | `false`                         | Enable [`jiti`](https://github.com/unjs/jiti) tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover the nearest `tsconfig.json`, or a path to a specific `tsconfig.json` (e.g. `--tsconfig-paths ./tsconfig.json`)                                 |
 
 For SSL connection to DB you can set `PGSSLMODE` environment variable to value
@@ -284,6 +293,10 @@ from [list](https://www.postgresql.org/docs/current/static/libpq-connect.html#LI
 than `disable`.
 e.g. `PGSSLMODE=require node-pg-migrate up` ([pg](https://github.com/brianc/node-postgres/blob/main/CHANGELOG.md#v260)
 will take it into account)
+
+node-postgres reads `PGSSLMODE` but does not load certificates from
+`PGSSLROOTCERT`, `PGSSLCERT`, or `PGSSLKEY`. Configure certificate paths in the URL
+or PEM contents in `ssl`, as shown in [TLS with a trusted certificate authority](#tls-with-a-trusted-certificate-authority).
 
 ### JSON Configuration
 
@@ -299,7 +312,7 @@ Other available options are:
 {
   "schema": "public",
   "create-schema": false,
-  "database-url-var": "SECRET_DB_URL",
+  "database-url-var": "postgres://user:password@db.example.com/database",
   "migrations-dir": "migrations",
   "use-glob": false,
   "migrations-schema": "public",
