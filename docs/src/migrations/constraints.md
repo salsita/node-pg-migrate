@@ -32,15 +32,30 @@
 
 #### Foreign Keys
 
-| Option                        | Type                       | Description                                                                        |
-| ----------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
-| `columns`                     | `Name` or `array of Names` | Names of columns                                                                   |
-| `references`                  | `Name`                     | Names of foreign table and column names                                            |
-| `referencesConstraintName`    | `string`                   | Name of the created constraint (only necessary when creating multiple constraints) |
-| `referencesConstraintComment` | `string`                   | Comment on the individual foreign key constraint                                   |
-| `onDelete`                    | `string`                   | Action to perform on delete                                                        |
-| `onUpdate`                    | `string`                   | Action to perform on update                                                        |
-| `match`                       | `string`                   | `FULL` or `SIMPLE`                                                                 |
+| Option                        | Type                           | Description                                                                        |
+| ----------------------------- | ------------------------------ | ---------------------------------------------------------------------------------- |
+| `columns`                     | `Name` or `array of Names`     | Names of columns                                                                   |
+| `references`                  | [Reference](/migrations/#type) | Target table, optionally with explicit column names                                |
+| `referencesConstraintName`    | `string`                       | Name of the created constraint (only necessary when creating multiple constraints) |
+| `referencesConstraintComment` | `string`                       | Comment on the individual foreign key constraint                                   |
+| `onDelete`                    | `string`                       | Action to perform on delete                                                        |
+| `onUpdate`                    | `string`                       | Action to perform on update                                                        |
+| `match`                       | `string`                       | `FULL` or `SIMPLE`                                                                 |
+
+For example, reference a composite unique key in another schema:
+
+```javascript
+pgm.addConstraint('orders', 'orders_customer_key', {
+  foreignKeys: {
+    columns: ['customer_tenant', 'customer_code'],
+    references: {
+      schema: 'app',
+      name: 'customers',
+      columns: ['tenant', 'code'],
+    },
+  },
+});
+```
 
 ## Reverse Operation: `dropConstraint`
 

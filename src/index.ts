@@ -55,6 +55,7 @@ export type {
   Operation,
   OperationFn,
   PublicPart,
+  Reference,
   Reversible,
   Type,
   Value,

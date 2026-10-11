@@ -4,7 +4,11 @@ import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import type { Logger } from './logger';
 import type { MigrationBuilderActions } from './sqlMigration';
-import { sqlMigration } from './sqlMigration';
+import {
+  createSqlMigrationAction,
+  hasNoTransactionDirective,
+  sqlMigration,
+} from './sqlMigration';
 import { compareMigrationFileNames } from './utils';
 
 /***
@@ -335,13 +339,9 @@ async function readSqlFileGroup(group: SqlGroup): Promise<MigrationUnit> {
 
     const downSql = group.down ? await readFile(group.down, 'utf8') : undefined;
     actions = {
-      up: (pgm) => {
-        pgm.sql(upSql);
-      },
+      up: createSqlMigrationAction(upSql, hasNoTransactionDirective(upSql)),
       down: downSql
-        ? (pgm) => {
-            pgm.sql(downSql);
-          }
+        ? createSqlMigrationAction(downSql, hasNoTransactionDirective(downSql))
         : undefined,
       shorthands: {},
     };
