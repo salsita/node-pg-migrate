@@ -191,13 +191,13 @@ describe('in-memory migration options', () => {
     ],
     [
       { migrations: { init: { up: () => {} } } },
-      'Cannot determine numeric prefix for "init"',
+      'Migration init must have a valid numeric prefix',
     ],
     [
       // Deliberately malformed JavaScript input; it must be rejected before connecting.
       // oxlint-disable-next-line unicorn/no-thenable
       { migrations: { then: () => ({ up: () => {} }) } },
-      'Cannot determine numeric prefix for "then"',
+      'Migration then must have a valid numeric prefix',
     ],
   ])(
     'rejects invalid sources before constructing the DB: %o',
@@ -219,6 +219,31 @@ describe('in-memory migration options', () => {
       expect(query).not.toHaveBeenCalled();
     }
   );
+
+  it.each([
+    'bundled/init.js',
+    'bundled/then.js',
+    'bundled/20269999000000000_invalid.js',
+    `${'9'.repeat(400)}_overflow.js`,
+  ])('rejects invalid prefix %s without logging or loading', async (id) => {
+    const error = vi.fn<() => void>();
+    const factory = vi.fn(() => ({ up: () => {} }));
+    const createDb = vi.spyOn(dbModule, 'db');
+
+    await expect(
+      runner({
+        ...baseOptions,
+        logger: { ...logger, error },
+        migrations: { [id]: factory },
+      })
+    ).rejects.toThrow(
+      new TypeError(`Migration ${id} must have a valid numeric prefix`)
+    );
+
+    expect(error).not.toHaveBeenCalled();
+    expect(factory).not.toHaveBeenCalled();
+    expect(createDb).not.toHaveBeenCalled();
+  });
 
   it.each([
     {},

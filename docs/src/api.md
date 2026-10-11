@@ -92,10 +92,11 @@ await runner({
 });
 ```
 
-Each entry is a `MigrationModule`: a `MigrationBuilderActions` object (`up`,
-`down`, and optional `shorthands`), a module namespace with default-exported
-actions, or a synchronous or asynchronous factory returning either form. Named
-exports take precedence over properties of the default export, including
+Each entry is a `MigrationSource`: a `MigrationModule` or a synchronous or
+asynchronous factory returning one. A module is a `MigrationBuilderActions`
+object (`up`, `down`, and optional `shorthands`) or a namespace with
+default-exported actions. Named exports take precedence over properties of the
+default export, including
 `shorthands`, as with filesystem loading. String paths and promises supplied
 directly as entries are not supported. Wrap an import in a factory as shown
 above. An empty map is a valid empty migration set; an entry with no actions or

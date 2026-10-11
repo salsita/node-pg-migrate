@@ -207,6 +207,8 @@ export interface RunnerOptionClient {
 
 /**
  * Migration actions or a module namespace containing default-exported actions.
+ * The namespace member documents default-export support even though it is
+ * structurally assignable to MigrationBuilderActions, whose fields are optional.
  */
 export type MigrationModule =
   | MigrationBuilderActions
@@ -349,7 +351,10 @@ function validateMigrationSource(options: RunnerOption, logger: Logger): void {
     if (name.length === 0) {
       throw new TypeError('Migration identifiers must have a non-empty name');
     }
-    if (!Number.isFinite(getNumericPrefix(name, logger))) {
+    if (
+      !/^\d+/.test(name) ||
+      !Number.isFinite(getNumericPrefix(name, logger))
+    ) {
       throw new TypeError(`Migration ${id} must have a valid numeric prefix`);
     }
     if (names.has(name)) {

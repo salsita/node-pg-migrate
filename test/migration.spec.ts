@@ -1,7 +1,7 @@
 import { isAbsolute, resolve } from 'node:path';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { RunnerOption, RunnerOptionDirectory } from '../src';
+import type { RunnerOptionDirectory } from '../src';
 import type { DBConnection } from '../src/db';
 import type { LogFn, Logger } from '../src/logger';
 import type { MigrationAction } from '../src/migration';
@@ -31,10 +31,7 @@ describe('migration', () => {
     error: vi.fn<LogFn>(),
   };
 
-  const options = { migrationsTable } as Extract<
-    RunnerOption,
-    { dir: string | string[] }
-  >;
+  const options = { migrationsTable } as RunnerOptionDirectory;
 
   let queryMock: Mock;
 
