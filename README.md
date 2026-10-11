@@ -147,6 +147,8 @@ _Naming / Raw Sql_ - Many tools force you to use their constants to do things li
 
 Whether you're a seasoned developer or just getting started, your contributions are valuable to us. Don't hesitate to jump in, explore the project, and make an impact.
 
+Please read the [contributing guide](./CONTRIBUTING.md) before opening a pull request.
+
 ## License
 
 [MIT](./LICENSE)
