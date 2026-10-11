@@ -28,7 +28,9 @@ export type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
 export type Reference =
   | Name
-  | { schema?: string; name: string; columns?: string | string[] };
+  | (Exclude<Name, string | PgLiteralValue> & {
+      columns?: string | string[];
+    });
 
 /**
  * Type guard for the object form of {@link Name}.

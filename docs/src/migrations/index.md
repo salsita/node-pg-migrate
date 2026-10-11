@@ -139,7 +139,9 @@ type Name = string | { schema?: string; name: string } | PgLiteralValue;
 
 type Reference =
   | Name
-  | { schema?: string; name: string; columns?: string | string[] };
+  | (Exclude<Name, string | PgLiteralValue> & {
+      columns?: string | string[];
+    });
 ```
 
 Use a `Reference` object to select the columns targeted by a foreign key.
