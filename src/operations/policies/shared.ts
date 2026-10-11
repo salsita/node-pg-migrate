@@ -6,6 +6,8 @@ export interface PolicyOptions {
   using?: string;
 
   check?: string;
+
+  comment?: string | null;
 }
 
 export function makeClauses({ role, using, check }: PolicyOptions): string[] {
