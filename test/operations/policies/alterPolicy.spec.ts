@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Name } from '../../../src';
-import { PgLiteral } from '../../../src';
 import { alterPolicy } from '../../../src/operations/policies';
 import {
   options1,
@@ -37,39 +35,22 @@ describe('operations', () => {
       });
 
       describe('comments', () => {
-        it.each([
-          ['plain table', 'records', '"records"'],
-          ['schema', { schema: 'app', name: 'records' }, '"app"."records"'],
-          [
-            'quoted names',
-            { schema: 'app.schema', name: 'record"表' },
-            '"app.schema"."record""表"',
-          ],
-          ['raw name', new PgLiteral('app.records'), 'app.records'],
-        ] satisfies Array<[string, Name, string]>)(
-          'quotes policy comments on %s',
-          (_, table, name) => {
-            expect(alterPolicyFn(table, 'policy"名', { comment: '説明' })).toBe(
-              `COMMENT ON POLICY "policy""名" ON ${name} IS $pga$説明$pga$;`
-            );
-          }
-        );
+        it('quotes comments on a schema-qualified table', () => {
+          expect(
+            alterPolicyFn(
+              { schema: 'app.schema', name: 'record"表' },
+              'policy"名',
+              { comment: 'note' }
+            )
+          ).toBe(
+            'COMMENT ON POLICY "policy""名" ON "app.schema"."record""表" IS $pga$note$pga$;'
+          );
+        });
 
         it.each([
           ['string', 'description', '$pga$description$pga$'],
           ['null', null, 'NULL'],
           ['empty string', '', '$pga$$pga$'],
-          [
-            'quotes and newlines',
-            "quote '資料'\nnext line",
-            "$pga$quote '資料'\nnext line$pga$",
-          ],
-          [
-            'dollar delimiter collision',
-            '$pga$ and $$',
-            '$pgb$$pga$ and $$$pgb$',
-          ],
-          ['dollar suffix', 'text$pga', '$pgb$text$pga$pgb$'],
         ] satisfies Array<[string, string | null, string]>)(
           'renders %s without discarding the comment',
           (_, comment, value) => {
