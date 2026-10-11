@@ -43,6 +43,17 @@ that reads this option and passes it to an API accepting `MigrationDirection` (`
 
 ### Breaking changes
 
+#### CockroachDB shared transactions disable DDL autocommit
+
+The runner now disables `autocommit_before_ddl` for shared transactions, including the
+CLI's default `up`, `down` and `redo` runs. On CockroachDB v25, migrations that previously
+relied on DDL autocommit can now fail: for a table created by an earlier run, an `UPDATE`
+cannot reference a column added during the same transaction, even by another migration in the run.
+
+Use `pgm.noTransaction()` for affected migrations, or `--no-single-transaction`
+(`singleTransaction: false` in the API) with `autocommit_before_ddl` enabled. These opt-outs
+can retain committed changes after failure. See the [CockroachDB transaction limitations](cli).
+
 #### The programmatic API validates migrationsTable
 
 `runner()` now rejects a missing, empty or non-string `migrationsTable` with a
