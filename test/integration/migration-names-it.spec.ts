@@ -15,7 +15,8 @@ import {
   it,
 } from 'vitest';
 import { escapeValue, runner } from '../../src';
-import type { MigrationDirection, RunnerOption } from '../../src/runner';
+import type { RunnerOptionDirectory } from '../../src';
+import type { MigrationDirection } from '../../src/runner';
 import {
   cleanupDatabase,
   INTEGRATION_TIMEOUT,
@@ -70,7 +71,7 @@ describe.each(PG_VERSIONS)(
 
     function migrate(
       direction: MigrationDirection,
-      options: Partial<RunnerOption> = {}
+      options: Partial<RunnerOptionDirectory> = {}
     ) {
       return runner({
         databaseUrl: container.getConnectionUri(),

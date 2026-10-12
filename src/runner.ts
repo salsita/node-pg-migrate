@@ -1,16 +1,20 @@
+import { basename, extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
 import { db as Db } from './db';
 import type { LogFn, Logger } from './logger';
 import type { RunMigration } from './migration';
 import { getMigrationFilePaths, Migration } from './migration';
-import type { MigrationLoaderConfig } from './migrationLoader';
+import type { MigrationLoaderConfig, MigrationUnit } from './migrationLoader';
 import { loadMigrationUnits } from './migrationLoader';
 import type { ColumnDefinitions } from './operations/tables';
+import type { MigrationBuilderActions } from './sqlMigration';
 import {
+  compareMigrationFileNames,
   escapeValue,
   getMigrationTableName,
   getMigrationTableSchema,
+  getNumericPrefix,
   getSchemas,
   toArray,
 } from './utils';
@@ -201,9 +205,47 @@ export interface RunnerOptionClient {
   dbClient: ClientBase;
 }
 
-export type RunnerOption = RunnerOptionConfig &
+/**
+ * Migration actions or a module namespace containing default-exported actions.
+ * The namespace member documents default-export support even though it is
+ * structurally assignable to MigrationBuilderActions, whose fields are optional.
+ */
+export type MigrationModule =
+  | MigrationBuilderActions
+  | (MigrationBuilderActions & { default: MigrationBuilderActions });
+
+/**
+ * A migration module, or a factory that loads it without filesystem discovery.
+ */
+export type MigrationSource =
+  | MigrationModule
+  | (() => MigrationModule | Promise<MigrationModule>);
+
+/**
+ * Migration identifiers mapped to their actions or lazy factories.
+ */
+export type MigrationMap = Record<string, MigrationSource>;
+
+/**
+ * Complete runner options for filesystem migrations.
+ */
+export type RunnerOptionDirectory = RunnerOptionConfig &
   MigrationLoaderConfig &
-  (RunnerOptionClient | RunnerOptionUrl);
+  (RunnerOptionClient | RunnerOptionUrl) & { migrations?: never };
+
+export type RunnerOptionMigrations = Omit<
+  RunnerOptionConfig,
+  'dir' | 'useGlob' | 'ignorePattern'
+> & {
+  migrations: MigrationMap;
+  dir?: never;
+  useGlob?: never;
+  ignorePattern?: never;
+  migrationLoaderStrategies?: never;
+  tsconfigPaths?: never;
+} & (RunnerOptionClient | RunnerOptionUrl);
+
+export type RunnerOption = RunnerOptionDirectory | RunnerOptionMigrations;
 
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
@@ -214,6 +256,140 @@ const idColumn = 'id';
 const nameColumn = 'name';
 const runOnColumn = 'run_on';
 
+function isMigrationActions(value: unknown): value is MigrationBuilderActions {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (('up' in value && value.up !== undefined) ||
+      ('down' in value && value.down !== undefined) ||
+      ('shorthands' in value && value.shorthands !== undefined)) &&
+    (!('up' in value) ||
+      value.up === undefined ||
+      value.up === false ||
+      typeof value.up === 'function') &&
+    (!('down' in value) ||
+      value.down === undefined ||
+      value.down === false ||
+      typeof value.down === 'function') &&
+    (!('shorthands' in value) ||
+      value.shorthands === undefined ||
+      (typeof value.shorthands === 'object' &&
+        value.shorthands !== null &&
+        !Array.isArray(value.shorthands))) &&
+    !('then' in value)
+  );
+}
+
+function normalizeMigrationActions(
+  value: unknown
+): MigrationBuilderActions | undefined {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !('then' in value) &&
+    'default' in value &&
+    isMigrationActions(value.default)
+  ) {
+    // Match filesystem default interop: named exports take precedence over defaults.
+    const actions = { ...value.default, ...value };
+    for (const direction of ['up', 'down'] as const) {
+      const action = value.default[direction];
+      if (!(direction in value) && typeof action === 'function') {
+        actions[direction] = action.bind(value.default);
+      }
+    }
+    return isMigrationActions(actions) ? actions : undefined;
+  }
+
+  return isMigrationActions(value) ? value : undefined;
+}
+
+function isMigrationMap(value: unknown): value is MigrationMap {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const prototype: unknown = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function validateMigrationSource(options: RunnerOption, logger: Logger): void {
+  const hasDirectory = options.dir !== undefined;
+  const hasMigrations = options.migrations !== undefined;
+
+  if (hasDirectory === hasMigrations) {
+    throw new TypeError('You must provide exactly one of dir or migrations');
+  }
+
+  if (!hasMigrations) {
+    return;
+  }
+
+  const migrations = options.migrations;
+  if (!isMigrationMap(migrations)) {
+    throw new TypeError(
+      'migrations must be an object mapping names to actions or factories'
+    );
+  }
+
+  for (const option of [
+    'useGlob',
+    'ignorePattern',
+    'migrationLoaderStrategies',
+    'tsconfigPaths',
+  ] as const) {
+    if (options[option] !== undefined) {
+      throw new TypeError(`${option} requires a dir source`);
+    }
+  }
+
+  const names = new Set<string>();
+  for (const [id, source] of Object.entries(migrations)) {
+    const name = basename(id, extname(id));
+    if (name.length === 0) {
+      throw new TypeError('Migration identifiers must have a non-empty name');
+    }
+    if (
+      !/^\d+/.test(name) ||
+      !Number.isFinite(getNumericPrefix(name, logger))
+    ) {
+      throw new TypeError(`Migration ${id} must have a valid numeric prefix`);
+    }
+    if (names.has(name)) {
+      throw new TypeError(`Duplicate migration name: ${name}`);
+    }
+    names.add(name);
+
+    if (typeof source !== 'function' && !normalizeMigrationActions(source)) {
+      throw new TypeError(`Migration ${id} must contain actions or a factory`);
+    }
+  }
+}
+
+async function loadMemoryMigrationUnits(
+  migrations: MigrationMap,
+  logger: Logger
+): Promise<MigrationUnit[]> {
+  const entries = Object.entries(migrations).toSorted(([a], [b]) =>
+    compareMigrationFileNames(basename(a), basename(b), logger)
+  );
+  const units: MigrationUnit[] = [];
+  for (const [id, source] of entries) {
+    const actions = normalizeMigrationActions(
+      typeof source === 'function' ? await source() : source
+    );
+    if (!actions) {
+      throw new TypeError(
+        `Migration factory ${id} must return migration actions`
+      );
+    }
+    units.push({ id, filePaths: [], actions });
+  }
+  return units;
+}
+
 export async function loadMigrations(
   db: DBConnection,
   options: RunnerOption,
@@ -221,15 +397,19 @@ export async function loadMigrations(
 ): Promise<Migration[]> {
   try {
     let shorthands: ColumnDefinitions = {};
-    const absoluteFilePaths = await getMigrationFilePaths(options.dir, {
-      ignorePattern: options.ignorePattern,
-      useGlob: options.useGlob,
-      logger,
-    });
     const migrations: Migration[] = [];
 
-    // Actual loading of files has been delegated to the loadMigrationUnits function.
-    const migrationUnits = await loadMigrationUnits(options, absoluteFilePaths);
+    const migrationUnits =
+      options.migrations === undefined
+        ? await loadMigrationUnits(
+            options,
+            await getMigrationFilePaths(options.dir, {
+              ignorePattern: options.ignorePattern,
+              useGlob: options.useGlob,
+              logger,
+            })
+          )
+        : await loadMemoryMigrationUnits(options.migrations, logger);
     for (const { id: filePath, actions } of migrationUnits) {
       shorthands = { ...shorthands, ...actions.shorthands };
 
@@ -249,13 +429,15 @@ export async function loadMigrations(
 
     return migrations;
   } catch (error: unknown) {
+    const source =
+      options.migrations === undefined ? 'migration files' : 'migrations';
     if (error instanceof Error) {
-      throw new TypeError(`Error loading migration files: ${error.message}`, {
+      throw new TypeError(`Error loading ${source}: ${error.message}`, {
         cause: error,
       });
     }
 
-    throw new Error('Error loading migration files: Unknown error', {
+    throw new Error(`Error loading ${source}: Unknown error`, {
       cause: error,
     });
   }
@@ -835,6 +1017,8 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
       'migrationsSchema must be a non-empty string when supplied'
     );
   }
+
+  validateMigrationSource(options, logger);
 
   const db = Db(connection, logger);
   const dryRun = Boolean(options.dryRun);

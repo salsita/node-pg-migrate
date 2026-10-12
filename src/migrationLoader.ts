@@ -76,6 +76,7 @@ export interface MigrationLoaderConfig {
    * Strategies are used to load migrations from different sources based on file patterns.
    *
    * If no strategy matches, the default strategy is used.
+   * Only applies to filesystem migrations loaded through `dir`.
    */
   migrationLoaderStrategies?: MigrationLoaderStrategy[];
 
@@ -88,7 +89,8 @@ export interface MigrationLoaderConfig {
    * - `string`: explicit path to a `tsconfig.json` file
    * - `false` / `undefined` (default): disabled
    *
-   * Has no effect on the built-in SQL loaders.
+   * Has no effect on the built-in SQL loaders. Requires a filesystem `dir` source;
+   * it is rejected with in-memory migrations.
    *
    * @default false
    */

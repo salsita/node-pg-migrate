@@ -279,6 +279,14 @@ export type {
 } from './operations/views';
 export { PgType } from './pgType';
 export { PG_MIGRATE_LOCK_ID, runner } from './runner';
-export type { RunnerOption } from './runner';
+export type {
+  MigrationMap,
+  MigrationModule,
+  MigrationSource,
+  RunnerOption,
+  RunnerOptionDirectory,
+  RunnerOptionMigrations,
+} from './runner';
+export type { MigrationBuilderActions } from './sqlMigration';
 export { PgLiteral, escapeValue, isPgLiteral } from './utils';
 export type { PgLiteralValue } from './utils';

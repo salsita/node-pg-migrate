@@ -12,7 +12,7 @@ import {
   expect,
   it,
 } from 'vitest';
-import type { RunnerOption } from '../../src';
+import type { RunnerOptionDirectory } from '../../src';
 import { runner } from '../../src';
 import {
   INTEGRATION_TIMEOUT,
@@ -31,7 +31,7 @@ describe.each(PG_VERSIONS)(
     let container: StartedPostgreSqlContainer;
     let client: pg.Client;
     let dir: string;
-    let options: RunnerOption;
+    let options: RunnerOptionDirectory;
 
     beforeAll(async () => {
       container = await setupPostgresDatabase(
