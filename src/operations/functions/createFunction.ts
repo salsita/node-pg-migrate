@@ -16,6 +16,20 @@ export type CreateFunctionFn = (
 
 export type CreateFunction = Reversible<CreateFunctionFn>;
 
+function formatEstimate(
+  functionName: string,
+  option: 'cost' | 'rows',
+  value: number
+): string {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(
+      `Function ${functionName} ${option} must be a positive finite number, got ${String(value)}`
+    );
+  }
+
+  return `${option.toUpperCase()} ${value}`;
+}
+
 export function createFunction(mOptions: MigrationOptions): CreateFunction {
   const _create: CreateFunction = (
     functionName,
@@ -32,9 +46,13 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       security = 'INVOKER',
       onNull = false,
       parallel,
+      cost,
+      rows,
+      support,
       set,
     } = functionOptions;
 
+    const functionNameStr = mOptions.literal(functionName);
     const options: string[] = [];
 
     if (behavior) {
@@ -45,7 +63,7 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       options.push(`LANGUAGE ${language}`);
     } else {
       throw new Error(
-        `Language for function ${mOptions.literal(functionName)} have to be specified`
+        `Language for function ${functionNameStr} have to be specified`
       );
     }
 
@@ -57,12 +75,36 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
       options.push('WINDOW');
     }
 
-    if (onNull) {
-      options.push('RETURNS NULL ON NULL INPUT');
+    switch (onNull) {
+      case true:
+      case 'RETURNS NULL':
+        options.push('RETURNS NULL ON NULL INPUT');
+        break;
+      case 'CALLED':
+        options.push('CALLED ON NULL INPUT');
+        break;
+      case false:
+        break;
+      default:
+        throw new Error(
+          `Unsupported onNull value for function ${functionNameStr}: ${String(onNull)} (expected true, false, 'RETURNS NULL', or 'CALLED')`
+        );
     }
 
     if (parallel) {
       options.push(`PARALLEL ${parallel}`);
+    }
+
+    if (cost !== undefined) {
+      options.push(formatEstimate(functionNameStr, 'cost', cost));
+    }
+
+    if (rows !== undefined) {
+      options.push(formatEstimate(functionNameStr, 'rows', rows));
+    }
+
+    if (support !== undefined) {
+      options.push(`SUPPORT ${mOptions.literal(support)}`);
     }
 
     if (set) {
@@ -81,7 +123,6 @@ export function createFunction(mOptions: MigrationOptions): CreateFunction {
 
     const replaceStr = replace ? ' OR REPLACE' : '';
     const paramsStr = formatParams(functionParams, mOptions);
-    const functionNameStr = mOptions.literal(functionName);
     const nl = formatSeparator(mOptions.pretty, '  ');
     const optionsStr = options.join(nl);
 
