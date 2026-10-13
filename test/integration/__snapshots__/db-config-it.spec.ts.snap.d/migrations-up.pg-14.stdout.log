@@ -475,7 +475,7 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$064_alter_view_c
 
 ### MIGRATION 065_materialized_view (UP) ###
 CREATE TABLE "tmv" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL);
-CREATE MATERIALIZED VIEW "mvx"("id", "strx") WITH (autovacuum_enabled, autovacuum_vacuum_threshold = 50) AS SELECT id, string FROM tmv;
+CREATE MATERIALIZED VIEW "mvx"("id", "strx") WITH ("autovacuum_enabled" = true, "autovacuum_vacuum_threshold" = 50) AS SELECT id, string FROM tmv;
 ALTER MATERIALIZED VIEW "mvx" RENAME TO "mv";
 ALTER MATERIALIZED VIEW "mv" RENAME COLUMN "strx" TO "str";
 REFRESH MATERIALIZED VIEW "mv";
@@ -488,7 +488,7 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$066_materialized
 
 
 ### MIGRATION 067_materialized_view_alter (UP) ###
-ALTER MATERIALIZED VIEW "mv" SET (autovacuum_enabled = false, autovacuum_vacuum_threshold = 10);
+ALTER MATERIALIZED VIEW "mv" SET ("autovacuum_enabled" = false, "autovacuum_vacuum_threshold" = 10);
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$067_materialized_view_alter$pga$, NOW());
 
 
@@ -590,9 +590,9 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$081_temporary_ta
 
 ### MIGRATION 082_view_options (UP) ###
 CREATE TABLE "tvo" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL);
-CREATE VIEW "vo"("id", "str") WITH (check_option = LOCAL) AS SELECT id, string FROM tvo;
-ALTER VIEW "vo" SET (check_option = CASCADED);
-ALTER VIEW "vo" RESET (check_option);
+CREATE VIEW "vo"("id", "str") WITH ("check_option" = $pga$LOCAL$pga$) AS SELECT id, string FROM tvo;
+ALTER VIEW "vo" SET ("check_option" = $pga$CASCADED$pga$);
+ALTER VIEW "vo" RESET ("check_option");
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$082_view_options$pga$, NOW());
 
 

@@ -1,4 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
+import { quoteOptionName } from '../../utils';
 import type { Name, Nullable } from '../generalTypes';
 import type { ViewOptions } from './shared';
 import { viewOptionStr } from './shared';
@@ -40,6 +41,7 @@ export function alterView(mOptions: MigrationOptions): AlterView {
 
     const resetOptions = Object.keys(options)
       .filter((key) => options[key] === null)
+      .map(quoteOptionName)
       .join(', ');
 
     if (resetOptions) {

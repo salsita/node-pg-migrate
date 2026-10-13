@@ -48,7 +48,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE MATERIALIZED VIEW IF NOT EXISTS "myschema"."comedies"("kind") WITH (fillfactor = 70) TABLESPACE "mytablespace" AS SELECT * FROM films WHERE kind = \'Comedy\' WITH DATA;'
+          'CREATE MATERIALIZED VIEW IF NOT EXISTS "myschema"."comedies"("kind") WITH ("fillfactor" = 70) TABLESPACE "mytablespace" AS SELECT * FROM films WHERE kind = \'Comedy\' WITH DATA;'
         );
       });
 

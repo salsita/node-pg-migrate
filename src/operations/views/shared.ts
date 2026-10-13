@@ -1,3 +1,4 @@
+import { formatOption, quoteOptionName } from '../../utils';
 import type { Nullable } from '../generalTypes';
 
 export type ViewOptions = {
@@ -7,9 +8,5 @@ export type ViewOptions = {
 export function viewOptionStr<TViewOptions extends Nullable<ViewOptions>>(
   options: TViewOptions
 ): (key: keyof TViewOptions) => string {
-  return (key) => {
-    const value = options[key] === true ? '' : ` = ${options[key]}`;
-
-    return `${String(key)}${value}`;
-  };
+  return (key) => formatOption(String(key), options[key], quoteOptionName);
 }
