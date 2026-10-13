@@ -25,10 +25,6 @@
 | `check`          | `string`                           | SQL for a check constraint for this column                                                                                   |
 | `constraintName` | `string`                           | Name for constraint                                                                                                          |
 
-For `json` and `jsonb` domains, `default` also accepts
-[plain JSON objects](columns.md#json-defaults), both in `createDomain` and
-`alterDomain`.
-
 ### Reverse Operation: `dropDomain`
 
 #### `pgm.dropDomain( domain_name, drop_options )`
