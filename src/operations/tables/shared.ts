@@ -58,7 +58,8 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
 
   default?: Value;
 
-  check?: string;
+  /** SQL expression, or a callback receiving the quoted column identifier. */
+  check?: string | ((column: string) => string);
 
   deferrable?: boolean;
 
@@ -279,7 +280,11 @@ export function parseColumns(
       }
 
       if (check) {
-        constraints.push(`CHECK (${check})`);
+        const expression =
+          typeof check === 'function'
+            ? check(mOptions.literal(columnName))
+            : check;
+        constraints.push(`CHECK (${expression})`);
       }
 
       if (references) {

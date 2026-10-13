@@ -250,4 +250,51 @@ describe('migrationBuilder', () => {
       );
     }
   );
+
+  it('automatically reverses columns with check callbacks without evaluating them', () => {
+    const check = vi.fn((column: string) => `${column} > 0`);
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      { price: { type: 'numeric', check } },
+      false,
+      console,
+      false
+    );
+    pgm.enableReverseMode();
+
+    pgm.createTable('products', { retail_price: 'price' });
+    pgm.addColumns('products', { wholesale_price: 'price' });
+
+    expect(pgm.getSql()).toBe(
+      'ALTER TABLE "products" DROP "wholesale_price";\nDROP TABLE "products";\n'
+    );
+    expect(check).not.toHaveBeenCalled();
+  });
+
+  it.each(['createTable', 'addColumns'] as const)(
+    'leaves the queue unchanged when a check callback throws in %s',
+    (operation) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console,
+        false
+      );
+      pgm.sql('SELECT 1;');
+
+      expect(() => {
+        pgm[operation]('products', {
+          first: 'integer',
+          price: {
+            type: 'numeric',
+            check: () => {
+              throw new Error('Cannot build price check');
+            },
+          },
+        });
+      }).toThrow('Cannot build price check');
+      expect(pgm.getSql()).toBe('SELECT 1;\n');
+    }
+  );
 });
