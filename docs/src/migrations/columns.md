@@ -14,7 +14,7 @@ and the value is another object that defines the options for the column.
 | `unique`                      | `boolean`                      | Set to true to add a unique constraint on this column                                             |
 | `primaryKey`                  | `boolean`                      | Set to true to make this column the primary key                                                   |
 | `notNull`                     | `boolean`                      | Set to true to make this column not null                                                          |
-| `default`                     | `string`                       | Adds DEFAULT clause for column. Accepts null, a literal value, or a `pgm.func()` expression.      |
+| `default`                     | [Value](#default-values)       | Adds DEFAULT clause for column. See [Default values](#default-values)                             |
 | `check`                       | `string`                       | SQL for a check constraint for this column                                                        |
 | `references`                  | [Reference](/migrations/#type) | Target table, optionally with explicit column names                                               |
 | `referencesConstraintName`    | `string`                       | Name of the created constraint                                                                    |
@@ -28,6 +28,34 @@ and the value is another object that defines the options for the column.
 | `expressionGenerated`         | `string`                       | Expression to compute column value                                                                |
 | `sequenceGenerated`           | `object`                       | Creates identity column see [sequence options section](sequences.md#sequence-options)             |
 | `precedence`                  | `string`                       | `ALWAYS` or `BY DEFAULT`                                                                          |
+
+### Default values
+
+The `default` option of column definitions, [`alterColumn`](#operation-altercolumn),
+[`createDomain`](domains.md#operation-createdomain) and
+[`alterDomain`](domains.md#operation-alterdomain) accepts:
+
+| Value                                      | Example                                         | Rendered SQL                             |
+| ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |
+| number                                     | `default: 0`                                    | `DEFAULT 0`                              |
+| boolean                                    | `default: false`                                | `DEFAULT false`                          |
+| string                                     | `default: 'draft'`                              | `DEFAULT $pga$draft$pga$`                |
+| array                                      | `default: ['a', 'b']` (on `text[]`)             | `DEFAULT ARRAY[$pga$a$pga$,$pga$b$pga$]` |
+| [`pgm.func()`](misc.md#operation-pgm-func) | `default: pgm.func('now()')` (on `timestamptz`) | `DEFAULT now()`                          |
+| `null`                                     | `default: null`                                 | see below                                |
+
+A string is always escaped as a string literal, so `default: 'now()'` stores the text `now()`.
+Use `pgm.func()` for SQL expressions and function calls.
+
+`null` and an omitted `default` behave differently depending on the operation:
+
+- `createTable`, `addColumns` and `createDomain`: `default: null` adds `DEFAULT NULL`.
+  Omitting `default` adds no DEFAULT clause.
+- `alterColumn` and `alterDomain`: `default: null` removes the existing default with `DROP DEFAULT`.
+  Omitting `default` leaves the existing default unchanged.
+
+Plain objects are not supported as defaults (see [#744](https://github.com/salsita/node-pg-migrate/issues/744)).
+For a `json` or `jsonb` default, pass a string such as `default: '{}'`.
 
 To reference a unique column other than the primary key, specify its name:
 
@@ -207,16 +235,16 @@ pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });
 
 ##### Column Options
 
-| Option              | Type                      | Description                                    |
-| ------------------- | ------------------------- | ---------------------------------------------- |
-| `default`           | `string or null`          | null, string                                   |
-| `type`              | `string`                  | New datatype                                   |
-| `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false         |
-| `allowNull`         | `boolean`                 | Sets NULL if true (alternative to `notNull`)   |
-| `using`             | `string`                  | Adds USING clause to change values in column   |
-| `collation`         | `string`                  | Adds COLLATE clause to change values in column |
-| `comment`           | `string`                  | Adds comment on column                         |
-| `sequenceGenerated` | `object or null or false` | Sets or drops identity column                  |
+| Option              | Type                      | Description                                                                                    |
+| ------------------- | ------------------------- | ---------------------------------------------------------------------------------------------- |
+| `default`           | [Value](#default-values)  | Sets the default. `null` drops it, omitting it keeps it. See [Default values](#default-values) |
+| `type`              | `string`                  | New datatype                                                                                   |
+| `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false                                                         |
+| `allowNull`         | `boolean`                 | Sets NULL if true (alternative to `notNull`)                                                   |
+| `using`             | `string`                  | Adds USING clause to change values in column                                                   |
+| `collation`         | `string`                  | Adds COLLATE clause to change values in column                                                 |
+| `comment`           | `string`                  | Adds comment on column                                                                         |
+| `sequenceGenerated` | `object or null or false` | Sets or drops identity column                                                                  |
 
 ##### `sequenceGenerated` Options
 
