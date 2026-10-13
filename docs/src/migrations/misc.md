@@ -1,5 +1,46 @@
 # Miscellaneous Operations
 
+## Operation `pgm.insert`
+
+#### `pgm.insert( tableName, values )`
+
+Queues an `INSERT` for one row. Table and column names are quoted as identifiers;
+values are escaped as SQL values. Strings are data, including quotes, dollar signs,
+and braces. Use `pgm.func(...)` only for intentional SQL expressions.
+
+### Arguments
+
+| Name        | Type                    | Description                                                                      |
+| ----------- | ----------------------- | -------------------------------------------------------------------------------- |
+| `tableName` | `Name`                  | Table name, optionally schema-qualified                                          |
+| `values`    | `Record<string, Value>` | Column names mapped to strings, numbers, booleans, null, arrays, or SQL literals |
+
+Omitted columns use their database defaults; an empty object inserts a row with
+`DEFAULT VALUES`. Identifier names follow the `decamelize` option; values do not.
+
+```js
+export function up(pgm) {
+  pgm.createTable('media_types', {
+    id: 'id',
+    name: { type: 'text', notNull: true },
+  });
+
+  for (const name of ['paper', 'ebook', "reader's edition"]) {
+    pgm.insert('media_types', { name });
+  }
+}
+
+export function down(pgm) {
+  pgm.dropTable('media_types');
+}
+```
+
+Like other queued operations, inserts execute after the migration function
+finishes, in the order they were queued. They can depend on a preceding
+`pgm.createTable` and participate in the migration's transaction and dry run.
+The operation returns no query result and requires an explicit `down` migration:
+the library cannot infer which rows should be removed.
+
 ## Operation `pgm.sql`
 
 #### `pgm.sql( sql )`
@@ -14,6 +55,10 @@
 | ------ | -------- | ------------------------------------------------------------------------ |
 | `sql`  | `string` | SQL query to run                                                         |
 | `args` | `object` | (optional) key/val of arguments to replace in the SQL query (templating) |
+
+`args` uses `{key}` placeholders, not PostgreSQL `$1` parameters. String arguments
+are quoted as identifiers. To insert string data, use [pgm.insert](#operation-pgm-insert).
+Without `args`, the SQL is queued without template substitutions.
 
 ## Operation `pgm.func`
 

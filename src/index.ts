@@ -112,6 +112,7 @@ export type {
   IndexColumn,
   IndexStorageParameters,
 } from './operations/indexes';
+export type { Insert } from './operations/insert';
 export type {
   AlterMaterializedView,
   AlterMaterializedViewOptions,

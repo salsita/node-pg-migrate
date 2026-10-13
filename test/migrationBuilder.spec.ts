@@ -7,6 +7,38 @@ import type {
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it('queues inserts after table creation without querying the database', () => {
+    const db = { query: vi.fn(), select: vi.fn() };
+    const pgm = new MigrationBuilder(db, undefined, false, console);
+
+    pgm.createTable('media_types', { name: 'text' });
+    pgm.insert('media_types', { name: 'ebook' });
+
+    expect(pgm.getSqlSteps()).toEqual([
+      'CREATE TABLE "media_types" ("name" text);',
+      'INSERT INTO "media_types" ("name") VALUES ($pga$ebook$pga$);',
+    ]);
+    expect(db.query).not.toHaveBeenCalled();
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit down migration for inserts', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console
+    );
+    pgm.enableReverseMode();
+
+    expect(() => {
+      pgm.insert('media_types', { name: 'ebook' });
+    }).toThrow(
+      'Impossible to automatically infer down migration for "pgm.insert()"'
+    );
+    expect(pgm.getSqlSteps()).toEqual([]);
+  });
+
   it.each([
     ['grantOnTables', 'GRANT SELECT ON "foo" TO "reader";\n'],
     ['revokeOnTables', 'REVOKE SELECT ON "foo" FROM "reader";\n'],
