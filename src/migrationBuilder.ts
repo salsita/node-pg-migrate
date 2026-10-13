@@ -85,6 +85,15 @@ export class MigrationBuilder {
   ) => void;
 
   /**
+   * Define a child partition of a partitioned table.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-createtable.html
+   */
+  public readonly createPartition: (
+    ...args: Parameters<tables.CreatePartition>
+  ) => void;
+
+  /**
    * Remove a table.
    *
    * @see https://www.postgresql.org/docs/current/sql-droptable.html
@@ -894,6 +903,7 @@ export class MigrationBuilder {
     this.addExtension = this.createExtension;
 
     this.createTable = wrap(tables.createTable(options));
+    this.createPartition = wrap(tables.createPartition(options));
     this.dropTable = wrap(tables.dropTable(options));
     this.renameTable = wrap(tables.renameTable(options));
     this.alterTable = wrap(tables.alterTable(options));
