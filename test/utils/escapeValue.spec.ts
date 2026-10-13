@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PgLiteralValue } from '../../src';
+import type { JsonValue, PgLiteralValue } from '../../src';
 import { escapeValue, PgLiteral } from '../../src';
 
 describe('utils', () => {
@@ -135,6 +135,43 @@ describe('utils', () => {
 
       expect(actual).toBeTypeOf('string');
       expect(actual).toBe(input);
+    });
+
+    it.each([
+      [{}, '$pga${}$pga$'],
+      [{ attempts: 0, uploads: 0 }, '$pga${"attempts":0,"uploads":0}$pga$'],
+      [
+        { nested: { enabled: false, items: [1, 'two', null] } },
+        '$pga${"nested":{"enabled":false,"items":[1,"two",null]}}$pga$',
+      ],
+      [
+        { text: "user's $pga$ value", name: '名' },
+        '$pgb${"text":"user\'s $pga$ value","name":"名"}$pgb$',
+      ],
+      [
+        { nested: { literal: true, value: 'now()' } },
+        '$pga${"nested":{"literal":true,"value":"now()"}}$pga$',
+      ],
+    ])('should escape JSON object %j as a string', (value, expected) => {
+      expect(escapeValue(value)).toBe(expected);
+    });
+
+    it('should serialize an object with a null prototype', () => {
+      const value = Object.assign(Object.create(null), { attempts: 0 });
+
+      expect(escapeValue(value)).toBe('$pga${"attempts":0}$pga$');
+    });
+
+    it('should propagate JSON serialization errors', () => {
+      const value: { [key: string]: JsonValue } = {};
+      value.self = value;
+
+      expect(() => escapeValue(value)).toThrow(TypeError);
+    });
+
+    it('should not treat class instances as plain JSON objects', () => {
+      // @ts-expect-error: JS-only test
+      expect(escapeValue(new Date(0))).toBe('');
     });
 
     // TODO @Shinigami92 2024-04-03: Should this throw an error?

@@ -13,6 +13,14 @@ export type PublicPart<T> = { [K in keyof T]: T[K] };
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null };
 
+export type JsonValue =
+  | null
+  | boolean
+  | string
+  | number
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export type Value =
   | null
   | boolean
@@ -20,7 +28,8 @@ export type Value =
   | number
   | PgLiteral
   | PgLiteralValue
-  | Value[];
+  | Value[]
+  | { [key: string]: JsonValue };
 
 export type Type = string | { type: string };
 

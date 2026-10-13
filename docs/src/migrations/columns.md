@@ -44,6 +44,39 @@ A column-level foreign key must target a single column. Specify an explicit
 target with a string or a one-element array in `references.columns`. For
 composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
 
+### JSON defaults
+
+Plain objects containing JSON values can be used as defaults for `json` and
+`jsonb` columns in `createTable`, `addColumns` (or `addColumn`), and `alterColumn`:
+
+```javascript
+pgm.addColumns('uploads', {
+  stats: {
+    type: 'jsonb',
+    notNull: true,
+    default: { attempts: 0, uploads: 0 },
+  },
+});
+
+pgm.alterColumn('uploads', 'stats', { default: { attempts: 1, uploads: 0 } });
+```
+
+Objects are serialized with `JSON.stringify` and escaped as SQL strings;
+PostgreSQL converts them to the destination type. Nested objects and arrays are
+JSON data. The same support applies to domain defaults, function argument
+defaults, and view column defaults.
+
+Top-level arrays still produce PostgreSQL arrays. For a JSON array default, use
+`default: JSON.stringify([1, 2])`. Strings that already contain JSON and explicit
+SQL expressions made with `pgm.func(...)` continue to work. Objects with
+`literal: true` retain their existing meaning as raw SQL literals; to store such
+an object as JSON, pass `JSON.stringify(object)` instead.
+
+Use JSON-compatible values: circular references and `BigInt` cause serialization
+to throw before the operation is queued. Class instances are not plain objects.
+`default: null` still means SQL `NULL` during creation and removes the default
+during alteration; omitting `default` during alteration leaves it unchanged.
+
 ## Data types & Convenience Shorthand
 
 Data type strings will be passed through directly to postgres, so write types as you would if you were writing the

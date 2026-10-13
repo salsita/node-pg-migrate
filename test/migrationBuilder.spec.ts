@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   GrantOnTablesOptions,
   IndexStorageParameters,
+  JsonValue,
   Reference,
 } from '../src';
 import { MigrationBuilder } from '../src';
@@ -152,6 +153,26 @@ describe('migrationBuilder', () => {
       expect(pgm.getSql()).toContain('USING brin');
     }
   );
+
+  it('leaves queued SQL unchanged when a default cannot be serialized', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console,
+      false
+    );
+    pgm.sql('SELECT 1');
+    const value: { [key: string]: JsonValue } = {};
+    value.self = value;
+
+    expect(() => {
+      pgm.createTable('records', {
+        document: { type: 'jsonb', default: value },
+      });
+    }).toThrow(TypeError);
+    expect(pgm.getSql()).toBe('SELECT 1;\n');
+  });
 
   it('should expose MigrationBuilder to allow using as sql builder', () => {
     const pgm = new MigrationBuilder(

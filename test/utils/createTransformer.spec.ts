@@ -35,6 +35,21 @@ describe('utils', () => {
       expect(actual).toBe("INSERT INTO s (id) VALUES ('s1'), ('s2');");
     });
 
+    it('should escape JSON objects while preserving identifier objects', () => {
+      const t = createTransformer(
+        createSchemalize({ shouldDecamelize: false, shouldQuote: true })
+      );
+
+      expect(
+        t('INSERT INTO {table} VALUES ({document})', {
+          table: { schema: 'app', name: 'records' },
+          document: { text: '$& $pga$' },
+        })
+      ).toBe(
+        'INSERT INTO "app"."records" VALUES ($pgb${"text":"$& $pga$"}$pgb$)'
+      );
+    });
+
     it('should use number', () => {
       const t = createTransformer(
         createSchemalize({

@@ -50,5 +50,13 @@ export function escapeValue(val: Value): string | number {
     return val.value;
   }
 
+  if (
+    typeof val === 'object' &&
+    (Object.getPrototypeOf(val) === Object.prototype ||
+      Object.getPrototypeOf(val) === null)
+  ) {
+    return escapeValue(JSON.stringify(val));
+  }
+
   return '';
 }

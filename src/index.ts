@@ -49,6 +49,7 @@ export type {
   DropOptions,
   IfExistsOption,
   IfNotExistsOption,
+  JsonValue,
   LiteralUnion,
   Name,
   Nullable,
