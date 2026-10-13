@@ -674,6 +674,7 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$091_function_set
 
 ### MIGRATION 092_partition (UP) ###
 CREATE TABLE "t_partition" ("id" serial, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL, CONSTRAINT "t_partition_pkey" PRIMARY KEY ("id", "created")) PARTITION BY RANGE ("created");
+CREATE TABLE "t_partition_all" PARTITION OF "t_partition" FOR VALUES FROM (MINVALUE) TO (MAXVALUE);
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$092_partition$pga$, NOW());
 
 
