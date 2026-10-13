@@ -247,6 +247,34 @@ export type RunnerOptionMigrations = Omit<
 
 export type RunnerOption = RunnerOptionDirectory | RunnerOptionMigrations;
 
+type MigrationStatusOptionKeys =
+  | 'dir'
+  | 'migrations'
+  | 'useGlob'
+  | 'ignorePattern'
+  | 'migrationLoaderStrategies'
+  | 'tsconfigPaths'
+  | 'migrationsTable'
+  | 'migrationsSchema'
+  | 'schema'
+  | 'schemaIsDefault'
+  | 'log'
+  | 'logger'
+  | 'verbose';
+
+/** Connection, history location and migration source used to inspect status. */
+export type MigrationStatusOptions = (
+  | Pick<RunnerOptionDirectory, MigrationStatusOptionKeys>
+  | Pick<RunnerOptionMigrations, MigrationStatusOptionKeys>
+) &
+  (RunnerOptionClient | RunnerOptionUrl);
+
+export interface MigrationStatus {
+  name: string;
+  /** `missing` means recorded as applied, but absent from the configured source. */
+  status: 'applied' | 'pending' | 'missing';
+}
+
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
  */
@@ -993,9 +1021,7 @@ function getLogger(options: RunnerOption): Logger {
       };
 }
 
-export async function runner(options: RunnerOption): Promise<RunMigration[]> {
-  const logger = getLogger(options);
-
+function getDatabase(options: RunnerOption, logger: Logger): DBConnection {
   const dbClient = 'dbClient' in options ? options.dbClient : undefined;
   const databaseUrl =
     'databaseUrl' in options ? options.databaseUrl : undefined;
@@ -1020,7 +1046,50 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
 
   validateMigrationSource(options, logger);
 
-  const db = Db(connection, logger);
+  return Db(connection, logger);
+}
+
+/**
+ * Inspect history without running migration actions, setting up schemas or taking a lock.
+ * Loaders (including module imports and in-memory factories) still run to identify migrations.
+ */
+export async function getMigrationStatus(
+  options: MigrationStatusOptions
+): Promise<MigrationStatus[]> {
+  const runnerOptions: RunnerOption = { ...options, direction: 'up' };
+  const logger = getLogger(runnerOptions);
+  const db = getDatabase(runnerOptions, logger);
+
+  try {
+    await db.createConnection();
+    const [{ runNames }, migrations] = await readHistoryAndMigrations(
+      db,
+      runnerOptions,
+      logger
+    );
+    const available = new Set(migrations.map(({ name }) => name));
+    const applied = new Set(runNames);
+
+    return [
+      ...runNames.map((name): MigrationStatus => ({
+        name,
+        status: available.has(name) ? 'applied' : 'missing',
+      })),
+      ...migrations
+        .filter(({ name }) => !applied.has(name))
+        .map(({ name }): MigrationStatus => ({ name, status: 'pending' })),
+    ];
+  } finally {
+    if (db.connected()) {
+      await db.close();
+    }
+  }
+}
+
+export async function runner(options: RunnerOption): Promise<RunMigration[]> {
+  const logger = getLogger(options);
+  const db = getDatabase(options, logger);
+  const dbClient = 'dbClient' in options ? options.dbClient : undefined;
   const dryRun = Boolean(options.dryRun);
   let readOnlyTransaction = false;
   let lockAcquired = false;

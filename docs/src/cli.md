@@ -134,6 +134,7 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
 | `node-pg-migrate redo`                    |                              reverts the last migration, then applies pending migrations.                               |
 | `node-pg-migrate redo {N}`                |                             reverts the last N migrations, then applies pending migrations.                             |
+| `node-pg-migrate status`                  |         lists applied and pending migrations, including applied migrations missing from the configured source.          |
 
 `redo` uses one connection and advisory lock for both phases. On PostgreSQL, with the default
 `--single-transaction`, it commits only after both phases succeed. If reapplying a migration
@@ -165,6 +166,42 @@ Outside dry runs, `--no-single-transaction` leaves `autocommit_before_ddl` uncha
 When enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
 DDL commits the preceding transaction before executing, even inside a migration's own
 transaction; a failed run can retain changes and history updates.
+
+## Migration Status
+
+Use `node-pg-migrate status` to compare the configured migration source with the
+migration history:
+
+```sh
+node-pg-migrate status -m migrations --migrations-schema public
+```
+
+```text
+Status  Migration
+applied 001_init
+missing 002_removed
+pending 003_add_users
+```
+
+`applied` means the migration is recorded in the history table and its definition
+is available. `missing` means it is recorded but absent from the configured source
+(including files excluded by an ignore pattern). `pending` means its definition
+is available but it has no history record. Applied/missing entries follow history
+order; pending entries follow migration order. An empty source and history print
+`No migrations found.`. Pending or missing entries do not cause a nonzero exit;
+connection, history and loader errors do.
+
+The command uses the same connection, config, schema, glob and ignore options as
+`up`. See `node-pg-migrate status --help`. A missing history table means all available
+migrations are pending, subject to the same [history-location checks](#migration-history)
+as `up`. Status does not enforce migration order, so it can also show a pending
+migration that precedes an applied one.
+
+Status only reads history: it does not create schemas or tables, repair the history
+table, take an advisory lock, change the session's `search_path`, or call migration
+`up`/`down` functions. It still loads migration modules to identify them; module-level
+code and custom loaders run as usual. Keep migration effects inside `up`/`down`.
+The output is an observation of history, not a lock against concurrent deployments.
 
 ## Dry Runs
 

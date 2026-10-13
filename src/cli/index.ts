@@ -2,9 +2,13 @@
 
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
-import { runCreate, runMigration } from './commands';
+import { runCreate, runMigration, runStatus } from './commands';
 import type { CliOptions } from './options';
-import { addCreateOptions, addRunnerOptions } from './options';
+import {
+  addCreateOptions,
+  addRunnerOptions,
+  addStatusOptions,
+} from './options';
 
 process.on('uncaughtException', (err) => {
   console.error(err);
@@ -41,6 +45,10 @@ addCreateOptions(
 ).action((nameArgs: string[], options: CliOptions, command: Command) =>
   runCreate(nameArgs, options, command)
 );
+
+addStatusOptions(
+  program.command('status').description('List applied and pending migrations')
+).action((options: CliOptions) => runStatus(options));
 
 // `up` / `down` — run pending migrations in the given direction.
 for (const direction of ['up', 'down'] as const) {

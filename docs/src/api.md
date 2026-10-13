@@ -69,6 +69,40 @@ into reapplication, including changes to the role or `lock_timeout`. When `schem
 configured, the runner reapplies its schema setup and `search_path` before the up phase;
 otherwise, changes to `search_path` also carry over.
 
+## Migration status
+
+`getMigrationStatus()` returns the same status information as the
+[`status` command](cli#migration-status), without running migration actions:
+
+```typescript
+import { getMigrationStatus } from 'node-pg-migrate';
+
+const migrations = await getMigrationStatus({
+  databaseUrl: 'postgres://localhost/myapp',
+  dir: 'migrations',
+  migrationsTable: 'pgmigrations',
+});
+// [{ name: '001_init', status: 'applied' },
+//  { name: '002_add_users', status: 'pending' }]
+```
+
+The exported `MigrationStatusOptions` type accepts connection (`databaseUrl` or
+`dbClient`), history location (`migrationsTable`, `migrationsSchema`, `schema`,
+`schemaIsDefault`), source (`dir` or `migrations`, plus the applicable discovery/loader
+options), and logging options from `runner`. It requires no `direction` and accepts
+no execution options such as `count`, `fake` or `dryRun`.
+
+Each `MigrationStatus` contains `name` and `status`: `applied`, `pending`, or `missing`
+(recorded as applied but absent from the source). Applied/missing entries follow
+history order, followed by pending entries in migration order. The function returns
+an empty array when neither source nor history contains migrations.
+
+The function shares the runner's history-location checks and loaders, including grouped
+SQL and in-memory factories. It does not invoke migration actions or write to the database;
+module-level code, custom loaders and factories still execute. Connections it creates are
+closed on success or failure; a supplied `dbClient` remains open, and its transaction and
+`search_path` are left unchanged. No advisory lock is taken.
+
 ## In-memory migrations
 
 Use `migrations` instead of `dir` to supply migrations already imported by your
