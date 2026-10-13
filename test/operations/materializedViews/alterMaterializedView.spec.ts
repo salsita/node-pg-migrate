@@ -31,7 +31,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER MATERIALIZED VIEW "a_mview" CLUSTER ON "a_cluster", DEPENDS ON EXTENSION "a_extension", SET (fillfactor = 70, fillfactor2 = 50), RESET (reset1, reset2);`
+          `ALTER MATERIALIZED VIEW "a_mview" CLUSTER ON "a_cluster", DEPENDS ON EXTENSION "a_extension", SET ("fillfactor" = 70, "fillfactor2" = 50), RESET ("reset1", "reset2");`
         );
       });
 
@@ -51,8 +51,8 @@ describe('operations', () => {
         expect(statement).toBe(`ALTER MATERIALIZED VIEW "a_mview"
   CLUSTER ON "a_cluster",
   DEPENDS ON EXTENSION "a_extension",
-  SET (fillfactor = 70, fillfactor2 = 50),
-  RESET (reset1, reset2);`);
+  SET ("fillfactor" = 70, "fillfactor2" = 50),
+  RESET ("reset1", "reset2");`);
       });
 
       it('should return sql statement without cluster', () => {

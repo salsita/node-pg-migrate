@@ -1,3 +1,4 @@
+import { formatOption, quoteOptionName } from '../../utils';
 import type { Nullable } from '../generalTypes';
 
 export type StorageParameters = { [key: string]: boolean | number };
@@ -11,10 +12,6 @@ export function storageParameterStr<
 >(
   storageParameters: TStorageParameters
 ): (key: keyof TStorageParameters) => string {
-  return (key) => {
-    const value =
-      storageParameters[key] === true ? '' : ` = ${storageParameters[key]}`;
-
-    return `${String(key)}${value}`;
-  };
+  return (key) =>
+    formatOption(String(key), storageParameters[key], quoteOptionName);
 }

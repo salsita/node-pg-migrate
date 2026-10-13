@@ -49,6 +49,20 @@ that reads this option and passes it to an API accepting `MigrationDirection` (`
 
 ### Breaking changes
 
+#### View option strings are literal values
+
+`createView` and `alterView` now escape option strings as values instead of
+inserting them as SQL. Pass `check_option: 'local'`, not
+`check_option: "'local'"`. Existing unquoted values such as `'LOCAL'`, booleans,
+and numbers keep their meaning.
+
+View and materialized-view option names are now escaped too. Supply plain
+parameter names without SQL quotes; uppercase ASCII letters still fold to
+lowercase, and `toast.` remains a namespace for materialized-view parameters.
+`null` still means `RESET` when altering a view. Index storage parameters retain
+their exact name spelling. Generated SQL now quotes view option names and emits
+`= true` for boolean true options.
+
 #### Runner option wrappers distinguish migration sources
 
 `RunnerOption` is now a union of filesystem (`dir`) and in-memory (`migrations`)

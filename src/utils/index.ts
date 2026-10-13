@@ -9,6 +9,7 @@ export { decamelize } from './decamelize';
 export { escapeValue } from './escapeValue';
 export { getNumericPrefix, getSuffixFromFileName } from './fileNameUtils';
 export { formatLines } from './formatLines';
+export { formatOption, quoteOptionName } from './formatOption';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
 export { formatBlock, formatSeparator } from './formatSql';
