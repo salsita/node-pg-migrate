@@ -62,14 +62,20 @@
 
 #### Options
 
-| Option           | Type      | Description                                  |
-| ---------------- | --------- | -------------------------------------------- |
-| `default`        | `string`  | Default value of domain                      |
-| `collation`      | `string`  | Collation of data type                       |
-| `notNull`        | `boolean` | sets NOT NULL if true or NULL if false       |
-| `allowNull`      | `boolean` | sets NULL if true (alternative to `notNull`) |
-| `check`          | `string`  | sql for a check constraint for this column   |
-| `constraintName` | `string`  | name for constraint                          |
+| Option           | Type      | Description                                 |
+| ---------------- | --------- | ------------------------------------------- |
+| `default`        | `string`  | Default value of domain                     |
+| `collation`      | `string`  | Collation of data type                      |
+| `notNull`        | `boolean` | Sets NOT NULL if true; drops it if false    |
+| `allowNull`      | `boolean` | Drops NOT NULL if true; false has no effect |
+| `check`          | `string`  | sql for a check constraint for this column  |
+| `constraintName` | `string`  | name for constraint                         |
+
+Use `notNull: true` to disallow null values, and `notNull: false` or
+`allowNull: true` to allow them. Omitting both options leaves nullability unchanged.
+`allowNull: false` does not set `NOT NULL` and emits a warning unless
+`notNull: true` is also supplied. If both options are `true`, a warning explains
+that `notNull` takes precedence; the operation still sets `NOT NULL`.
 
 ## Operation: `renameDomain`
 

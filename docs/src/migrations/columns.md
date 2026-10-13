@@ -178,12 +178,18 @@ pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });
 | ------------------- | ------------------------- | ---------------------------------------------- |
 | `default`           | `string or null`          | null, string                                   |
 | `type`              | `string`                  | New datatype                                   |
-| `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false         |
-| `allowNull`         | `boolean`                 | Sets NULL if true (alternative to `notNull`)   |
+| `notNull`           | `boolean`                 | Sets NOT NULL if true; drops it if false       |
+| `allowNull`         | `boolean`                 | Drops NOT NULL if true; false has no effect    |
 | `using`             | `string`                  | Adds USING clause to change values in column   |
 | `collation`         | `string`                  | Adds COLLATE clause to change values in column |
 | `comment`           | `string`                  | Adds comment on column                         |
 | `sequenceGenerated` | `object or null or false` | Sets or drops identity column                  |
+
+Use `notNull: true` to disallow null values, and `notNull: false` or
+`allowNull: true` to allow them. Omitting both options leaves nullability unchanged.
+`allowNull: false` does not set `NOT NULL` and emits a warning unless
+`notNull: true` is also supplied. If both options are `true`, a warning explains
+that `notNull` takes precedence; the operation still sets `NOT NULL`.
 
 ##### `sequenceGenerated` Options
 

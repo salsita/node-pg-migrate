@@ -17,6 +17,7 @@ export interface AlterColumnOptions {
 
   notNull?: boolean;
 
+  /** Drop NOT NULL when true. False has no effect; use notNull to set it. */
   allowNull?: boolean;
 
   collation?: string;
@@ -51,6 +52,16 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     const sequenceGenerated = options.sequenceGenerated;
 
     const actions: string[] = [];
+
+    if (allowNull === false && notNull !== true) {
+      mOptions.logger.warn(
+        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}: allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.`
+      );
+    } else if (notNull === true && allowNull === true) {
+      mOptions.logger.warn(
+        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}: notNull: true conflicts with allowNull: true. notNull takes precedence.`
+      );
+    }
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');

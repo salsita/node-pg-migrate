@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { alterDomain } from '../../../src/operations/domains';
 import { options1 } from '../../presetMigrationOptions';
 
@@ -6,6 +6,47 @@ describe('operations', () => {
   describe('domains', () => {
     describe('alterDomain', () => {
       const alterDomainFn = alterDomain(options1);
+
+      it.each([
+        [{}, '', undefined],
+        [{ notNull: undefined, allowNull: undefined }, '', undefined],
+        [{ notNull: true }, 'SET NOT NULL', undefined],
+        [{ notNull: false }, 'DROP NOT NULL', undefined],
+        [{ allowNull: true }, 'DROP NOT NULL', undefined],
+        [
+          { allowNull: false },
+          '',
+          'allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.',
+        ],
+        [{ notNull: true, allowNull: false }, 'SET NOT NULL', undefined],
+        [{ notNull: false, allowNull: true }, 'DROP NOT NULL', undefined],
+        [
+          { notNull: true, allowNull: true },
+          'SET NOT NULL',
+          'notNull: true conflicts with allowNull: true. notNull takes precedence.',
+        ],
+        [
+          { notNull: false, allowNull: false },
+          'DROP NOT NULL',
+          'allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.',
+        ],
+      ] as const)(
+        'preserves nullability SQL and warns for ambiguous options: %j',
+        (options, action, warning) => {
+          const warn = vi.fn<(message: string) => void>();
+          const statement = alterDomain({
+            ...options1,
+            logger: { ...console, warn },
+          })({ schema: 'app', name: 'zip"code' }, options);
+
+          expect(statement).toBe(
+            action ? `ALTER DOMAIN "app"."zip""code" ${action};` : ';'
+          );
+          expect(warn.mock.calls).toEqual(
+            warning ? [[`alterDomain "app"."zip""code": ${warning}`]] : []
+          );
+        }
+      );
 
       it('should return a function', () => {
         expect(alterDomainFn).toBeTypeOf('function');
