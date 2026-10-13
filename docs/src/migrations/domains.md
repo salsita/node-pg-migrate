@@ -17,13 +17,13 @@
 
 #### Options
 
-| Option           | Type      | Description                                                                                                                  |
-| ---------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `default`        | `string`  | Default value of domain                                                                                                      |
-| `collation`      | `string`  | Collation of data type                                                                                                       |
-| `notNull`        | `boolean` | Sets NOT NULL if true ([not recommended](https://www.postgresql.org/docs/10/static/sql-createdomain.html#idm46428678330368)) |
-| `check`          | `string`  | SQL for a check constraint for this column                                                                                   |
-| `constraintName` | `string`  | Name for constraint                                                                                                          |
+| Option           | Type                               | Description                                                                                                                  |
+| ---------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `default`        | [Value](columns.md#default-values) | Default value of domain. See [Default values](columns.md#default-values)                                                     |
+| `collation`      | `string`                           | Collation of data type                                                                                                       |
+| `notNull`        | `boolean`                          | Sets NOT NULL if true ([not recommended](https://www.postgresql.org/docs/10/static/sql-createdomain.html#idm46428678330368)) |
+| `check`          | `string`                           | SQL for a check constraint for this column                                                                                   |
+| `constraintName` | `string`                           | Name for constraint                                                                                                          |
 
 ### Reverse Operation: `dropDomain`
 
@@ -62,14 +62,14 @@
 
 #### Options
 
-| Option           | Type      | Description                                  |
-| ---------------- | --------- | -------------------------------------------- |
-| `default`        | `string`  | Default value of domain                      |
-| `collation`      | `string`  | Collation of data type                       |
-| `notNull`        | `boolean` | sets NOT NULL if true or NULL if false       |
-| `allowNull`      | `boolean` | sets NULL if true (alternative to `notNull`) |
-| `check`          | `string`  | sql for a check constraint for this column   |
-| `constraintName` | `string`  | name for constraint                          |
+| Option           | Type                               | Description                                                                                              |
+| ---------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `default`        | [Value](columns.md#default-values) | Sets the default. `null` drops it, omitting it keeps it. See [Default values](columns.md#default-values) |
+| `collation`      | `string`                           | Collation of data type                                                                                   |
+| `notNull`        | `boolean`                          | sets NOT NULL if true or NULL if false                                                                   |
+| `allowNull`      | `boolean`                          | sets NULL if true (alternative to `notNull`)                                                             |
+| `check`          | `string`                           | sql for a check constraint for this column                                                               |
+| `constraintName` | `string`                           | name for constraint                                                                                      |
 
 ## Operation: `renameDomain`
 
