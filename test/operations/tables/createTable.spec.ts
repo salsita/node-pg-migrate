@@ -49,6 +49,24 @@ describe('operations', () => {
         );
       });
 
+      it('should keep zero sequence options for identity columns', () => {
+        const statement = createTableFn('films', {
+          id: {
+            type: PgType.INTEGER,
+            sequenceGenerated: {
+              precedence: 'ALWAYS',
+              minvalue: 0,
+              start: 0,
+            },
+          },
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE TABLE "films" ("id" integer GENERATED ALWAYS AS IDENTITY (MINVALUE 0 START WITH 0));`
+        );
+      });
+
       it('should format the statement across multiple lines when pretty is enabled', () => {
         const statement = createTable(options1Pretty)('films', {
           code: {
