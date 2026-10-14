@@ -34,7 +34,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial" AS bigint INCREMENT BY 2 MAXVALUE 1000 START WITH 1 CACHE 1 CYCLE OWNED BY mytable.mycol;`
+          `CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial" AS bigint INCREMENT BY 2 MINVALUE 0 MAXVALUE 1000 START WITH 1 CACHE 1 CYCLE OWNED BY mytable.mycol;`
         );
       });
 
@@ -56,11 +56,25 @@ describe('operations', () => {
         expect(statement).toBe(`CREATE TEMPORARY SEQUENCE IF NOT EXISTS "serial"
   AS bigint
   INCREMENT BY 2
+  MINVALUE 0
   MAXVALUE 1000
   START WITH 1
   CACHE 1
   CYCLE
   OWNED BY mytable.mycol;`);
+      });
+
+      it('should return sql statement with zero values', () => {
+        const statement = createSequenceFn('serial', {
+          minvalue: -10,
+          maxvalue: 0,
+          start: 0,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE SEQUENCE "serial" MINVALUE -10 MAXVALUE 0 START WITH 0;`
+        );
       });
 
       it('should return sql statement with schema', () => {
