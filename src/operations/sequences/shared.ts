@@ -37,19 +37,19 @@ export function parseSequenceOptions(
     clauses.push(`INCREMENT BY ${increment}`);
   }
 
-  if (minvalue) {
-    clauses.push(`MINVALUE ${minvalue}`);
-  } else if (minvalue === null || minvalue === false) {
+  if (minvalue === null || minvalue === false) {
     clauses.push('NO MINVALUE');
+  } else if (minvalue !== undefined) {
+    clauses.push(`MINVALUE ${minvalue}`);
   }
 
-  if (maxvalue) {
-    clauses.push(`MAXVALUE ${maxvalue}`);
-  } else if (maxvalue === null || maxvalue === false) {
+  if (maxvalue === null || maxvalue === false) {
     clauses.push('NO MAXVALUE');
+  } else if (maxvalue !== undefined) {
+    clauses.push(`MAXVALUE ${maxvalue}`);
   }
 
-  if (start) {
+  if (start !== undefined) {
     clauses.push(`START WITH ${start}`);
   }
 
