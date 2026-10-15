@@ -7,6 +7,20 @@ import type {
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it('leaves queued statements unchanged when an insert value is rejected', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console
+    );
+    pgm.sql('SELECT 1');
+    expect(() => {
+      pgm.insert('records', { valid: 1, invalid: Number.NaN });
+    }).toThrow(TypeError);
+    expect(pgm.getSqlSteps()).toEqual(['SELECT 1;']);
+  });
+
   it('queues inserts after table creation without querying the database', () => {
     const db = { query: vi.fn(), select: vi.fn() };
     const pgm = new MigrationBuilder(db, undefined, false, console);

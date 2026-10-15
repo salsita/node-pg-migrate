@@ -10,13 +10,31 @@ and braces. Use `pgm.func(...)` only for intentional SQL expressions.
 
 ### Arguments
 
-| Name        | Type                    | Description                                                                      |
-| ----------- | ----------------------- | -------------------------------------------------------------------------------- |
-| `tableName` | `Name`                  | Table name, optionally schema-qualified                                          |
-| `values`    | `Record<string, Value>` | Column names mapped to strings, numbers, booleans, null, arrays, or SQL literals |
+| Name        | Type                                 | Description                                                                      |
+| ----------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| `tableName` | `Name`                               | Table name, optionally schema-qualified                                          |
+| `values`    | `Record<string, Value \| undefined>` | Column names mapped to strings, numbers, booleans, null, arrays, or SQL literals |
 
-Omitted columns use their database defaults; an empty object inserts a row with
-`DEFAULT VALUES`. Identifier names follow the `decamelize` option; values do not.
+Omitted columns and fields with `undefined` values use their database defaults.
+An empty object or a row containing only `undefined` inserts `DEFAULT VALUES`.
+Identifier names follow the `decamelize` option; values do not.
+
+Unsupported values (including plain objects, `Date`, `bigint`, and `Buffer`) and
+non-finite numbers (`NaN`, `Infinity`, and `-Infinity`) throw a `TypeError` naming
+the table and column before the insert is queued. Array elements are validated
+recursively; `undefined` elements are rejected rather than omitted.
+
+For JSON/JSONB columns, pass `JSON.stringify(data)` as the value. PostgreSQL
+converts the escaped string to the column's type. Convert dates to strings when
+appropriate, or use `pgm.func(...)` / `PgLiteral` for explicit SQL expressions.
+An empty JavaScript array renders as `ARRAY[]`, which needs an explicit element
+type; use `pgm.func("'{}'::text[]")` for an empty text array, or omit the column
+when its default is appropriate.
+
+Each call inserts one row and produces one queued statement, database round trip,
+and logged SQL statement. The loop below is suitable for small lookup tables;
+large imports should use a multi-row `INSERT` or `COPY` through the existing SQL
+or client interfaces, respecting the execution order described below.
 
 ```js
 export function up(pgm) {

@@ -159,6 +159,34 @@ describe.each(PG_VERSIONS)(
       ).toEqual([]);
     });
 
+    it('uses defaults for undefined and accepts serialized JSON and typed empty arrays', async () => {
+      const data = { label: "reader's $pga$ edition" };
+      await migrate({
+        '001_values': {
+          up: (pgm) => {
+            pgm.createTable('records', {
+              id: { type: 'integer', default: 42 },
+              data: 'jsonb',
+              tags: 'text[]',
+            });
+            pgm.insert('records', {
+              id: undefined,
+              data: JSON.stringify(data),
+              tags: pgm.func("'{}'::text[]"),
+            });
+            pgm.insert('records', { id: undefined });
+          },
+        },
+      });
+      expect(
+        (await client.query('SELECT * FROM records WHERE data IS NOT NULL'))
+          .rows
+      ).toEqual([{ id: 42, data, tags: [] }]);
+      expect(
+        (await client.query('SELECT * FROM records WHERE data IS NULL')).rows
+      ).toEqual([{ id: 42, data: null, tags: null }]);
+    });
+
     it.each([false, true])(
       'rolls back table creation and inserts on failure (singleTransaction: %s)',
       async (singleTransaction) => {

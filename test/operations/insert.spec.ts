@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Insert } from '../../src';
+import type { Insert, Value } from '../../src';
 import { insert } from '../../src/operations/insert';
 import { PgLiteral } from '../../src/utils';
 import { options1, options2 } from '../presetMigrationOptions';
@@ -55,6 +55,54 @@ describe('operations', () => {
     ])('preserves SQL-looking text as a single value: %s', (value, literal) => {
       expect(insertFn('records', { value })).toBe(
         `INSERT INTO "records" ("value") VALUES (${literal});`
+      );
+    });
+
+    it('omits undefined columns, including rows containing only undefined', () => {
+      expect(insertFn('records', { id: 1, optional: undefined })).toBe(
+        'INSERT INTO "records" ("id") VALUES (1);'
+      );
+      expect(insertFn('records', { optional: undefined })).toBe(
+        'INSERT INTO "records" DEFAULT VALUES;'
+      );
+    });
+
+    it.each([
+      { label: 'object', value: { key: 1 } },
+      { label: 'Date', value: new Date(0) },
+      { label: 'bigint', value: 10n },
+      { label: 'Buffer', value: Buffer.from('x') },
+      { label: 'NaN', value: Number.NaN },
+      { label: 'Infinity', value: Number.POSITIVE_INFINITY },
+      { label: '-Infinity', value: Number.NEGATIVE_INFINITY },
+      { label: 'nested undefined', value: [1, [undefined]] },
+      { label: 'nested object', value: [{ key: 1 }] },
+      { label: 'nested Infinity', value: [[Number.POSITIVE_INFINITY]] },
+      // Deliberately preserve a hole to verify it is not skipped by validation.
+      // oxlint-disable-next-line unicorn/no-new-array
+      { label: 'sparse array', value: new Array(1) },
+      { label: 'invalid literal', value: { literal: true, value: 1 } },
+    ])('rejects $label with table and column context', ({ value }) => {
+      const run = () =>
+        insertFn({ schema: 'app', name: 'records' }, { data: value as Value });
+      expect(run).toThrow(TypeError);
+      expect(run).toThrow(
+        'pgm.insert(): unsupported value for "app"."records"."data"'
+      );
+    });
+
+    it('preserves nested arrays and explicit literal objects', () => {
+      expect(
+        insertFn('records', {
+          matrix: [
+            [1, 2],
+            [3, 4],
+          ],
+          empty: PgLiteral.create("'{}'::text[]"),
+          expression: { literal: true, value: '1 + 2' },
+        })
+      ).toBe(
+        `INSERT INTO "records" ("matrix", "empty", "expression") VALUES (ARRAY[[1,2],[3,4]], '{}'::text[], 1 + 2);`
       );
     });
 
