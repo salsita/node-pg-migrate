@@ -8,5 +8,15 @@ export type ViewOptions = {
 export function viewOptionStr<TViewOptions extends Nullable<ViewOptions>>(
   options: TViewOptions
 ): (key: keyof TViewOptions) => string {
-  return (key) => formatOption(String(key), options[key], quoteOptionName);
+  return (key) => {
+    const name = String(key);
+    const value = options[key];
+    // information_schema.views recognizes only lowercase check_option values.
+    const normalizedValue =
+      name.toLowerCase() === 'check_option' && typeof value === 'string'
+        ? value.toLowerCase()
+        : value;
+
+    return formatOption(quoteOptionName(name), normalizedValue);
+  };
 }

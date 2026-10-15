@@ -9,7 +9,11 @@ import {
   expect,
   it,
 } from 'vitest';
-import type { MigrationMap } from '../../src';
+import type {
+  AlterViewOptions,
+  CreateViewOptions,
+  MigrationMap,
+} from '../../src';
 import { runner } from '../../src';
 import {
   INTEGRATION_TIMEOUT,
@@ -108,51 +112,90 @@ describe.each(PG_VERSIONS)(
       ]);
     }
 
-    it('creates, alters and resets view options, then infers the create reversal', async () => {
-      const migrations: MigrationMap = {
-        '1000000000000_create': {
-          up: (pgm) => {
-            pgm.createView(
-              viewName,
-              { options: { CHECK_OPTION: 'LOCAL', SECURITY_BARRIER: true } },
-              'SELECT * FROM view_options.records WHERE id > 0'
-            );
-          },
+    async function checkOption() {
+      return (
+        await client.query<{ check_option: string }>(`
+          SELECT check_option FROM information_schema.views
+          WHERE table_schema = 'view_options' AND table_name = 'selected_records'
+        `)
+      ).rows[0].check_option;
+    }
+
+    const checkOptionCases: Array<{
+      title: string;
+      createOptions: CreateViewOptions;
+      alterOptions: AlterViewOptions;
+    }> = [
+      {
+        title: 'convenience options',
+        createOptions: {
+          checkOption: 'LOCAL',
+          options: { SECURITY_BARRIER: true },
         },
-        '1000000000001_alter': {
-          up: (pgm) => {
-            pgm.alterView(viewName, {
-              checkOption: 'CASCADED',
-              options: { SECURITY_BARRIER: false },
-            });
-          },
-          down: (pgm) => {
-            pgm.alterView(viewName, {
-              options: { CHECK_OPTION: null, SECURITY_BARRIER: null },
-            });
-          },
+        alterOptions: {
+          checkOption: 'CASCADED',
+          options: { SECURITY_BARRIER: false },
         },
-      };
-      await migrate(migrations);
-      expect((await catalog())[0].options).toEqual([
-        'check_option=LOCAL',
-        'security_barrier=true',
-      ]);
-      await expect(
-        client.query(
-          'INSERT INTO view_options.selected_records VALUES (-1, NULL)'
-        )
-      ).rejects.toMatchObject({ code: '44000' });
-      await migrate(migrations);
-      expect((await catalog())[0].options).toEqual([
-        'security_barrier=false',
-        'check_option=CASCADED',
-      ]);
-      await migrate(migrations, 'down');
-      expect((await catalog())[0].options).toBeNull();
-      await migrate(migrations, 'down');
-      await expectReversed();
-    });
+      },
+      {
+        title: 'raw options with mixed case',
+        createOptions: {
+          options: { CHECK_OPTION: 'LOCAL', SECURITY_BARRIER: true },
+        },
+        alterOptions: {
+          options: { Check_Option: 'CaScAdEd', SECURITY_BARRIER: false },
+        },
+      },
+    ];
+
+    it.each(checkOptionCases)(
+      'creates, alters, resets and reverses $title',
+      async ({ createOptions, alterOptions }) => {
+        const migrations: MigrationMap = {
+          '1000000000000_create': {
+            up: (pgm) => {
+              pgm.createView(
+                viewName,
+                createOptions,
+                'SELECT * FROM view_options.records WHERE id > 0'
+              );
+            },
+          },
+          '1000000000001_alter': {
+            up: (pgm) => {
+              pgm.alterView(viewName, alterOptions);
+            },
+            down: (pgm) => {
+              pgm.alterView(viewName, {
+                options: { CHECK_OPTION: null, SECURITY_BARRIER: null },
+              });
+            },
+          },
+        };
+        await migrate(migrations);
+        expect(await checkOption()).toBe('LOCAL');
+        expect((await catalog())[0].options?.toSorted()).toEqual([
+          'check_option=local',
+          'security_barrier=true',
+        ]);
+        await expect(
+          client.query(
+            'INSERT INTO view_options.selected_records VALUES (-1, NULL)'
+          )
+        ).rejects.toMatchObject({ code: '44000' });
+        await migrate(migrations);
+        expect(await checkOption()).toBe('CASCADED');
+        expect((await catalog())[0].options?.toSorted()).toEqual([
+          'check_option=cascaded',
+          'security_barrier=false',
+        ]);
+        await migrate(migrations, 'down');
+        expect(await checkOption()).toBe('NONE');
+        expect((await catalog())[0].options).toBeNull();
+        await migrate(migrations, 'down');
+        await expectReversed();
+      }
+    );
 
     it('preserves materialized-view storage parameters and toast SET/RESET semantics', async () => {
       const migrations: MigrationMap = {
