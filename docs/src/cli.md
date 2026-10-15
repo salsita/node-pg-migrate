@@ -177,9 +177,9 @@ node-pg-migrate status -m migrations --migrations-schema public
 ```
 
 ```text
-Status  Migration
-applied 001_init
-missing 002_removed
+Status  Migration     Run on
+applied 001_init      2026-10-14T12:00:00.000Z
+missing 002_removed   2026-10-14T12:05:00.000Z
 pending 003_add_users
 ```
 
@@ -188,8 +188,22 @@ is available. `missing` means it is recorded but absent from the configured sour
 (including files excluded by an ignore pattern). `pending` means its definition
 is available but it has no history record. Applied/missing entries follow history
 order; pending entries follow migration order. An empty source and history print
-`No migrations found.`. Pending or missing entries do not cause a nonzero exit;
-connection, history and loader errors do.
+`No migrations found.`. The `Run on` column shows the recorded application time
+as an ISO 8601 date, and is empty for pending migrations.
+
+Pending or missing entries exit with code 0 by default. Use `--exit-code` to
+return code 1 when any entry is pending or missing, or code 0 when all entries are
+applied (including an empty result). Connection, history and loader errors exit
+with code 1 regardless of this flag.
+
+Use `--json` to print a JSON array instead of the table, or `[]` for an empty
+result. Each entry contains `name` and `status`; applied/missing entries also
+include `runOn` as an ISO 8601 string. Errors are reported on stderr. The two
+flags can be combined for deployment checks:
+
+```sh
+node-pg-migrate status --json --exit-code
+```
 
 The command uses the same connection, config, schema, glob and ignore options as
 `up`. See `node-pg-migrate status --help`. A missing history table means all available

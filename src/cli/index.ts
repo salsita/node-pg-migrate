@@ -47,7 +47,9 @@ addCreateOptions(
 );
 
 addStatusOptions(
-  program.command('status').description('List applied and pending migrations')
+  program
+    .command('status')
+    .description('List applied, pending and missing migrations')
 ).action((options: CliOptions) => runStatus(options));
 
 // `up` / `down` — run pending migrations in the given direction.

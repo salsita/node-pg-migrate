@@ -18,9 +18,12 @@ vi.mock('config', () => ({ default: { has: () => false } }));
 
 describe('cli', () => {
   describe('runStatus', () => {
+    const originalExitCode = process.exitCode;
+
     beforeEach(() => {
       vi.stubEnv('DATABASE_URL', 'postgres://localhost:5432/db');
       vi.spyOn(console, 'log').mockImplementation(() => {});
+      process.exitCode = undefined;
     });
 
     afterEach(() => {
@@ -28,11 +31,16 @@ describe('cli', () => {
       runnerMock.mockClear();
       vi.unstubAllEnvs();
       vi.restoreAllMocks();
+      process.exitCode = originalExitCode;
     });
 
     it('prints each status and uses the configured source, history and TLS options', async () => {
       statusMock.mockResolvedValueOnce([
-        { name: '001_first', status: 'applied' },
+        {
+          name: '001_first',
+          status: 'applied',
+          runOn: new Date('2026-10-14T12:00:00.000Z'),
+        },
         { name: '002_removed', status: 'missing' },
         { name: '003_next', status: 'pending' },
       ]);
@@ -63,11 +71,73 @@ describe('cli', () => {
           tsconfigPaths: true,
         })
       );
-      expect(console.log).toHaveBeenCalledWith('Status\tMigration');
-      expect(console.log).toHaveBeenCalledWith('applied\t001_first');
-      expect(console.log).toHaveBeenCalledWith('missing\t002_removed');
-      expect(console.log).toHaveBeenCalledWith('pending\t003_next');
+      expect(console.log).toHaveBeenCalledWith('Status\tMigration\tRun on');
+      expect(console.log).toHaveBeenCalledWith(
+        'applied\t001_first\t2026-10-14T12:00:00.000Z'
+      );
+      expect(console.log).toHaveBeenCalledWith('missing\t002_removed\t');
+      expect(console.log).toHaveBeenCalledWith('pending\t003_next\t');
+      expect(process.exitCode).toBe(0);
       expect(runnerMock).not.toHaveBeenCalled();
+    });
+
+    it('prints a JSON array with ISO dates and no table output', async () => {
+      const migrations: MigrationStatus[] = [
+        {
+          name: '001_removed',
+          status: 'missing',
+          runOn: new Date('2026-10-14T12:00:00.000Z'),
+        },
+        { name: '002_next', status: 'pending' },
+      ];
+      statusMock.mockResolvedValueOnce(migrations);
+      await runStatus({ databaseUrlVar: 'DATABASE_URL', json: true });
+      expect(console.log).toHaveBeenCalledExactlyOnceWith(
+        JSON.stringify(migrations)
+      );
+      expect(process.exitCode).toBe(0);
+    });
+
+    it.each([
+      { statuses: [], expected: 0 },
+      { statuses: ['applied'], expected: 0 },
+      { statuses: ['pending'], expected: 1 },
+      { statuses: ['missing'], expected: 1 },
+      { statuses: ['applied', 'pending', 'missing'], expected: 1 },
+    ] as const)(
+      'sets the opt-in exit code for $statuses',
+      async ({ statuses, expected }) => {
+        statusMock.mockResolvedValueOnce(
+          statuses.map((status, index) => ({ name: String(index), status }))
+        );
+        await runStatus({ databaseUrlVar: 'DATABASE_URL', exitCode: true });
+        expect(process.exitCode).toBe(expected);
+      }
+    );
+
+    it('prints an empty JSON array for an empty source and history', async () => {
+      await runStatus({ databaseUrlVar: 'DATABASE_URL', json: true });
+      expect(console.log).toHaveBeenCalledExactlyOnceWith('[]');
+    });
+
+    it('preserves the status exit code and JSON output with --force-exit', async () => {
+      const exit = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
+      const migrations: MigrationStatus[] = [
+        { name: '001_next', status: 'pending' },
+      ];
+      statusMock.mockResolvedValueOnce(migrations);
+      await runStatus({
+        databaseUrlVar: 'DATABASE_URL',
+        json: true,
+        exitCode: true,
+        forceExit: true,
+      });
+      expect(exit).toHaveBeenCalledWith(1);
+      expect(console.log).toHaveBeenCalledExactlyOnceWith(
+        JSON.stringify(migrations)
+      );
     });
 
     it('reports an empty history and source', async () => {

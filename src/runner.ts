@@ -273,6 +273,8 @@ export interface MigrationStatus {
   name: string;
   /** `missing` means recorded as applied, but absent from the configured source. */
   status: 'applied' | 'pending' | 'missing';
+  /** The recorded application time for applied or missing migrations. */
+  runOn?: Date;
 }
 
 /**
@@ -833,7 +835,8 @@ async function findHistoryElsewhere(
 function describeHistoryElsewhere(
   options: RunnerOption,
   history: MigrationsTableLocation,
-  hasMigrationsTable: boolean
+  hasMigrationsTable: boolean,
+  purpose: 'run' | 'status'
 ): string {
   const schema = getMigrationTableSchema(options);
   const found = history.schema;
@@ -843,12 +846,19 @@ function describeHistoryElsewhere(
     ? `The migrations table follows the first \`--schema\` entry, and "${found}" is further down that list. To continue that history, pass \`--migrations-schema ${found}\` (or list "${found}" first)`
     : `No schema was configured, so "${schema}" is only the fallback. To continue that history, pass \`--schema ${found}\` (or \`--migrations-schema ${found}\` if only the migrations table lives there)`;
 
-  return `Refusing to run: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. Carrying on would start the history over and could apply migrations that have already run. ${hint}; to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`. From the API, use the \`schema\` and \`migrationsSchema\` options.`;
+  const lead =
+    purpose === 'status' ? 'Cannot determine status' : 'Refusing to run';
+  const reason =
+    purpose === 'status'
+      ? 'The configured location would give an incomplete migration status.'
+      : 'Carrying on would start the history over and could apply migrations that have already run.';
+
+  return `${lead}: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. ${reason} ${hint}; to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`. From the API, use the \`schema\` and \`migrationsSchema\` options.`;
 }
 
 interface MigrationHistory {
   hasMigrationsTable: boolean;
-  runNames: string[];
+  appliedMigrations: Array<Pick<MigrationStatus, 'name' | 'runOn'>>;
 }
 
 /**
@@ -860,22 +870,30 @@ interface MigrationHistory {
  */
 async function readMigrationHistory(
   db: DBConnection,
-  options: RunnerOption
+  options: RunnerOption,
+  purpose: 'run' | 'status'
 ): Promise<MigrationHistory> {
   const hasMigrationsTable = await migrationsTableExists(db, options);
-  const runNames: string[] = hasMigrationsTable
-    ? await getRunMigrations(db, options)
-    : [];
+  const appliedMigrations: MigrationHistory['appliedMigrations'] =
+    hasMigrationsTable
+      ? purpose === 'status'
+        ? await db.select(
+            `SELECT ${nameColumn}, ${runOnColumn} AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
+          )
+        : (await getRunMigrations(db, options)).map((name) => ({ name }))
+      : [];
   const history =
-    runNames.length === 0 ? await findHistoryElsewhere(db, options) : undefined;
+    appliedMigrations.length === 0
+      ? await findHistoryElsewhere(db, options)
+      : undefined;
 
   if (history) {
     throw new Error(
-      describeHistoryElsewhere(options, history, hasMigrationsTable)
+      describeHistoryElsewhere(options, history, hasMigrationsTable, purpose)
     );
   }
 
-  return { hasMigrationsTable, runNames };
+  return { hasMigrationsTable, appliedMigrations };
 }
 
 /**
@@ -886,10 +904,11 @@ async function readMigrationHistory(
 async function readHistoryAndMigrations(
   db: DBConnection,
   options: RunnerOption,
-  logger: Logger
+  logger: Logger,
+  purpose: 'run' | 'status' = 'run'
 ): Promise<[MigrationHistory, Migration[]]> {
   const [history, migrations] = await Promise.allSettled([
-    readMigrationHistory(db, options),
+    readMigrationHistory(db, options, purpose),
     loadMigrations(db, options, logger),
   ]);
 
@@ -1062,18 +1081,20 @@ export async function getMigrationStatus(
 
   try {
     await db.createConnection();
-    const [{ runNames }, migrations] = await readHistoryAndMigrations(
+    const [{ appliedMigrations }, migrations] = await readHistoryAndMigrations(
       db,
       runnerOptions,
-      logger
+      logger,
+      'status'
     );
     const available = new Set(migrations.map(({ name }) => name));
-    const applied = new Set(runNames);
+    const applied = new Set(appliedMigrations.map(({ name }) => name));
 
     return [
-      ...runNames.map((name): MigrationStatus => ({
+      ...appliedMigrations.map(({ name, runOn }): MigrationStatus => ({
         name,
         status: available.has(name) ? 'applied' : 'missing',
+        runOn,
       })),
       ...migrations
         .filter(({ name }) => !applied.has(name))
@@ -1121,8 +1142,9 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
 
     // Before anything is created: a run that is refused must leave the database as it was.
-    const [{ hasMigrationsTable, runNames }, migrations] =
+    const [{ hasMigrationsTable, appliedMigrations }, migrations] =
       await readHistoryAndMigrations(db, options, logger);
+    const runNames = appliedMigrations.map(({ name }) => name);
 
     await useSchemas(db, options, dryRun, logger);
 

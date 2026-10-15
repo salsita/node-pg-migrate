@@ -13,9 +13,11 @@ import {
   decamelizeArg,
   dryRunArg,
   envPathArg,
+  exitCodeArg,
   fakeArg,
   forceExitArg,
   ignorePatternArg,
+  jsonArg,
   lockArg,
   lockValueArg,
   migrationFileLanguageArg,
@@ -84,6 +86,8 @@ export interface CliOptions {
   advisoryLockMode?: 'fail' | 'wait';
   tsconfigPaths?: string;
   forceExit?: boolean;
+  json?: boolean;
+  exitCode?: boolean;
 }
 
 /**
@@ -161,8 +165,8 @@ export function addCreateOptions(command: Command): Command {
 }
 
 /** Connection, history and source options shared with migration status. */
-export function addStatusOptions(command: Command): Command {
-  command
+function addConnectionOptions(command: Command): Command {
+  return command
     .addOption(
       new Option(
         `-d, --${databaseUrlVarArg} <${databaseUrlVarArg}>`,
@@ -229,13 +233,27 @@ export function addStatusOptions(command: Command): Command {
         "Enable jiti's tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover tsconfig.json, or a path to a specific tsconfig.json"
       )
     );
+}
+
+/** Options for inspecting migration status and using the result in scripts. */
+export function addStatusOptions(command: Command): Command {
+  addConnectionOptions(command)
+    .addOption(
+      new Option(`--${jsonArg}`, 'Print migration status as a JSON array')
+    )
+    .addOption(
+      new Option(
+        `--${exitCodeArg}`,
+        'Exit with code 1 if any migrations are pending or missing'
+      )
+    );
 
   return addConfigOptions(command);
 }
 
 /** Options relevant to the migration actions (`up`, `down`, `redo`). */
 export function addRunnerOptions(command: Command): Command {
-  command
+  addConnectionOptions(command)
     .addOption(
       new Option(
         `--${createSchemaArg}`,
@@ -310,5 +328,5 @@ export function addRunnerOptions(command: Command): Command {
         .default('fail')
     );
 
-  return addStatusOptions(command);
+  return addConfigOptions(command);
 }

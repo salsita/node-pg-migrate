@@ -19,10 +19,12 @@ import type { CliOptions } from './options';
  * `--force-exit` was passed. This mirrors the previous behavior where the check
  * ran synchronously after kicking off the (async) migration work.
  */
-function handleForceExit(options: CliOptions): void {
+function handleForceExit(options: CliOptions, exitCode = 0): void {
   if (options.forceExit) {
-    console.log('Forcing exit');
-    process.exit(0);
+    if (!options.json) {
+      console.log('Forcing exit');
+    }
+    process.exit(exitCode);
   }
 }
 
@@ -220,13 +222,20 @@ export async function runStatus(options: CliOptions): Promise<void> {
     tsconfigPaths: config.tsconfigPaths,
   });
 
-  if (migrations.length === 0) {
+  if (options.json) {
+    console.log(JSON.stringify(migrations));
+  } else if (migrations.length === 0) {
     console.log('No migrations found.');
   } else {
-    console.log('Status\tMigration');
-    for (const { name, status } of migrations) {
-      console.log(`${status}\t${name}`);
+    console.log('Status\tMigration\tRun on');
+    for (const { name, status, runOn } of migrations) {
+      console.log(`${status}\t${name}\t${runOn?.toISOString() ?? ''}`);
     }
   }
-  handleForceExit(options);
+  const exitCode =
+    options.exitCode && migrations.some(({ status }) => status !== 'applied')
+      ? 1
+      : 0;
+  process.exitCode = exitCode;
+  handleForceExit(options, exitCode);
 }
