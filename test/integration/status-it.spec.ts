@@ -130,6 +130,72 @@ describe.each(PG_VERSIONS)(
       expect(stdout).toContain('pending\t002_next');
     });
 
+    it('returns recorded dates in JSON for missing migrations and omits dates for pending ones', async () => {
+      await runner({ ...options(), direction: 'up', count: 1 });
+      const {
+        rows: [{ runOn }],
+      } = await client.query<{ runOn: Date }>(
+        'SELECT run_on AS "runOn" FROM pgmigrations'
+      );
+      await rm(join(dir, '001_first.cjs'));
+      const { stdout } = await status('--json');
+      expect(JSON.parse(stdout)).toEqual([
+        { name: '001_first', status: 'missing', runOn: runOn.toISOString() },
+        { name: '002_next', status: 'pending' },
+      ]);
+      await expect(getMigrationStatus(options())).resolves.toEqual([
+        { name: '001_first', status: 'missing', runOn },
+        { name: '002_next', status: 'pending' },
+      ]);
+    });
+
+    it.each(['pending', 'missing'] as const)(
+      'returns exit code 1 only when requested for %s migrations',
+      async (state) => {
+        if (state === 'missing') {
+          await runner({ ...options(), direction: 'up', count: 1 });
+          await rm(join(dir, '001_first.cjs'));
+          await rm(join(dir, '002_next.cjs'));
+        }
+        expect((await status()).stdout).toContain(`${state}\t`);
+        await expect(status('--exit-code')).rejects.toMatchObject({
+          code: 1,
+          stdout: expect.stringContaining(`${state}\t`),
+        });
+      }
+    );
+
+    it('keeps JSON parseable and the status exit code with --force-exit', async () => {
+      await expect(
+        status('--json', '--exit-code', '--force-exit')
+      ).rejects.toMatchObject({
+        code: 1,
+        stdout: `${JSON.stringify([
+          { name: '001_first', status: 'pending' },
+          { name: '002_next', status: 'pending' },
+        ])}\n`,
+      });
+    });
+
+    it('succeeds with --exit-code when all migrations are applied and includes their dates', async () => {
+      await runner({ ...options(), direction: 'up', fake: true });
+      const { rows } = await client.query<{ name: string; runOn: Date }>(
+        'SELECT name, run_on AS "runOn" FROM pgmigrations ORDER BY run_on, id'
+      );
+      const { stdout } = await status('--json', '--exit-code');
+      expect(JSON.parse(stdout)).toEqual(
+        rows.map(({ name, runOn }) => ({
+          name,
+          status: 'applied',
+          runOn: runOn.toISOString(),
+        }))
+      );
+      const table = await status('--exit-code');
+      expect(table.stdout).toContain(
+        `applied\t001_first\t${rows[0].runOn.toISOString()}`
+      );
+    });
+
     it('uses custom quoted schema/table names and preserves the history-location guard', async () => {
       await client.query('CREATE SCHEMA "meta""data"');
       await runner({
@@ -139,9 +205,11 @@ describe.each(PG_VERSIONS)(
         direction: 'up',
         count: 1,
       });
-      await expect(status('-t', 'his"tory')).rejects.toThrow(
-        'already records migrations'
-      );
+      await expect(status('-t', 'his"tory', '--json')).rejects.toMatchObject({
+        code: 1,
+        stdout: '',
+        stderr: expect.stringContaining('Cannot determine status:'),
+      });
       const { stdout } = await status(
         '-t',
         'his"tory',
@@ -160,7 +228,7 @@ describe.each(PG_VERSIONS)(
       await client.query('SET ROLE status_reader');
       try {
         await expect(getMigrationStatus(options())).resolves.toEqual([
-          { name: '001_first', status: 'applied' },
+          { name: '001_first', status: 'applied', runOn: expect.any(Date) },
           { name: '002_next', status: 'pending' },
         ]);
       } finally {
@@ -188,6 +256,7 @@ describe.each(PG_VERSIONS)(
       await expect(getMigrationStatus(options())).resolves.toContainEqual({
         name: '003_external',
         status: 'missing',
+        runOn: expect.any(Date),
       });
       const { rows } = await client.query('SHOW search_path');
       expect(rows).toEqual([{ search_path: 'pg_catalog' }]);
@@ -241,6 +310,7 @@ describe.each(PG_VERSIONS)(
       await rm(join(dir, '001_first.cjs'));
       await rm(join(dir, '002_next.cjs'));
       expect((await status()).stdout).toContain('No migrations found.');
+      expect((await status('--json', '--exit-code')).stdout).toBe('[]\n');
       await writeFile(
         join(dir, '001_sql.up.sql'),
         'CREATE TABLE grouped (id integer);'
@@ -257,7 +327,7 @@ describe.each(PG_VERSIONS)(
       ]);
       await runner({ ...settings, direction: 'up' });
       await expect(getMigrationStatus(settings)).resolves.toEqual([
-        { name: '001_sql', status: 'applied' },
+        { name: '001_sql', status: 'applied', runOn: expect.any(Date) },
       ]);
     });
   }

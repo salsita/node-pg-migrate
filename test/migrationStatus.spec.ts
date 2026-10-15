@@ -11,7 +11,16 @@ function setup(runNames: string[] = [], hasTable = true) {
     connected: vi.fn(() => true),
     close: vi.fn().mockResolvedValue(undefined),
     query: vi.fn(),
-    select: vi.fn().mockResolvedValue(hasTable ? [{}] : []),
+    select: vi.fn<db.DBConnection['select']>((query) => {
+      const sql = typeof query === 'string' ? query : query.text;
+      return Promise.resolve(
+        sql.startsWith('SELECT name, run_on')
+          ? runNames.map((name) => ({ name }))
+          : hasTable
+            ? [{}]
+            : []
+      );
+    }),
     column: vi.fn().mockResolvedValue(runNames),
     addBeforeCloseListener: vi.fn(),
   };
@@ -34,6 +43,22 @@ function setup(runNames: string[] = [], hasTable = true) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('getMigrationStatus', () => {
+  it('returns recorded dates for applied and missing entries, with none on pending entries', async () => {
+    const { connection, options } = setup(['003_removed', '002_second']);
+    const runOn = new Date('2026-10-14T12:00:00.000Z');
+    connection.select.mockResolvedValueOnce([{}]).mockResolvedValueOnce([
+      { name: '003_removed', runOn },
+      { name: '002_second', runOn },
+    ]);
+
+    await expect(getMigrationStatus(options)).resolves.toEqual([
+      { name: '003_removed', status: 'missing', runOn },
+      { name: '002_second', status: 'applied', runOn },
+      { name: '001_first', status: 'pending' },
+    ]);
+    expect(connection.column).not.toHaveBeenCalled();
+  });
+
   it('lists applied and missing migrations in history order, followed by pending migrations', async () => {
     const { connection, options, up, down } = setup([
       '003_removed',
@@ -59,7 +84,8 @@ describe('getMigrationStatus', () => {
         { name: '001_first', status: 'pending' },
         { name: '002_second', status: 'pending' },
       ]);
-      expect(connection.column).toHaveBeenCalledTimes(hasTable ? 1 : 0);
+      expect(connection.select).toHaveBeenCalledTimes(hasTable ? 2 : 1);
+      expect(connection.column).not.toHaveBeenCalled();
       expect(connection.query).not.toHaveBeenCalled();
     }
   );
@@ -92,9 +118,8 @@ describe('getMigrationStatus', () => {
       'c"d',
       'a"b',
     ]);
-    expect(connection.column).toHaveBeenCalledWith(
-      'name',
-      'SELECT name FROM "a""b"."c""d" ORDER BY run_on, id'
+    expect(connection.select).toHaveBeenCalledWith(
+      'SELECT name, run_on AS "runOn" FROM "a""b"."c""d" ORDER BY run_on, id'
     );
     expect(connection.query).not.toHaveBeenCalled();
   });
@@ -111,13 +136,33 @@ describe('getMigrationStatus', () => {
     expect(connection.close).toHaveBeenCalledOnce();
   });
 
+  it.each([false, true])(
+    'explains a status refusal without suggesting it would apply migrations (readable: %s)',
+    async (readable) => {
+      const { connection, options } = setup([], false);
+      connection.select
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ schema: 'other', readable }])
+        .mockResolvedValueOnce([{}]);
+      const result = getMigrationStatus({
+        ...options,
+        migrationsSchema: undefined,
+      });
+      await expect(result).rejects.toThrow(/^Cannot determine status:/);
+      await expect(result).rejects.toThrow('--migrations-schema other');
+      await expect(result).rejects.not.toThrow('could apply migrations');
+    }
+  );
+
   it.each(['history', 'loader'])(
     'closes the connection after a %s failure',
     async (failure) => {
       const { connection, options } = setup();
       const error = new Error('cannot inspect');
       if (failure === 'history') {
-        connection.column.mockRejectedValueOnce(error);
+        connection.select
+          .mockResolvedValueOnce([{}])
+          .mockRejectedValueOnce(error);
       }
       const migrations =
         failure === 'loader'

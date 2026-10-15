@@ -82,7 +82,8 @@ const migrations = await getMigrationStatus({
   dir: 'migrations',
   migrationsTable: 'pgmigrations',
 });
-// [{ name: '001_init', status: 'applied' },
+// [{ name: '001_init', status: 'applied',
+//    runOn: new Date('2026-10-14T12:00:00.000Z') },
 //  { name: '002_add_users', status: 'pending' }]
 ```
 
@@ -93,9 +94,13 @@ options), and logging options from `runner`. It requires no `direction` and acce
 no execution options such as `count`, `fake` or `dryRun`.
 
 Each `MigrationStatus` contains `name` and `status`: `applied`, `pending`, or `missing`
-(recorded as applied but absent from the source). Applied/missing entries follow
-history order, followed by pending entries in migration order. The function returns
-an empty array when neither source nor history contains migrations.
+(recorded as applied but absent from the source). Applied/missing entries also
+include `runOn?: Date`, the application time recorded in the history table;
+pending entries have no date. The timestamp uses [node-postgres's type parsing](https://node-postgres.com/features/types#date--timestamp--timestamptz),
+which interprets `timestamp` values in the Node process's local timezone.
+Applied/missing entries follow history order, followed by pending entries in
+migration order. The function returns an empty array when neither source nor
+history contains migrations.
 
 The function shares the runner's history-location checks and loaders, including grouped
 SQL and in-memory factories. It does not invoke migration actions or write to the database;
