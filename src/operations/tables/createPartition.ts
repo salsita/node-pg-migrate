@@ -28,14 +28,19 @@ export type CreatePartition = Reversible<CreatePartitionFn>;
 function formatBound(bound: PartitionBound): string {
   switch (bound.strategy) {
     case 'RANGE':
-      if (bound.from.length === 0 || bound.from.length !== bound.to.length) {
+      if (
+        !Array.isArray(bound.from) ||
+        !Array.isArray(bound.to) ||
+        bound.from.length === 0 ||
+        bound.from.length !== bound.to.length
+      ) {
         throw new Error(
           'RANGE partition bounds must have matching, nonempty from/to lists'
         );
       }
       return `FOR VALUES FROM (${bound.from.map(escapeValue).join(', ')}) TO (${bound.to.map(escapeValue).join(', ')})`;
     case 'LIST':
-      if (bound.values.length === 0) {
+      if (!Array.isArray(bound.values) || bound.values.length === 0) {
         throw new Error(
           'LIST partition bounds must have a nonempty values list'
         );
@@ -45,12 +50,13 @@ function formatBound(bound: PartitionBound): string {
       if (
         !Number.isSafeInteger(bound.modulus) ||
         bound.modulus <= 0 ||
+        bound.modulus > 2_147_483_647 ||
         !Number.isSafeInteger(bound.remainder) ||
         bound.remainder < 0 ||
         bound.remainder >= bound.modulus
       ) {
         throw new Error(
-          'HASH partition bounds require a positive integer modulus and an integer remainder between zero and modulus - 1'
+          'HASH partition bounds require an integer modulus between 1 and 2147483647 and an integer remainder between zero and modulus - 1'
         );
       }
       return `FOR VALUES WITH (MODULUS ${bound.modulus}, REMAINDER ${bound.remainder})`;
@@ -90,8 +96,16 @@ export function createPartition(mOptions: MigrationOptions): CreatePartition {
     return queries.join('\n');
   };
 
-  _create.reverse = (tableName, parentTableName, bound, options) =>
-    dropTable(mOptions)(tableName, options);
+  _create.reverse = (tableName, parentTableName, bound, options) => {
+    const drop = dropTable(mOptions)(tableName, options);
+    // DETACH has no IF EXISTS for the child, so preserve the optional drop path.
+    if (options?.ifExists) {
+      return drop;
+    }
+
+    // Detaching preserves parent foreign keys and refuses referenced rows.
+    return `ALTER TABLE ${mOptions.literal(parentTableName)} DETACH PARTITION ${mOptions.literal(tableName)};\n${drop}`;
+  };
 
   return _create;
 }

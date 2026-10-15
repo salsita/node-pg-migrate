@@ -1,7 +1,19 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { MigrationMap, RunnerOptionMigrations } from '../../src';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest';
+import type {
+  DropTableOptions,
+  MigrationMap,
+  RunnerOptionMigrations,
+} from '../../src';
 import { runner } from '../../src';
 import {
   INTEGRATION_TIMEOUT,
@@ -268,6 +280,154 @@ describe.each(PG_VERSIONS)(
       expect(
         (await client.query('SELECT name FROM public.pgmigrations')).rows
       ).toEqual([]);
+    });
+
+    describe('foreign-key rollback', () => {
+      const fkSchema = 'partition.fk"schema';
+
+      beforeEach(async () => {
+        await client.query(`
+          CREATE SCHEMA "partition.fk""schema";
+          CREATE TABLE "partition.fk""schema".parent (id integer PRIMARY KEY)
+            PARTITION BY RANGE (id);
+          CREATE TABLE "partition.fk""schema".ref (
+            id integer CONSTRAINT parent_fk REFERENCES "partition.fk""schema".parent(id)
+          );
+          CREATE TABLE "partition.fk""schema".kept PARTITION OF "partition.fk""schema".parent
+            FOR VALUES FROM (10) TO (20);
+          INSERT INTO "partition.fk""schema".parent VALUES (10);
+          INSERT INTO "partition.fk""schema".ref VALUES (10);
+        `);
+      });
+
+      afterEach(async () => {
+        await client.query(`
+          DROP SCHEMA IF EXISTS "partition.fk""schema" CASCADE;
+          DROP TABLE IF EXISTS public.partition_fk_history;
+        `);
+      });
+
+      function migrateChild(
+        direction: 'up' | 'down',
+        options: DropTableOptions = {}
+      ) {
+        return migrate({
+          direction,
+          count: 1,
+          migrationsTable: 'partition_fk_history',
+          logger: { info: () => {}, warn: () => {}, error: () => {} },
+          migrations: {
+            '003_child': {
+              up: (pgm) => {
+                pgm.createPartition(
+                  { schema: fkSchema, name: 'child"表' },
+                  { schema: fkSchema, name: 'parent' },
+                  { strategy: 'RANGE', from: [0], to: [10] },
+                  options
+                );
+              },
+            },
+          },
+        });
+      }
+
+      async function foreignKey() {
+        return (
+          await client.query<{ oid: number }>(`
+            SELECT oid FROM pg_constraint
+            WHERE conrelid = '"partition.fk""schema".ref'::regclass
+              AND conname = 'parent_fk'
+          `)
+        ).rows;
+      }
+
+      it.each([false, true])(
+        'preserves the parent foreign key when rolling back an unreferenced child (cascade: %s)',
+        async (cascade) => {
+          const originalForeignKey = await foreignKey();
+          expect(originalForeignKey).toHaveLength(1);
+          await migrateChild('up', { cascade });
+          await client.query(
+            'INSERT INTO "partition.fk""schema".parent VALUES (1)'
+          );
+
+          await migrateChild('down', { cascade });
+
+          expect(await foreignKey()).toEqual(originalForeignKey);
+          expect(
+            (
+              await client.query(`
+              SELECT to_regclass('"partition.fk""schema"."child""表"') AS child
+            `)
+            ).rows
+          ).toEqual([{ child: null }]);
+          expect(
+            (await client.query('SELECT id FROM "partition.fk""schema".parent'))
+              .rows
+          ).toEqual([{ id: 10 }]);
+          expect(
+            (await client.query('SELECT id FROM "partition.fk""schema".ref'))
+              .rows
+          ).toEqual([{ id: 10 }]);
+          expect(
+            (await client.query('SELECT name FROM public.partition_fk_history'))
+              .rows
+          ).toEqual([]);
+          await expect(
+            client.query('INSERT INTO "partition.fk""schema".ref VALUES (1)')
+          ).rejects.toMatchObject({ code: '23503' });
+        }
+      );
+
+      it.each([false, true])(
+        'refuses to remove referenced rows and preserves attachment and history (cascade: %s)',
+        async (cascade) => {
+          await migrateChild('up', { cascade });
+          const originalForeignKey = await foreignKey();
+          await client.query(`
+            INSERT INTO "partition.fk""schema".parent VALUES (1);
+            INSERT INTO "partition.fk""schema".ref VALUES (1);
+          `);
+
+          await expect(migrateChild('down', { cascade })).rejects.toMatchObject(
+            { code: '23503' }
+          );
+
+          expect(await foreignKey()).toEqual(originalForeignKey);
+          expect(
+            (
+              await client.query(`
+              SELECT inhrelid::regclass::text AS child FROM pg_inherits
+              WHERE inhparent = '"partition.fk""schema".parent'::regclass
+                AND inhrelid = '"partition.fk""schema"."child""表"'::regclass
+            `)
+            ).rows
+          ).toHaveLength(1);
+          expect(
+            (
+              await client.query(
+                'SELECT id FROM "partition.fk""schema".parent ORDER BY id'
+              )
+            ).rows
+          ).toEqual([{ id: 1 }, { id: 10 }]);
+          expect(
+            (await client.query('SELECT name FROM public.partition_fk_history'))
+              .rows
+          ).toEqual([{ name: '003_child' }]);
+        }
+      );
+
+      it('allows ifExists rollback after both child and parent have been removed', async () => {
+        await migrateChild('up', { ifExists: true });
+        await client.query('DROP TABLE "partition.fk""schema".parent CASCADE');
+
+        await migrateChild('down', { ifExists: true });
+
+        expect(
+          (await client.query('SELECT name FROM public.partition_fk_history'))
+            .rows
+        ).toEqual([]);
+      });
     });
   }
 );
