@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { JsonValue, PgLiteralValue } from '../../src';
+import type { PgLiteralValue } from '../../src';
 import { escapeValue, PgLiteral } from '../../src';
 
 describe('utils', () => {
@@ -163,16 +163,34 @@ describe('utils', () => {
     });
 
     it('should propagate JSON serialization errors', () => {
-      const value: { [key: string]: JsonValue } = {};
+      const value: Record<string, unknown> = {};
       value.self = value;
 
       expect(() => escapeValue(value)).toThrow(TypeError);
     });
 
-    it('should not treat class instances as plain JSON objects', () => {
-      // @ts-expect-error: JS-only test
-      expect(escapeValue(new Date(0))).toBe('');
+    it('should serialize nested dates through their toJSON method', () => {
+      expect(escapeValue({ createdAt: new Date(0) })).toBe(
+        '$pga${"createdAt":"1970-01-01T00:00:00.000Z"}$pga$'
+      );
     });
+
+    it.each([
+      new Date(0),
+      new Map(),
+      new Set(),
+      () => {},
+      { toJSON: () => {} },
+    ])(
+      'should reject unsupported values instead of producing empty SQL: %s',
+      (value) => {
+        expect(() => escapeValue(value)).toThrow(
+          new TypeError(
+            'Unsupported value: expected a plain object, array, string, number, boolean, null or SQL literal'
+          )
+        );
+      }
+    );
 
     // TODO @Shinigami92 2024-04-03: Should this throw an error?
     it('should parse unexpected type to empty string', () => {

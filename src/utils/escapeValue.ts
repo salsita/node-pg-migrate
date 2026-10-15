@@ -1,9 +1,9 @@
 import { isPgLiteral, stringIdGenerator } from '.';
-import type { Value } from '../operations/generalTypes';
+import type { DefaultValue } from '../operations/generalTypes';
 
 const ARRAY_KEYWORD = 'ARRAY';
 
-export function escapeValue(val: Value): string | number {
+export function escapeValue(val: DefaultValue): string | number {
   if (val === null) {
     return 'NULL';
   }
@@ -55,7 +55,16 @@ export function escapeValue(val: Value): string | number {
     (Object.getPrototypeOf(val) === Object.prototype ||
       Object.getPrototypeOf(val) === null)
   ) {
-    return escapeValue(JSON.stringify(val));
+    const json = JSON.stringify(val);
+    if (json !== undefined) {
+      return escapeValue(json);
+    }
+  }
+
+  if (typeof val === 'object' || typeof val === 'function') {
+    throw new TypeError(
+      'Unsupported value: expected a plain object, array, string, number, boolean, null or SQL literal'
+    );
   }
 
   return '';

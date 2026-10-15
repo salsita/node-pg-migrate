@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   GrantOnTablesOptions,
   IndexStorageParameters,
-  JsonValue,
   Reference,
 } from '../src';
 import { MigrationBuilder } from '../src';
@@ -154,6 +153,46 @@ describe('migrationBuilder', () => {
     }
   );
 
+  it.each([new Date(0), new Map(), { count: 1n }, () => {}])(
+    'leaves queued SQL unchanged for an unsupported default: %s',
+    (value) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console
+      );
+      pgm.sql('SELECT 1');
+
+      expect(() => {
+        pgm.createTable('records', {
+          document: { type: 'jsonb', default: value },
+        });
+      }).toThrow(TypeError);
+      expect(pgm.getSql()).toBe('SELECT 1;\n');
+    }
+  );
+
+  it('serializes an interface-typed default with a name property as JSON', () => {
+    interface Document {
+      name: string;
+      age: number;
+    }
+    const document: Document = { name: 'Alice', age: 3 };
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console
+    );
+    pgm.addColumns('records', {
+      document: { type: 'jsonb', default: document },
+    });
+    expect(pgm.getSql()).toContain(
+      'DEFAULT $pga${"name":"Alice","age":3}$pga$'
+    );
+  });
+
   it('leaves queued SQL unchanged when a default cannot be serialized', () => {
     const pgm = new MigrationBuilder(
       { query: vi.fn(), select: vi.fn() },
@@ -163,7 +202,7 @@ describe('migrationBuilder', () => {
       false
     );
     pgm.sql('SELECT 1');
-    const value: { [key: string]: JsonValue } = {};
+    const value: Record<string, unknown> = {};
     value.self = value;
 
     expect(() => {

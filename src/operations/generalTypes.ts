@@ -13,14 +13,6 @@ export type PublicPart<T> = { [K in keyof T]: T[K] };
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null };
 
-export type JsonValue =
-  | null
-  | boolean
-  | string
-  | number
-  | JsonValue[]
-  | { [key: string]: JsonValue };
-
 export type Value =
   | null
   | boolean
@@ -28,8 +20,10 @@ export type Value =
   | number
   | PgLiteral
   | PgLiteralValue
-  | Value[]
-  | { [key: string]: JsonValue };
+  | Value[];
+
+/** Objects used as defaults are checked and serialized at runtime. */
+export type DefaultValue = Value | object;
 
 export type Type = string | { type: string };
 

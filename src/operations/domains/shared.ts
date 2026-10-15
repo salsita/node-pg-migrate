@@ -1,7 +1,7 @@
-import type { Value } from '../generalTypes';
+import type { DefaultValue } from '../generalTypes';
 
 export interface DomainOptions {
-  default?: Value;
+  default?: DefaultValue;
 
   notNull?: boolean;
 

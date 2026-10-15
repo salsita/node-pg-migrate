@@ -6,14 +6,14 @@ import {
   formatSeparator,
   makeComment,
 } from '../../utils';
-import type { Name, Value } from '../generalTypes';
+import type { DefaultValue, Name } from '../generalTypes';
 import { parseSequenceOptions } from '../sequences';
 import type { SequenceGeneratedOptions } from './shared';
 
 export interface AlterColumnOptions {
   type?: string;
 
-  default?: Value;
+  default?: DefaultValue;
 
   notNull?: boolean;
 

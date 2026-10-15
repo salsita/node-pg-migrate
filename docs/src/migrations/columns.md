@@ -90,7 +90,10 @@ pgm.alterColumn('uploads', 'stats', { default: { attempts: 1, uploads: 0 } });
 Objects are serialized with `JSON.stringify` and escaped as SQL strings;
 PostgreSQL converts them to the destination type. Nested objects and arrays are
 JSON data. The same support applies to domain defaults, function argument
-defaults, and view column defaults.
+defaults, and view column defaults. The `DefaultValue` type accepts objects
+declared with either a TypeScript interface or a type alias; the plain-object
+check and JSON serialization happen at runtime. Nested `Date` values use their
+`toJSON` method and become ISO strings, just as with `JSON.stringify`.
 
 Top-level arrays still produce PostgreSQL arrays. For a JSON array default, use
 `default: JSON.stringify([1, 2])`. Strings that already contain JSON, such as
@@ -99,7 +102,9 @@ Objects with `literal: true` retain their existing meaning as raw SQL literals;
 to store such an object as JSON, pass `JSON.stringify(object)` instead.
 
 Use JSON-compatible values: circular references and `BigInt` cause serialization
-to throw before the operation is queued. Class instances are not plain objects.
+to throw before the operation is queued. A top-level class instance such as a
+`Date`, `Map`, or `Set`, or a function, throws a `TypeError` instead of generating
+invalid SQL. Explicit SQL literals remain supported.
 
 ## Data types & Convenience Shorthand
 

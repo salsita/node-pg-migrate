@@ -1,4 +1,4 @@
-import type { LiteralUnion, Name, Value } from '../generalTypes';
+import type { DefaultValue, LiteralUnion, Name } from '../generalTypes';
 
 export interface FunctionParamType {
   mode?: 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
@@ -7,7 +7,7 @@ export interface FunctionParamType {
 
   type: string;
 
-  default?: Value;
+  default?: DefaultValue;
 }
 
 export type FunctionParam = string | FunctionParamType;
