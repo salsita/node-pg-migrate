@@ -92,6 +92,8 @@ This generates `CHECK ("retail_price" > 0)` and `CHECK ("wholesale_price" > 0)`.
 The callback receives the column identifier already quoted and, when enabled,
 decamelized. Interpolate it directly without adding quotes. Return a synchronous
 SQL expression without the `CHECK` wrapper; the returned SQL is used as written.
+Empty or whitespace-only strings and non-string results (including promises)
+throw a `TypeError` before SQL is queued.
 Callbacks also work in ordinary column definitions. A column's explicit `check`
 overrides the shorthand's check. Existing string checks remain literal SQL.
 

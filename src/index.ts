@@ -207,6 +207,7 @@ export type {
   AlterColumnOptions,
   AlterTable,
   AlterTableOptions,
+  ColumnCheck,
   ColumnDefinition,
   ColumnDefinitions,
   ConstraintOptions,

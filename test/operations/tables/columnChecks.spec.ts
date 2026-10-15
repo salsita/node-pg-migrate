@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ColumnDefinitions } from '../../../src';
+import type { ColumnCheck, ColumnDefinitions } from '../../../src';
 import { addColumns, createTable } from '../../../src/operations/tables';
 import { options1, options2 } from '../../presetMigrationOptions';
 
@@ -24,6 +24,38 @@ describe('column check callbacks', () => {
       expect(check).toHaveBeenCalledExactlyOnceWith(identifier);
     }
   );
+
+  it.each(['', ' \t\n', undefined, null, 42, Promise.resolve('a > 0')])(
+    'rejects invalid callback result %s before generating SQL',
+    (result) => {
+      const options = {
+        ...options1,
+        typeShorthands: {
+          price: { type: 'numeric', check: () => result as unknown as string },
+        },
+      };
+
+      for (const operation of [createTable, addColumns]) {
+        expect(() => operation(options)('products', { a: 'price' })).toThrow(
+          new TypeError(
+            '"check" callback for column "a" must return a non-empty SQL string'
+          )
+        );
+      }
+    }
+  );
+
+  it('preserves literal checks and whitespace in valid callback results', () => {
+    expect(
+      createTable(options1)('products', {
+        unchecked: { type: 'integer', check: '' },
+        literal: { type: 'integer', check: ' ' },
+        price: { type: 'numeric', check: (column) => ` ${column} > 0 ` },
+      })
+    ).toBe(
+      'CREATE TABLE "products" ("unchecked" integer, "literal" integer CHECK ( ), "price" numeric CHECK ( "price" > 0 ));'
+    );
+  });
 
   it('resolves chained shorthands independently for each column without mutating them', () => {
     const check = vi.fn((column: string) => `${column} > 0`);
@@ -56,6 +88,7 @@ describe('column check callbacks', () => {
 
   it('preserves column overrides and literal SQL strings', () => {
     const inheritedCheck = vi.fn((column: string) => `${column} > 0`);
+    const boundedCheck: ColumnCheck = (column) => `${column} BETWEEN 1 AND 10`;
     const sql = createTable({
       ...options1,
       typeShorthands: { price: { type: 'numeric', check: inheritedCheck } },
@@ -63,7 +96,7 @@ describe('column check callbacks', () => {
       discounted: { type: 'price', check: 'discounted >= 0' },
       bounded: {
         type: 'price',
-        check: (column) => `${column} BETWEEN 1 AND 10`,
+        check: boundedCheck,
       },
       unchecked: { type: 'price', check: undefined },
       label: { type: 'text', check: "label <> '${column}'" },

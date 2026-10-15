@@ -43,6 +43,9 @@ export type SequenceGeneratedOptions = {
   precedence: 'ALWAYS' | 'BY DEFAULT';
 } & SequenceOptions;
 
+/** SQL expression, or a callback receiving the quoted column identifier. */
+export type ColumnCheck = string | ((column: string) => string);
+
 export interface ColumnDefinition extends Partial<ReferencesOptions> {
   type: string;
 
@@ -58,8 +61,7 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
 
   default?: Value;
 
-  /** SQL expression, or a callback receiving the quoted column identifier. */
-  check?: string | ((column: string) => string);
+  check?: ColumnCheck;
 
   deferrable?: boolean;
 
@@ -284,6 +286,14 @@ export function parseColumns(
           typeof check === 'function'
             ? check(mOptions.literal(columnName))
             : check;
+        if (
+          typeof check === 'function' &&
+          (typeof expression !== 'string' || expression.trim() === '')
+        ) {
+          throw new TypeError(
+            `"check" callback for column "${columnName}" must return a non-empty SQL string`
+          );
+        }
         constraints.push(`CHECK (${expression})`);
       }
 
