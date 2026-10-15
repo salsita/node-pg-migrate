@@ -1,10 +1,14 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue } from '../../utils';
 import type { Name } from '../generalTypes';
+import { warnAmbiguousNullability } from '../warnAmbiguousNullability';
 import type { DomainOptions } from './shared';
 
 export interface AlterDomainOptions extends DomainOptions {
-  /** Drop NOT NULL when true. False has no effect; use notNull to set it. */
+  /**
+   * Drop NOT NULL when true. False is ignored and warns unless notNull is true.
+   * notNull takes precedence when both options are supplied.
+   */
   allowNull?: boolean;
 }
 
@@ -25,15 +29,11 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
 
     const actions: string[] = [];
 
-    if (allowNull === false && notNull !== true) {
-      mOptions.logger.warn(
-        `alterDomain ${mOptions.literal(domainName)}: allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.`
-      );
-    } else if (notNull === true && allowNull === true) {
-      mOptions.logger.warn(
-        `alterDomain ${mOptions.literal(domainName)}: notNull: true conflicts with allowNull: true. notNull takes precedence.`
-      );
-    }
+    warnAmbiguousNullability(
+      mOptions.logger,
+      () => `alterDomain ${mOptions.literal(domainName)}`,
+      { notNull, allowNull }
+    );
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');

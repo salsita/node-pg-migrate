@@ -8,6 +8,7 @@ import {
 } from '../../utils';
 import type { Name, Value } from '../generalTypes';
 import { parseSequenceOptions } from '../sequences';
+import { warnAmbiguousNullability } from '../warnAmbiguousNullability';
 import type { SequenceGeneratedOptions } from './shared';
 
 export interface AlterColumnOptions {
@@ -17,7 +18,10 @@ export interface AlterColumnOptions {
 
   notNull?: boolean;
 
-  /** Drop NOT NULL when true. False has no effect; use notNull to set it. */
+  /**
+   * Drop NOT NULL when true. False is ignored and warns unless notNull is true.
+   * notNull takes precedence when both options are supplied.
+   */
   allowNull?: boolean;
 
   collation?: string;
@@ -53,15 +57,12 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
 
     const actions: string[] = [];
 
-    if (allowNull === false && notNull !== true) {
-      mOptions.logger.warn(
-        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}: allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.`
-      );
-    } else if (notNull === true && allowNull === true) {
-      mOptions.logger.warn(
-        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}: notNull: true conflicts with allowNull: true. notNull takes precedence.`
-      );
-    }
+    warnAmbiguousNullability(
+      mOptions.logger,
+      () =>
+        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`,
+      { notNull, allowNull }
+    );
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');

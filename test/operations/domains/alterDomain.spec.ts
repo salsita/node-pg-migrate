@@ -28,7 +28,7 @@ describe('operations', () => {
         [
           { notNull: false, allowNull: false },
           'DROP NOT NULL',
-          'allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.',
+          'notNull: false conflicts with allowNull: false. notNull takes precedence; NOT NULL will be dropped.',
         ],
       ] as const)(
         'preserves nullability SQL and warns for ambiguous options: %j',
