@@ -590,8 +590,8 @@ INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$081_temporary_ta
 
 ### MIGRATION 082_view_options (UP) ###
 CREATE TABLE "tvo" ("id" serial PRIMARY KEY, "string" text NOT NULL, "created" timestamp DEFAULT current_timestamp NOT NULL);
-CREATE VIEW "vo"("id", "str") WITH ("check_option" = $pga$LOCAL$pga$) AS SELECT id, string FROM tvo;
-ALTER VIEW "vo" SET ("check_option" = $pga$CASCADED$pga$);
+CREATE VIEW "vo"("id", "str") WITH ("check_option" = $pga$local$pga$) AS SELECT id, string FROM tvo;
+ALTER VIEW "vo" SET ("check_option" = $pga$cascaded$pga$);
 ALTER VIEW "vo" RESET ("check_option");
 INSERT INTO "public"."pgmigrations" (name, run_on) VALUES ($pga$082_view_options$pga$, NOW());
 

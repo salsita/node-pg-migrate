@@ -13,5 +13,5 @@ export function storageParameterStr<
   storageParameters: TStorageParameters
 ): (key: keyof TStorageParameters) => string {
   return (key) =>
-    formatOption(String(key), storageParameters[key], quoteOptionName);
+    formatOption(quoteOptionName(String(key)), storageParameters[key]);
 }

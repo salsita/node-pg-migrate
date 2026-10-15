@@ -1,7 +1,10 @@
 import { escapeValue } from './escapeValue';
 import { quote } from './quote';
 
-/** Quote view option names while preserving unquoted SQL case and namespaces. */
+/**
+ * Quote reloption names for views and materialized views: fold ASCII case like
+ * unquoted SQL and quote each dot-separated part.
+ */
 export function quoteOptionName(key: string): string {
   return key
     .replaceAll(/[A-Z]/g, (letter) => letter.toLowerCase())
@@ -11,9 +14,8 @@ export function quoteOptionName(key: string): string {
 }
 
 export function formatOption(
-  key: string,
-  value: string | number | boolean | null,
-  quoteName: (name: string) => string = quote
+  quotedName: string,
+  value: string | number | boolean | null
 ): string {
-  return `${quoteName(key)} = ${escapeValue(value)}`;
+  return `${quotedName} = ${escapeValue(value)}`;
 }

@@ -2,11 +2,41 @@ import { describe, expect, it } from 'vitest';
 import {
   alterMaterializedView,
   createMaterializedView,
-} from '../../src/operations/materializedViews';
-import { alterView, createView } from '../../src/operations/views';
-import { options1, options2 } from '../presetMigrationOptions';
+} from '../../../src/operations/materializedViews';
+import { alterView, createView } from '../../../src/operations/views';
+import { options1, options2 } from '../../presetMigrationOptions';
 
 describe('view option escaping', () => {
+  it.each([
+    { key: 'check_option', value: 'LOCAL', expected: 'local' },
+    { key: 'CHECK_OPTION', value: 'CASCADED', expected: 'cascaded' },
+    { key: 'Check_Option', value: 'CaScAdEd', expected: 'cascaded' },
+    { key: 'check_option', value: 'local', expected: 'local' },
+  ])(
+    'normalizes $key: $value for view metadata',
+    ({ key, value, expected }) => {
+      const options = { [key]: value };
+      const clause = `("check_option" = $pga$${expected}$pga$)`;
+
+      expect(createView(options1)('v', { options }, 'SELECT 1')).toContain(
+        clause
+      );
+      expect(alterView(options1)('v', { options })).toContain(clause);
+      expect(options).toEqual({ [key]: value });
+    }
+  );
+
+  it('preserves other string values, including namespaced check_option keys', () => {
+    const options = { custom: 'LOCAL', 'extension.check_option': 'CASCADED' };
+    const clause =
+      '("custom" = $pga$LOCAL$pga$, "extension"."check_option" = $pga$CASCADED$pga$)';
+
+    expect(createView(options1)('v', { options }, 'SELECT 1')).toContain(
+      clause
+    );
+    expect(alterView(options1)('v', { options })).toContain(clause);
+  });
+
   it.each([createView, alterView])(
     'escapes names and string values in %s',
     (operation) => {
@@ -60,7 +90,7 @@ describe('view option escaping', () => {
           'SELECT 1'
         )
       ).toContain(
-        'WITH ("check_option" = $pga$LOCAL$pga$, "security_barrier" = true, "customoption" = 0, "another_option" = false)'
+        'WITH ("check_option" = $pga$local$pga$, "security_barrier" = true, "customoption" = 0, "another_option" = false)'
       );
     }
   );
