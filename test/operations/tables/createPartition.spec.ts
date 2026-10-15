@@ -39,6 +39,10 @@ describe('createPartition', () => {
       { strategy: 'HASH', modulus: 4, remainder: 3 },
       'FOR VALUES WITH (MODULUS 4, REMAINDER 3)',
     ],
+    [
+      { strategy: 'HASH', modulus: 2_147_483_647, remainder: 2_147_483_646 },
+      'FOR VALUES WITH (MODULUS 2147483647, REMAINDER 2147483646)',
+    ],
     [{ strategy: 'DEFAULT' }, 'DEFAULT'],
   ])('renders bounds %j', (bound, sql) => {
     expect(create('child', 'parent', bound)).toBe(
@@ -69,6 +73,9 @@ describe('createPartition', () => {
     expect(operation(child, 'myParent', { strategy: 'DEFAULT' })).toBe(
       'CREATE TABLE "my_schema"."my_child" PARTITION OF "my_parent" DEFAULT;'
     );
+    expect(operation.reverse(child, 'myParent', { strategy: 'DEFAULT' })).toBe(
+      'ALTER TABLE "my_parent" DETACH PARTITION "my_schema"."my_child";\nDROP TABLE "my_schema"."my_child";'
+    );
     expect(
       operation.reverse(
         child,
@@ -85,6 +92,39 @@ describe('createPartition', () => {
         strategy: 'DEFAULT',
       })
     ).toBe('CREATE TABLE child PARTITION OF parent DEFAULT;');
+    expect(
+      create.reverse(new PgLiteral('child'), new PgLiteral('parent'), {
+        strategy: 'DEFAULT',
+      })
+    ).toBe('ALTER TABLE parent DETACH PARTITION child;\nDROP TABLE child;');
+  });
+
+  it.each([{}, { ifExists: false }, { cascade: true }])(
+    'detaches before dropping with reversal options %j',
+    (options) => {
+      expect(
+        create.reverse(
+          { schema: 'child.schema', name: 'child"表' },
+          { schema: 'parent.schema', name: 'parent"表' },
+          { strategy: 'DEFAULT' },
+          options
+        )
+      ).toBe(
+        'ALTER TABLE "parent.schema"."parent""表" DETACH PARTITION "child.schema"."child""表";\n' +
+          `DROP TABLE "child.schema"."child""表"${options.cascade ? ' CASCADE' : ''};`
+      );
+    }
+  );
+
+  it('skips detaching when ifExists allows a missing child or parent', () => {
+    expect(
+      create.reverse(
+        'child',
+        'parent',
+        { strategy: 'DEFAULT' },
+        { ifExists: true }
+      )
+    ).toBe('DROP TABLE IF EXISTS "child";');
   });
 
   it.each([
@@ -111,12 +151,32 @@ describe('createPartition', () => {
     [{ strategy: 'RANGE', from: [], to: [] }, 'RANGE partition bounds'],
     [{ strategy: 'RANGE', from: [0], to: [1, 2] }, 'RANGE partition bounds'],
     [{ strategy: 'LIST', values: [] }, 'LIST partition bounds'],
-    ...[0, -1, 1.5, Infinity, NaN, Number.MAX_SAFE_INTEGER + 1].map(
-      (modulus): [PartitionBound, string] => [
-        { strategy: 'HASH', modulus, remainder: 0 },
-        'HASH partition bounds',
-      ]
-    ),
+    ...[
+      0,
+      -1,
+      1.5,
+      Infinity,
+      NaN,
+      2_147_483_648,
+      4_294_967_296,
+      Number.MAX_SAFE_INTEGER + 1,
+    ].map((modulus): [PartitionBound, string] => [
+      { strategy: 'HASH', modulus, remainder: 0 },
+      'HASH partition bounds',
+    ]),
+    ...[
+      { strategy: 'RANGE', from: 0, to: 1 },
+      { strategy: 'RANGE', from: '0', to: '1' },
+      { strategy: 'RANGE', from: undefined, to: [1] },
+      { strategy: 'RANGE', from: [0], to: null },
+    ].map((bound): [PartitionBound, string] => [
+      bound as unknown as PartitionBound,
+      'RANGE partition bounds',
+    ]),
+    ...[0, 'ready', null, undefined].map((values): [PartitionBound, string] => [
+      { strategy: 'LIST', values } as unknown as PartitionBound,
+      'LIST partition bounds',
+    ]),
     ...[-1, 2, 0.5, Infinity, NaN].map(
       (remainder): [PartitionBound, string] => [
         { strategy: 'HASH', modulus: 2, remainder },
@@ -143,7 +203,7 @@ describe('createPartition', () => {
     expect(pgm.getSql()).toBe(before);
   });
 
-  it('queues a child partition and reverses it through dropTable', () => {
+  it('queues a child partition and keeps detach before drop in one reverse step', () => {
     const pgm = new MigrationBuilder(
       { query: vi.fn(), select: vi.fn() },
       undefined,
@@ -165,6 +225,8 @@ describe('createPartition', () => {
       from: ['2026-01-01'],
       to: ['2027-01-01'],
     });
-    expect(pgm.getSqlSteps()).toContain('DROP TABLE "events_2026";');
+    expect(pgm.getSqlSteps()).toContain(
+      'ALTER TABLE "events" DETACH PARTITION "events_2026";\nDROP TABLE "events_2026";'
+    );
   });
 });
