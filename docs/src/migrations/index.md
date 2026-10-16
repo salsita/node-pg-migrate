@@ -100,6 +100,23 @@ returned by `up` resolves. Adding `async` does not change how migration operatio
 work. These operations return `void`, so awaiting `pgm.createTable()` or
 `pgm.insert()` does not execute the queued SQL.
 
+For several records, call `pgm.insert()` once per record:
+
+```javascript
+export const up = async (pgm) => {
+  await doSomethingAsync();
+
+  pgm.createTable('names', { id: 'serial', name: 'text' });
+  const rows = [{ name: 'Ada' }, { name: 'Grace' }];
+  for (const row of rows) {
+    pgm.insert('names', row);
+  }
+};
+```
+
+Each call queues a separate `INSERT`. Passing the array directly to `pgm.insert()`
+is not supported yet.
+
 [`pgm.db.query()` and `pgm.db.select()`](misc.md#operation-pgm-db) execute queries
 directly and return Promises. Await them, or return their Promise, so the migration
 waits for them to finish. A direct query cannot depend on a table or column that

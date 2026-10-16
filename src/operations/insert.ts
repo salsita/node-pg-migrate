@@ -38,7 +38,7 @@ export function insert(mOptions: MigrationOptions): Insert {
     }
 
     const columns = entries.map(([column]) => mOptions.literal(column));
-    const row: Array<string | number> = [];
+    const rows: Array<string | number> = [];
     for (const [column, value] of entries) {
       if (!isSupportedValue(value)) {
         throw new TypeError(
@@ -46,9 +46,9 @@ export function insert(mOptions: MigrationOptions): Insert {
             'Use a supported value, JSON.stringify() for JSON data, or pgm.func() / PgLiteral for explicit SQL.'
         );
       }
-      row.push(escapeValue(value));
+      rows.push(escapeValue(value));
     }
 
-    return `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${row.join(', ')});`;
+    return `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${rows.join(', ')});`;
   };
 }
