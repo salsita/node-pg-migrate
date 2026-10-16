@@ -38,15 +38,16 @@ export function insert(mOptions: MigrationOptions): Insert {
     }
 
     const columns = entries.map(([column]) => mOptions.literal(column));
-    const row = entries.map(([column, value]) => {
+    const row: Array<string | number> = [];
+    for (const [column, value] of entries) {
       if (!isSupportedValue(value)) {
         throw new TypeError(
           `pgm.insert(): unsupported value for ${table}.${mOptions.literal(column)}. ` +
             'Use a supported value, JSON.stringify() for JSON data, or pgm.func() / PgLiteral for explicit SQL.'
         );
       }
-      return escapeValue(value);
-    });
+      row.push(escapeValue(value));
+    }
 
     return `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${row.join(', ')});`;
   };
