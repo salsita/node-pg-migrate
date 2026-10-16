@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { alterColumn } from '../../../src/operations/tables';
 import { options1, options1Pretty } from '../../presetMigrationOptions';
 
@@ -6,6 +6,51 @@ describe('operations', () => {
   describe('columns', () => {
     describe('alterColumn', () => {
       const alterColumnFn = alterColumn(options1);
+
+      it.each([
+        [{}, '', undefined],
+        [{ notNull: undefined, allowNull: undefined }, '', undefined],
+        [{ notNull: true }, 'SET NOT NULL', undefined],
+        [{ notNull: false }, 'DROP NOT NULL', undefined],
+        [{ allowNull: true }, 'DROP NOT NULL', undefined],
+        [
+          { allowNull: false },
+          '',
+          'allowNull: false does not set NOT NULL. Use notNull: true to disallow null values.',
+        ],
+        [{ notNull: true, allowNull: false }, 'SET NOT NULL', undefined],
+        [{ notNull: false, allowNull: true }, 'DROP NOT NULL', undefined],
+        [
+          { notNull: true, allowNull: true },
+          'SET NOT NULL',
+          'notNull: true conflicts with allowNull: true. notNull takes precedence.',
+        ],
+        [
+          { notNull: false, allowNull: false },
+          'DROP NOT NULL',
+          'notNull: false conflicts with allowNull: false. notNull takes precedence; NOT NULL will be dropped.',
+        ],
+      ] as const)(
+        'preserves nullability SQL and warns for ambiguous options: %j',
+        (options, action, warning) => {
+          const warn = vi.fn<(message: string) => void>();
+          const statement = alterColumn({
+            ...options1,
+            logger: { ...console, warn },
+          })({ schema: 'app', name: 'distributors' }, 'addr"ess', options);
+
+          expect(statement).toBe(
+            action
+              ? `ALTER TABLE "app"."distributors" ALTER "addr""ess" ${action};`
+              : ''
+          );
+          expect(warn.mock.calls).toEqual(
+            warning
+              ? [[`alterColumn "app"."distributors"."addr""ess": ${warning}`]]
+              : []
+          );
+        }
+      );
 
       it('should return a function', () => {
         expect(alterColumnFn).toBeTypeOf('function');

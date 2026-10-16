@@ -1,9 +1,14 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue } from '../../utils';
 import type { Name } from '../generalTypes';
+import { warnAmbiguousNullability } from '../warnAmbiguousNullability';
 import type { DomainOptions } from './shared';
 
 export interface AlterDomainOptions extends DomainOptions {
+  /**
+   * Drop NOT NULL when true. False is ignored and warns unless notNull is true.
+   * notNull takes precedence when both options are supplied.
+   */
   allowNull?: boolean;
 }
 
@@ -17,12 +22,18 @@ export function alterDomain(mOptions: MigrationOptions): AlterDomain {
     const {
       default: defaultValue,
       notNull,
-      allowNull = false,
+      allowNull,
       check,
       constraintName,
     } = options;
 
     const actions: string[] = [];
+
+    warnAmbiguousNullability(
+      mOptions.logger,
+      () => `alterDomain ${mOptions.literal(domainName)}`,
+      { notNull, allowNull }
+    );
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');

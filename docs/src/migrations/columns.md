@@ -231,12 +231,19 @@ pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });
 | ------------------- | ------------------------- | ---------------------------------------------------------------------------------------------- |
 | `default`           | [Value](#default-values)  | Sets the default. `null` drops it, omitting it keeps it. See [Default values](#default-values) |
 | `type`              | `string`                  | New datatype                                                                                   |
-| `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false                                                         |
-| `allowNull`         | `boolean`                 | Sets NULL if true (alternative to `notNull`)                                                   |
+| `notNull`           | `boolean`                 | Sets NOT NULL if true; drops it if false                                                       |
+| `allowNull`         | `boolean`                 | Drops NOT NULL if true; false is ignored and warns unless `notNull: true`                      |
 | `using`             | `string`                  | Adds USING clause to change values in column                                                   |
 | `collation`         | `string`                  | Adds COLLATE clause to change values in column                                                 |
 | `comment`           | `string`                  | Adds comment on column                                                                         |
 | `sequenceGenerated` | `object or null or false` | Sets or drops identity column                                                                  |
+
+Use `notNull: true` to disallow null values, and `notNull: false` or
+`allowNull: true` to allow them. Omitting both options leaves nullability unchanged.
+`allowNull: false` does not set `NOT NULL` and emits a warning unless
+`notNull: true` is also supplied. If both options are `true` or both are `false`,
+a warning explains that `notNull` takes precedence: `true` sets `NOT NULL`, and
+`false` drops it.
 
 ##### `sequenceGenerated` Options
 
