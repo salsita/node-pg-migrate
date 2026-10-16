@@ -5,6 +5,12 @@ major versions of `node-pg-migrate`.
 
 ## From v9 to v10
 
+### Column check callbacks
+
+`ColumnDefinition.check` now accepts the exported `ColumnCheck` type: a SQL
+string or a callback returning one. TypeScript consumers reading this property
+must narrow it to a string before passing it to APIs that only accept strings.
+
 ### Migration history corrections
 
 Migration names containing apostrophes are now recorded exactly. This does not

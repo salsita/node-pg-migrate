@@ -15,7 +15,7 @@ and the value is another object that defines the options for the column.
 | `primaryKey`                  | `boolean`                      | Set to true to make this column the primary key                                                   |
 | `notNull`                     | `boolean`                      | Set to true to make this column not null                                                          |
 | `default`                     | [Value](#default-values)       | Adds DEFAULT clause for column. See [Default values](#default-values)                             |
-| `check`                       | `string`                       | SQL for a check constraint for this column                                                        |
+| `check`                       | `string` or `function`         | SQL for a check constraint, or a callback receiving the quoted column identifier                  |
 | `references`                  | [Reference](/migrations/#type) | Target table, optionally with explicit column names                                               |
 | `referencesConstraintName`    | `string`                       | Name of the created constraint                                                                    |
 | `referencesConstraintComment` | `string`                       | Comment on the created constraint                                                                 |
@@ -71,6 +71,31 @@ pgm.addColumns('orders', {
 A column-level foreign key must target a single column. Specify an explicit
 target with a string or a one-element array in `references.columns`. For
 composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
+
+### Reusable check constraints
+
+Use a `check` callback when a [type shorthand](index.md#example) needs to refer
+to the column it is applied to:
+
+```javascript
+export const shorthands = {
+  price: { type: 'numeric', check: (column) => `${column} > 0` },
+};
+
+export const up = (pgm) => {
+  pgm.createTable('products', { retail_price: 'price' });
+  pgm.addColumns('products', { wholesale_price: 'price' });
+};
+```
+
+This generates `CHECK ("retail_price" > 0)` and `CHECK ("wholesale_price" > 0)`.
+The callback receives the column identifier already quoted and, when enabled,
+decamelized. Interpolate it directly without adding quotes. Return a synchronous
+SQL expression without the `CHECK` wrapper; the returned SQL is used as written.
+Empty or whitespace-only strings and non-string results (including promises)
+throw a `TypeError` before SQL is queued.
+Callbacks also work in ordinary column definitions. A column's explicit `check`
+overrides the shorthand's check. Existing string checks remain literal SQL.
 
 ## Data types & Convenience Shorthand
 
