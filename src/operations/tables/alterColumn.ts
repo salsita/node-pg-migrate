@@ -8,6 +8,7 @@ import {
 } from '../../utils';
 import type { DefaultValue, Name } from '../generalTypes';
 import { parseSequenceOptions } from '../sequences';
+import { warnAmbiguousNullability } from '../warnAmbiguousNullability';
 import type { SequenceGeneratedOptions } from './shared';
 
 export interface AlterColumnOptions {
@@ -17,6 +18,10 @@ export interface AlterColumnOptions {
 
   notNull?: boolean;
 
+  /**
+   * Drop NOT NULL when true. False is ignored and warns unless notNull is true.
+   * notNull takes precedence when both options are supplied.
+   */
   allowNull?: boolean;
 
   collation?: string;
@@ -51,6 +56,13 @@ export function alterColumn(mOptions: MigrationOptions): AlterColumn {
     const sequenceGenerated = options.sequenceGenerated;
 
     const actions: string[] = [];
+
+    warnAmbiguousNullability(
+      mOptions.logger,
+      () =>
+        `alterColumn ${mOptions.literal(tableName)}.${mOptions.literal(columnName)}`,
+      { notNull, allowNull }
+    );
 
     if (defaultValue === null) {
       actions.push('DROP DEFAULT');

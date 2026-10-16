@@ -15,7 +15,7 @@ and the value is another object that defines the options for the column.
 | `primaryKey`                  | `boolean`                      | Set to true to make this column the primary key                                                   |
 | `notNull`                     | `boolean`                      | Set to true to make this column not null                                                          |
 | `default`                     | [Value](#default-values)       | Adds DEFAULT clause for column. See [Default values](#default-values)                             |
-| `check`                       | `string`                       | SQL for a check constraint for this column                                                        |
+| `check`                       | `string` or `function`         | SQL for a check constraint, or a callback receiving the quoted column identifier                  |
 | `references`                  | [Reference](/migrations/#type) | Target table, optionally with explicit column names                                               |
 | `referencesConstraintName`    | `string`                       | Name of the created constraint                                                                    |
 | `referencesConstraintComment` | `string`                       | Comment on the created constraint                                                                 |
@@ -105,6 +105,31 @@ Use JSON-compatible values: circular references and `BigInt` cause serialization
 to throw before the operation is queued. A top-level class instance such as a
 `Date`, `Map`, or `Set`, or a function, throws a `TypeError` instead of generating
 invalid SQL. Explicit SQL literals remain supported.
+
+### Reusable check constraints
+
+Use a `check` callback when a [type shorthand](index.md#example) needs to refer
+to the column it is applied to:
+
+```javascript
+export const shorthands = {
+  price: { type: 'numeric', check: (column) => `${column} > 0` },
+};
+
+export const up = (pgm) => {
+  pgm.createTable('products', { retail_price: 'price' });
+  pgm.addColumns('products', { wholesale_price: 'price' });
+};
+```
+
+This generates `CHECK ("retail_price" > 0)` and `CHECK ("wholesale_price" > 0)`.
+The callback receives the column identifier already quoted and, when enabled,
+decamelized. Interpolate it directly without adding quotes. Return a synchronous
+SQL expression without the `CHECK` wrapper; the returned SQL is used as written.
+Empty or whitespace-only strings and non-string results (including promises)
+throw a `TypeError` before SQL is queued.
+Callbacks also work in ordinary column definitions. A column's explicit `check`
+overrides the shorthand's check. Existing string checks remain literal SQL.
 
 ## Data types & Convenience Shorthand
 
@@ -240,12 +265,19 @@ pgm.addColumns('myTable', { id: { type: 'serial', primaryKey: true } });
 | ------------------- | ------------------------- | ---------------------------------------------------------------------------------------------- |
 | `default`           | [Value](#default-values)  | Sets the default. `null` drops it, omitting it keeps it. See [Default values](#default-values) |
 | `type`              | `string`                  | New datatype                                                                                   |
-| `notNull`           | `boolean`                 | Sets NOT NULL if true or NULL if false                                                         |
-| `allowNull`         | `boolean`                 | Sets NULL if true (alternative to `notNull`)                                                   |
+| `notNull`           | `boolean`                 | Sets NOT NULL if true; drops it if false                                                       |
+| `allowNull`         | `boolean`                 | Drops NOT NULL if true; false is ignored and warns unless `notNull: true`                      |
 | `using`             | `string`                  | Adds USING clause to change values in column                                                   |
 | `collation`         | `string`                  | Adds COLLATE clause to change values in column                                                 |
 | `comment`           | `string`                  | Adds comment on column                                                                         |
 | `sequenceGenerated` | `object or null or false` | Sets or drops identity column                                                                  |
+
+Use `notNull: true` to disallow null values, and `notNull: false` or
+`allowNull: true` to allow them. Omitting both options leaves nullability unchanged.
+`allowNull: false` does not set `NOT NULL` and emits a warning unless
+`notNull: true` is also supplied. If both options are `true` or both are `false`,
+a warning explains that `notNull` takes precedence: `true` sets `NOT NULL`, and
+`false` drops it.
 
 ##### `sequenceGenerated` Options
 
