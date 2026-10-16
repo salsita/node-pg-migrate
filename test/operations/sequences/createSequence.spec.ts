@@ -77,6 +77,30 @@ describe('operations', () => {
         );
       });
 
+      it('should return sql statement with NO MINVALUE and NO MAXVALUE for null', () => {
+        const statement = createSequenceFn('serial', {
+          minvalue: null,
+          maxvalue: null,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE SEQUENCE "serial" NO MINVALUE NO MAXVALUE;`
+        );
+      });
+
+      it('should return sql statement with NO MINVALUE and NO MAXVALUE for false', () => {
+        const statement = createSequenceFn('serial', {
+          minvalue: false,
+          maxvalue: false,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `CREATE SEQUENCE "serial" NO MINVALUE NO MAXVALUE;`
+        );
+      });
+
       it('should return sql statement with schema', () => {
         const statement = createSequenceFn({
           name: 'serial',

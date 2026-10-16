@@ -26,6 +26,15 @@ describe('operations', () => {
         expect(statement).toBe(`ALTER SEQUENCE "serial" RESTART WITH 105;`);
       });
 
+      it('should return sql statement with RESTART for restart true', () => {
+        const statement = alterSequenceFn('serial', {
+          restart: true,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER SEQUENCE "serial" RESTART;`);
+      });
+
       it('should return sql statement with zero values', () => {
         const statement = alterSequenceFn('serial', {
           minvalue: 0,
