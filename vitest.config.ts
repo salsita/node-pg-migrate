@@ -15,6 +15,7 @@ if (coverageSuite !== 'unit' && coverageSuite !== 'integration') {
 const integrationOwned = [
   'src/baseline/io/**',
   'src/baseline/index.ts',
+  'src/baseline/catalogs.ts',
   'src/introspect/io/**',
 ];
 
@@ -80,6 +81,15 @@ export default defineConfig({
           // per version and spawns many CLI processes, so parallel files
           // overload Docker and CI runners and make the suite flaky.
           fileParallelism: false,
+        },
+      },
+      {
+        test: {
+          // Benchmarks only (`pnpm run bench`): no tests, no coverage.
+          name: 'bench',
+          environment: 'node',
+          include: [],
+          benchmark: { include: ['test/bench/**/*.bench.ts'] },
         },
       },
     ],

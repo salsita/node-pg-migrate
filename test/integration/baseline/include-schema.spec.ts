@@ -89,7 +89,7 @@ describe.each(PG_VERSIONS)(
       await container?.stop();
     });
 
-    it('refuses unknown include schemas (pg_dump path)', async () => {
+    it('refuses unknown include schemas with --format sql (pg_dump path)', async () => {
       const database = 'include_sql';
       await withAppAndAuditSchemas(container, database);
       const pgDump = await pgDumpShimForTest(container);
@@ -108,22 +108,50 @@ describe.each(PG_VERSIONS)(
       await expectUnknownSchemasRefused(error, dir);
     });
 
-    it('accepts include schemas that all exist', async () => {
+    it('refuses unknown include schemas with --format ts (catalog path)', async () => {
+      const database = 'include_ts';
+      await withAppAndAuditSchemas(container, database);
+      const dir = join(await workDir(), 'migrations');
+
+      const error = await rejectionOf(
+        baseline({
+          databaseUrl: databaseUrl(container, database),
+          format: 'ts',
+          includeSchemas: WITH_UNKNOWN,
+          dir,
+          logger: recordingLogger(),
+        })
+      );
+
+      await expectUnknownSchemasRefused(error, dir);
+    });
+
+    it('accepts include schemas that all exist, with either format', async () => {
       const database = 'include_known';
       await withAppAndAuditSchemas(container, database);
+      const url = databaseUrl(container, database);
       const pgDump = await pgDumpShimForTest(container);
 
-      const { path } = await baseline({
-        databaseUrl: databaseUrl(container, database),
+      const sql = await baseline({
+        databaseUrl: url,
         pgDump,
         includeSchemas: ['app', 'audit'],
         dir: join(await workDir(), 'migrations'),
         logger: recordingLogger(),
       });
+      const ts = await baseline({
+        databaseUrl: url,
+        format: 'ts',
+        includeSchemas: ['app', 'audit'],
+        dir: join(await workDir(), 'migrations'),
+        logger: recordingLogger(),
+      });
 
-      const content = await readFile(path, 'utf8');
-      expect(content).toContain('orders');
-      expect(content).toContain('entries');
+      for (const { path } of [sql, ts]) {
+        const content = await readFile(path, 'utf8');
+        expect(content).toContain('orders');
+        expect(content).toContain('entries');
+      }
     });
   }
 );

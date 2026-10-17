@@ -34,9 +34,9 @@
  * - `PG_DUMP_NOT_FOUND`: the pg_dump executable could not be found.
  * - `PG_DUMP_TOO_OLD`: pg_dump is older than the server it would dump.
  * - `PG_DUMP_FAILED`: pg_dump failed, or its version could not be read.
- * - `UNSUPPORTED_OBJECTS`: some objects of the database depend on each other
- *   in a loop, so no migration can create them one after the other; the
- *   message lists them.
+ * - `UNSUPPORTED_OBJECTS`: a TypeScript/JavaScript baseline (`format` `ts` or
+ *   `js`) cannot represent some objects of the database, or, with `strict`,
+ *   would need raw SQL for some; the message lists them and why.
  */
 export type BaselineErrorCode =
   | 'INVALID_OPTIONS'

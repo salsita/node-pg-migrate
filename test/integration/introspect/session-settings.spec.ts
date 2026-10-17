@@ -1,4 +1,7 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import pg from 'pg';
 import {
   afterAll,
@@ -7,16 +10,21 @@ import {
   expect,
   it,
   onTestFinished,
+  vi,
 } from 'vitest';
+import { baseline, runner } from '../../../src';
+import { generateBaselineFromCatalogs } from '../../../src/baseline/catalogs';
 import { db } from '../../../src/db';
 import { introspect } from '../../../src/introspect/io/introspect';
 import type {
   IntrospectOptions,
   SchemaModel,
 } from '../../../src/introspect/types';
+import type { LogFn, Logger } from '../../../src/logger';
 import {
   createDatabase,
   databaseUrl,
+  dumpSchema,
   INTEGRATION_TIMEOUT,
   loadSql,
   PG_VERSIONS,
@@ -29,12 +37,38 @@ import {
 // in the session's `TimeZone`, a `date` in its `DateStyle`, an `interval` in
 // its `IntervalStyle`, a `float8` with its `extra_float_digits` and a `bytea`
 // in its `bytea_output`. Two people of two time zones must still get the same
-// model out of the same database.
+// model out of the same database, and so the same TypeScript/JavaScript
+// baseline.
 
 const OPTIONS: IntrospectOptions = {
   migrationsSchema: 'public',
   migrationsTable: 'pgmigrations',
 };
+
+/**
+ * A logger that keeps the output of the specs clean.
+ */
+function silentLogger(): Logger {
+  return {
+    debug: vi.fn<LogFn>(),
+    info: vi.fn<LogFn>(),
+    warn: vi.fn<LogFn>(),
+    error: vi.fn<LogFn>(),
+  };
+}
+
+/**
+ * Creates a temporary directory that is removed when the current test
+ * finishes.
+ */
+async function tempDir(): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), 'pgm-baseline-session-'));
+  onTestFinished(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  return dir;
+}
 
 /**
  * A schema whose every rendered expression depends on a rendering setting of
@@ -98,6 +132,35 @@ const OTHER_RENDERINGS: ReadonlyArray<string> = [
 ];
 
 /**
+ * What the UTC rendering of {@link RENDERED_EXPRESSIONS} must write in a
+ * TypeScript baseline, whatever the session: the ISO timestamps of the
+ * partition bound and of the CHECK, the `postgres` interval, the exact `float8`
+ * and the ISO date. The migration is a TypeScript file, so it escapes the
+ * quotes of a constant (`\'…\'`).
+ */
+const TS_UTC_RENDERINGS: ReadonlyArray<string> = [
+  String.raw`\'2022-01-01 00:00:00+00\'`,
+  String.raw`\'2023-01-01 00:00:00+00\'`,
+  String.raw`\'2021-07-08 09:10:11+00\'`,
+  String.raw`\'1 day 02:03:04\'`,
+  String.raw`\'0.30000000000000004\'`,
+  String.raw`\'2022-02-03\'`,
+];
+
+/**
+ * What a reader in America/Sao_Paulo with German dates, SQL-standard intervals
+ * and `extra_float_digits = 0` would write in a TypeScript baseline instead.
+ */
+const TS_OTHER_RENDERINGS: ReadonlyArray<string> = [
+  String.raw`\'31.12.2021 21:00:00 -03\'`,
+  String.raw`\'31.12.2022 21:00:00 -03\'`,
+  String.raw`\'08.07.2021 06:10:11 -03\'`,
+  String.raw`\'1 2:03:04\'`,
+  String.raw`\'0.3\'`,
+  String.raw`\'03.02.2022\'`,
+];
+
+/**
  * The texts of the model that the server renders with the session's
  * settings: the column defaults and partition bounds of the tables, and the
  * definitions of the constraints.
@@ -154,7 +217,9 @@ describe.each(PG_VERSIONS)(
       databaseCount += 1;
       const name = `session_${databaseCount}`;
       await createDatabase(container, name);
-      await loadSql(container, name, sql);
+      if (sql !== '') {
+        await loadSql(container, name, sql);
+      }
 
       return name;
     }
@@ -252,6 +317,61 @@ describe.each(PG_VERSIONS)(
           extra_float_digits: '0',
           bytea_output: 'escape',
         });
+      },
+      INTEGRATION_TIMEOUT
+    );
+
+    it(
+      'generates the same TypeScript baseline whatever the rendering settings of the session, in UTC and ISO',
+      async () => {
+        const database = await databaseWith(RENDERED_EXPRESSIONS);
+        const options = { format: 'ts', migrationName: 'b' } as const;
+
+        const defaults = await generateBaselineFromCatalogs(
+          await clientWith(database, []),
+          options
+        );
+        const other = await generateBaselineFromCatalogs(
+          await clientWith(database, OTHER_SESSION),
+          options
+        );
+
+        expect(other.content).toBe(defaults.content);
+        for (const rendering of TS_UTC_RENDERINGS) {
+          expect(defaults.content).toContain(rendering);
+        }
+
+        for (const rendering of TS_OTHER_RENDERINGS) {
+          expect(defaults.content).not.toContain(rendering);
+        }
+      },
+      INTEGRATION_TIMEOUT
+    );
+
+    it(
+      'rebuilds the schema from a baseline read in another time zone',
+      async () => {
+        const source = await databaseWith(RENDERED_EXPRESSIONS);
+        const dir = join(await tempDir(), 'migrations');
+        await baseline({
+          dbClient: await clientWith(source, OTHER_SESSION),
+          dir,
+          format: 'ts',
+          logger: silentLogger(),
+        });
+
+        const blank = await databaseWith('');
+        await runner({
+          databaseUrl: databaseUrl(container, blank),
+          dir,
+          direction: 'up',
+          migrationsTable: 'pgmigrations',
+          logger: silentLogger(),
+        });
+
+        expect(await dumpSchema(container, blank)).toBe(
+          await dumpSchema(container, source)
+        );
       },
       INTEGRATION_TIMEOUT
     );

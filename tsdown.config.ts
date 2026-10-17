@@ -37,4 +37,19 @@ export default defineConfig([
     sourcemap,
     fixedExtension: false,
   },
+  // build `node-pg-migrate/baseline/catalogs` (dist/baseline/catalogs.js) on
+  // its own: it runs without Node.js (e.g. in a browser), so it must bundle
+  // only what it imports, and never share a chunk with the Node.js entry.
+  // tsdown cleans `dist` once, before either build.
+  {
+    entry: { 'baseline/catalogs': 'src/baseline/catalogs.ts' },
+    outDir: 'dist',
+    clean: false,
+    platform: 'neutral',
+    format: ['esm'],
+    dts: true,
+    minify: false,
+    sourcemap,
+    fixedExtension: false,
+  },
 ]);

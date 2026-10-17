@@ -129,6 +129,29 @@ describe.each(PG_VERSIONS)(
       return { client, notices };
     }
 
+    it('refuses a pgmigrations view with --format ts without running its definition', async () => {
+      const url = await databaseWith('view_ts', TRAP_VIEW);
+      const { client, notices } = await clientWithNotices(url);
+      const dir = join(await workDir(), 'migrations');
+
+      const error = await rejectionOf(
+        baseline({
+          dbClient: client,
+          format: 'ts',
+          dir,
+          logger: recordingLogger(),
+        })
+      );
+
+      // The view's function never ran: baseline did not read the relation.
+      expect(notices).not.toContain(TRAP_NOTICE);
+      expect(error).toBeInstanceOf(BaselineError);
+      expect(error).toMatchObject({ code: 'INVALID_MIGRATIONS_TABLE' });
+      expect(messageOf(error)).toContain('pgmigrations');
+      expect(messageOf(error)).toMatch(/view/i);
+      expect(await listFiles(dir)).toEqual([]);
+    });
+
     it('refuses a pgmigrations view with a dump file and a connection without running its definition', async () => {
       const url = await databaseWith('view_from_file', TRAP_VIEW);
       const { client, notices } = await clientWithNotices(url);
@@ -185,7 +208,7 @@ describe.each(PG_VERSIONS)(
       const error = await rejectionOf(
         baseline({
           databaseUrl: url,
-          pgDump: await pgDumpShimForTest(container),
+          format: 'ts',
           migrationsSchema: 'audit',
           migrationsTable: 'applied_steps',
           dir,
@@ -217,7 +240,7 @@ describe.each(PG_VERSIONS)(
       const error = await rejectionOf(
         baseline({
           databaseUrl: url,
-          pgDump: await pgDumpShimForTest(container),
+          format: 'ts',
           dir,
           logger: recordingLogger(),
         })
@@ -269,7 +292,7 @@ describe.each(PG_VERSIONS)(
       const error = await rejectionOf(
         baseline({
           databaseUrl: url,
-          pgDump: await pgDumpShimForTest(container),
+          format: 'ts',
           dir,
           logger: recordingLogger(),
         })

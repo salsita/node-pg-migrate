@@ -1,4 +1,5 @@
 import type { ClientBase, ClientConfig } from 'pg';
+import type { Fallback } from '../codegen/fallback';
 import type { Logger } from '../logger';
 import type { FilenameFormat } from '../migration';
 import type { DumpSource } from './source';
@@ -72,7 +73,8 @@ export interface BaselineOptions {
 
   /**
    * The pg_dump executable to run when there is no `fromFile`. Its major
-   * version must be at least the server's.
+   * version must be at least the server's. Not used with `format` `'ts'` or
+   * `'js'`, which read the catalogs instead.
    *
    * @default 'pg_dump'
    */
@@ -81,18 +83,22 @@ export interface BaselineOptions {
   /**
    * Only dump these schemas (`pg_dump --schema`). When set, extensions are
    * still dumped with pg_dump 14 or newer (`--extension=*`), and left out
-   * with older versions.
+   * with older versions. With `format` `'ts'` or `'js'`, only these schemas
+   * are read: extensions are kept whatever their schema, and casts, which
+   * belong to no schema, are left out.
    */
   readonly includeSchemas?: ReadonlyArray<string>;
 
   /**
-   * Leave these schemas out of the dump (`pg_dump --exclude-schema`).
+   * Leave these schemas out of the dump (`pg_dump --exclude-schema`), or out
+   * of what `format` `'ts'` or `'js'` reads.
    */
   readonly excludeSchemas?: ReadonlyArray<string>;
 
   /**
    * How long pg_dump waits for the table locks it needs before it fails
-   * (`pg_dump --lock-wait-timeout`), e.g. `'10s'`.
+   * (`pg_dump --lock-wait-timeout`), e.g. `'10s'`. Not used with `format`
+   * `'ts'` or `'js'`.
    *
    * @default '10s'
    */
@@ -109,6 +115,37 @@ export interface BaselineOptions {
    * Redirect messages to this logger object, rather than `console`.
    */
   readonly logger?: Logger;
+
+  /**
+   * The language of the migration: `'sql'` cleans up a pg_dump output, while
+   * `'ts'` and `'js'` (experimental) read the catalogs of the live database
+   * and write `pgm` calls, falling back to `pgm.sql(…)` for what the `pgm`
+   * operations cannot express. `'ts'` and `'js'` need a connection and
+   * cannot be combined with `fromFile`.
+   *
+   * @default 'sql'
+   */
+  readonly format?: 'sql' | 'ts' | 'js';
+
+  /**
+   * With `format` `'ts'` or `'js'`: fail with `UNSUPPORTED_OBJECTS`, listing
+   * every object that would need raw SQL and why, instead of writing a
+   * migration with fallbacks.
+   *
+   * @default false
+   */
+  readonly strict?: boolean;
+
+  /**
+   * With `format` `'ts'` or `'js'`: whether the migrations run with
+   * `decamelize` (see `RunnerOption.decamelize`). Then a database whose
+   * identifiers decamelize would rename (any with an uppercase letter, e.g.
+   * `LegacyCustomer`) is refused with `INVALID_OPTIONS`, since the migration
+   * would not create them as they are.
+   *
+   * @default false
+   */
+  readonly decamelize?: boolean;
 }
 
 /**
@@ -155,6 +192,13 @@ export interface BaselineResult {
    * Where the schema came from.
    */
   readonly source: DumpSource;
+
+  /**
+   * With `format` `'ts'` or `'js'`: the objects the migration creates with
+   * raw SQL (`pgm.sql(…)`), in the order of the migration; empty when there
+   * are none. Left out with `format` `'sql'`.
+   */
+  readonly fallbacks?: ReadonlyArray<Fallback>;
 }
 
 /**

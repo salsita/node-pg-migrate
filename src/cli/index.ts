@@ -79,7 +79,7 @@ addBaselineOptions(
   program
     .command('baseline')
     .description(
-      'Create a baseline SQL migration from the schema of an existing database (pg_dump --schema-only)'
+      'Create a baseline migration from the schema of an existing database: SQL from pg_dump --schema-only, or pgm calls with --format ts|js (experimental)'
     )
     .argument(
       '[name...]',
