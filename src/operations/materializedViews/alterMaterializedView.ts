@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { formatLines, formatSeparator } from '../../utils';
+import { formatLines, formatSeparator, quoteOptionName } from '../../utils';
 import type { Name, Nullable } from '../generalTypes';
 import type { StorageParameters } from './shared';
 import { storageParameterStr } from './shared';
@@ -48,6 +48,7 @@ export function alterMaterializedView(
 
     const resetOptions = Object.keys(storageParameters)
       .filter((key) => storageParameters[key] === null)
+      .map(quoteOptionName)
       .join(', ');
 
     if (resetOptions) {
