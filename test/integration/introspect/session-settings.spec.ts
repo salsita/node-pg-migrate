@@ -1,0 +1,259 @@
+import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import pg from 'pg';
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+} from 'vitest';
+import { db } from '../../../src/db';
+import { introspect } from '../../../src/introspect/io/introspect';
+import type {
+  IntrospectOptions,
+  SchemaModel,
+} from '../../../src/introspect/types';
+import {
+  createDatabase,
+  databaseUrl,
+  INTEGRATION_TIMEOUT,
+  loadSql,
+  PG_VERSIONS,
+  setupPostgresDatabase,
+} from '../utils';
+
+// The model must not depend on the session that reads the catalogs:
+// `pg_get_expr()`, `pg_get_constraintdef()` and the partition bounds write
+// every constant with the type's output function, so a `timestamptz` renders
+// in the session's `TimeZone`, a `date` in its `DateStyle`, an `interval` in
+// its `IntervalStyle`, a `float8` with its `extra_float_digits` and a `bytea`
+// in its `bytea_output`. Two people of two time zones must still get the same
+// model out of the same database.
+
+const OPTIONS: IntrospectOptions = {
+  migrationsSchema: 'public',
+  migrationsTable: 'pgmigrations',
+};
+
+/**
+ * A schema whose every rendered expression depends on a rendering setting of
+ * the session: the bound of a `timestamptz` partition and a CHECK on one
+ * (`TimeZone`), a `date` default (`DateStyle`), an `interval` default
+ * (`IntervalStyle`), a `float8` default that needs 17 digits to round-trip
+ * (`extra_float_digits`) and a `bytea` default (`bytea_output`).
+ */
+const RENDERED_EXPRESSIONS = `
+CREATE TABLE public.readings (
+    id bigint NOT NULL,
+    at timestamp with time zone NOT NULL,
+    recorded_at timestamp with time zone DEFAULT '2022-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    span interval DEFAULT '1 day 02:03:04'::interval NOT NULL,
+    ratio double precision DEFAULT '0.30000000000000004'::double precision NOT NULL,
+    on_day date DEFAULT '2022-02-03'::date NOT NULL,
+    token bytea DEFAULT '\\x0102ff'::bytea NOT NULL,
+    CONSTRAINT readings_after_launch CHECK ((at > '2021-07-08 09:10:11+00'::timestamp with time zone))
+) PARTITION BY RANGE (at);
+CREATE TABLE public.readings_2022 PARTITION OF public.readings
+    FOR VALUES FROM ('2022-01-01 00:00:00+00') TO ('2023-01-01 00:00:00+00');
+`;
+
+/**
+ * `SET` statements that move every rendering setting away from the one the
+ * model must be read with: a reader in America/Sao_Paulo with German dates,
+ * SQL-standard intervals, no extra float digits and escaped bytes.
+ */
+const OTHER_SESSION: ReadonlyArray<string> = [
+  "SET TimeZone = 'America/Sao_Paulo'",
+  "SET DateStyle = 'German, DMY'",
+  "SET IntervalStyle = 'sql_standard'",
+  'SET extra_float_digits = 0',
+  "SET bytea_output = 'escape'",
+];
+
+/**
+ * The rendering settings this spec pins, as `pg_settings` names them.
+ */
+const RENDERING_SETTINGS: ReadonlyArray<string> = [
+  'TimeZone',
+  'DateStyle',
+  'IntervalStyle',
+  'extra_float_digits',
+  'bytea_output',
+];
+
+/**
+ * What a reader in America/Sao_Paulo with German dates, SQL-standard
+ * intervals, `extra_float_digits = 0` and escaped bytes would read instead of
+ * the UTC and ISO renderings.
+ */
+const OTHER_RENDERINGS: ReadonlyArray<string> = [
+  "'31.12.2021 21:00:00 -03'",
+  "'31.12.2022 21:00:00 -03'",
+  "'08.07.2021 06:10:11 -03'",
+  "'1 2:03:04'",
+  "'0.3'",
+  "'03.02.2022'",
+  String.raw`'\001\002\377'`,
+];
+
+/**
+ * The texts of the model that the server renders with the session's
+ * settings: the column defaults and partition bounds of the tables, and the
+ * definitions of the constraints.
+ *
+ * @param model The model.
+ *
+ * @returns The texts, keyed by `schema.table.column`, `bound of
+ * schema.table` and `constraint on schema.table`.
+ */
+function renderedTexts(model: SchemaModel): Record<string, string> {
+  const texts: Record<string, string> = {};
+  for (const table of model.tables) {
+    const qualified = `${table.schema}.${table.name}`;
+    for (const column of table.columns) {
+      if (column.default !== undefined) {
+        texts[`${qualified}.${column.name}`] = column.default;
+      }
+    }
+
+    if (table.partitionOf !== undefined) {
+      texts[`bound of ${qualified}`] = table.partitionOf.bound;
+    }
+  }
+
+  for (const constraint of model.constraints) {
+    texts[
+      `${constraint.name} on ${constraint.table.schema}.${constraint.table.name}`
+    ] = constraint.definition;
+  }
+
+  return texts;
+}
+
+describe.each(PG_VERSIONS)(
+  'introspect, rendering settings (PG %s)',
+  (postgresVersion) => {
+    let container: StartedPostgreSqlContainer;
+    let databaseCount = 0;
+
+    beforeAll(async () => {
+      container = await setupPostgresDatabase(
+        `postgres:${postgresVersion}-alpine`
+      );
+    }, INTEGRATION_TIMEOUT);
+
+    afterAll(async () => {
+      await container?.stop();
+    });
+
+    /**
+     * Creates a database with a name no other test uses, with a schema.
+     */
+    async function databaseWith(sql: string): Promise<string> {
+      databaseCount += 1;
+      const name = `session_${databaseCount}`;
+      await createDatabase(container, name);
+      await loadSql(container, name, sql);
+
+      return name;
+    }
+
+    /**
+     * Connects to a database and runs `settings` on the session. The client is
+     * closed when the current test finishes.
+     */
+    async function clientWith(
+      database: string,
+      settings: ReadonlyArray<string>
+    ): Promise<pg.Client> {
+      const client = new pg.Client(databaseUrl(container, database));
+      await client.connect();
+      onTestFinished(async () => {
+        await client.end();
+      });
+      for (const setting of settings) {
+        await client.query(setting);
+      }
+
+      return client;
+    }
+
+    /**
+     * The session's value of each of {@link RENDERING_SETTINGS}.
+     */
+    async function settingsOf(
+      client: pg.Client
+    ): Promise<Record<string, string>> {
+      const { rows } = await client.query<{ name: string; setting: string }>(
+        'SELECT name, setting FROM pg_catalog.pg_settings WHERE name = ANY($1)',
+        [[...RENDERING_SETTINGS]]
+      );
+
+      return Object.fromEntries(
+        rows.map(({ name, setting }) => [name, setting])
+      );
+    }
+
+    it(
+      'reads the same model whatever the rendering settings of the session, in UTC and ISO',
+      async () => {
+        const database = await databaseWith(RENDERED_EXPRESSIONS);
+
+        const defaults = await introspect(
+          db(await clientWith(database, [])),
+          OPTIONS
+        );
+        const other = await introspect(
+          db(await clientWith(database, OTHER_SESSION)),
+          OPTIONS
+        );
+
+        expect(other).toStrictEqual(defaults);
+        // The partition has the column defaults of its own as well.
+        const columnDefaults = (table: string): Record<string, string> => ({
+          [`${table}.recorded_at`]:
+            "'2022-01-01 00:00:00+00'::timestamp with time zone",
+          [`${table}.span`]: "'1 day 02:03:04'::interval",
+          [`${table}.ratio`]: "'0.30000000000000004'::double precision",
+          [`${table}.on_day`]: "'2022-02-03'::date",
+          [`${table}.token`]: String.raw`'\x0102ff'::bytea`,
+        });
+        expect(renderedTexts(defaults)).toStrictEqual({
+          ...columnDefaults('public.readings'),
+          ...columnDefaults('public.readings_2022'),
+          'bound of public.readings_2022':
+            "FOR VALUES FROM ('2022-01-01 00:00:00+00') TO ('2023-01-01 00:00:00+00')",
+          'readings_after_launch on public.readings':
+            "CHECK ((at > '2021-07-08 09:10:11+00'::timestamp with time zone))",
+        });
+        const serialized = JSON.stringify(defaults);
+        for (const rendering of OTHER_RENDERINGS) {
+          expect(serialized).not.toContain(rendering);
+        }
+      },
+      INTEGRATION_TIMEOUT
+    );
+
+    it(
+      'leaves the rendering settings of the caller’s session as they were',
+      async () => {
+        const database = await databaseWith(RENDERED_EXPRESSIONS);
+        const client = await clientWith(database, OTHER_SESSION);
+        const before = await settingsOf(client);
+
+        await introspect(db(client), OPTIONS);
+
+        expect(await settingsOf(client)).toStrictEqual(before);
+        expect(before).toStrictEqual({
+          TimeZone: 'America/Sao_Paulo',
+          DateStyle: 'German, DMY',
+          IntervalStyle: 'sql_standard',
+          extra_float_digits: '0',
+          bytea_output: 'escape',
+        });
+      },
+      INTEGRATION_TIMEOUT
+    );
+  }
+);

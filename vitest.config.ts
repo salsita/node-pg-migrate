@@ -12,7 +12,11 @@ if (coverageSuite !== 'unit' && coverageSuite !== 'integration') {
 
 // Code the integration suite owns (it needs a real database). The unit report
 // leaves it out so the repo-wide unit thresholds only measure unit-tested code.
-const integrationOwned = ['src/baseline/io/**', 'src/baseline/index.ts'];
+const integrationOwned = [
+  'src/baseline/io/**',
+  'src/baseline/index.ts',
+  'src/introspect/io/**',
+];
 
 // Glob thresholds that match no file yet pass, so each one applies as soon
 // as its files exist (untested files under `src` count as 0% covered).
@@ -26,7 +30,7 @@ const coverageThresholds = {
     functions: 90,
     branches: 85,
     ...Object.fromEntries(
-      ['src/baseline/core/**'].map((glob) => [
+      ['src/baseline/core/**', 'src/introspect/core/**'].map((glob) => [
         glob,
         { lines: 90, statements: 90, functions: 90, branches: 90 },
       ])
