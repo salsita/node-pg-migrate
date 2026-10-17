@@ -1,0 +1,117 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict tvS8vhGqfzvr29ODtDyQ3BDYCbsmVWFyOWqGNYt5MRuYaP1iQljrsJoP9vxwa0J
+
+-- Dumped from database version 18.6
+-- Dumped by pg_dump version 18.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: begin(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.begin() RETURNS integer
+    LANGUAGE sql
+    RETURN 1;
+
+
+--
+-- Name: calls_begin(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.calls_begin() RETURNS integer
+    LANGUAGE sql
+    BEGIN ATOMIC
+ SELECT public.begin() AS begin;
+END;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: begin; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.begin (
+    id integer
+);
+
+
+--
+-- Name: count_begin(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.count_begin() RETURNS bigint
+    LANGUAGE sql
+    BEGIN ATOMIC
+ SELECT count(*) AS count
+    FROM public.begin;
+END;
+
+
+--
+-- Name: shift; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shift (
+    id integer,
+    begin timestamp with time zone,
+    finish timestamp with time zone
+);
+
+
+--
+-- Name: first_begin(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.first_begin() RETURNS timestamp with time zone
+    LANGUAGE sql
+    BEGIN ATOMIC
+ SELECT s.begin
+    FROM public.shift s
+   ORDER BY s.id
+  LIMIT 1;
+END;
+
+
+--
+-- Name: labelled(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.labelled() RETURNS integer
+    LANGUAGE sql
+    BEGIN ATOMIC
+ SELECT 1 AS begin;
+END;
+
+
+--
+-- Name: after_fn; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.after_fn (
+    id integer
+);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict tvS8vhGqfzvr29ODtDyQ3BDYCbsmVWFyOWqGNYt5MRuYaP1iQljrsJoP9vxwa0J
+
