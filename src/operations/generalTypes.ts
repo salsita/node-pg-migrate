@@ -22,6 +22,9 @@ export type Value =
   | PgLiteralValue
   | Value[];
 
+/** Objects used as defaults are checked and serialized at runtime. */
+export type DefaultValue = Value | object;
+
 export type Type = string | { type: string };
 
 export type Name = string | { schema?: string; name: string } | PgLiteralValue;
