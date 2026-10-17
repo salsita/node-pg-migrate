@@ -361,6 +361,18 @@ every table in that schema is intended; select individual tables when
 independently granted privileges must remain. See
 [Grant Operations](migrations/grants).
 
+#### Sequence options keep `0`
+
+`minvalue`, `maxvalue` and `start` in `createSequence`, `alterSequence` and
+identity columns (`sequenceGenerated`), and `restart` in `alterSequence`, used
+to be dropped when set to `0`, so PostgreSQL applied its defaults instead (for
+example `MINVALUE 1`). They are now emitted. A migration that passed `0` and was
+applied with v9 created a sequence with the defaults; replaying it on a new
+database now creates the sequence as written. `start: 0` without
+`minvalue: 0` now fails with `START value (0) cannot be less than MINVALUE (1)`
+instead of silently starting at 1, and `restart: 0` fails the same way on a
+sequence whose minimum is still 1; add `minvalue: 0`.
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript

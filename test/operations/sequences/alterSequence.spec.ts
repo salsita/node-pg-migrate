@@ -26,6 +26,27 @@ describe('operations', () => {
         expect(statement).toBe(`ALTER SEQUENCE "serial" RESTART WITH 105;`);
       });
 
+      it('should return sql statement with RESTART for restart true', () => {
+        const statement = alterSequenceFn('serial', {
+          restart: true,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(`ALTER SEQUENCE "serial" RESTART;`);
+      });
+
+      it('should return sql statement with zero values', () => {
+        const statement = alterSequenceFn('serial', {
+          minvalue: 0,
+          restart: 0,
+        });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          `ALTER SEQUENCE "serial" MINVALUE 0 RESTART WITH 0;`
+        );
+      });
+
       it('should format the statement across multiple lines when pretty is enabled', () => {
         const statement = alterSequence(options1Pretty)('serial', {
           restart: 105,
