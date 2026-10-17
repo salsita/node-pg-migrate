@@ -805,7 +805,7 @@ export class MigrationBuilder {
   public readonly dropCast: (...args: Parameters<casts.DropCast>) => void;
 
   /**
-   * Queue an INSERT for one row, escaping column names and values.
+   * Queue an INSERT for one or more rows, escaping column names and values.
    * Requires an explicit down migration.
    *
    * @see https://www.postgresql.org/docs/current/sql-insert.html

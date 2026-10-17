@@ -187,6 +187,44 @@ describe.each(PG_VERSIONS)(
       ).toEqual([{ id: 42, data: null, tags: null }]);
     });
 
+    it('inserts heterogeneous records with defaults and preserves every all-default row', async () => {
+      const data = { label: "reader's $pga$ edition" };
+      await migrate({
+        '001_batch': {
+          up: (pgm) => {
+            pgm.createTable('records', {
+              id: 'serial',
+              name: { type: 'text', default: 'default' },
+              data: 'jsonb',
+              tags: 'text[]',
+            });
+            pgm.insert('records', [
+              {
+                name: 'Ada',
+                data: JSON.stringify(data),
+                tags: ['ARRAY', '$pga$'],
+              },
+              { tags: pgm.func("'{}'::text[]"), name: undefined },
+              { name: null },
+              {},
+            ]);
+            pgm.insert('records', [{}, { name: undefined }]);
+            pgm.insert('records', []);
+          },
+        },
+      });
+      expect(
+        (await client.query('SELECT * FROM records ORDER BY id')).rows
+      ).toEqual([
+        { id: 1, name: 'Ada', data, tags: ['ARRAY', '$pga$'] },
+        { id: 2, name: 'default', data: null, tags: [] },
+        { id: 3, name: null, data: null, tags: null },
+        { id: 4, name: 'default', data: null, tags: null },
+        { id: 5, name: 'default', data: null, tags: null },
+        { id: 6, name: 'default', data: null, tags: null },
+      ]);
+    });
+
     it.each([false, true])(
       'rolls back table creation and inserts on failure (singleTransaction: %s)',
       async (singleTransaction) => {
@@ -201,8 +239,8 @@ describe.each(PG_VERSIONS)(
                     id: { type: 'integer', primaryKey: true },
                   });
                   pgm.insert('records', { id: 1 });
-                  pgm.insert('sentinel', { id: 8 });
-                  pgm.insert('records', { id: 1 });
+                  pgm.insert('sentinel', [{ id: 8 }, { id: 9 }]);
+                  pgm.insert('records', [{ id: 2 }, { id: 1 }]);
                 },
               },
             },
@@ -229,7 +267,7 @@ describe.each(PG_VERSIONS)(
             ...baseline,
             '002_dry_run': {
               up: (pgm) => {
-                pgm.insert('sentinel', { id: 8 });
+                pgm.insert('sentinel', [{ id: 8 }, { id: 9 }]);
                 pgm.createTable('records', { id: 'integer' });
                 pgm.insert('records', { id: 1 });
               },

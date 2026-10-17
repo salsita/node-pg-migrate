@@ -7,6 +7,32 @@ import type {
 import { MigrationBuilder } from '../src';
 
 describe('migrationBuilder', () => {
+  it('queues a multi-row insert as one step and ignores an empty array', () => {
+    const db = { query: vi.fn(), select: vi.fn() };
+    const pgm = new MigrationBuilder(db, undefined, false, console);
+    pgm.insert('names', [{ name: 'Ada' }, { name: 'Grace' }]);
+    pgm.insert('names', []);
+    expect(pgm.getSqlSteps()).toEqual([
+      'INSERT INTO "names" ("name") VALUES ($pga$Ada$pga$), ($pga$Grace$pga$);',
+    ]);
+    expect(db.query).not.toHaveBeenCalled();
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('does not queue earlier rows when a later record is invalid', () => {
+    const pgm = new MigrationBuilder(
+      { query: vi.fn(), select: vi.fn() },
+      undefined,
+      false,
+      console
+    );
+    pgm.sql('SELECT 1');
+    expect(() => {
+      pgm.insert('records', [{ id: 1 }, { id: Number.NaN }]);
+    }).toThrow(TypeError);
+    expect(pgm.getSqlSteps()).toEqual(['SELECT 1;']);
+  });
+
   it('leaves queued statements unchanged when an insert value is rejected', () => {
     const pgm = new MigrationBuilder(
       { query: vi.fn(), select: vi.fn() },

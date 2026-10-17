@@ -4,19 +4,24 @@
 
 #### `pgm.insert( tableName, values )`
 
-Queues an `INSERT` for one row. Table and column names are quoted as identifiers;
-values are escaped as SQL values. Strings are data, including quotes, dollar signs,
+Queues an `INSERT` for one record or an array of records. Table and column names
+are quoted as identifiers; values are escaped as SQL values. Strings are data, including quotes, dollar signs,
 and braces. Use `pgm.func(...)` only for intentional SQL expressions.
 
 ### Arguments
 
-| Name        | Type                                 | Description                                                                      |
-| ----------- | ------------------------------------ | -------------------------------------------------------------------------------- |
-| `tableName` | `Name`                               | Table name, optionally schema-qualified                                          |
-| `values`    | `Record<string, Value \| undefined>` | Column names mapped to strings, numbers, booleans, null, arrays, or SQL literals |
+| Name        | Type                                                                              | Description                                                      |
+| ----------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `tableName` | `Name`                                                                            | Table name, optionally schema-qualified                          |
+| `values`    | `Record<string, Value \| undefined> \| Array<Record<string, Value \| undefined>>` | One record or an array of records mapping column names to values |
 
+Record values can be strings, numbers, booleans, null, arrays, or SQL literals.
 Omitted columns and fields with `undefined` values use their database defaults.
+For an array of records, the statement uses the union of their columns and fills
+missing or `undefined` fields with `DEFAULT`. An empty array queues nothing.
 An empty object or a row containing only `undefined` inserts `DEFAULT VALUES`.
+If all records are empty or contain only `undefined`, the call queues one
+`DEFAULT VALUES` statement per record, since no column names are available.
 Identifier names follow the `decamelize` option; values do not.
 
 Unsupported values (including plain objects, `Date`, `bigint`, and `Buffer`) and
@@ -27,14 +32,12 @@ recursively; `undefined` elements are rejected rather than omitted.
 For JSON/JSONB columns, pass `JSON.stringify(data)` as the value. PostgreSQL
 converts the escaped string to the column's type. Convert dates to strings when
 appropriate, or use `pgm.func(...)` / `PgLiteral` for explicit SQL expressions.
-An empty JavaScript array renders as `ARRAY[]`, which needs an explicit element
-type; use `pgm.func("'{}'::text[]")` for an empty text array, or omit the column
+An empty array used as a column value renders as `ARRAY[]`, which needs an
+explicit element type; use `pgm.func("'{}'::text[]")` for an empty text array, or omit the column
 when its default is appropriate.
 
-Each call inserts one row and produces one queued statement, database round trip,
-and logged SQL statement. The loop below is suitable for small lookup tables;
-large imports should use a multi-row `INSERT` or `COPY` through the existing SQL
-or client interfaces, respecting the execution order described below.
+Records with at least one supplied value are inserted in a single statement
+and database round trip.
 
 ```js
 export function up(pgm) {
@@ -43,9 +46,11 @@ export function up(pgm) {
     name: { type: 'text', notNull: true },
   });
 
-  for (const name of ['paper', 'ebook', "reader's edition"]) {
-    pgm.insert('media_types', { name });
-  }
+  pgm.insert('media_types', [
+    { name: 'paper' },
+    { name: 'ebook' },
+    { name: "reader's edition" },
+  ]);
 }
 
 export function down(pgm) {

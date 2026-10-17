@@ -8,6 +8,77 @@ describe('operations', () => {
   describe('insert', () => {
     const insertFn: Insert = insert(options1);
 
+    it('accepts an array containing one record', () => {
+      expect(insertFn('names', [{ name: 'Ada' }])).toBe(
+        'INSERT INTO "names" ("name") VALUES ($pga$Ada$pga$);'
+      );
+    });
+
+    it('inserts multiple records in one statement, aligning columns by name', () => {
+      expect(
+        insertFn('names', [
+          { name: 'Ada', active: false },
+          { active: true, name: 'Grace' },
+        ])
+      ).toBe(
+        'INSERT INTO "names" ("name", "active") VALUES ($pga$Ada$pga$, false), ($pga$Grace$pga$, true);'
+      );
+    });
+
+    it('uses the union of columns and DEFAULT for missing or undefined fields', () => {
+      expect(
+        insertFn('records', [
+          { id: 1, omitted: undefined },
+          { name: 'Ada', id: undefined },
+          {},
+          { name: null, id: 4 },
+        ])
+      ).toBe(
+        'INSERT INTO "records" ("id", "name") VALUES (1, DEFAULT), (DEFAULT, $pga$Ada$pga$), (DEFAULT, DEFAULT), (4, NULL);'
+      );
+    });
+
+    it('does not use inherited properties for missing columns', () => {
+      expect(insertFn('records', [{ constructor: 'own' }, {}])).toBe(
+        'INSERT INTO "records" ("constructor") VALUES ($pga$own$pga$), (DEFAULT);'
+      );
+    });
+
+    it('escapes identifiers and values in multiple records', () => {
+      expect(
+        insertFn({ schema: 'app.schema', name: 'record"表' }, [
+          { 'column"name': '$pga$); DROP TABLE records; --', tags: ['ARRAY'] },
+          {
+            'column"name': PgLiteral.create('CURRENT_TIMESTAMP'),
+            tags: ['ebook'],
+          },
+        ])
+      ).toBe(
+        'INSERT INTO "app.schema"."record""表" ("column""name", "tags") VALUES ($pgb$$pga$); DROP TABLE records; --$pgb$, ARRAY[$pga$ARRAY$pga$]), (CURRENT_TIMESTAMP, ARRAY[$pga$ebook$pga$]);'
+      );
+    });
+
+    it('decamelizes identifiers across multiple records', () => {
+      expect(
+        insert(options2)({ schema: 'appSchema', name: 'mediaTypes' }, [
+          { displayName: 'audioBook' },
+          { displayName: 'eBook' },
+        ])
+      ).toBe(
+        'INSERT INTO "app_schema"."media_types" ("display_name") VALUES ($pga$audioBook$pga$), ($pga$eBook$pga$);'
+      );
+    });
+
+    it('inserts every all-default record', () => {
+      expect(insertFn('records', [{}, { id: undefined }])).toBe(
+        'INSERT INTO "records" DEFAULT VALUES;\nINSERT INTO "records" DEFAULT VALUES;'
+      );
+    });
+
+    it('returns no statements for an empty array', () => {
+      expect(insertFn('records', [])).toEqual([]);
+    });
+
     it('escapes values independently of column names', () => {
       expect(
         insertFn('records', {
@@ -85,6 +156,12 @@ describe('operations', () => {
     ])('rejects $label with table and column context', ({ value }) => {
       const run = () =>
         insertFn({ schema: 'app', name: 'records' }, { data: value as Value });
+      expect(() =>
+        insertFn({ schema: 'app', name: 'records' }, [
+          { data: 'valid' },
+          { data: value as Value },
+        ])
+      ).toThrow('pgm.insert(): unsupported value for "app"."records"."data"');
       expect(run).toThrow(TypeError);
       expect(run).toThrow(
         'pgm.insert(): unsupported value for "app"."records"."data"'
