@@ -91,20 +91,32 @@ export const up = async (pgm) => {
   await doSomethingAsync();
 
   pgm.createTable('names', { id: 'serial', name: 'text' });
-  pgm.sql("INSERT INTO names (name) VALUES ('Ada');");
+  pgm.insert('names', { name: 'Ada' });
 };
 ```
 
 Both SQL statements in this example are queued and executed after the Promise
 returned by `up` resolves. Adding `async` does not change how migration operations
 work. These operations return `void`, so awaiting `pgm.createTable()` or
-`pgm.sql()` does not execute the queued SQL.
+`pgm.insert()` does not execute the queued SQL.
+
+For several records, pass an array to queue one multi-row `INSERT`:
+
+```javascript
+export const up = async (pgm) => {
+  await doSomethingAsync();
+
+  pgm.createTable('names', { id: 'serial', name: 'text' });
+  pgm.insert('names', [{ name: 'Ada' }, { name: 'Grace' }]);
+};
+```
 
 [`pgm.db.query()` and `pgm.db.select()`](misc.md#operation-pgm-db) execute queries
 directly and return Promises. Await them, or return their Promise, so the migration
 waits for them to finish. A direct query cannot depend on a table or column that
 an earlier queued operation has yet to create. To insert data into a table
-created in the same migration, queue the insert with `pgm.sql()`, as above.
+created in the same migration, queue the insert with
+[`pgm.insert()`](misc.md#operation-pgm-insert), as above.
 
 Direct queries also run before the migration's own `BEGIN`, so unless migrations
 share a single transaction (`singleTransaction`, the CLI default), a write made

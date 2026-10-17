@@ -8,6 +8,7 @@ import * as functions from './operations/functions';
 import type { Operation } from './operations/generalTypes';
 import * as grants from './operations/grants';
 import * as indexes from './operations/indexes';
+import * as insert from './operations/insert';
 import * as mViews from './operations/materializedViews';
 import * as operators from './operations/operators';
 import * as policies from './operations/policies';
@@ -804,6 +805,14 @@ export class MigrationBuilder {
   public readonly dropCast: (...args: Parameters<casts.DropCast>) => void;
 
   /**
+   * Queue an INSERT for one or more rows, escaping column names and values.
+   * Requires an explicit down migration.
+   *
+   * @see https://www.postgresql.org/docs/current/sql-insert.html
+   */
+  public readonly insert: (...args: Parameters<insert.Insert>) => void;
+
+  /**
    * Run raw SQL, with some optional _[very basic](http://mir.aculo.us/2011/03/09/little-helpers-a-tweet-sized-javascript-templating-engine/)_ mustache templating.
    *
    * This is a low-level operation, and you should use the higher-level operations whenever possible.
@@ -992,6 +1001,7 @@ export class MigrationBuilder {
     this.dropCast = wrap(casts.dropCast(options));
 
     this.sql = wrap(sql.sql(options));
+    this.insert = wrap(insert.insert(options));
 
     // Other utilities which may be useful
     // .func creates a string which will not be escaped
