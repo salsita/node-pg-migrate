@@ -134,6 +134,7 @@ You can print the installed version with `node-pg-migrate --version` (alias `-i`
 | `node-pg-migrate down {N}`                |                                     runs N down migrations from the current state.                                      |
 | `node-pg-migrate redo`                    |                              reverts the last migration, then applies pending migrations.                               |
 | `node-pg-migrate redo {N}`                |                             reverts the last N migrations, then applies pending migrations.                             |
+| `node-pg-migrate baseline`                |      writes one migration with the schema of an existing database, see [Adopting an existing database](baseline).       |
 
 `redo` uses one connection and advisory lock for both phases. On PostgreSQL, with the default
 `--single-transaction`, it commits only after both phases succeed. If reapplying a migration
@@ -165,6 +166,20 @@ Outside dry runs, `--no-single-transaction` leaves `autocommit_before_ddl` uncha
 When enabled (the [v25 default](https://www.cockroachlabs.com/docs/v25.3/session-variables)),
 DDL commits the preceding transaction before executing, even inside a migration's own
 transaction; a failed run can retain changes and history updates.
+
+## Adopting an Existing Database
+
+`node-pg-migrate baseline` writes one migration that creates the schema of an existing database,
+so node-pg-migrate can manage a database it didn't create:
+
+```sh
+node-pg-migrate baseline                           # writes migrations/1789084800000_baseline.sql
+node-pg-migrate up 1789084800000_baseline --fake   # on databases that already have the schema
+node-pg-migrate up                                 # on blank databases
+```
+
+`--from-file` uses a dump you made yourself. See [Adopting an Existing Database](baseline) for the steps and
+[every option](baseline#options).
 
 ## Dry Runs
 
@@ -256,7 +271,8 @@ does not apply to them.
 You can adjust defaults by passing arguments to the command. The
 `migration-file-language`, `migration-filename-format` and `template-file-name`
 options are only available on the `create` command; the remaining options below
-apply to the `up`, `down` and `redo` commands:
+apply to the `up`, `down` and `redo` commands (`baseline` has
+[its own](baseline#options)):
 
 | Argument                    | Aliases | Default                         | Description                                                                                                                                                                                                                                                                             |
 | --------------------------- | ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
