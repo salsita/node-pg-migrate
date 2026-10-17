@@ -46,6 +46,7 @@ export type {
 } from './operations/functions';
 export type {
   CascadeOption,
+  DefaultValue,
   DropOptions,
   IfExistsOption,
   IfNotExistsOption,

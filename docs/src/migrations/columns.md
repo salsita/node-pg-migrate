@@ -29,34 +29,6 @@ and the value is another object that defines the options for the column.
 | `sequenceGenerated`           | `object`                       | Creates identity column see [sequence options section](sequences.md#sequence-options)             |
 | `precedence`                  | `string`                       | `ALWAYS` or `BY DEFAULT`                                                                          |
 
-### Default values
-
-The `default` option of column definitions, [`alterColumn`](#operation-altercolumn),
-[`createDomain`](domains.md#operation-createdomain) and
-[`alterDomain`](domains.md#operation-alterdomain) accepts:
-
-| Value                                      | Example                                         | Rendered SQL                             |
-| ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |
-| number                                     | `default: 0`                                    | `DEFAULT 0`                              |
-| boolean                                    | `default: false`                                | `DEFAULT false`                          |
-| string                                     | `default: 'draft'`                              | `DEFAULT $pga$draft$pga$`                |
-| array                                      | `default: ['a', 'b']` (on `text[]`)             | `DEFAULT ARRAY[$pga$a$pga$,$pga$b$pga$]` |
-| [`pgm.func()`](misc.md#operation-pgm-func) | `default: pgm.func('now()')` (on `timestamptz`) | `DEFAULT now()`                          |
-| `null`                                     | `default: null`                                 | see below                                |
-
-A string is always escaped as a string literal, so `default: 'now()'` stores the text `now()`.
-Use `pgm.func()` for SQL expressions and function calls.
-
-`null` and an omitted `default` behave differently depending on the operation:
-
-- `createTable`, `addColumns` and `createDomain`: `default: null` adds `DEFAULT NULL`.
-  Omitting `default` adds no DEFAULT clause.
-- `alterColumn` and `alterDomain`: `default: null` removes the existing default with `DROP DEFAULT`.
-  Omitting `default` leaves the existing default unchanged.
-
-Plain objects are not supported as defaults (see [#744](https://github.com/salsita/node-pg-migrate/issues/744)).
-For a `json` or `jsonb` default, pass a string such as `default: '{}'`.
-
 To reference a unique column other than the primary key, specify its name:
 
 ```javascript
@@ -71,6 +43,68 @@ pgm.addColumns('orders', {
 A column-level foreign key must target a single column. Specify an explicit
 target with a string or a one-element array in `references.columns`. For
 composite foreign keys, use the [constraint definition](constraints.md#foreign-keys).
+
+### Default values
+
+The `default` option of column definitions, [`alterColumn`](#operation-altercolumn),
+[`createDomain`](domains.md#operation-createdomain) and
+[`alterDomain`](domains.md#operation-alterdomain) accepts:
+
+| Value                                      | Example                                         | Rendered SQL                             |
+| ------------------------------------------ | ----------------------------------------------- | ---------------------------------------- |
+| number                                     | `default: 0`                                    | `DEFAULT 0`                              |
+| boolean                                    | `default: false`                                | `DEFAULT false`                          |
+| string                                     | `default: 'draft'`                              | `DEFAULT $pga$draft$pga$`                |
+| array                                      | `default: ['a', 'b']` (on `text[]`)             | `DEFAULT ARRAY[$pga$a$pga$,$pga$b$pga$]` |
+| [plain JSON object](#json-defaults)        | `default: { attempts: 0 }` (on `jsonb`)         | `DEFAULT $pga${"attempts":0}$pga$`       |
+| [`pgm.func()`](misc.md#operation-pgm-func) | `default: pgm.func('now()')` (on `timestamptz`) | `DEFAULT now()`                          |
+| `null`                                     | `default: null`                                 | see below                                |
+
+A string is always escaped as a string literal, so `default: 'now()'` stores the text `now()`.
+Use `pgm.func()` for SQL expressions and function calls.
+
+`null` and an omitted `default` behave differently depending on the operation:
+
+- `createTable`, `addColumns` and `createDomain`: `default: null` adds `DEFAULT NULL`.
+  Omitting `default` adds no DEFAULT clause.
+- `alterColumn` and `alterDomain`: `default: null` removes the existing default with `DROP DEFAULT`.
+  Omitting `default` leaves the existing default unchanged.
+
+#### JSON defaults
+
+Plain objects containing JSON values can be used as defaults for `json` and
+`jsonb` columns in `createTable`, `addColumns` (or `addColumn`), and `alterColumn`:
+
+```javascript
+pgm.addColumns('uploads', {
+  stats: {
+    type: 'jsonb',
+    notNull: true,
+    default: { attempts: 0, uploads: 0 },
+  },
+});
+
+pgm.alterColumn('uploads', 'stats', { default: { attempts: 1, uploads: 0 } });
+```
+
+Objects are serialized with `JSON.stringify` and escaped as SQL strings;
+PostgreSQL converts them to the destination type. Nested objects and arrays are
+JSON data. The same support applies to domain defaults, function argument
+defaults, and view column defaults. The `DefaultValue` type accepts objects
+declared with either a TypeScript interface or a type alias; the plain-object
+check and JSON serialization happen at runtime. Nested `Date` values use their
+`toJSON` method and become ISO strings, just as with `JSON.stringify`.
+
+Top-level arrays still produce PostgreSQL arrays. For a JSON array default, use
+`default: JSON.stringify([1, 2])`. Strings that already contain JSON, such as
+`default: '{}'`, and SQL expressions made with `pgm.func(...)` continue to work.
+Objects with `literal: true` retain their existing meaning as raw SQL literals;
+to store such an object as JSON, pass `JSON.stringify(object)` instead.
+
+Use JSON-compatible values: circular references and `BigInt` cause serialization
+to throw before the operation is queued. A top-level class instance such as a
+`Date`, `Map`, or `Set`, or a function, throws a `TypeError` instead of generating
+invalid SQL. Explicit SQL literals remain supported.
 
 ### Reusable check constraints
 

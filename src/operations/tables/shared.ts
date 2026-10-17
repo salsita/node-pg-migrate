@@ -9,10 +9,10 @@ import {
 import type { Literal } from '../../utils/createTransformer';
 import type { FunctionParamType } from '../functions';
 import type {
+  DefaultValue,
   IfNotExistsOption,
   Name,
   Reference,
-  Value,
 } from '../generalTypes';
 import { getNameString, isNameObject } from '../generalTypes';
 import type { SequenceOptions } from '../sequences';
@@ -59,7 +59,7 @@ export interface ColumnDefinition extends Partial<ReferencesOptions> {
 
   notNull?: boolean;
 
-  default?: Value;
+  default?: DefaultValue;
 
   check?: ColumnCheck;
 

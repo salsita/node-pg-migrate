@@ -1,9 +1,9 @@
 import type { MigrationOptions } from '../../migrationOptions';
 import { escapeValue } from '../../utils';
-import type { Name, Value } from '../generalTypes';
+import type { DefaultValue, Name } from '../generalTypes';
 
 export interface AlterViewColumnOptions {
-  default?: Value;
+  default?: DefaultValue;
 }
 
 export type AlterViewColumn = (
