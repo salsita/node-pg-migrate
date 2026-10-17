@@ -280,11 +280,13 @@ export type {
   ViewOptions,
 } from './operations/views';
 export { PgType } from './pgType';
-export { PG_MIGRATE_LOCK_ID, runner } from './runner';
+export { getMigrationStatus, PG_MIGRATE_LOCK_ID, runner } from './runner';
 export type {
   MigrationMap,
   MigrationModule,
   MigrationSource,
+  MigrationStatus,
+  MigrationStatusOptions,
   RunnerOption,
   RunnerOptionDirectory,
   RunnerOptionMigrations,

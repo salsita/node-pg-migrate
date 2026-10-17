@@ -1,11 +1,16 @@
 import type { Command } from 'commander';
 import type { RunnerOption } from 'node-pg-migrate';
-import { Migration, runner as migrationRunner } from 'node-pg-migrate';
+import {
+  getMigrationStatus,
+  Migration,
+  runner as migrationRunner,
+} from 'node-pg-migrate';
 import { format } from 'node:util';
 import type { ClientConfig } from 'pg';
 // TODO causes tests to fail when `.js` is removed
 // @ts-expect-error type exports from @types/pg doesn't match importing
 import ConnectionParameters from 'pg/lib/connection-parameters.js';
+import type { ResolvedConfig } from './config';
 import { resolveConfig } from './config';
 import type { CliOptions } from './options';
 
@@ -14,10 +19,12 @@ import type { CliOptions } from './options';
  * `--force-exit` was passed. This mirrors the previous behavior where the check
  * ran synchronously after kicking off the (async) migration work.
  */
-function handleForceExit(options: CliOptions): void {
+function handleForceExit(options: CliOptions, exitCode = 0): void {
   if (options.forceExit) {
-    console.log('Forcing exit');
-    process.exit(0);
+    if (!options.json) {
+      console.log('Forcing exit');
+    }
+    process.exit(exitCode);
   }
 }
 
@@ -64,16 +71,10 @@ export async function runCreate(
   handleForceExit(options);
 }
 
-/**
- * Handler for the `up`, `down` and `redo` actions.
- */
-export async function runMigration(
-  action: 'up' | 'down' | 'redo',
-  posArgs: string[],
+function getDatabaseUrl(
+  config: ResolvedConfig,
   options: CliOptions
-): Promise<void> {
-  const config = await resolveConfig(options);
-
+): ClientConfig {
   let dbConnection = config.dbConnection;
   if (!dbConnection) {
     const cp = new ConnectionParameters();
@@ -91,6 +92,41 @@ export async function runMigration(
     dbConnection = cp;
   }
 
+  const rejectUnauthorized = options.rejectUnauthorized;
+  const databaseUrl =
+    typeof dbConnection === 'string'
+      ? { connectionString: dbConnection }
+      : dbConnection;
+  // The spread of the loosely typed config connection cannot be proven to
+  // produce a `ClientConfig`.
+  // oxlint-disable typescript/no-unsafe-type-assertion
+  return {
+    // oxlint-disable-next-line typescript/no-misused-spread
+    ...databaseUrl,
+    ...(typeof rejectUnauthorized === 'boolean'
+      ? {
+          ssl: {
+            // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
+            // @ts-expect-error: ignore possible boolean for now
+            ...databaseUrl.ssl,
+            rejectUnauthorized,
+          },
+        }
+      : undefined),
+  } as ClientConfig;
+  // oxlint-enable typescript/no-unsafe-type-assertion
+}
+
+/**
+ * Handler for the `up`, `down` and `redo` actions.
+ */
+export async function runMigration(
+  action: 'up' | 'down' | 'redo',
+  posArgs: string[],
+  options: CliOptions
+): Promise<void> {
+  const config = await resolveConfig(options);
+
   const dryRun = options.dryRun;
   if (dryRun) {
     console.log('> Dry run: nothing will be applied, recorded or created');
@@ -99,7 +135,6 @@ export async function runMigration(
   const singleTransaction = options.singleTransaction;
   const fake = options.fake;
   const TIMESTAMP = options.timestamp;
-  const rejectUnauthorized = options.rejectUnauthorized;
   const noLock = !options.lock;
   const lockValue = options.lockValue;
   if (noLock) {
@@ -123,32 +158,10 @@ export async function runMigration(
     }
   }
 
-  const databaseUrl =
-    typeof dbConnection === 'string'
-      ? { connectionString: dbConnection }
-      : dbConnection;
-
   const buildOptions = (direction: 'up' | 'down' | 'redo'): RunnerOption => {
     return {
       dryRun,
-      // The spread of the loosely typed config connection cannot be proven to
-      // produce a `ClientConfig`.
-      // oxlint-disable typescript/no-unsafe-type-assertion
-      databaseUrl: {
-        // oxlint-disable-next-line typescript/no-misused-spread
-        ...databaseUrl,
-        ...(typeof rejectUnauthorized === 'boolean'
-          ? {
-              ssl: {
-                // TODO @Shinigami92 2024-04-05: Fix ssl could be boolean
-                // @ts-expect-error: ignore possible boolean for now
-                ...databaseUrl.ssl,
-                rejectUnauthorized,
-              },
-            }
-          : undefined),
-      } as ClientConfig,
-      // oxlint-enable typescript/no-unsafe-type-assertion
+      databaseUrl: getDatabaseUrl(config, options),
       dir: config.migrationsDir,
       useGlob: config.useGlob,
       ignorePattern: config.ignorePattern,
@@ -191,4 +204,38 @@ export async function runMigration(
     });
 
   handleForceExit(options);
+}
+
+/** Handler for the read-only `status` action. */
+export async function runStatus(options: CliOptions): Promise<void> {
+  const config = await resolveConfig(options);
+  const migrations = await getMigrationStatus({
+    databaseUrl: getDatabaseUrl(config, options),
+    dir: config.migrationsDir,
+    useGlob: config.useGlob,
+    ignorePattern: config.ignorePattern,
+    schema: config.schema,
+    schemaIsDefault: config.schemaIsDefault,
+    migrationsSchema: config.migrationsSchema,
+    migrationsTable: config.migrationsTable,
+    verbose: config.verbose,
+    tsconfigPaths: config.tsconfigPaths,
+  });
+
+  if (options.json) {
+    console.log(JSON.stringify(migrations));
+  } else if (migrations.length === 0) {
+    console.log('No migrations found.');
+  } else {
+    console.log('Status\tMigration\tRun on');
+    for (const { name, status, runOn } of migrations) {
+      console.log(`${status}\t${name}\t${runOn?.toISOString() ?? ''}`);
+    }
+  }
+  const exitCode =
+    options.exitCode && migrations.some(({ status }) => status !== 'applied')
+      ? 1
+      : 0;
+  process.exitCode = exitCode;
+  handleForceExit(options, exitCode);
 }
