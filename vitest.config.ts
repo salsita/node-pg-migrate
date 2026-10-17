@@ -30,10 +30,12 @@ const coverageThresholds = {
     functions: 90,
     branches: 85,
     ...Object.fromEntries(
-      ['src/baseline/core/**', 'src/introspect/core/**'].map((glob) => [
-        glob,
-        { lines: 90, statements: 90, functions: 90, branches: 90 },
-      ])
+      ['src/baseline/core/**', 'src/introspect/core/**', 'src/codegen/**'].map(
+        (glob) => [
+          glob,
+          { lines: 90, statements: 90, functions: 90, branches: 90 },
+        ]
+      )
     ),
   },
   integration: Object.fromEntries(
