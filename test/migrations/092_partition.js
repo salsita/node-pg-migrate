@@ -20,4 +20,9 @@ export const up = (pgm) => {
       },
     }
   );
+  pgm.createPartition('t_partition_all', 't_partition', {
+    strategy: 'RANGE',
+    from: [pgm.func('MINVALUE')],
+    to: [pgm.func('MAXVALUE')],
+  });
 };

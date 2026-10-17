@@ -2,6 +2,7 @@ export * from './addColumns';
 export * from './addConstraint';
 export * from './alterColumn';
 export * from './alterTable';
+export * from './createPartition';
 export * from './createTable';
 export * from './dropColumns';
 export * from './dropConstraint';
