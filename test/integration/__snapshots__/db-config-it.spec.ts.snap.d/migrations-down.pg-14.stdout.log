@@ -175,6 +175,8 @@ DELETE FROM "public"."pgmigrations" WHERE name=$pga$093_alter_column_expression$
 
 
 ### MIGRATION 092_partition (DOWN) ###
+ALTER TABLE "t_partition" DETACH PARTITION "t_partition_all";
+DROP TABLE "t_partition_all";
 DROP TABLE "t_partition";
 DELETE FROM "public"."pgmigrations" WHERE name=$pga$092_partition$pga$;
 
