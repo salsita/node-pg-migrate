@@ -96,8 +96,10 @@ no execution options such as `count`, `fake` or `dryRun`.
 Each `MigrationStatus` contains `name` and `status`: `applied`, `pending`, or `missing`
 (recorded as applied but absent from the source). Applied/missing entries also
 include `runOn?: Date`, the application time recorded in the history table;
-pending entries have no date. The timestamp uses [node-postgres's type parsing](https://node-postgres.com/features/types#date--timestamp--timestamptz),
-which interprets `timestamp` values in the Node process's local timezone.
+pending entries have no date. The history table stores timestamps without a time
+zone, so `runOn` interprets them using the database session's `TimeZone`; if this
+differs from the session that recorded them, the original instant cannot be
+recovered reliably.
 Applied/missing entries follow history order, followed by pending entries in
 migration order. The function returns an empty array when neither source nor
 history contains migrations.

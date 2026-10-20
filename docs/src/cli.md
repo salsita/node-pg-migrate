@@ -189,7 +189,9 @@ is available. `missing` means it is recorded but absent from the configured sour
 is available but it has no history record. Applied/missing entries follow history
 order; pending entries follow migration order. An empty source and history print
 `No migrations found.`. The `Run on` column shows the recorded application time
-as an ISO 8601 date, and is empty for pending migrations.
+as an ISO 8601 date, and is empty for pending migrations. History timestamps are
+interpreted using the database session's `TimeZone`; if it differs from the session
+that recorded them, the original instant cannot be recovered reliably.
 
 Pending or missing entries exit with code 0 by default. Use `--exit-code` to
 return code 1 when any entry is pending or missing, or code 0 when all entries are

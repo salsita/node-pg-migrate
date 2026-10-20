@@ -878,7 +878,7 @@ async function readMigrationHistory(
     hasMigrationsTable
       ? purpose === 'status'
         ? await db.select(
-            `SELECT ${nameColumn}, ${runOnColumn} AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
+            `SELECT ${nameColumn}, ${runOnColumn}::timestamptz AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
           )
         : (await getRunMigrations(db, options)).map((name) => ({ name }))
       : [];

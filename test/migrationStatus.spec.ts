@@ -119,7 +119,7 @@ describe('getMigrationStatus', () => {
       'a"b',
     ]);
     expect(connection.select).toHaveBeenCalledWith(
-      'SELECT name, run_on AS "runOn" FROM "a""b"."c""d" ORDER BY run_on, id'
+      'SELECT name, run_on::timestamptz AS "runOn" FROM "a""b"."c""d" ORDER BY run_on, id'
     );
     expect(connection.query).not.toHaveBeenCalled();
   });

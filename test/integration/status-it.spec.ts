@@ -71,7 +71,7 @@ describe.each(PG_VERSIONS)(
       return { dbClient: client, dir, migrationsTable: 'pgmigrations', logger };
     }
 
-    function status(...args: string[]) {
+    function statusWithEnv(env: NodeJS.ProcessEnv, ...args: string[]) {
       return execute(
         process.execPath,
         [resolve('bin/node-pg-migrate.js'), 'status', '-m', dir, ...args],
@@ -83,10 +83,15 @@ describe.each(PG_VERSIONS)(
               )
             ),
             DATABASE_URL: container.getConnectionUri(),
+            ...env,
           },
           timeout: INTEGRATION_TIMEOUT,
         }
       );
+    }
+
+    function status(...args: string[]) {
+      return statusWithEnv({}, ...args);
     }
 
     async function snapshot() {
@@ -133,10 +138,11 @@ describe.each(PG_VERSIONS)(
     it('returns recorded dates in JSON for missing migrations and omits dates for pending ones', async () => {
       await runner({ ...options(), direction: 'up', count: 1 });
       const {
-        rows: [{ runOn }],
-      } = await client.query<{ runOn: Date }>(
-        'SELECT run_on AS "runOn" FROM pgmigrations'
+        rows: [{ epoch }],
+      } = await client.query<{ epoch: string }>(
+        "SELECT extract(epoch FROM run_on AT TIME ZONE current_setting('TimeZone')) AS epoch FROM pgmigrations"
       );
+      const runOn = new Date(Number(epoch) * 1000);
       await rm(join(dir, '001_first.cjs'));
       const { stdout } = await status('--json');
       expect(JSON.parse(stdout)).toEqual([
@@ -179,22 +185,77 @@ describe.each(PG_VERSIONS)(
 
     it('succeeds with --exit-code when all migrations are applied and includes their dates', async () => {
       await runner({ ...options(), direction: 'up', fake: true });
-      const { rows } = await client.query<{ name: string; runOn: Date }>(
-        'SELECT name, run_on AS "runOn" FROM pgmigrations ORDER BY run_on, id'
+      const { rows } = await client.query<{ name: string; epoch: string }>(
+        "SELECT name, extract(epoch FROM run_on AT TIME ZONE current_setting('TimeZone')) AS epoch FROM pgmigrations ORDER BY run_on, id"
       );
       const { stdout } = await status('--json', '--exit-code');
       expect(JSON.parse(stdout)).toEqual(
-        rows.map(({ name, runOn }) => ({
+        rows.map(({ name, epoch }) => ({
           name,
           status: 'applied',
-          runOn: runOn.toISOString(),
+          runOn: new Date(Number(epoch) * 1000).toISOString(),
         }))
       );
       const table = await status('--exit-code');
       expect(table.stdout).toContain(
-        `applied\t001_first\t${rows[0].runOn.toISOString()}`
+        `applied\t001_first\t${new Date(Number(rows[0].epoch) * 1000).toISOString()}`
       );
     });
+
+    it.each([
+      ['UTC', '2026-07-14 12:34:56.789'],
+      ['Asia/Kolkata', '2026-07-14 18:04:56.789'],
+    ])(
+      'preserves the recorded instant across Node time zones with database TimeZone %s',
+      async (databaseTimeZone, wallTime) => {
+        await runner({ ...options(), direction: 'up', fake: true });
+        await client.query('UPDATE pgmigrations SET run_on = $1::timestamp', [
+          wallTime,
+        ]);
+        await rm(join(dir, '002_next.cjs'));
+        await writeFile(
+          join(dir, '003_pending.cjs'),
+          'exports.up = () => {};\n'
+        );
+
+        // Fixed wall times above represent this instant, independent of pg's parser.
+        const iso = '2026-07-14T12:34:56.789Z';
+        const expected = [
+          { name: '001_first', status: 'applied', runOn: iso },
+          { name: '002_next', status: 'missing', runOn: iso },
+          { name: '003_pending', status: 'pending' },
+        ];
+        const { rows: original } = await client.query<{ TimeZone: string }>(
+          'SHOW TimeZone'
+        );
+        await client.query("SELECT set_config('TimeZone', $1, false)", [
+          databaseTimeZone,
+        ]);
+        try {
+          await expect(getMigrationStatus(options())).resolves.toEqual([
+            { name: '001_first', status: 'applied', runOn: new Date(iso) },
+            { name: '002_next', status: 'missing', runOn: new Date(iso) },
+            { name: '003_pending', status: 'pending' },
+          ]);
+          const { rows } = await client.query('SHOW TimeZone');
+          expect(rows).toEqual([{ TimeZone: databaseTimeZone }]);
+        } finally {
+          await client.query("SELECT set_config('TimeZone', $1, false)", [
+            original[0].TimeZone,
+          ]);
+        }
+
+        for (const TZ of ['Europe/Berlin', 'America/Sao_Paulo']) {
+          const env = { TZ, PGOPTIONS: `-c TimeZone=${databaseTimeZone}` };
+          const json = await statusWithEnv(env, '--json');
+          expect(JSON.parse(json.stdout)).toEqual(expected);
+          const table = await statusWithEnv(env);
+          expect(table.stdout).toContain(`applied\t001_first\t${iso}`);
+          expect(table.stdout).toContain(`missing\t002_next\t${iso}`);
+          expect(table.stdout).toContain('pending\t003_pending\t\n');
+        }
+      }
+    );
 
     it('uses custom quoted schema/table names and preserves the history-location guard', async () => {
       await client.query('CREATE SCHEMA "meta""data"');
