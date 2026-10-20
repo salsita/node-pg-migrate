@@ -1,5 +1,5 @@
 import type { MigrationOptions } from '../../migrationOptions';
-import { escapeValue, quote, toArray } from '../../utils';
+import { formatOption, quote, toArray } from '../../utils';
 import type { IfNotExistsOption, Name, Reversible } from '../generalTypes';
 import { isNameObject } from '../generalTypes';
 import type { DropIndexOptions } from './dropIndex';
@@ -86,7 +86,7 @@ export function createIndex(mOptions: MigrationOptions): CreateIndex {
       : '';
     const nullsStr = nulls ? ` NULLS ${nulls.toUpperCase()}` : '';
     const storageOptions = Object.entries(storageParameters)
-      .map(([key, value]) => `${quote(key)} = ${escapeValue(value)}`)
+      .map(([key, value]) => formatOption(quote(key), value))
       .join(', ');
     const storageParametersStr = storageOptions
       ? ` WITH (${storageOptions})`

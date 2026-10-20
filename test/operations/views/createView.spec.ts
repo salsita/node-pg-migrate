@@ -37,7 +37,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'CREATE OR REPLACE TEMPORARY RECURSIVE VIEW "comedies"("column1", "column2") WITH (classification = PG) AS SELECT * FROM films WHERE kind = \'Comedy\' WITH LOCAL CHECK OPTION;'
+          'CREATE OR REPLACE TEMPORARY RECURSIVE VIEW "comedies"("column1", "column2") WITH ("classification" = $pga$PG$pga$) AS SELECT * FROM films WHERE kind = \'Comedy\' WITH LOCAL CHECK OPTION;'
         );
       });
 

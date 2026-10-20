@@ -26,6 +26,18 @@
 | `storageParameters` | `object`            | optional key value pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS) |
 | `data`              | `boolean`           | default `undefined`                                                                                                                                      |
 
+Storage parameter names are quoted and folded to lowercase, without camel-case
+conversion. Dotted names specify a namespace and parameter, for example
+`'toast.autovacuum_enabled': false`. Values remain booleans or numbers:
+
+```js
+pgm.createMaterializedView(
+  'account_summary',
+  { storageParameters: { fillfactor: 70, 'toast.autovacuum_enabled': false } },
+  'SELECT * FROM accounts'
+);
+```
+
 ## Reverse Operation: `dropMaterializedView`
 
 #### `pgm.dropMaterializedView( viewName, options )`
@@ -70,6 +82,10 @@
 | `cluster`           | `string` | optional index name for clustering                                                                                                                                         |
 | `extension`         | `string` | optional name of extension view is dependent on                                                                                                                            |
 | `storageParameters` | `object` | optional key value (`null` to reset) pairs of [Storage Parameters](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS) |
+
+`storageParameters` uses the same name escaping as `createMaterializedView`.
+Use `null` to reset a parameter, including namespaced parameters such as
+`{ 'toast.autovacuum_enabled': null }`; other entries are applied with `SET`.
 
 ## Operation: `renameMaterializedView`
 

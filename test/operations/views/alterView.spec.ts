@@ -27,7 +27,7 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          'ALTER VIEW "a_view" SET (classification = PG, check_option = LOCAL);'
+          'ALTER VIEW "a_view" SET ("classification" = $pga$PG$pga$, "check_option" = $pga$local$pga$);'
         );
       });
 
@@ -41,8 +41,14 @@ describe('operations', () => {
 
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe(
-          `ALTER VIEW "a_view" SET (check_option = LOCAL);
-ALTER VIEW "a_view" RESET (classification);`
+          `ALTER VIEW "a_view" SET ("check_option" = $pga$local$pga$);
+ALTER VIEW "a_view" RESET ("classification");`
+        );
+      });
+
+      it('resets the convenience check option', () => {
+        expect(alterViewFn('a_view', { checkOption: null })).toBe(
+          'ALTER VIEW "a_view" RESET ("check_option");'
         );
       });
 

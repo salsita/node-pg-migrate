@@ -26,6 +26,21 @@
 | `options`     | `object`            | key value pairs of [View Options](https://www.postgresql.org/docs/current/sql-createview.html) |
 | `checkOption` | `string`            | `CASCADED` or `LOCAL`                                                                          |
 
+Option names are quoted and folded to lowercase, without camel-case conversion.
+Values may be strings, numbers, or booleans. Strings are escaped as SQL values;
+pass `check_option: 'local'`, without adding SQL quotes around `local`.
+The `check_option` enum is normalized to lowercase so `information_schema.views`
+reports `LOCAL` or `CASCADED` consistently with the `checkOption` convenience
+option. Other string values retain their supplied case.
+
+```js
+pgm.createView(
+  'active_accounts',
+  { options: { check_option: 'local', security_barrier: true } },
+  'SELECT * FROM accounts WHERE active'
+);
+```
+
 ## Reverse Operation: `dropView`
 
 #### `pgm.dropView( viewName, options )`
@@ -67,6 +82,15 @@
 | ------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
 | `checkOption` | `string` | `CASCADED`, `LOCAL` or `null` to reset                                                                          |
 | `options`     | `object` | key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html) |
+
+Option names and values use the same escaping as `createView`. A `null` value
+resets the named option; it is not included in `SET`. For example:
+
+```js
+pgm.alterView('active_accounts', {
+  options: { security_barrier: false, check_option: null },
+});
+```
 
 ## Operation: `alterViewColumn`
 
