@@ -19,12 +19,10 @@ export function alterSequence(mOptions: MigrationOptions): AlterSequence {
 
     const clauses = parseSequenceOptions(mOptions.typeShorthands, options);
 
-    if (restart) {
-      if (restart === true) {
-        clauses.push('RESTART');
-      } else {
-        clauses.push(`RESTART WITH ${restart}`);
-      }
+    if (restart === true) {
+      clauses.push('RESTART');
+    } else if (restart !== undefined) {
+      clauses.push(`RESTART WITH ${restart}`);
     }
 
     if (clauses.length === 0) {
