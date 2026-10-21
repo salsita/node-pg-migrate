@@ -34,22 +34,28 @@
 
 #### Options
 
-| Option              | Type                        | Description                                                                                 |
-| ------------------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `name`              | `string`                    | name for the index (one will be inferred from table/columns if undefined)                   |
-| `unique`            | `boolean`                   | set to true if this is a unique index                                                       |
-| `where`             | `string`                    | raw sql for where clause of index                                                           |
-| `concurrently`      | `boolean`                   | create this index concurrently                                                              |
-| `ifNotExists`       | `boolean`                   | default false                                                                               |
-| `method`            | `string`                    | btree \| hash \| gist \| spgist \| gin \| brin                                              |
-| `include`           | `string` or `array[string]` | columns to add to the include clause                                                        |
-| `nulls`             | `string`                    | distinct \| not distinct (for unique indexes only)                                          |
-| `storageParameters` | `object`                    | index storage parameters for the `WITH` clause; values can be strings, numbers, or booleans |
+| Option              | Type                        | Description                                                                                        |
+| ------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `name`              | `string`                    | name for the index (one will be inferred from table/columns if undefined)                          |
+| `unique`            | `boolean`                   | set to true if this is a unique index                                                              |
+| `where`             | `string`                    | raw sql for where clause of index                                                                  |
+| `concurrently`      | `boolean`                   | create this index concurrently                                                                     |
+| `ifNotExists`       | `boolean`                   | default false                                                                                      |
+| `method`            | `string`                    | btree \| hash \| gist \| spgist \| gin \| brin                                                     |
+| `include`           | `string` or `array[string]` | columns to add to the include clause                                                               |
+| `nulls`             | `string`                    | distinct \| not distinct (for unique indexes only)                                                 |
+| `storageParameters` | `object`                    | index storage parameters for the `WITH` clause; values can be strings, finite numbers, or booleans |
 
 Storage parameter names and string values are escaped and used as supplied,
 without decamelization. An empty `storageParameters` object omits the `WITH`
-clause. PostgreSQL validates which parameters and values the selected index
-method supports; see [Index Storage Parameters](https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-STORAGE-PARAMETERS).
+clause.
+
+Numeric values must be finite. `NaN`, `Infinity`, and `-Infinity` throw a
+`TypeError` naming the option and value during SQL generation, before SQL for
+that operation is queued. Finite numbers, including negatives, zero, and
+decimals, are rendered unchanged. PostgreSQL validates which parameters,
+ranges, and values the selected index method supports; see
+[Index Storage Parameters](https://www.postgresql.org/docs/current/sql-createindex.html#SQL-CREATEINDEX-STORAGE-PARAMETERS).
 
 The exported `IndexStorageParameters` type can be used for reusable parameter maps.
 
