@@ -56,7 +56,7 @@ inserting them as SQL. Pass `check_option: 'local'`, not
 `check_option: "'local'"`. The `check_option` enum is normalized to lowercase,
 including through the `checkOption` convenience option, so `information_schema.views`
 continues reporting `LOCAL` or `CASCADED`. Other string values are stored as
-supplied; booleans and numbers keep their meaning.
+supplied; booleans and finite numbers keep their meaning.
 
 View and materialized-view option names are now escaped too. Supply plain
 parameter names without SQL quotes; uppercase ASCII letters still fold to
@@ -64,6 +64,13 @@ lowercase, and `toast.` remains a namespace for materialized-view parameters.
 `null` still means `RESET` when altering a view. Index storage parameters retain
 their exact name spelling. Generated SQL now quotes view option names and emits
 `= true` for boolean true options.
+
+Numeric index, view, and materialized-view option values must be finite.
+`NaN`, `Infinity`, and `-Infinity`, previously emitted directly into SQL, now
+throw a `TypeError` naming the option and value during SQL generation, before
+SQL for that operation is queued. Finite numbers, including negatives, zero,
+and decimals, retain their rendering; PostgreSQL still validates supported
+parameters and their value ranges.
 
 #### Runner option wrappers distinguish migration sources
 

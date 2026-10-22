@@ -17,5 +17,11 @@ export function formatOption(
   quotedName: string,
   value: string | number | boolean | null
 ): string {
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    throw new TypeError(
+      `Invalid value for option ${quotedName}: ${value}. Expected a finite number.`
+    );
+  }
+
   return `${quotedName} = ${escapeValue(value)}`;
 }
