@@ -6,7 +6,8 @@
  * - `HISTORY_EXISTS`: the migrations table already records migrations.
  * - `INVALID_MIGRATIONS_TABLE`: a relation with the migrations table's name
  *   exists, but it is not an ordinary or partitioned table (e.g. a view, a
- *   materialized view or a foreign table), so baseline will not read it.
+ *   materialized view or a foreign table), so baseline will not read it, or
+ *   it is a table without an `id` column, so it is not a migrations table.
  * - `UNSUPPORTED_SERVER`: the server is not PostgreSQL (e.g. CockroachDB).
  * - `BINARY_DUMP`: the dump is not SQL text, but a pg_dump custom- or
  *   tar-format archive (`pg_dump -Fc`/`-Ft`), a compressed file or UTF-16

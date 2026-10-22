@@ -14,6 +14,7 @@
     "test:integration": "vitest --project integration",
     "test:update-snapshots": "vitest run -u",
     "test:coverage": "vitest --project unit --coverage",
+    "test:coverage:unit": "PGM_COVERAGE_SUITE=unit vitest run --project unit --coverage",
     "pretest:docs": "pnpm run docs:build",
     "test:docs": "playwright test",
     "docs:dev": "vitepress dev docs",

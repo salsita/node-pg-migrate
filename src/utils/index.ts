@@ -12,6 +12,7 @@ export { formatLines } from './formatLines';
 export { formatOption, quoteOptionName } from './formatOption';
 export { formatParams } from './formatParams';
 export { formatPartitionColumns } from './formatPartitionColumns';
+export { formatQueryError } from './formatQueryError';
 export { formatBlock, formatSeparator } from './formatSql';
 export { getMigrationTableName } from './getMigrationTableName';
 export { getMigrationTableSchema } from './getMigrationTableSchema';
