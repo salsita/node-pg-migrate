@@ -96,7 +96,8 @@ no execution options such as `count`, `fake` or `dryRun`.
 Each `MigrationStatus` contains `name` and `status`: `applied`, `pending`, or `missing`
 (recorded as applied but absent from the source). Applied/missing entries also
 include `runOn?: Date`, the application time recorded in the history table;
-pending entries have no date. The history table stores timestamps without a time
+this remains a `Date` even when the application registers custom `pg` type parsers.
+Pending entries have no date. The history table stores timestamps without a time
 zone, so `runOn` interprets them using the database session's `TimeZone`; if this
 differs from the session that recorded them, the original instant cannot be
 recovered reliably.

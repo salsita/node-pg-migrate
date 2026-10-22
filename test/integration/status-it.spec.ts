@@ -1,8 +1,10 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { execFile } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import pg from 'pg';
 import {
@@ -107,8 +109,8 @@ describe.each(PG_VERSIONS)(
 
     it('lists pending files without creating a missing schema or history table', async () => {
       const { stdout } = await status('--migrations-schema', 'missing');
-      expect(stdout).toContain('pending\t001_first');
-      expect(stdout).toContain('pending\t002_next');
+      expect(stdout).toContain('pending  001_first');
+      expect(stdout).toContain('pending  002_next');
       const { rows } = await client.query(
         "SELECT 1 FROM pg_namespace WHERE nspname = 'missing' UNION ALL SELECT 1 FROM pg_tables WHERE schemaname = 'public'"
       );
@@ -121,8 +123,8 @@ describe.each(PG_VERSIONS)(
       const before = await snapshot();
       await client.query('SELECT pg_advisory_lock($1)', [PG_MIGRATE_LOCK_ID]);
       const { stdout } = await status();
-      expect(stdout).toContain('applied\t001_first');
-      expect(stdout).toContain('pending\t002_next');
+      expect(stdout).toContain('applied  001_first');
+      expect(stdout).toContain('pending  002_next');
       expect(stdout).not.toContain('Migrations complete');
       expect(await snapshot()).toEqual(before);
     });
@@ -131,8 +133,8 @@ describe.each(PG_VERSIONS)(
       await runner({ ...options(), direction: 'up', count: 1 });
       await rm(join(dir, '001_first.cjs'));
       const { stdout } = await status();
-      expect(stdout).toContain('missing\t001_first');
-      expect(stdout).toContain('pending\t002_next');
+      expect(stdout).toContain('missing  001_first');
+      expect(stdout).toContain('pending  002_next');
     });
 
     it('returns recorded dates in JSON for missing migrations and omits dates for pending ones', async () => {
@@ -155,18 +157,109 @@ describe.each(PG_VERSIONS)(
       ]);
     });
 
+    it.each([
+      { oids: [1184] },
+      { oids: [1184, 1114, 1700, 701, 20, 25, 1043] },
+    ])(
+      'returns Dates independently of global parsers $oids',
+      async ({ oids }) => {
+        await runner({ ...options(), direction: 'up', fake: true });
+        await client.query('BEGIN');
+        await client.query("SET LOCAL TIME ZONE 'UTC'");
+        await client.query(
+          "UPDATE pgmigrations SET run_on = TIMESTAMP '2026-10-22 12:34:56.789999'"
+        );
+        await rm(join(dir, '002_next.cjs'));
+        const parsers = oids.map((oid) => ({
+          oid,
+          parser: pg.types.getTypeParser(oid),
+        }));
+        try {
+          for (const { oid } of parsers) {
+            pg.types.setTypeParser(oid, (value) =>
+              oid === 1184 ? value : 'overridden'
+            );
+          }
+          const migrations = await getMigrationStatus(options());
+          expect(migrations).toEqual([
+            {
+              name: '001_first',
+              status: 'applied',
+              runOn: new Date('2026-10-22T12:34:56.789Z'),
+            },
+            {
+              name: '002_next',
+              status: 'missing',
+              runOn: new Date('2026-10-22T12:34:56.789Z'),
+            },
+          ]);
+          expect(migrations[0].runOn).toBeInstanceOf(Date);
+        } finally {
+          for (const { oid, parser } of parsers) {
+            pg.types.setTypeParser(oid, parser);
+          }
+          await client.query('ROLLBACK');
+        }
+      }
+    );
+
+    it.each([false, true])(
+      'prints status despite global parsers registered before the CLI starts (JSON: %s)',
+      async (json) => {
+        await runner({ ...options(), direction: 'up', count: 1 });
+        await client.query(
+          "UPDATE pgmigrations SET run_on = TIMESTAMP '2026-10-22 12:34:56.789999'"
+        );
+        const preloadDir = await mkdtemp(join(tmpdir(), 'pgm-status-parser-'));
+        const preload = join(preloadDir, 'parser.mjs');
+        const pgPath = createRequire(import.meta.url).resolve('pg');
+        await writeFile(
+          preload,
+          `import pg from ${JSON.stringify(pathToFileURL(pgPath).href)};
+const oids = [1184, 1114, 1700, 701, 20, 25, 1043];
+const parsers = oids.map(oid => [oid, pg.types.getTypeParser(oid)]);
+for (const oid of oids) pg.types.setTypeParser(oid, value => oid === 1184 ? value : 'overridden');
+process.on('exit', () => { for (const [oid, parser] of parsers) pg.types.setTypeParser(oid, parser); });
+`
+        );
+        try {
+          const { stdout } = await statusWithEnv(
+            {
+              NODE_OPTIONS: `--import=${pathToFileURL(preload).href}`,
+              PGOPTIONS: '-c TimeZone=UTC',
+            },
+            ...(json ? ['--json'] : [])
+          );
+          expect(stdout).toBe(
+            json
+              ? `${JSON.stringify([
+                  {
+                    name: '001_first',
+                    status: 'applied',
+                    runOn: '2026-10-22T12:34:56.789Z',
+                  },
+                  { name: '002_next', status: 'pending' },
+                ])}\n`
+              : 'Status   Migration  Run on\napplied  001_first  2026-10-22T12:34:56.789Z\npending  002_next\n'
+          );
+        } finally {
+          await rm(preloadDir, { recursive: true, force: true });
+        }
+      }
+    );
+
     it.each(['pending', 'missing'] as const)(
-      'returns exit code 1 only when requested for %s migrations',
+      'returns exit code 2 only when requested for %s migrations',
       async (state) => {
         if (state === 'missing') {
           await runner({ ...options(), direction: 'up', count: 1 });
           await rm(join(dir, '001_first.cjs'));
           await rm(join(dir, '002_next.cjs'));
         }
-        expect((await status()).stdout).toContain(`${state}\t`);
+        expect((await status()).stdout).toContain(`${state}  `);
         await expect(status('--exit-code')).rejects.toMatchObject({
-          code: 1,
-          stdout: expect.stringContaining(`${state}\t`),
+          code: 2,
+          stdout: expect.stringContaining(`${state}  `),
         });
       }
     );
@@ -175,11 +268,52 @@ describe.each(PG_VERSIONS)(
       await expect(
         status('--json', '--exit-code', '--force-exit')
       ).rejects.toMatchObject({
-        code: 1,
+        code: 2,
         stdout: `${JSON.stringify([
           { name: '001_first', status: 'pending' },
           { name: '002_next', status: 'pending' },
         ])}\n`,
+      });
+    });
+
+    it.each(['extra', '--unknown-option'])(
+      'returns exit code 1 without stdout for a usage error: %s',
+      async (argument) => {
+        await expect(
+          status('--json', '--exit-code', argument)
+        ).rejects.toMatchObject({
+          code: 1,
+          stdout: '',
+          stderr: expect.stringContaining('error:'),
+        });
+      }
+    );
+
+    it('returns exit code 1 without stdout for a connection failure', async () => {
+      const databaseUrl = new URL(container.getConnectionUri());
+      databaseUrl.password = 'wrong-password';
+      await expect(
+        statusWithEnv(
+          { DATABASE_URL: databaseUrl.href },
+          '--json',
+          '--exit-code'
+        )
+      ).rejects.toMatchObject({
+        code: 1,
+        stdout: '',
+        stderr: expect.stringContaining('password authentication failed'),
+      });
+    });
+
+    it('returns exit code 1 without stdout for a loader failure', async () => {
+      await writeFile(
+        join(dir, '003_broken.cjs'),
+        "throw new Error('broken loader');\n"
+      );
+      await expect(status('--json', '--exit-code')).rejects.toMatchObject({
+        code: 1,
+        stdout: '',
+        stderr: expect.stringContaining('broken loader'),
       });
     });
 
@@ -198,7 +332,7 @@ describe.each(PG_VERSIONS)(
       );
       const table = await status('--exit-code');
       expect(table.stdout).toContain(
-        `applied\t001_first\t${new Date(Number(rows[0].epoch) * 1000).toISOString()}`
+        `applied  001_first  ${new Date(Number(rows[0].epoch) * 1000).toISOString()}`
       );
     });
 
@@ -250,9 +384,9 @@ describe.each(PG_VERSIONS)(
           const json = await statusWithEnv(env, '--json');
           expect(JSON.parse(json.stdout)).toEqual(expected);
           const table = await statusWithEnv(env);
-          expect(table.stdout).toContain(`applied\t001_first\t${iso}`);
-          expect(table.stdout).toContain(`missing\t002_next\t${iso}`);
-          expect(table.stdout).toContain('pending\t003_pending\t\n');
+          expect(table.stdout).toContain(`applied  001_first    ${iso}`);
+          expect(table.stdout).toContain(`missing  002_next     ${iso}`);
+          expect(table.stdout).toContain('pending  003_pending\n');
         }
       }
     );
@@ -266,7 +400,9 @@ describe.each(PG_VERSIONS)(
         direction: 'up',
         count: 1,
       });
-      await expect(status('-t', 'his"tory', '--json')).rejects.toMatchObject({
+      await expect(
+        status('-t', 'his"tory', '--json', '--exit-code')
+      ).rejects.toMatchObject({
         code: 1,
         stdout: '',
         stderr: expect.stringContaining('Cannot determine status:'),
@@ -277,8 +413,8 @@ describe.each(PG_VERSIONS)(
         '--migrations-schema',
         'meta"data'
       );
-      expect(stdout).toContain('applied\t001_first');
-      expect(stdout).toContain('pending\t002_next');
+      expect(stdout).toContain('applied  001_first');
+      expect(stdout).toContain('pending  002_next');
     });
 
     it('can inspect using a SELECT-only role and fails clearly without SELECT permission', async () => {
@@ -359,7 +495,7 @@ describe.each(PG_VERSIONS)(
         '--ignore-pattern',
         join(dir, '002*')
       );
-      expect(stdout).toContain('pending\t001_first');
+      expect(stdout).toContain('pending  001_first');
       expect(stdout).not.toContain('002_next');
       const { rows } = await client.query(
         "SELECT 1 FROM pg_tables WHERE schemaname = 'public'"

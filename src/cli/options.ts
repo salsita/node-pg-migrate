@@ -244,7 +244,7 @@ export function addStatusOptions(command: Command): Command {
     .addOption(
       new Option(
         `--${exitCodeArg}`,
-        'Exit with code 1 if any migrations are pending or missing'
+        'Exit with code 2 if any migrations are pending or missing'
       )
     );
 

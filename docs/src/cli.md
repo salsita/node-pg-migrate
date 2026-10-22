@@ -177,10 +177,10 @@ node-pg-migrate status -m migrations --migrations-schema public
 ```
 
 ```text
-Status  Migration     Run on
-applied 001_init      2026-10-14T12:00:00.000Z
-missing 002_removed   2026-10-14T12:05:00.000Z
-pending 003_add_users
+Status   Migration      Run on
+applied  001_init       2026-10-14T12:00:00.000Z
+missing  002_removed    2026-10-14T12:05:00.000Z
+pending  003_add_users
 ```
 
 `applied` means the migration is recorded in the history table and its definition
@@ -193,10 +193,17 @@ as an ISO 8601 date, and is empty for pending migrations. History timestamps are
 interpreted using the database session's `TimeZone`; if it differs from the session
 that recorded them, the original instant cannot be recovered reliably.
 
-Pending or missing entries exit with code 0 by default. Use `--exit-code` to
-return code 1 when any entry is pending or missing, or code 0 when all entries are
-applied (including an empty result). Connection, history and loader errors exit
-with code 1 regardless of this flag.
+The table pads columns to fit the longest value. Use `--json` for scripts.
+Pending or missing entries exit with code 0 by default. With `--exit-code`, the
+command distinguishes migration status from errors:
+
+| Code | Meaning                                             |
+| ---- | --------------------------------------------------- |
+| `0`  | All migrations are applied, or the result is empty. |
+| `1`  | A connection, history, loader or usage error.       |
+| `2`  | At least one migration is pending or missing.       |
+
+Errors exit with code 1 regardless of `--exit-code`.
 
 Use `--json` to print a JSON array instead of the table, or `[]` for an empty
 result. Each entry contains `name` and `status`; applied/missing entries also
@@ -206,6 +213,10 @@ flags can be combined for deployment checks:
 ```sh
 node-pg-migrate status --json --exit-code
 ```
+
+Code 2 includes missing definitions as well as pending migrations. Before
+automatically running `up`, inspect the JSON statuses to distinguish those cases;
+an error does not produce a status array.
 
 The command uses the same connection, config, schema, glob and ignore options as
 `up`. See `node-pg-migrate status --help`. A missing history table means all available

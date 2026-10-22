@@ -25,14 +25,14 @@ describe('CLI SSL verification options', () => {
 });
 
 describe('status options', () => {
-  it('accepts JSON output and an opt-in status exit code', () => {
+  it.each([
+    { argument: '--json', expected: { json: true } },
+    { argument: '--exit-code', expected: { exitCode: true } },
+  ])('accepts the status option $argument', ({ argument, expected }) => {
     const command = addStatusOptions(new Command()).exitOverride();
     command.configureOutput({ writeErr: () => {} });
-    command.parse(['--json', '--exit-code'], { from: 'user' });
-    expect(command.opts<CliOptions>()).toMatchObject({
-      json: true,
-      exitCode: true,
-    });
+    command.parse([argument], { from: 'user' });
+    expect(command.opts<CliOptions>()).toMatchObject(expected);
   });
 
   it.each([

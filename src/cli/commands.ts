@@ -227,14 +227,32 @@ export async function runStatus(options: CliOptions): Promise<void> {
   } else if (migrations.length === 0) {
     console.log('No migrations found.');
   } else {
-    console.log('Status\tMigration\tRun on');
-    for (const { name, status, runOn } of migrations) {
-      console.log(`${status}\t${name}\t${runOn?.toISOString() ?? ''}`);
+    const rows = [
+      ['Status', 'Migration', 'Run on'],
+      ...migrations.map(({ name, status, runOn }) => [
+        status,
+        name,
+        runOn?.toISOString() ?? '',
+      ]),
+    ];
+    const widths = [0, 0, 0];
+    for (const row of rows) {
+      for (const [column, value] of row.entries()) {
+        widths[column] = Math.max(widths[column], value.length);
+      }
+    }
+    for (const row of rows) {
+      console.log(
+        row
+          .map((value, column) => value.padEnd(widths[column]))
+          .join('  ')
+          .trimEnd()
+      );
     }
   }
   const exitCode =
     options.exitCode && migrations.some(({ status }) => status !== 'applied')
-      ? 1
+      ? 2
       : 0;
   process.exitCode = exitCode;
   handleForceExit(options, exitCode);

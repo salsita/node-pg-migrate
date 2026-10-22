@@ -14,8 +14,8 @@ function setup(runNames: string[] = [], hasTable = true) {
     select: vi.fn<db.DBConnection['select']>((query) => {
       const sql = typeof query === 'string' ? query : query.text;
       return Promise.resolve(
-        sql.startsWith('SELECT name, run_on')
-          ? runNames.map((name) => ({ name }))
+        sql.startsWith('SELECT name, floor(')
+          ? runNames.map((name) => ({ name, runOn: '1791979200000' }))
           : hasTable
             ? [{}]
             : []
@@ -43,12 +43,31 @@ function setup(runNames: string[] = [], hasTable = true) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('getMigrationStatus', () => {
+  it.each(['1792677201068', '1.792677201068e+12'])(
+    'constructs Dates from raw epoch milliseconds: %s',
+    async (runOn) => {
+      const { connection, options } = setup(['001_first']);
+      connection.select
+        .mockResolvedValueOnce([{}])
+        .mockResolvedValueOnce([{ name: '001_first', runOn }]);
+
+      await expect(getMigrationStatus(options)).resolves.toEqual([
+        {
+          name: '001_first',
+          status: 'applied',
+          runOn: new Date(1_792_677_201_068),
+        },
+        { name: '002_second', status: 'pending' },
+      ]);
+    }
+  );
+
   it('returns recorded dates for applied and missing entries, with none on pending entries', async () => {
     const { connection, options } = setup(['003_removed', '002_second']);
     const runOn = new Date('2026-10-14T12:00:00.000Z');
     connection.select.mockResolvedValueOnce([{}]).mockResolvedValueOnce([
-      { name: '003_removed', runOn },
-      { name: '002_second', runOn },
+      { name: '003_removed', runOn: String(runOn.getTime()) },
+      { name: '002_second', runOn: String(runOn.getTime()) },
     ]);
 
     await expect(getMigrationStatus(options)).resolves.toEqual([
@@ -66,8 +85,16 @@ describe('getMigrationStatus', () => {
     ]);
 
     await expect(getMigrationStatus(options)).resolves.toEqual([
-      { name: '003_removed', status: 'missing' },
-      { name: '002_second', status: 'applied' },
+      {
+        name: '003_removed',
+        status: 'missing',
+        runOn: new Date(1_791_979_200_000),
+      },
+      {
+        name: '002_second',
+        status: 'applied',
+        runOn: new Date(1_791_979_200_000),
+      },
       { name: '001_first', status: 'pending' },
     ]);
     expect(up).not.toHaveBeenCalled();
@@ -118,9 +145,10 @@ describe('getMigrationStatus', () => {
       'c"d',
       'a"b',
     ]);
-    expect(connection.select).toHaveBeenCalledWith(
-      'SELECT name, run_on::timestamptz AS "runOn" FROM "a""b"."c""d" ORDER BY run_on, id'
-    );
+    expect(connection.select).toHaveBeenCalledWith({
+      text: 'SELECT name, floor(extract(epoch FROM run_on::timestamptz) * 1000) AS "runOn" FROM "a""b"."c""d" ORDER BY run_on, id',
+      types: { getTypeParser: expect.any(Function) },
+    });
     expect(connection.query).not.toHaveBeenCalled();
   });
 

@@ -71,15 +71,46 @@ describe('cli', () => {
           tsconfigPaths: true,
         })
       );
-      expect(console.log).toHaveBeenCalledWith('Status\tMigration\tRun on');
+      expect(console.log).toHaveBeenCalledWith('Status   Migration    Run on');
       expect(console.log).toHaveBeenCalledWith(
-        'applied\t001_first\t2026-10-14T12:00:00.000Z'
+        'applied  001_first    2026-10-14T12:00:00.000Z'
       );
-      expect(console.log).toHaveBeenCalledWith('missing\t002_removed\t');
-      expect(console.log).toHaveBeenCalledWith('pending\t003_next\t');
+      expect(console.log).toHaveBeenCalledWith('missing  002_removed');
+      expect(console.log).toHaveBeenCalledWith('pending  003_next');
       expect(process.exitCode).toBe(0);
       expect(runnerMock).not.toHaveBeenCalled();
     });
+
+    it.each(['001_first', '1728917320000_create-users-table'])(
+      'aligns table columns for %s without trailing spaces',
+      async (name) => {
+        const iso = '2026-10-14T12:00:00.000Z';
+        statusMock.mockResolvedValueOnce([
+          { name, status: 'applied', runOn: new Date(iso) },
+          { name: '002_removed', status: 'missing', runOn: new Date(iso) },
+          { name: '003_next', status: 'pending' },
+        ]);
+
+        await runStatus({ databaseUrlVar: 'DATABASE_URL' });
+
+        const lines = vi
+          .mocked(console.log)
+          .mock.calls.map(([line]) => String(line));
+        const [header, applied, missing, pending] = lines;
+        expect(lines).toHaveLength(4);
+        expect(applied.indexOf(name)).toBe(header.indexOf('Migration'));
+        expect(missing.indexOf('002_removed')).toBe(
+          header.indexOf('Migration')
+        );
+        expect(pending.indexOf('003_next')).toBe(header.indexOf('Migration'));
+        expect(applied.indexOf(iso)).toBe(header.indexOf('Run on'));
+        expect(missing.indexOf(iso)).toBe(header.indexOf('Run on'));
+        for (const line of lines) {
+          expect(line).toBe(line.trimEnd());
+          expect(line).not.toContain('\t');
+        }
+      }
+    );
 
     it('prints a JSON array with ISO dates and no table output', async () => {
       const migrations: MigrationStatus[] = [
@@ -101,9 +132,9 @@ describe('cli', () => {
     it.each([
       { statuses: [], expected: 0 },
       { statuses: ['applied'], expected: 0 },
-      { statuses: ['pending'], expected: 1 },
-      { statuses: ['missing'], expected: 1 },
-      { statuses: ['applied', 'pending', 'missing'], expected: 1 },
+      { statuses: ['pending'], expected: 2 },
+      { statuses: ['missing'], expected: 2 },
+      { statuses: ['applied', 'pending', 'missing'], expected: 2 },
     ] as const)(
       'sets the opt-in exit code for $statuses',
       async ({ statuses, expected }) => {
@@ -134,7 +165,7 @@ describe('cli', () => {
         exitCode: true,
         forceExit: true,
       });
-      expect(exit).toHaveBeenCalledWith(1);
+      expect(exit).toHaveBeenCalledWith(2);
       expect(console.log).toHaveBeenCalledExactlyOnceWith(
         JSON.stringify(migrations)
       );

@@ -877,9 +877,15 @@ async function readMigrationHistory(
   const appliedMigrations: MigrationHistory['appliedMigrations'] =
     hasMigrationsTable
       ? purpose === 'status'
-        ? await db.select(
-            `SELECT ${nameColumn}, ${runOnColumn}::timestamptz AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`
-          )
+        ? (
+            await db.select({
+              text: `SELECT ${nameColumn}, floor(extract(epoch FROM ${runOnColumn}::timestamptz) * 1000) AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`,
+              types: { getTypeParser: () => (value: string) => value },
+            })
+          ).map(({ name, runOn }: { name: string; runOn: string }) => ({
+            name,
+            runOn: new Date(Number(runOn)),
+          }))
         : (await getRunMigrations(db, options)).map((name) => ({ name }))
       : [];
   const history =
