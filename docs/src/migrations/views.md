@@ -27,11 +27,16 @@
 | `checkOption` | `string`            | `CASCADED` or `LOCAL`                                                                          |
 
 Option names are quoted and folded to lowercase, without camel-case conversion.
-Values may be strings, numbers, or booleans. Strings are escaped as SQL values;
-pass `check_option: 'local'`, without adding SQL quotes around `local`.
+Values may be strings, finite numbers, or booleans. Strings are escaped as SQL
+values; pass `check_option: 'local'`, without adding SQL quotes around `local`.
 The `check_option` enum is normalized to lowercase so `information_schema.views`
 reports `LOCAL` or `CASCADED` consistently with the `checkOption` convenience
 option. Other string values retain their supplied case.
+
+`NaN`, `Infinity`, and `-Infinity` throw a `TypeError` naming the option and
+value during SQL generation, before SQL for that operation is queued. Finite
+numbers, including negatives, zero, and decimals, are rendered unchanged;
+PostgreSQL validates which values each option supports.
 
 ```js
 pgm.createView(
@@ -83,8 +88,9 @@ pgm.createView(
 | `checkOption` | `string` | `CASCADED`, `LOCAL` or `null` to reset                                                                          |
 | `options`     | `object` | key value (`null` to reset) pairs of [View Options](https://www.postgresql.org/docs/current/sql-alterview.html) |
 
-Option names and values use the same escaping as `createView`. A `null` value
-resets the named option; it is not included in `SET`. For example:
+Option names and values use the same escaping and finite-number validation as
+`createView`. A `null` value resets the named option; it is not included in
+`SET`. For example:
 
 ```js
 pgm.alterView('active_accounts', {

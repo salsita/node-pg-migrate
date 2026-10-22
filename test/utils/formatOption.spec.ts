@@ -15,6 +15,28 @@ describe('utils', () => {
   });
 
   describe('formatOption', () => {
+    it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+      'rejects the non-finite number %s with the option name and value',
+      (value) => {
+        expect(() => formatOption('"fillfactor"', value)).toThrow(
+          new TypeError(
+            `Invalid value for option "fillfactor": ${value}. Expected a finite number.`
+          )
+        );
+      }
+    );
+
+    it('includes the quoted namespace and escaped option name in errors', () => {
+      expect(() =>
+        formatOption(
+          quoteOptionName('TOAST.Custom"Option'),
+          Number.POSITIVE_INFINITY
+        )
+      ).toThrow(
+        'Invalid value for option "toast"."custom""option": Infinity. Expected a finite number.'
+      );
+    });
+
     it('preserves the supplied quoting and case of index option names', () => {
       expect(formatOption(quote('FillFactor'), 70)).toBe('"FillFactor" = 70');
     });
@@ -34,7 +56,15 @@ describe('utils', () => {
     it.each([
       { value: true, expected: 'true' },
       { value: false, expected: 'false' },
+      { value: 70, expected: '70' },
+      { value: -1, expected: '-1' },
       { value: 0, expected: '0' },
+      { value: -0, expected: '0' },
+      { value: 0.5, expected: '0.5' },
+      { value: -0.5, expected: '-0.5' },
+      { value: 'NaN', expected: '$pga$NaN$pga$' },
+      { value: 'Infinity', expected: '$pga$Infinity$pga$' },
+      { value: '-Infinity', expected: '$pga$-Infinity$pga$' },
       { value: null, expected: 'NULL' },
     ])('renders $value as $expected', ({ value, expected }) => {
       expect(formatOption('"option"', value)).toBe(`"option" = ${expected}`);

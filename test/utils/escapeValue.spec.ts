@@ -41,6 +41,17 @@ describe('utils', () => {
       expect(actual).toBe(77.7);
     });
 
+    it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+      'preserves non-finite numbers outside option formatting: %s',
+      (value) => {
+        expect(escapeValue(value)).toBe(value);
+        expect(escapeValue([[value]])).toBe(`ARRAY[[${value}]]`);
+        expect(escapeValue(PgLiteral.create(String(value)))).toBe(
+          String(value)
+        );
+      }
+    );
+
     it.each([
       ["user's table", "$pga$user's table$pga$"],
       [String.raw`user\'s table`, String.raw`$pga$user\'s table$pga$`],

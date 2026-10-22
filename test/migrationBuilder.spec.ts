@@ -225,6 +225,125 @@ describe('migrationBuilder', () => {
     }
   );
 
+  const storageOptionOperations: Array<{
+    name: string;
+    expectedSql: string;
+    queue: (pgm: MigrationBuilder, parameters: Record<string, number>) => void;
+  }> = [
+    {
+      name: 'createIndex',
+      expectedSql:
+        'CREATE INDEX "films_title_index" ON "films" ("title") WITH ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5);',
+      queue: (pgm, storageParameters) => {
+        pgm.createIndex('films', 'title', { storageParameters });
+      },
+    },
+    {
+      name: 'addIndex',
+      expectedSql:
+        'CREATE INDEX "films_title_index" ON "films" ("title") WITH ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5);',
+      queue: (pgm, storageParameters) => {
+        pgm.addIndex('films', 'title', { storageParameters });
+      },
+    },
+    {
+      name: 'createView',
+      expectedSql:
+        'CREATE VIEW "v" WITH ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5) AS SELECT 1;',
+      queue: (pgm, options) => {
+        pgm.createView('v', { options }, 'SELECT 1');
+      },
+    },
+    {
+      name: 'alterView',
+      expectedSql:
+        'ALTER VIEW "v" SET ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5);',
+      queue: (pgm, options) => {
+        pgm.alterView('v', { options });
+      },
+    },
+    {
+      name: 'createMaterializedView',
+      expectedSql:
+        'CREATE MATERIALIZED VIEW "v" WITH ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5) AS SELECT 1;',
+      queue: (pgm, storageParameters) => {
+        pgm.createMaterializedView('v', { storageParameters }, 'SELECT 1');
+      },
+    },
+    {
+      name: 'alterMaterializedView',
+      expectedSql:
+        'ALTER MATERIALIZED VIEW "v" SET ("positive" = 70, "negative" = -1, "zero" = 0, "decimal" = 0.5);',
+      queue: (pgm, storageParameters) => {
+        pgm.alterMaterializedView('v', { storageParameters });
+      },
+    },
+  ];
+
+  describe.each(storageOptionOperations)(
+    '$name option validation',
+    ({ queue, expectedSql }) => {
+      it('queues finite positive, negative, zero and decimal options', () => {
+        const db = { query: vi.fn(), select: vi.fn() };
+        const pgm = new MigrationBuilder(db, undefined, false, console);
+
+        queue(pgm, { positive: 70, negative: -1, zero: 0, decimal: 0.5 });
+
+        expect(pgm.getSqlSteps()).toEqual([expectedSql]);
+        expect(db.query).not.toHaveBeenCalled();
+        expect(db.select).not.toHaveBeenCalled();
+      });
+
+      it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+        'rejects %s with option context and preserves queued SQL',
+        (value) => {
+          const db = { query: vi.fn(), select: vi.fn() };
+          const pgm = new MigrationBuilder(db, undefined, false, console);
+          pgm.sql('SELECT 1');
+          const parameters = { valid_before: 70, invalid_option: value };
+
+          expect(() => {
+            queue(pgm, parameters);
+          }).toThrow(TypeError);
+          expect(() => {
+            queue(pgm, parameters);
+          }).toThrow(
+            `Invalid value for option "invalid_option": ${String(value)}. Expected a finite number.`
+          );
+          expect(pgm.getSqlSteps()).toEqual(['SELECT 1;']);
+
+          pgm.sql('SELECT 2');
+
+          expect(pgm.getSqlSteps()).toEqual(['SELECT 1;', 'SELECT 2;']);
+          expect(db.query).not.toHaveBeenCalled();
+          expect(db.select).not.toHaveBeenCalled();
+        }
+      );
+    }
+  );
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    'preserves %s in defaults and SQL templates outside storage options',
+    (value) => {
+      const pgm = new MigrationBuilder(
+        { query: vi.fn(), select: vi.fn() },
+        undefined,
+        false,
+        console
+      );
+
+      pgm.createTable('records', {
+        amount: { type: 'numeric', default: value },
+      });
+      pgm.sql('SELECT {value}', { value });
+
+      expect(pgm.getSqlSteps()).toEqual([
+        `CREATE TABLE "records" ("amount" numeric DEFAULT ${String(value)});`,
+        `SELECT ${String(value)};`,
+      ]);
+    }
+  );
+
   it.each([new Date(0), new Map(), { count: 1n }, () => {}])(
     'leaves queued SQL unchanged for an unsupported default: %s',
     (value) => {
