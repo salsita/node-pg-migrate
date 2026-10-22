@@ -33,3 +33,5 @@ export const envPathArg = 'envPath';
 export const advisoryLockModeArg = 'advisory-lock-mode';
 export const tsconfigPathsArg = 'tsconfig-paths';
 export const forceExitArg = 'force-exit';
+export const jsonArg = 'json';
+export const exitCodeArg = 'exit-code';

@@ -247,6 +247,36 @@ export type RunnerOptionMigrations = Omit<
 
 export type RunnerOption = RunnerOptionDirectory | RunnerOptionMigrations;
 
+type MigrationStatusOptionKeys =
+  | 'dir'
+  | 'migrations'
+  | 'useGlob'
+  | 'ignorePattern'
+  | 'migrationLoaderStrategies'
+  | 'tsconfigPaths'
+  | 'migrationsTable'
+  | 'migrationsSchema'
+  | 'schema'
+  | 'schemaIsDefault'
+  | 'log'
+  | 'logger'
+  | 'verbose';
+
+/** Connection, history location and migration source used to inspect status. */
+export type MigrationStatusOptions = (
+  | Pick<RunnerOptionDirectory, MigrationStatusOptionKeys>
+  | Pick<RunnerOptionMigrations, MigrationStatusOptionKeys>
+) &
+  (RunnerOptionClient | RunnerOptionUrl);
+
+export interface MigrationStatus {
+  name: string;
+  /** `missing` means recorded as applied, but absent from the configured source. */
+  status: 'applied' | 'pending' | 'missing';
+  /** The recorded application time for applied or missing migrations. */
+  runOn?: Date;
+}
+
 /**
  * Random but well-known identifier shared by all instances of `node-pg-migrate`.
  */
@@ -805,7 +835,8 @@ async function findHistoryElsewhere(
 function describeHistoryElsewhere(
   options: RunnerOption,
   history: MigrationsTableLocation,
-  hasMigrationsTable: boolean
+  hasMigrationsTable: boolean,
+  purpose: 'run' | 'status'
 ): string {
   const schema = getMigrationTableSchema(options);
   const found = history.schema;
@@ -815,12 +846,19 @@ function describeHistoryElsewhere(
     ? `The migrations table follows the first \`--schema\` entry, and "${found}" is further down that list. To continue that history, pass \`--migrations-schema ${found}\` (or list "${found}" first)`
     : `No schema was configured, so "${schema}" is only the fallback. To continue that history, pass \`--schema ${found}\` (or \`--migrations-schema ${found}\` if only the migrations table lives there)`;
 
-  return `Refusing to run: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. Carrying on would start the history over and could apply migrations that have already run. ${hint}; to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`. From the API, use the \`schema\` and \`migrationsSchema\` options.`;
+  const lead =
+    purpose === 'status' ? 'Cannot determine status' : 'Refusing to run';
+  const reason =
+    purpose === 'status'
+      ? 'The configured location would give an incomplete migration status.'
+      : 'Carrying on would start the history over and could apply migrations that have already run.';
+
+  return `${lead}: the migrations table ${getMigrationTableName(options)} ${hasMigrationsTable ? 'is empty' : 'does not exist'}, but ${getMigrationTableName(options, found)} ${history.readable ? 'already records migrations' : 'exists and cannot be read by this role'}. ${reason} ${hint}; to start a new one in "${schema}", pass \`--migrations-schema ${schema}\`. From the API, use the \`schema\` and \`migrationsSchema\` options.`;
 }
 
 interface MigrationHistory {
   hasMigrationsTable: boolean;
-  runNames: string[];
+  appliedMigrations: Array<Pick<MigrationStatus, 'name' | 'runOn'>>;
 }
 
 /**
@@ -832,22 +870,36 @@ interface MigrationHistory {
  */
 async function readMigrationHistory(
   db: DBConnection,
-  options: RunnerOption
+  options: RunnerOption,
+  purpose: 'run' | 'status'
 ): Promise<MigrationHistory> {
   const hasMigrationsTable = await migrationsTableExists(db, options);
-  const runNames: string[] = hasMigrationsTable
-    ? await getRunMigrations(db, options)
-    : [];
+  const appliedMigrations: MigrationHistory['appliedMigrations'] =
+    hasMigrationsTable
+      ? purpose === 'status'
+        ? (
+            await db.select({
+              text: `SELECT ${nameColumn}, floor(extract(epoch FROM ${runOnColumn}::timestamptz) * 1000) AS "runOn" FROM ${getMigrationTableName(options)} ORDER BY ${runOnColumn}, ${idColumn}`,
+              types: { getTypeParser: () => (value: string) => value },
+            })
+          ).map(({ name, runOn }: { name: string; runOn: string }) => ({
+            name,
+            runOn: new Date(Number(runOn)),
+          }))
+        : (await getRunMigrations(db, options)).map((name) => ({ name }))
+      : [];
   const history =
-    runNames.length === 0 ? await findHistoryElsewhere(db, options) : undefined;
+    appliedMigrations.length === 0
+      ? await findHistoryElsewhere(db, options)
+      : undefined;
 
   if (history) {
     throw new Error(
-      describeHistoryElsewhere(options, history, hasMigrationsTable)
+      describeHistoryElsewhere(options, history, hasMigrationsTable, purpose)
     );
   }
 
-  return { hasMigrationsTable, runNames };
+  return { hasMigrationsTable, appliedMigrations };
 }
 
 /**
@@ -858,10 +910,11 @@ async function readMigrationHistory(
 async function readHistoryAndMigrations(
   db: DBConnection,
   options: RunnerOption,
-  logger: Logger
+  logger: Logger,
+  purpose: 'run' | 'status' = 'run'
 ): Promise<[MigrationHistory, Migration[]]> {
   const [history, migrations] = await Promise.allSettled([
-    readMigrationHistory(db, options),
+    readMigrationHistory(db, options, purpose),
     loadMigrations(db, options, logger),
   ]);
 
@@ -993,9 +1046,7 @@ function getLogger(options: RunnerOption): Logger {
       };
 }
 
-export async function runner(options: RunnerOption): Promise<RunMigration[]> {
-  const logger = getLogger(options);
-
+function getDatabase(options: RunnerOption, logger: Logger): DBConnection {
   const dbClient = 'dbClient' in options ? options.dbClient : undefined;
   const databaseUrl =
     'databaseUrl' in options ? options.databaseUrl : undefined;
@@ -1020,7 +1071,52 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
 
   validateMigrationSource(options, logger);
 
-  const db = Db(connection, logger);
+  return Db(connection, logger);
+}
+
+/**
+ * Inspect history without running migration actions, setting up schemas or taking a lock.
+ * Loaders (including module imports and in-memory factories) still run to identify migrations.
+ */
+export async function getMigrationStatus(
+  options: MigrationStatusOptions
+): Promise<MigrationStatus[]> {
+  const runnerOptions: RunnerOption = { ...options, direction: 'up' };
+  const logger = getLogger(runnerOptions);
+  const db = getDatabase(runnerOptions, logger);
+
+  try {
+    await db.createConnection();
+    const [{ appliedMigrations }, migrations] = await readHistoryAndMigrations(
+      db,
+      runnerOptions,
+      logger,
+      'status'
+    );
+    const available = new Set(migrations.map(({ name }) => name));
+    const applied = new Set(appliedMigrations.map(({ name }) => name));
+
+    return [
+      ...appliedMigrations.map(({ name, runOn }): MigrationStatus => ({
+        name,
+        status: available.has(name) ? 'applied' : 'missing',
+        runOn,
+      })),
+      ...migrations
+        .filter(({ name }) => !applied.has(name))
+        .map(({ name }): MigrationStatus => ({ name, status: 'pending' })),
+    ];
+  } finally {
+    if (db.connected()) {
+      await db.close();
+    }
+  }
+}
+
+export async function runner(options: RunnerOption): Promise<RunMigration[]> {
+  const logger = getLogger(options);
+  const db = getDatabase(options, logger);
+  const dbClient = 'dbClient' in options ? options.dbClient : undefined;
   const dryRun = Boolean(options.dryRun);
   let readOnlyTransaction = false;
   let lockAcquired = false;
@@ -1052,8 +1148,9 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     }
 
     // Before anything is created: a run that is refused must leave the database as it was.
-    const [{ hasMigrationsTable, runNames }, migrations] =
+    const [{ hasMigrationsTable, appliedMigrations }, migrations] =
       await readHistoryAndMigrations(db, options, logger);
+    const runNames = appliedMigrations.map(({ name }) => name);
 
     await useSchemas(db, options, dryRun, logger);
 

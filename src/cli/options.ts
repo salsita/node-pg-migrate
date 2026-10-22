@@ -13,9 +13,11 @@ import {
   decamelizeArg,
   dryRunArg,
   envPathArg,
+  exitCodeArg,
   fakeArg,
   forceExitArg,
   ignorePatternArg,
+  jsonArg,
   lockArg,
   lockValueArg,
   migrationFileLanguageArg,
@@ -84,6 +86,8 @@ export interface CliOptions {
   advisoryLockMode?: 'fail' | 'wait';
   tsconfigPaths?: string;
   forceExit?: boolean;
+  json?: boolean;
+  exitCode?: boolean;
 }
 
 /**
@@ -160,11 +164,9 @@ export function addCreateOptions(command: Command): Command {
   return addConfigOptions(command);
 }
 
-/**
- * Options relevant to the migration actions (`up`, `down`, `redo`).
- */
-export function addRunnerOptions(command: Command): Command {
-  command
+/** Connection, history and source options shared with migration status. */
+function addConnectionOptions(command: Command): Command {
+  return command
     .addOption(
       new Option(
         `-d, --${databaseUrlVarArg} <${databaseUrlVarArg}>`,
@@ -197,26 +199,8 @@ export function addRunnerOptions(command: Command): Command {
     )
     .addOption(
       new Option(
-        `--${createSchemaArg}`,
-        "Creates the configured schema if it doesn't exist"
-      )
-    )
-    .addOption(
-      new Option(
         `--${migrationsSchemaArg} <${migrationsSchemaArg}>`,
         'The schema storing table which migrations have been run'
-      )
-    )
-    .addOption(
-      new Option(
-        `--${createMigrationsSchemaArg}`,
-        "Creates the configured migration schema if it doesn't exist"
-      )
-    )
-    .addOption(
-      new Option(
-        `--no-${checkOrderArg}`,
-        'Check order of migrations before running them'
       )
     )
     .addOption(
@@ -229,6 +213,63 @@ export function addRunnerOptions(command: Command): Command {
       new Option(
         `--${ignorePatternArg} <${ignorePatternArg}>`,
         `Regex or glob pattern for migration files to be ignored. When using glob pattern, "${useGlobArg}" must be used as well`
+      )
+    )
+    .addOption(
+      new Option(
+        `--${rejectUnauthorizedArg}`,
+        'Sets rejectUnauthorized SSL option'
+      )
+    )
+    .addOption(
+      new Option(
+        `--no-${rejectUnauthorizedArg}`,
+        'Disables certificate verification unless URL TLS parameters override it'
+      )
+    )
+    .addOption(
+      new Option(
+        `--${tsconfigPathsArg} <${tsconfigPathsArg}>`,
+        "Enable jiti's tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover tsconfig.json, or a path to a specific tsconfig.json"
+      )
+    );
+}
+
+/** Options for inspecting migration status and using the result in scripts. */
+export function addStatusOptions(command: Command): Command {
+  addConnectionOptions(command)
+    .addOption(
+      new Option(`--${jsonArg}`, 'Print migration status as a JSON array')
+    )
+    .addOption(
+      new Option(
+        `--${exitCodeArg}`,
+        'Exit with code 2 if any migrations are pending or missing'
+      )
+    );
+
+  return addConfigOptions(command);
+}
+
+/** Options relevant to the migration actions (`up`, `down`, `redo`). */
+export function addRunnerOptions(command: Command): Command {
+  addConnectionOptions(command)
+    .addOption(
+      new Option(
+        `--${createSchemaArg}`,
+        "Creates the configured schema if it doesn't exist"
+      )
+    )
+    .addOption(
+      new Option(
+        `--${createMigrationsSchemaArg}`,
+        "Creates the configured migration schema if it doesn't exist"
+      )
+    )
+    .addOption(
+      new Option(
+        `--no-${checkOrderArg}`,
+        'Check order of migrations before running them'
       )
     )
     .addOption(
@@ -274,18 +315,6 @@ export function addRunnerOptions(command: Command): Command {
     )
     .addOption(
       new Option(
-        `--${rejectUnauthorizedArg}`,
-        'Sets rejectUnauthorized SSL option'
-      )
-    )
-    .addOption(
-      new Option(
-        `--no-${rejectUnauthorizedArg}`,
-        'Disables certificate verification unless URL TLS parameters override it'
-      )
-    )
-    .addOption(
-      new Option(
         `--${timestampArg}`,
         'Treats number argument to up/down migration as timestamp'
       ).default(false)
@@ -297,12 +326,6 @@ export function addRunnerOptions(command: Command): Command {
       )
         .choices(['fail', 'wait'])
         .default('fail')
-    )
-    .addOption(
-      new Option(
-        `--${tsconfigPathsArg} <${tsconfigPathsArg}>`,
-        "Enable jiti's tsconfig paths resolution when loading TS/JS migration files. Pass `true` to auto-discover tsconfig.json, or a path to a specific tsconfig.json"
-      )
     );
 
   return addConfigOptions(command);
