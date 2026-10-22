@@ -116,6 +116,7 @@ function navBarItems(): DefaultTheme.NavItem[] {
       link: '/migrations/',
       activeMatch: `^/migrations/`,
     },
+    { text: 'Team', link: '/team' },
     {
       text: pkg.version,
       items: [
