@@ -56,17 +56,17 @@
   ],
   "emeriti": [
     {
-      "avatar": "https://github.com/theoephraim.png?size=128",
+      "avatar": "https://github.com/theoephraim.png?size=192",
       "name": "Theo Ephraim",
       "links": [
         {
           "icon": "github",
-          "link": "https://github.com/theoephraim/"
+          "link": "https://github.com/theoephraim"
         }
       ]
     },
     {
-      "avatar": "https://github.com/dolezel.png?size=128",
+      "avatar": "https://github.com/dolezel.png?size=192",
       "name": "Jan Doležel",
       "links": [
         {
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "avatar": "https://github.com/matthewgertner.png?size=128",
+      "avatar": "https://github.com/matthewgertner.png?size=192",
       "name": "Matthew Gertner",
       "links": [
         {
@@ -86,7 +86,7 @@
       ]
     },
     {
-      "avatar": "https://github.com/goce-cz.png?size=128",
+      "avatar": "https://github.com/goce-cz.png?size=192",
       "name": "Jiří Staniševský",
       "links": [
         {
@@ -96,7 +96,7 @@
       ]
     },
     {
-      "avatar": "https://github.com/littlewhywhat.png?size=128",
+      "avatar": "https://github.com/littlewhywhat.png?size=192",
       "name": "Roman Vaivod",
       "links": [
         {
