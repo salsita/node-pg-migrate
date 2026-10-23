@@ -66,10 +66,44 @@
       ]
     },
     {
-      "avatar": "https://github.com/salsita.png?size=128",
-      "name": "Salsita Software",
-      "org": "salsita.ai",
-      "orgLink": "https://salsita.ai/"
+      "avatar": "https://github.com/dolezel.png?size=128",
+      "name": "Jan Doležel",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/dolezel"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/matthewgertner.png?size=128",
+      "name": "Matthew Gertner",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/matthewgertner"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/goce-cz.png?size=128",
+      "name": "Jiří Staniševský",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/goce-cz"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/littlewhywhat.png?size=128",
+      "name": "Roman Vaivod",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/littlewhywhat"
+        }
+      ]
     }
   ]
 }

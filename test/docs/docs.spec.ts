@@ -113,7 +113,10 @@ const team: Array<{
     name: 'Theo Ephraim',
     links: ['https://github.com/theoephraim/'],
   },
-  { name: 'Salsita Software', links: ['https://salsita.ai/'] },
+  { name: 'Jan Doležel', links: ['https://github.com/dolezel'] },
+  { name: 'Matthew Gertner', links: ['https://github.com/matthewgertner'] },
+  { name: 'Jiří Staniševský', links: ['https://github.com/goce-cz'] },
+  { name: 'Roman Vaivod', links: ['https://github.com/littlewhywhat'] },
 ];
 
 async function expectTeamCards(page: Page): Promise<void> {
