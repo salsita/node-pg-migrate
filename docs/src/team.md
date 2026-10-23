@@ -42,7 +42,7 @@ const maintainers = [
 const contributors = [
   {
     avatar: 'https://github.com/Creatixpy.png?size=192',
-    name: 'Gabriel P',
+    name: 'Gabriel Pereira',
     title: 'Core Contributor',
     desc: 'I am a developer constantly evolving, building my own projects and contributing to open source projects.',
     links: [{ icon: 'github', link: 'https://github.com/Creatixpy' }],

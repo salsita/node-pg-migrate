@@ -108,7 +108,7 @@ const team: Array<{
     sponsor: 'https://github.com/sponsors/brenoepics',
   },
   { name: 'Omar Diab', links: ['https://github.com/osdiab'] },
-  { name: 'Gabriel P', links: ['https://github.com/Creatixpy'] },
+  { name: 'Gabriel Pereira', links: ['https://github.com/Creatixpy'] },
   {
     name: 'Theo Ephraim',
     links: ['https://github.com/theoephraim/'],
