@@ -17,20 +17,7 @@ Node.js database migration management built exclusively for postgres. (Also test
 
 ## Maintainers
 
-### Active
-
-| Name                  | GitHub                                         |
-| --------------------- | ---------------------------------------------- |
-| Christopher Quadflieg | [@Shinigami92](https://github.com/Shinigami92) |
-| Breno A.              | [@brenoepics](https://github.com/brenoepics)   |
-| Omar Diab             | [@osdiab](https://github.com/osdiab)           |
-
-### Former
-
-| Name             | Link                                            |
-| ---------------- | ----------------------------------------------- |
-| Theo Ephraim     | [@theoephraim](https://github.com/theoephraim/) |
-| Salsita Software | [salsita.ai](https://salsita.ai/)               |
+Meet our maintainers and contributors on the [team page](https://salsita.github.io/node-pg-migrate/team).
 
 ## Preconditions
 

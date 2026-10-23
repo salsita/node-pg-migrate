@@ -1,0 +1,109 @@
+{
+  "maintainers": [
+    {
+      "avatar": "https://github.com/Shinigami92.png?size=192",
+      "name": "Christopher Quadflieg",
+      "title": "Project Leader & Maintainer",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/Shinigami92"
+        },
+        {
+          "icon": "mastodon",
+          "link": "https://mas.to/@Shini92"
+        }
+      ],
+      "sponsor": "https://github.com/sponsors/Shinigami92"
+    },
+    {
+      "avatar": "https://github.com/brenoepics.png?size=192",
+      "name": "Breno A.",
+      "title": "Co-Maintainer",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/brenoepics"
+        }
+      ],
+      "sponsor": "https://github.com/sponsors/brenoepics"
+    },
+    {
+      "avatar": "https://github.com/osdiab.png?size=192",
+      "name": "Omar Diab",
+      "title": "Co-Maintainer",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/osdiab"
+        }
+      ]
+    }
+  ],
+  "contributors": [
+    {
+      "avatar": "https://github.com/Creatixpy.png?size=192",
+      "name": "Gabriel Pereira",
+      "title": "Core Contributor",
+      "desc": "I am a developer constantly evolving, building my own projects and contributing to open source projects.",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/Creatixpy"
+        }
+      ]
+    }
+  ],
+  "emeriti": [
+    {
+      "avatar": "https://github.com/theoephraim.png?size=192",
+      "name": "Theo Ephraim",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/theoephraim"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/dolezel.png?size=192",
+      "name": "Jan Doležel",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/dolezel"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/matthewgertner.png?size=192",
+      "name": "Matthew Gertner",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/matthewgertner"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/goce-cz.png?size=192",
+      "name": "Jiří Staniševský",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/goce-cz"
+        }
+      ]
+    },
+    {
+      "avatar": "https://github.com/littlewhywhat.png?size=192",
+      "name": "Roman Vaivod",
+      "links": [
+        {
+          "icon": "github",
+          "link": "https://github.com/littlewhywhat"
+        }
+      ]
+    }
+  ]
+}

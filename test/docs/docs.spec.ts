@@ -1,6 +1,17 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import members from '../../docs/src/team/members.json' with { type: 'json' };
+
+test.beforeEach(async ({ page }) => {
+  // Check the site independently of GitHub's avatar service availability.
+  await page.route('https://github.com/*.png*', (route) =>
+    route.fulfill({
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"/>',
+    })
+  );
+});
 
 // `pnpm run docs:build` writes the sitemap, so it lists every page of the site
 const sitemapPath = new URL(
@@ -79,5 +90,42 @@ test('Twoslash hover popups show the real types', async ({ page }) => {
   await expect(popup).toBeVisible();
   await expect(popup).toContainText('MigrationBuilder.createTable');
 
+  expect(errors).toEqual([]);
+});
+
+const team = [
+  ...members.maintainers,
+  ...members.contributors,
+  ...members.emeriti,
+];
+
+test('Team navigation opens the team page', async ({ page }) => {
+  const errors = watchBrowserErrors(page);
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto('./');
+
+  await page.getByRole('button', { name: 'Menu', exact: true }).click();
+  const teamLink = page.getByRole('link', { name: 'Team', exact: true });
+  await expect(teamLink).toBeVisible();
+  await expect(teamLink).toHaveAttribute('href', '/node-pg-migrate/team');
+  await teamLink.click();
+
+  await expect(page).toHaveURL(/\/node-pg-migrate\/team$/);
+  await expect(page).toHaveTitle('Team | node-pg-migrate');
+  await expect(
+    page.getByRole('heading', { name: 'Meet the Team', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Core Contributors', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Team Emeriti', exact: true })
+  ).toBeVisible();
+
+  const cards = page.locator('.VPTeamMembersItem');
+  await expect(cards).toHaveCount(team.length);
+  await expect(cards.locator('.name')).toHaveText(team.map(({ name }) => name));
+  await expect(page.locator('.VPSidebar')).toHaveCount(0);
+  await page.waitForLoadState('networkidle');
   expect(errors).toEqual([]);
 });
