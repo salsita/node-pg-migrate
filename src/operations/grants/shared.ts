@@ -86,6 +86,14 @@ export function asTablesStr(
   options: AllTablesOptions | SomeTablesOptions,
   mOptions: MigrationOptions
 ): string {
+  // Only the bare string is a schema-wide selector; arrays contain literal names.
+  if (
+    options.tables === 'ALL' &&
+    (!('schema' in options) || options.schema === undefined)
+  ) {
+    throw new Error('The "schema" option is required when "tables" is "ALL"');
+  }
+
   return isAllTablesOptions(options)
     ? `ALL TABLES IN SCHEMA ${mOptions.literal(options.schema)}`
     : toArray(options.tables).map(mOptions.literal).join(', ');
@@ -95,6 +103,16 @@ export function asSequencesStr(
   options: AllSequencesOptions | SomeSequencesOptions,
   mOptions: MigrationOptions
 ): string {
+  // Only the bare string is a schema-wide selector; arrays contain literal names.
+  if (
+    options.sequences === 'ALL' &&
+    (!('schema' in options) || options.schema === undefined)
+  ) {
+    throw new Error(
+      'The "schema" option is required when "sequences" is "ALL"'
+    );
+  }
+
   return options.sequences === 'ALL' && 'schema' in options
     ? `ALL SEQUENCES IN SCHEMA ${mOptions.literal(options.schema)}`
     : `SEQUENCE ${toArray(options.sequences).map(mOptions.literal).join(', ')}`;

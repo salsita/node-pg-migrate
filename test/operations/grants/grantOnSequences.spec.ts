@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { GrantOnSequencesOptions, Name } from '../../../src';
 import { grantOnSequences } from '../../../src/operations/grants';
 import { options1, options2 } from '../../presetMigrationOptions';
 
@@ -28,22 +29,71 @@ describe('grantOnSequences', () => {
     );
   });
 
-  it('grants all privileges on all sequences in a quoted schema', () => {
-    expect(
-      grant({
-        sequences: 'ALL',
-        schema: 'app"schema',
-        roles: 'PUBLIC',
-        privileges: 'ALL',
-      })
-    ).toBe('GRANT ALL ON ALL SEQUENCES IN SCHEMA "app""schema" TO PUBLIC;');
+  it('grants and reverses all privileges on all sequences in a quoted schema', () => {
+    const grantOptions: GrantOnSequencesOptions = {
+      sequences: 'ALL',
+      schema: 'app"schema',
+      roles: 'PUBLIC',
+      privileges: 'ALL',
+    };
+
+    expect(grant(grantOptions)).toBe(
+      'GRANT ALL ON ALL SEQUENCES IN SCHEMA "app""schema" TO PUBLIC;'
+    );
+    expect(grant.reverse(grantOptions)).toBe(
+      'REVOKE ALL ON ALL SEQUENCES IN SCHEMA "app""schema" FROM PUBLIC;'
+    );
   });
 
-  it('treats ALL as a sequence name when no schema is supplied', () => {
-    expect(
-      grant({ sequences: 'ALL', roles: 'PUBLIC', privileges: 'USAGE' })
-    ).toBe('GRANT USAGE ON SEQUENCE "ALL" TO PUBLIC;');
-  });
+  it.each([{}, { schema: undefined }])(
+    'rejects bare ALL without a schema (%j), including reversal',
+    (schemaOptions) => {
+      const grantOptions: GrantOnSequencesOptions = {
+        sequences: 'ALL',
+        roles: 'reader',
+        privileges: 'USAGE',
+        ...schemaOptions,
+      };
+      const error = new Error(
+        'The "schema" option is required when "sequences" is "ALL"'
+      );
+
+      expect(() => grant(grantOptions)).toThrow(error);
+      expect(() => grant.reverse(grantOptions)).toThrow(error);
+    }
+  );
+
+  it.each([{}, { schema: 'other_schema' }])(
+    'preserves explicit ALL names and literal arrays (%j), including reversal',
+    (schemaOptions) => {
+      const selections: Array<{ sequences: Name | Name[]; sql: string }> = [
+        { sequences: { name: 'ALL' }, sql: '"ALL"' },
+        {
+          sequences: { schema: 'app"schema', name: 'ALL' },
+          sql: '"app""schema"."ALL"',
+        },
+        // Arrays are named selections, even with one element named ALL.
+        { sequences: ['ALL'], sql: '"ALL"' },
+        { sequences: ['ALL', 'foo'], sql: '"ALL", "foo"' },
+      ];
+
+      for (const { sequences, sql } of selections) {
+        const grantOptions: GrantOnSequencesOptions = {
+          sequences,
+          roles: 'reader',
+          privileges: 'USAGE',
+          ...schemaOptions,
+        };
+
+        expect(grant(grantOptions)).toBe(
+          `GRANT USAGE ON SEQUENCE ${sql} TO "reader";`
+        );
+        expect(grant.reverse(grantOptions)).toBe(
+          `REVOKE USAGE ON SEQUENCE ${sql} FROM "reader";`
+        );
+      }
+    }
+  );
 
   it('does not widen a named selection when options contain an extra schema', () => {
     const grantOptions = {

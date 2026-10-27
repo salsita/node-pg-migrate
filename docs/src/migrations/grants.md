@@ -60,20 +60,41 @@
 
 #### grant_options
 
-| Option            | Type                                       | Description                                 |
-| ----------------- | ------------------------------------------ | ------------------------------------------- |
-| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                             |
-| `schema`          | `string`                                   | if tables ALL, then schema name is required |
-| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                          |
-| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                              |
-| `withGrantOption` | `boolean`                                  | default `false`                             |
-| `cascade`         | `boolean`                                  | default `false`                             |
+| Option            | Type                                       | Description                                   |
+| ----------------- | ------------------------------------------ | --------------------------------------------- |
+| `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                               |
+| `schema`          | `string`                                   | Required with the bare string `tables: 'ALL'` |
+| `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                            |
+| `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                                |
+| `withGrantOption` | `boolean`                                  | default `false`                               |
+| `cascade`         | `boolean`                                  | default `false`                               |
 
 Use `{ schema: 'app', name: 'foo' }` to select a schema-qualified table. The
 top-level `schema` option is used only with `tables: 'ALL'`; named selections
 ignore it. Unqualified names resolve through the connection's `search_path`,
 which the runner's `schema` option sets when supplied. The same selection rules
 apply to `revokeOnTables` and automatic grant reversal.
+
+The bare string `tables: 'ALL'` requires a top-level `schema`; omitting it
+throws an error before SQL is generated. To select a table literally named
+`ALL`, use `tables: { name: 'ALL' }` or a schema-qualified Name object.
+Arrays such as `tables: ['ALL', 'foo']` always select literal names, even
+when a top-level `schema` is present.
+
+```ts
+pgm.grantOnTables({
+  tables: 'ALL',
+  schema: 'app',
+  roles: 'reader',
+  privileges: 'SELECT',
+});
+
+pgm.grantOnTables({
+  tables: { name: 'ALL' },
+  roles: 'reader',
+  privileges: 'SELECT',
+});
+```
 
 ## Reverse Operation: `revokeOnTables`
 
@@ -93,7 +114,7 @@ apply to `revokeOnTables` and automatic grant reversal.
 | Option            | Type                                       | Description                                   |
 | ----------------- | ------------------------------------------ | --------------------------------------------- |
 | `tables`          | [Name](/migrations/#type) or `array[Name]` | Names of tables                               |
-| `schema`          | `string`                                   | if tables ALL, then schema name is required   |
+| `schema`          | `string`                                   | Required with the bare string `tables: 'ALL'` |
 | `privileges`      | `array[TablePrivileges]` or `ALL`          | list of privileges                            |
 | `roles`           | [Name](/migrations/#type) or `array[Name]` | names of roles                                |
 | `onlyGrantOption` | `boolean`                                  | Revoke only the grant option; default `false` |
@@ -137,12 +158,22 @@ pgm.grantOnSequences({
   schema: 'public',
   privileges: 'USAGE',
 });
+
+pgm.grantOnSequences({
+  roles: 'reader',
+  sequences: { name: 'ALL' },
+  privileges: 'USAGE',
+});
 ```
 
 Use `{ schema: 'myschema', name: 'my_table_id_seq' }` for a schema-qualified
 sequence. `sequences: 'ALL'` together with `schema` affects existing sequences
-only; it does not set default privileges for future sequences. Without `schema`,
-`'ALL'` is treated as a literal sequence name, as with `grantOnTables`.
+only; it does not set default privileges for future sequences. The bare string
+`sequences: 'ALL'` without a top-level `schema` throws an error before SQL is
+generated. Use `sequences: { name: 'ALL' }` for the literal sequence `ALL`, or
+`sequences: { schema: 'app', name: 'ALL' }` to qualify it. Arrays such as
+`sequences: ['ALL', 'foo']` always select literal names, even with a top-level
+`schema`. These rules also apply to `revokeOnSequences` and automatic reversal.
 
 The operation reverses automatically with `revokeOnSequences`. A schema-wide
 reversal revokes privileges on all sequences present when it runs, including

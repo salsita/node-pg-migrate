@@ -105,20 +105,55 @@ describe('operations', () => {
         );
       });
 
-      it('preserves the literal ALL name without a schema', () => {
-        const grantOptions: GrantOnTablesOptions = {
-          tables: 'ALL',
-          privileges: 'SELECT',
-          roles: 'reader',
-        };
+      it.each([{}, { schema: undefined }])(
+        'rejects bare ALL without a schema (%j), including reversal',
+        (schemaOptions) => {
+          const grantOptions: GrantOnTablesOptions = {
+            tables: 'ALL',
+            privileges: 'SELECT',
+            roles: 'reader',
+            ...schemaOptions,
+          };
+          const error = new Error(
+            'The "schema" option is required when "tables" is "ALL"'
+          );
 
-        expect(grantOnTablesFn(grantOptions)).toBe(
-          'GRANT SELECT ON "ALL" TO "reader";'
-        );
-        expect(grantOnTablesFn.reverse(grantOptions)).toBe(
-          'REVOKE SELECT ON "ALL" FROM "reader";'
-        );
-      });
+          expect(() => grantOnTablesFn(grantOptions)).toThrow(error);
+          expect(() => grantOnTablesFn.reverse(grantOptions)).toThrow(error);
+        }
+      );
+
+      it.each([{}, { schema: 'other_schema' }])(
+        'preserves explicit ALL names and literal arrays (%j), including reversal',
+        (schemaOptions) => {
+          const selections: Array<{ tables: Name | Name[]; sql: string }> = [
+            { tables: { name: 'ALL' }, sql: '"ALL"' },
+            {
+              tables: { schema: 'app"schema', name: 'ALL' },
+              sql: '"app""schema"."ALL"',
+            },
+            // Arrays are named selections, even with one element named ALL.
+            { tables: ['ALL'], sql: '"ALL"' },
+            { tables: ['ALL', 'foo'], sql: '"ALL", "foo"' },
+          ];
+
+          for (const { tables, sql } of selections) {
+            const grantOptions: GrantOnTablesOptions = {
+              tables,
+              privileges: 'SELECT',
+              roles: 'reader',
+              ...schemaOptions,
+            };
+
+            expect(grantOnTablesFn(grantOptions)).toBe(
+              `GRANT SELECT ON ${sql} TO "reader";`
+            );
+            expect(grantOnTablesFn.reverse(grantOptions)).toBe(
+              `REVOKE SELECT ON ${sql} FROM "reader";`
+            );
+          }
+        }
+      );
 
       it('uses configured identifier rendering for named selections with an extra schema', () => {
         const grantOptions = {

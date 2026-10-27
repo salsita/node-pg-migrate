@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Name } from '../../../src';
 import { revokeOnSequences } from '../../../src/operations/grants';
 import { options1 } from '../../presetMigrationOptions';
 
@@ -39,6 +40,49 @@ describe('revokeOnSequences', () => {
       'REVOKE GRANT OPTION FOR ALL ON ALL SEQUENCES IN SCHEMA "app""schema" FROM "reader" CASCADE;'
     );
   });
+
+  it.each([{}, { schema: undefined }])(
+    'rejects bare ALL without a schema (%j)',
+    (schemaOptions) => {
+      expect(() =>
+        revoke({
+          sequences: 'ALL',
+          roles: 'reader',
+          privileges: 'USAGE',
+          ...schemaOptions,
+        })
+      ).toThrow(
+        new Error('The "schema" option is required when "sequences" is "ALL"')
+      );
+    }
+  );
+
+  it.each([{}, { schema: 'other_schema' }])(
+    'preserves explicit ALL names and literal arrays (%j)',
+    (schemaOptions) => {
+      const selections: Array<{ sequences: Name | Name[]; sql: string }> = [
+        { sequences: { name: 'ALL' }, sql: '"ALL"' },
+        {
+          sequences: { schema: 'app"schema', name: 'ALL' },
+          sql: '"app""schema"."ALL"',
+        },
+        // Arrays are named selections, even with one element named ALL.
+        { sequences: ['ALL'], sql: '"ALL"' },
+        { sequences: ['ALL', 'foo'], sql: '"ALL", "foo"' },
+      ];
+
+      for (const { sequences, sql } of selections) {
+        expect(
+          revoke({
+            sequences,
+            roles: 'reader',
+            privileges: 'USAGE',
+            ...schemaOptions,
+          })
+        ).toBe(`REVOKE USAGE ON SEQUENCE ${sql} FROM "reader";`);
+      }
+    }
+  );
 
   it('does not widen named selections when options contain an extra schema', () => {
     const revokeOptions = {
