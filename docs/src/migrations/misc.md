@@ -103,7 +103,7 @@ Without `args`, the SQL is queued without template substitutions.
 
 > [!IMPORTANT]
 > Allows running DB queries with the same DB connection migration is running
-> See [pg.Client.query](https://node-postgres.com/api/client#client-query)
+> See [pg.Client.query](https://node-postgres.com/apis/client#clientquery)
 
 Returns promise with either result of query or returned rows of a query (in case of `select`).
 
