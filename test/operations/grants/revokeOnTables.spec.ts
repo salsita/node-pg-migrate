@@ -87,15 +87,48 @@ describe('operations', () => {
         );
       });
 
-      it('preserves the literal ALL name without a schema', () => {
-        expect(
-          revokeOnTablesFn({
-            tables: 'ALL',
-            privileges: 'SELECT',
-            roles: 'reader',
-          })
-        ).toBe('REVOKE SELECT ON "ALL" FROM "reader";');
-      });
+      it.each([{}, { schema: undefined }])(
+        'rejects bare ALL without a schema (%j)',
+        (schemaOptions) => {
+          expect(() =>
+            revokeOnTablesFn({
+              tables: 'ALL',
+              privileges: 'SELECT',
+              roles: 'reader',
+              ...schemaOptions,
+            })
+          ).toThrow(
+            new Error('The "schema" option is required when "tables" is "ALL"')
+          );
+        }
+      );
+
+      it.each([{}, { schema: 'other_schema' }])(
+        'preserves explicit ALL names and literal arrays (%j)',
+        (schemaOptions) => {
+          const selections: Array<{ tables: Name | Name[]; sql: string }> = [
+            { tables: { name: 'ALL' }, sql: '"ALL"' },
+            {
+              tables: { schema: 'app"schema', name: 'ALL' },
+              sql: '"app""schema"."ALL"',
+            },
+            // Arrays are named selections, even with one element named ALL.
+            { tables: ['ALL'], sql: '"ALL"' },
+            { tables: ['ALL', 'foo'], sql: '"ALL", "foo"' },
+          ];
+
+          for (const { tables, sql } of selections) {
+            expect(
+              revokeOnTablesFn({
+                tables,
+                privileges: 'SELECT',
+                roles: 'reader',
+                ...schemaOptions,
+              })
+            ).toBe(`REVOKE SELECT ON ${sql} FROM "reader";`);
+          }
+        }
+      );
     });
   });
 });

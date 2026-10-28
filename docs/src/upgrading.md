@@ -384,6 +384,22 @@ every table in that schema is intended; select individual tables when
 independently granted privileges must remain. See
 [Grant Operations](migrations/grants).
 
+#### Bare `ALL` grant selectors require `schema`
+
+`grantOnTables`, `revokeOnTables`, `grantOnSequences` and `revokeOnSequences`
+now throw an error when `tables: 'ALL'` or `sequences: 'ALL'` is supplied without
+a top-level `schema`. Previously, these calls targeted an object literally
+named `"ALL"`. This validation also applies to automatic grant reversal, so
+existing migrations using this form can fail during replay or rollback.
+
+For all existing objects in a schema, supply both options, for example
+`tables: 'ALL', schema: 'app'` or `sequences: 'ALL', schema: 'app'`.
+For a literal object named `ALL`, use `{ name: 'ALL' }` or
+`{ schema: 'app', name: 'ALL' }` instead. Explicit arrays such as `['ALL', 'foo']`
+continue to select literal names. Ordinary named selections are unchanged.
+Updating the library does not change privileges already stored in the database.
+See [Grant Operations](migrations/grants) for examples.
+
 #### Sequence options keep `0`
 
 `minvalue`, `maxvalue` and `start` in `createSequence`, `alterSequence` and
