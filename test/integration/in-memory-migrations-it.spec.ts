@@ -154,6 +154,41 @@ describe.each(PG_VERSIONS)(
       expect(await tables()).toEqual(['pgmigrations', 'users']);
     });
 
+    it('leaves the search_path of a supplied client as it was', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const run = (migrations: MigrationMap) =>
+        runner({
+          dbClient: client,
+          migrations,
+          schema: 'app',
+          createSchema: true,
+          migrationsSchema: 'public',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          log: () => {},
+        });
+      const before = await searchPath();
+
+      await run(tableMigrations());
+      expect(await searchPath()).toBe(before);
+
+      await expect(
+        run({
+          ...tableMigrations(),
+          '003_fails': {
+            up: (pgm) => {
+              pgm.sql('SELECT 1/0');
+            },
+          },
+        })
+      ).rejects.toThrow('division by zero');
+      expect(await searchPath()).toBe(before);
+
+      await client.query('DROP SCHEMA app CASCADE');
+    });
+
     it('checks ordering against the same history names as file migrations', async () => {
       const migrations = tableMigrations();
       await migrate(migrations, { file: '002_items' });

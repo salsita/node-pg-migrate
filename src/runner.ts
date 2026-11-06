@@ -575,6 +575,16 @@ async function assertTransactionIsEnforceable(
   }
 }
 
+async function getSearchPath(db: DBConnection): Promise<string | undefined> {
+  const [row] = await db.select(
+    "SELECT current_setting('search_path') AS setting"
+  );
+
+  const setting: unknown = row?.setting;
+
+  return typeof setting === 'string' ? setting : undefined;
+}
+
 async function createSchemas(
   db: DBConnection,
   schemas: ReadonlyArray<string>,
@@ -1121,9 +1131,16 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   let readOnlyTransaction = false;
   let lockAcquired = false;
   let ddlAutocommit: string | undefined;
+  let searchPath: string | undefined;
 
   try {
     await db.createConnection();
+
+    if (dbClient && options.schema) {
+      // A supplied client goes back to its caller, often a pool, so what runs on
+      // it next must not end up in the schemas of the migrations.
+      searchPath = await getSearchPath(db);
+    }
 
     if (dryRun || options.singleTransaction) {
       // Capture the caller's setting before SET, so even failed verification can restore it.
@@ -1305,6 +1322,16 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         await unlock(db, options.lockValue).catch((error: unknown) => {
           logger.warn(error instanceof Error ? error.message : String(error));
         });
+      }
+
+      if (searchPath !== undefined) {
+        await db
+          .query("SELECT set_config('search_path', $1, false)", [searchPath])
+          .catch((error: unknown) => {
+            logger.warn(
+              `Unable to restore search_path: ${error instanceof Error ? error.message : String(error)}`
+            );
+          });
       }
 
       if (
