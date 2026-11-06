@@ -69,7 +69,10 @@ export function getActions(content: string): MigrationBuilderActions {
           upMigrationStart,
           downMigrationStart < upMigrationStart ? undefined : downMigrationStart
         )
-      : content;
+      : content.slice(
+          0,
+          downMigrationStart < 0 ? undefined : downMigrationStart
+        );
 
   const downSql =
     downMigrationStart >= 0

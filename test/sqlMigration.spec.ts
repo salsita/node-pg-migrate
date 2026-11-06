@@ -143,6 +143,23 @@ describe('sqlMigration', () => {
       expect(sql).toHaveBeenLastCalledWith(content.trim());
     });
 
+    it('should not run the down section in up without an up comment', () => {
+      const upMigration = 'CREATE TABLE t (i integer);\n';
+      const downMigration = '-- Down Migration\nDROP TABLE t;\n';
+      const { up, down } = getActions(`${upMigration}${downMigration}`);
+
+      const sql = vi.fn();
+
+      // @ts-expect-error: simplified for testing
+      up({ sql });
+      expect(sql).toHaveBeenLastCalledWith(upMigration);
+
+      expect(down).toBeTypeOf('function');
+      // @ts-expect-error: simplified for testing
+      down({ sql });
+      expect(sql).toHaveBeenLastCalledWith(downMigration);
+    });
+
     it('should migrate with up comment', () => {
       const content = `
 -- Up Migration
