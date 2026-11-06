@@ -2,7 +2,14 @@ import { readFile } from 'node:fs/promises';
 import type { MigrationAction } from './migration';
 import type { ColumnDefinitions } from './operations/tables';
 
-function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
+/**
+ * Creates the regex that finds the `-- Up Migration` / `-- Down Migration`
+ * marker of a SQL migration: it matches any line that starts with the marker
+ * (case-insensitive).
+ *
+ * @param direction The marker to find.
+ */
+export function createMigrationCommentRegex(direction: 'up' | 'down'): RegExp {
   return new RegExp(`^\\s*--[\\s-]*${direction}\\s+migration`, 'im');
 }
 
