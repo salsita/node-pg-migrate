@@ -1,6 +1,5 @@
 import { glob } from 'glob';
-import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, readdir } from 'node:fs/promises';
+import { copyFile, mkdir, readdir } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -270,12 +269,7 @@ export class Migration implements RunMigration {
     const newFile = join(directory, `${prefix}${SEPARATOR}${name}.${suffix}`);
 
     // copy the default migration template to the new file location
-    await new Promise<void>((resolve, reject) => {
-      createReadStream(templateFileName)
-        .pipe(createWriteStream(newFile))
-        .on('close', resolve)
-        .on('error', reject);
-    });
+    await copyFile(templateFileName, newFile);
 
     return newFile;
   }
