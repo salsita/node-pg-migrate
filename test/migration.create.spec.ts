@@ -1,14 +1,17 @@
 import {
+  appendFile,
+  chmod,
   mkdir,
   mkdtemp,
   readdir,
   readFile,
   rm,
+  stat,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Migration } from '../src/migration';
 
 describe('Migration.create', () => {
@@ -57,6 +60,72 @@ describe('Migration.create', () => {
 
     expect(await readFile(filename, 'utf8')).toBe(content);
   });
+
+  describe.skipIf(process.platform === 'win32')(
+    'destination permissions',
+    () => {
+      it.each([
+        {
+          name: 'creates an editable migration from a read-only template',
+          templateMode: 0o444,
+          mask: 0o022,
+          expectedMode: 0o644,
+        },
+        {
+          name: 'respects a restrictive umask for a new migration',
+          templateMode: 0o644,
+          mask: 0o077,
+          expectedMode: 0o600,
+        },
+      ])('$name', async ({ templateMode, mask, expectedMode }) => {
+        const templateFileName = join(directory, 'custom template.sql');
+        const content = '-- custom template\n';
+        await writeFile(templateFileName, content);
+        await chmod(templateFileName, templateMode);
+
+        const previousMask = process.umask(mask);
+        try {
+          const filename = await Migration.create(
+            'example',
+            migrationsDirectory,
+            { templateFileName }
+          );
+
+          expect((await stat(filename)).mode & 0o777).toBe(expectedMode);
+          await appendFile(filename, 'SELECT 1;\n');
+          expect(await readFile(filename, 'utf8')).toBe(
+            `${content}SELECT 1;\n`
+          );
+        } finally {
+          process.umask(previousMask);
+        }
+      });
+
+      it('preserves the existing destination mode when overwriting', async () => {
+        const templateFileName = join(directory, 'custom template.sql');
+        const content = '-- replacement template\n';
+        await writeFile(templateFileName, content);
+        await chmod(templateFileName, 0o444);
+        await mkdir(migrationsDirectory);
+        const filename = join(migrationsDirectory, '1700000000000_example.sql');
+        await writeFile(filename, '-- original contents that are longer\n');
+        await chmod(filename, 0o600);
+
+        const now = vi.spyOn(Date, 'now').mockReturnValue(1700000000000);
+        try {
+          expect(
+            await Migration.create('example', migrationsDirectory, {
+              templateFileName,
+            })
+          ).toBe(filename);
+          expect((await stat(filename)).mode & 0o777).toBe(0o600);
+          expect(await readFile(filename, 'utf8')).toBe(content);
+        } finally {
+          now.mockRestore();
+        }
+      });
+    }
+  );
 
   it('rejects a missing template without creating an empty migration', async () => {
     const templateFileName = join(directory, 'missing.sql');
