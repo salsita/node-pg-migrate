@@ -1,5 +1,5 @@
 import { glob } from 'glob';
-import { copyFile, mkdir, readdir } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { cwd } from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -268,8 +268,9 @@ export class Migration implements RunMigration {
     // file name looks like migrations/1391877300255_migration-title.js
     const newFile = join(directory, `${prefix}${SEPARATOR}${name}.${suffix}`);
 
-    // copy the default migration template to the new file location
-    await copyFile(templateFileName, newFile);
+    // Read before opening the destination, preserving its default permissions.
+    const template = await readFile(templateFileName);
+    await writeFile(newFile, template);
 
     return newFile;
   }
