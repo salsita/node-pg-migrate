@@ -585,6 +585,24 @@ async function getSearchPath(db: DBConnection): Promise<string | undefined> {
   return typeof setting === 'string' ? setting : undefined;
 }
 
+/**
+ * Puts back the `search_path` the caller had, if the one the runner set is still in effect.
+ * A rollback, of a failed migration or of a dry run, may already have undone it, and with it
+ * a `SET LOCAL` of the caller's transaction: setting that expired value again would make it
+ * the session's.
+ */
+async function restoreSearchPath(
+  db: DBConnection,
+  searchPath: string,
+  runnerSearchPath: string
+): Promise<void> {
+  if ((await getSearchPath(db)) !== runnerSearchPath) {
+    return;
+  }
+
+  await db.query("SELECT set_config('search_path', $1, false)", [searchPath]);
+}
+
 async function createSchemas(
   db: DBConnection,
   schemas: ReadonlyArray<string>,
@@ -1132,7 +1150,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   let lockAcquired = false;
   let ddlAutocommit: string | undefined;
   let searchPath: string | undefined;
-  let searchPathChanged = false;
+  let runnerSearchPath: string | undefined;
 
   try {
     await db.createConnection();
@@ -1171,9 +1189,11 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     const runNames = appliedMigrations.map(({ name }) => name);
 
     await useSchemas(db, options, dryRun, logger);
-    // Only a path the runner changed is restored: one set by the caller, perhaps with
-    // SET LOCAL, must not become the session's.
-    searchPathChanged = true;
+    if (searchPath !== undefined) {
+      // Only a path the runner set is restored: one set by the caller, perhaps with
+      // SET LOCAL, must not become the session's.
+      runnerSearchPath = await getSearchPath(db);
+    }
 
     if (options.migrationsSchema && options.createMigrationsSchema) {
       await createSchemas(db, [options.migrationsSchema], dryRun, logger);
@@ -1328,14 +1348,14 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         });
       }
 
-      if (searchPathChanged && searchPath !== undefined) {
-        await db
-          .query("SELECT set_config('search_path', $1, false)", [searchPath])
-          .catch((error: unknown) => {
+      if (searchPath !== undefined && runnerSearchPath !== undefined) {
+        await restoreSearchPath(db, searchPath, runnerSearchPath).catch(
+          (error: unknown) => {
             logger.warn(
               `Unable to restore search_path: ${error instanceof Error ? error.message : String(error)}`
             );
-          });
+          }
+        );
       }
 
       if (

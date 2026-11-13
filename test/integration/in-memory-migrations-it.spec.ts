@@ -220,6 +220,55 @@ describe.each(PG_VERSIONS)(
       }
     });
 
+    it('does not keep the local search_path of a caller when its transaction is rolled back', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const run = (options: Partial<RunnerOptionMigrations>) =>
+        runner({
+          dbClient: client,
+          migrations: tableMigrations(),
+          schema: 'app',
+          migrationsSchema: 'public',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          log: () => {},
+          ...options,
+        });
+
+      for (const sessionPath of ['DEFAULT', 'tenant, public']) {
+        await client.query(`SET search_path TO ${sessionPath}`);
+        const before = await searchPath();
+
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+        await expect(
+          run({
+            migrations: {
+              '001_fails': {
+                up: (pgm) => {
+                  pgm.sql('SELECT 1/0');
+                },
+              },
+            },
+          })
+        ).rejects.toThrow('division by zero');
+        expect(await searchPath()).toBe(before);
+        await client.query('ROLLBACK');
+        expect(await searchPath()).toBe(before);
+
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+        await run({ dryRun: true });
+        expect(await searchPath()).toBe(before);
+        await client.query('ROLLBACK');
+        expect(await searchPath()).toBe(before);
+      }
+
+      await client.query('SET search_path TO DEFAULT');
+      expect(await tables()).toEqual([]);
+    });
+
     it('checks ordering against the same history names as file migrations', async () => {
       const migrations = tableMigrations();
       await migrate(migrations, { file: '002_items' });
