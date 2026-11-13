@@ -146,6 +146,15 @@ Use `pgm.noTransaction()` for affected migrations, or `--no-single-transaction`
 (`singleTransaction: false` in the API) with `autocommit_before_ddl` enabled. These opt-outs
 can retain committed changes after failure. See the [CockroachDB transaction limitations](cli).
 
+#### A supplied client keeps its `search_path`
+
+With `dbClient` and `schema`, `runner()` used to leave the client's `search_path`
+set to the migration schemas. It now restores the path the client had before the
+run, on success or failure. Code that runs unqualified queries on the same client
+after `runner({ dbClient, schema: 'app', ... })` may now resolve them against a
+different schema. If you need the application path to persist, set it explicitly
+after the run, for example `SET search_path TO app`.
+
 #### The programmatic API validates migrationsTable
 
 `runner()` now rejects a missing, empty or non-string `migrationsTable` with a

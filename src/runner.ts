@@ -1132,6 +1132,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   let lockAcquired = false;
   let ddlAutocommit: string | undefined;
   let searchPath: string | undefined;
+  let searchPathChanged = false;
 
   try {
     await db.createConnection();
@@ -1170,6 +1171,9 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     const runNames = appliedMigrations.map(({ name }) => name);
 
     await useSchemas(db, options, dryRun, logger);
+    // Only a path the runner changed is restored: one set by the caller, perhaps with
+    // SET LOCAL, must not become the session's.
+    searchPathChanged = true;
 
     if (options.migrationsSchema && options.createMigrationsSchema) {
       await createSchemas(db, [options.migrationsSchema], dryRun, logger);
@@ -1324,7 +1328,7 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         });
       }
 
-      if (searchPath !== undefined) {
+      if (searchPathChanged && searchPath !== undefined) {
         await db
           .query("SELECT set_config('search_path', $1, false)", [searchPath])
           .catch((error: unknown) => {

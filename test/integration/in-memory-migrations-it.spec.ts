@@ -189,6 +189,37 @@ describe.each(PG_VERSIONS)(
       await client.query('DROP SCHEMA app CASCADE');
     });
 
+    it('does not keep the local search_path of a caller when it refuses to run', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const before = await searchPath();
+      const holder = new pg.Client(container.getConnectionUri());
+      await holder.connect();
+      try {
+        await holder.query('SELECT pg_advisory_lock($1)', [PG_MIGRATE_LOCK_ID]);
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+
+        await expect(
+          runner({
+            dbClient: client,
+            migrations: tableMigrations(),
+            schema: 'app',
+            migrationsSchema: 'public',
+            migrationsTable: 'pgmigrations',
+            direction: 'up',
+            log: () => {},
+          })
+        ).rejects.toThrow('Another migration is already running');
+
+        await client.query('COMMIT');
+        expect(await searchPath()).toBe(before);
+      } finally {
+        await holder.end();
+      }
+    });
+
     it('checks ordering against the same history names as file migrations', async () => {
       const migrations = tableMigrations();
       await migrate(migrations, { file: '002_items' });
