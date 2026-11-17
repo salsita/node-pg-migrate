@@ -585,22 +585,26 @@ async function getSearchPath(db: DBConnection): Promise<string | undefined> {
   return typeof setting === 'string' ? setting : undefined;
 }
 
+const TRANSACTION_STATUS = 'transaction_status';
+const TRANSACTION_PROBE = 'node_pg_migrate.in_transaction';
+
 /**
- * Puts back the `search_path` the caller had, if the one the runner set is still in effect.
- * A rollback, of a failed migration or of a dry run, may already have undone it, and with it
- * a `SET LOCAL` of the caller's transaction: setting that expired value again would make it
- * the session's.
+ * Whether a supplied client is inside a transaction of its caller.
+ *
+ * CockroachDB reports it in `transaction_status`. PostgreSQL has no such setting, so a
+ * transaction-local one is set and read back: it only outlives its own statement inside
+ * a transaction.
  */
-async function restoreSearchPath(
-  db: DBConnection,
-  searchPath: string,
-  runnerSearchPath: string
-): Promise<void> {
-  if ((await getSearchPath(db)) !== runnerSearchPath) {
-    return;
+async function isInTransaction(db: DBConnection): Promise<boolean> {
+  const status = await getSetting(db, TRANSACTION_STATUS);
+
+  if (status !== undefined) {
+    return status !== 'notxn';
   }
 
-  await db.query("SELECT set_config('search_path', $1, false)", [searchPath]);
+  await db.query(`SELECT set_config('${TRANSACTION_PROBE}', 'on', true)`);
+
+  return (await getSetting(db, TRANSACTION_PROBE)) === 'on';
 }
 
 async function createSchemas(
@@ -1150,14 +1154,17 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
   let lockAcquired = false;
   let ddlAutocommit: string | undefined;
   let searchPath: string | undefined;
-  let runnerSearchPath: string | undefined;
 
   try {
     await db.createConnection();
 
-    if (dbClient && options.schema) {
+    if (dbClient && options.schema && !(await isInTransaction(db))) {
       // A supplied client goes back to its caller, often a pool, so what runs on
       // it next must not end up in the schemas of the migrations.
+      //
+      // Inside a transaction of the caller the path may be a SET LOCAL one, with the
+      // session's own path out of sight behind it. Putting that value back would make
+      // it the session's once the transaction ends, so such a client is left alone.
       searchPath = await getSearchPath(db);
     }
 
@@ -1189,11 +1196,6 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
     const runNames = appliedMigrations.map(({ name }) => name);
 
     await useSchemas(db, options, dryRun, logger);
-    if (searchPath !== undefined) {
-      // Only a path the runner set is restored: one set by the caller, perhaps with
-      // SET LOCAL, must not become the session's.
-      runnerSearchPath = await getSearchPath(db);
-    }
 
     if (options.migrationsSchema && options.createMigrationsSchema) {
       await createSchemas(db, [options.migrationsSchema], dryRun, logger);
@@ -1348,14 +1350,16 @@ export async function runner(options: RunnerOption): Promise<RunMigration[]> {
         });
       }
 
-      if (searchPath !== undefined && runnerSearchPath !== undefined) {
-        await restoreSearchPath(db, searchPath, runnerSearchPath).catch(
-          (error: unknown) => {
+      if (searchPath !== undefined) {
+        // The client was outside a transaction, so this is the session's own path:
+        // setting it again is right whatever the run or a migration did to it.
+        await db
+          .query("SELECT set_config('search_path', $1, false)", [searchPath])
+          .catch((error: unknown) => {
             logger.warn(
               `Unable to restore search_path: ${error instanceof Error ? error.message : String(error)}`
             );
-          }
-        );
+          });
       }
 
       if (

@@ -155,6 +155,10 @@ after `runner({ dbClient, schema: 'app', ... })` may now resolve them against a
 different schema. If you need the application path to persist, set it explicitly
 after the run, for example `SET search_path TO app`.
 
+This applies to a client that is outside a transaction when it is passed in. Inside
+a transaction of the caller nothing changes: the runner sets the path and does not
+restore it, so a rollback undoes it and a commit keeps it.
+
 #### The programmatic API validates migrationsTable
 
 `runner()` now rejects a missing, empty or non-string `migrationsTable` with a
