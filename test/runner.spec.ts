@@ -559,6 +559,78 @@ describe('runner', () => {
     );
   });
 
+  it('warns when the search_path of a supplied client cannot be restored', async () => {
+    const query = vi.fn((text: string | { text: string }) => {
+      const sql = typeof text === 'string' ? text : text.text;
+      if (sql.includes("set_config('search_path'")) {
+        return Promise.reject(new Error('connection lost'));
+      }
+      return Promise.resolve({
+        rows: sql.includes("current_setting('search_path')")
+          ? [{ setting: 'tenant, public' }]
+          : sql.includes('pg_try_advisory_lock')
+            ? [{ lockObtained: true }]
+            : sql.includes('pg_advisory_unlock')
+              ? [{ lockReleased: true }]
+              : [],
+      });
+    });
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+
+    await runner({
+      dbClient: { query } as unknown as ClientBase,
+      migrations: {},
+      schema: 'app',
+      migrationsTable: 'pgmigrations',
+      direction: 'up',
+      logger,
+    });
+
+    expect(query).toHaveBeenCalledWith(
+      "SELECT set_config('search_path', $1, false)",
+      ['tenant, public']
+    );
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Unable to restore search_path: connection lost'
+    );
+  });
+
+  it.each([
+    ['transaction_status', 'Open'],
+    ['node_pg_migrate.in_transaction', 'on'],
+  ])(
+    'leaves the search_path of a supplied client inside a transaction alone (%s)',
+    async (name, value) => {
+      const query = vi.fn((text: string | { text: string }) => {
+        const sql = typeof text === 'string' ? text : text.text;
+        return Promise.resolve({
+          rows: sql.includes(`current_setting('${name}'`)
+            ? [{ setting: value }]
+            : sql.includes('pg_try_advisory_lock')
+              ? [{ lockObtained: true }]
+              : sql.includes('pg_advisory_unlock')
+                ? [{ lockReleased: true }]
+                : [],
+        });
+      });
+
+      await runner({
+        dbClient: { query } as unknown as ClientBase,
+        migrations: {},
+        schema: 'app',
+        migrationsTable: 'pgmigrations',
+        direction: 'up',
+        log: () => {},
+      });
+
+      expect(query).toHaveBeenCalledWith('SET search_path TO "app"', undefined);
+      expect(query).not.toHaveBeenCalledWith(
+        expect.stringContaining("set_config('search_path'"),
+        expect.anything()
+      );
+    }
+  );
+
   it('should throw an error when no databaseUrl or dbClient passed', async () => {
     await expect(
       // @ts-expect-error: runner needs options

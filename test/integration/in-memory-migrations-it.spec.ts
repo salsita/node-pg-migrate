@@ -154,6 +154,156 @@ describe.each(PG_VERSIONS)(
       expect(await tables()).toEqual(['pgmigrations', 'users']);
     });
 
+    it('leaves the search_path of a supplied client as it was', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const run = (migrations: MigrationMap) =>
+        runner({
+          dbClient: client,
+          migrations,
+          schema: 'app',
+          createSchema: true,
+          migrationsSchema: 'public',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          log: () => {},
+        });
+      const before = await searchPath();
+
+      await run(tableMigrations());
+      expect(await searchPath()).toBe(before);
+
+      await expect(
+        run({
+          ...tableMigrations(),
+          '003_fails': {
+            up: (pgm) => {
+              pgm.sql('SELECT 1/0');
+            },
+          },
+        })
+      ).rejects.toThrow('division by zero');
+      expect(await searchPath()).toBe(before);
+
+      await run({
+        ...tableMigrations(),
+        '003_changes_path': {
+          up: (pgm) => {
+            pgm.sql('SET search_path TO pg_catalog');
+          },
+        },
+      });
+      expect(await searchPath()).toBe(before);
+
+      await client.query('DROP SCHEMA app CASCADE');
+    });
+
+    it('does not keep the local search_path of a caller when it refuses to run', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const before = await searchPath();
+      const holder = new pg.Client(container.getConnectionUri());
+      await holder.connect();
+      try {
+        await holder.query('SELECT pg_advisory_lock($1)', [PG_MIGRATE_LOCK_ID]);
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+
+        await expect(
+          runner({
+            dbClient: client,
+            migrations: tableMigrations(),
+            schema: 'app',
+            migrationsSchema: 'public',
+            migrationsTable: 'pgmigrations',
+            direction: 'up',
+            log: () => {},
+          })
+        ).rejects.toThrow('Another migration is already running');
+
+        await client.query('COMMIT');
+        expect(await searchPath()).toBe(before);
+      } finally {
+        await holder.end();
+      }
+    });
+
+    it('does not keep the local search_path of a caller when its transaction is rolled back', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+      const run = (options: Partial<RunnerOptionMigrations>) =>
+        runner({
+          dbClient: client,
+          migrations: tableMigrations(),
+          schema: 'app',
+          migrationsSchema: 'public',
+          migrationsTable: 'pgmigrations',
+          direction: 'up',
+          log: () => {},
+          ...options,
+        });
+
+      // The last one is the path the runner itself sets.
+      for (const sessionPath of ['DEFAULT', 'tenant, public', '"app"']) {
+        await client.query(`SET search_path TO ${sessionPath}`);
+        const before = await searchPath();
+
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+        await expect(
+          run({
+            migrations: {
+              '001_fails': {
+                up: (pgm) => {
+                  pgm.sql('SELECT 1/0');
+                },
+              },
+            },
+          })
+        ).rejects.toThrow('division by zero');
+        expect(await searchPath()).toBe(before);
+        await client.query('ROLLBACK');
+        expect(await searchPath()).toBe(before);
+
+        await client.query('BEGIN');
+        await client.query('SET LOCAL search_path TO local_tenant, public');
+        await run({ dryRun: true });
+        expect(await searchPath()).toBe(before);
+        await client.query('ROLLBACK');
+        expect(await searchPath()).toBe(before);
+      }
+
+      await client.query('SET search_path TO DEFAULT');
+      expect(await tables()).toEqual([]);
+    });
+
+    it('does not keep the local search_path of a caller when the run commits its transaction', async () => {
+      const searchPath = async () =>
+        (await client.query<{ search_path: string }>('SHOW search_path'))
+          .rows[0].search_path;
+
+      await client.query('BEGIN');
+      await client.query('SET LOCAL search_path TO local_tenant, public');
+      await runner({
+        dbClient: client,
+        migrations: tableMigrations(),
+        schema: 'app',
+        createSchema: true,
+        migrationsSchema: 'public',
+        migrationsTable: 'pgmigrations',
+        direction: 'up',
+        log: () => {},
+      });
+      expect(await history()).toEqual(['001_users', '002_items']);
+      expect(await searchPath()).not.toContain('local_tenant');
+
+      await client.query('SET search_path TO DEFAULT');
+      await client.query('DROP SCHEMA app CASCADE');
+    });
+
     it('checks ordering against the same history names as file migrations', async () => {
       const migrations = tableMigrations();
       await migrate(migrations, { file: '002_items' });

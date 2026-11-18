@@ -195,6 +195,11 @@ runs, transactions, advisory locks, and read-only dry runs.
 > [!NOTE]
 > If you use `dbClient`, you should not use `databaseUrl` at the same time and vice versa.
 
+With `schema` set, the `search_path` of a supplied `dbClient` is restored when the run ends, on
+success or failure, so a client that goes back to a pool keeps the path it had. A client that is
+inside a transaction when it is passed in is left as before: there the session's own path cannot
+be read behind a possible `SET LOCAL`, and the end of that transaction decides what remains.
+
 `migrationsTable` is required and must be a non-empty string. Unlike the CLI,
 the programmatic API does not default to `pgmigrations`. An omitted or invalid
 value causes `runner()` to reject with a `TypeError` before connecting to the
