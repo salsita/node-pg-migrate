@@ -62,7 +62,7 @@ export function formatRoleOptions(roleOptions: RoleOptions = {}): string {
     options.push(roleOptions.bypassrls ? 'BYPASSRLS' : 'NOBYPASSRLS');
   }
 
-  if (roleOptions.limit) {
+  if (roleOptions.limit !== undefined) {
     options.push(`CONNECTION LIMIT ${roleOptions.limit}`);
   }
 
