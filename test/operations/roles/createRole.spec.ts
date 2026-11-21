@@ -43,6 +43,15 @@ describe('operations', () => {
         );
       });
 
+      it('should keep a connection limit of 0', () => {
+        const statement = createRoleFn('miriam', { login: true, limit: 0 });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'CREATE ROLE "miriam" WITH NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION CONNECTION LIMIT 0;'
+        );
+      });
+
       it('should return sql statement with schema', () => {
         const statement = createRoleFn({ name: 'miriam', schema: 'myschema' });
 
