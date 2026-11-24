@@ -956,3 +956,25 @@ describe('migration', () => {
     });
   });
 });
+
+it('discovers brace-selected SQL paths in migration order', async () => {
+  const dir = await import('node:fs/promises').then(async ({ mkdtemp }) =>
+    mkdtemp(resolve((await import('node:os')).tmpdir(), 'pgm-glob-'))
+  );
+  const { mkdir, rm, writeFile } = await import('node:fs/promises');
+  try {
+    await mkdir(resolve(dir, '3_directory.sql'));
+    for (const name of ['20_last.sql', '3_שלום.sql', '9_skip.js']) {
+      await writeFile(resolve(dir, name), '');
+    }
+    const paths = await getMigrationFilePaths(resolve(dir, '{3*,20*}.sql'), {
+      useGlob: true,
+    });
+    expect(paths).toEqual([
+      resolve(dir, '3_שלום.sql'),
+      resolve(dir, '20_last.sql'),
+    ]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
