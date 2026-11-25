@@ -429,9 +429,11 @@ sequence whose minimum is still 1; add `minvalue: 0`.
 
 `limit: 0` in `createRole` and `alterRole` used to be dropped, so `createRole`
 created a role without a connection limit and `alterRole` with only
-`limit: 0` generated no SQL. It now emits `CONNECTION LIMIT 0`. A migration
-that passed `0` and was applied with v9 did not set a limit; replaying it on a
-new database now sets the limit as written. Use `limit: -1` for no limit.
+`limit: 0` generated no SQL. It now emits `CONNECTION LIMIT 0`. Upgrading does
+not change existing roles: a migration that passed `0` and was applied with v9
+did not set a limit, and it is not run again. A pending or replayed migration
+with `limit: 0` now sets the limit as written, so the role cannot open new
+connections unless it is a superuser. Use `limit: -1` for no limit.
 
 ## From v8 to v9
 
