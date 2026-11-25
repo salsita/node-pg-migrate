@@ -425,6 +425,16 @@ database now creates the sequence as written. `start: 0` without
 instead of silently starting at 1, and `restart: 0` fails the same way on a
 sequence whose minimum is still 1; add `minvalue: 0`.
 
+#### Role connection limit keeps `0`
+
+`limit: 0` in `createRole` and `alterRole` used to be dropped, so `createRole`
+created a role without a connection limit and `alterRole` with only
+`limit: 0` generated no SQL. It now emits `CONNECTION LIMIT 0`. Upgrading does
+not change existing roles: a migration that passed `0` and was applied with v9
+did not set a limit, and it is not run again. A pending or replayed migration
+with `limit: 0` now sets the limit as written, so the role cannot open new
+connections unless it is a superuser. Use `limit: -1` for no limit.
+
 ## From v8 to v9
 
 `v9` is a **bridge release**: it modernizes the internals (new TypeScript

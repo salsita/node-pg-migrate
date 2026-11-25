@@ -26,6 +26,15 @@ describe('operations', () => {
         expect(statement).toBeTypeOf('string');
         expect(statement).toBe('ALTER ROLE "jonathan" WITH REPLICATION;');
       });
+
+      it('should return sql statement with a connection limit of 0', () => {
+        const statement = alterRoleFn('jonathan', { limit: 0 });
+
+        expect(statement).toBeTypeOf('string');
+        expect(statement).toBe(
+          'ALTER ROLE "jonathan" WITH CONNECTION LIMIT 0;'
+        );
+      });
     });
   });
 });
