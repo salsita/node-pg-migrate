@@ -199,6 +199,64 @@ describe.each(PG_VERSIONS)(
       await client.query('DROP SCHEMA app CASCADE');
     });
 
+    it.each(['empty', 'success', 'failure', 'dry run'])(
+      'restores search_path despite a session transaction probe set to on (%s)',
+      async (outcome) => {
+        const searchPath = async () =>
+          (await client.query<{ search_path: string }>('SHOW search_path'))
+            .rows[0].search_path;
+        const before = await searchPath();
+        await client.query(
+          "SELECT set_config('node_pg_migrate.in_transaction', 'on', false)"
+        );
+        try {
+          const run = runner({
+            dbClient: client,
+            migrations:
+              outcome === 'empty'
+                ? {}
+                : {
+                    '001_probe': {
+                      up: (pgm) => {
+                        if (outcome === 'failure') {
+                          pgm.sql('SELECT 1/0');
+                        } else {
+                          pgm.createTable('probe_table', { id: 'integer' });
+                        }
+                      },
+                    },
+                  },
+            schema: 'app',
+            createSchema: true,
+            migrationsSchema: 'public',
+            migrationsTable: 'pgmigrations',
+            direction: 'up',
+            dryRun: outcome === 'dry run',
+            log: () => {},
+          });
+
+          const error = await run.then(
+            () => null,
+            (error: unknown) => error
+          );
+          expect(error instanceof Error ? error.message : error).toBe(
+            outcome === 'failure' ? 'division by zero' : null
+          );
+
+          expect(await searchPath()).toBe(before);
+          const { rows } = await client.query<{ setting: string }>(
+            "SELECT current_setting('node_pg_migrate.in_transaction') AS setting"
+          );
+          expect(rows).toEqual([{ setting: 'on' }]);
+        } finally {
+          await client.query("SELECT set_config('search_path', $1, false)", [
+            before,
+          ]);
+          await client.query('RESET node_pg_migrate.in_transaction');
+        }
+      }
+    );
+
     it('does not keep the local search_path of a caller when it refuses to run', async () => {
       const searchPath = async () =>
         (await client.query<{ search_path: string }>('SHOW search_path'))

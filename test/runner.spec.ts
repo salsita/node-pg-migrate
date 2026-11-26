@@ -595,24 +595,62 @@ describe('runner', () => {
     );
   });
 
+  it('restores search_path when an idle client has the session transaction probe set to on', async () => {
+    const query = vi.fn((text: string | { text: string }) => {
+      const sql = typeof text === 'string' ? text : text.text;
+      return Promise.resolve({
+        rows: sql.includes("current_setting('node_pg_migrate.in_transaction'")
+          ? [{ setting: 'on' }]
+          : sql.includes("current_setting('search_path')")
+            ? [{ setting: 'public' }]
+            : sql.includes('pg_try_advisory_lock')
+              ? [{ lockObtained: true }]
+              : sql.includes('pg_advisory_unlock')
+                ? [{ lockReleased: true }]
+                : [],
+      });
+    });
+
+    await runner({
+      dbClient: { query } as unknown as ClientBase,
+      migrations: {},
+      schema: 'app',
+      migrationsSchema: 'public',
+      migrationsTable: 'pgmigrations',
+      direction: 'up',
+      log: () => {},
+    });
+
+    expect(query).toHaveBeenCalledWith(
+      "SELECT set_config('search_path', $1, false)",
+      ['public']
+    );
+  });
+
   it.each([
     ['transaction_status', 'Open'],
     ['node_pg_migrate.in_transaction', 'on'],
   ])(
     'leaves the search_path of a supplied client inside a transaction alone (%s)',
     async (name, value) => {
-      const query = vi.fn((text: string | { text: string }) => {
-        const sql = typeof text === 'string' ? text : text.text;
-        return Promise.resolve({
-          rows: sql.includes(`current_setting('${name}'`)
-            ? [{ setting: value }]
-            : sql.includes('pg_try_advisory_lock')
-              ? [{ lockObtained: true }]
-              : sql.includes('pg_advisory_unlock')
-                ? [{ lockReleased: true }]
-                : [],
-        });
-      });
+      let localProbe = value;
+      const query = vi.fn(
+        (text: string | { text: string }, values?: string[]) => {
+          const sql = typeof text === 'string' ? text : text.text;
+          if (sql.includes("set_config('node_pg_migrate.in_transaction'")) {
+            localProbe = values?.[0] ?? 'on';
+          }
+          return Promise.resolve({
+            rows: sql.includes(`current_setting('${name}'`)
+              ? [{ setting: localProbe }]
+              : sql.includes('pg_try_advisory_lock')
+                ? [{ lockObtained: true }]
+                : sql.includes('pg_advisory_unlock')
+                  ? [{ lockReleased: true }]
+                  : [],
+          });
+        }
+      );
 
       await runner({
         dbClient: { query } as unknown as ClientBase,
