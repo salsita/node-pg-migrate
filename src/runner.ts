@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { basename, extname } from 'node:path';
 import type { ClientBase, ClientConfig } from 'pg';
 import type { DBConnection } from './db';
@@ -602,9 +603,13 @@ async function isInTransaction(db: DBConnection): Promise<boolean> {
     return status !== 'notxn';
   }
 
-  await db.query(`SELECT set_config('${TRANSACTION_PROBE}', 'on', true)`);
+  // A session-level value must not be mistaken for this transaction-local probe.
+  const probeValue = randomUUID();
+  await db.query(`SELECT set_config('${TRANSACTION_PROBE}', $1, true)`, [
+    probeValue,
+  ]);
 
-  return (await getSetting(db, TRANSACTION_PROBE)) === 'on';
+  return (await getSetting(db, TRANSACTION_PROBE)) === probeValue;
 }
 
 async function createSchemas(
