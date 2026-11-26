@@ -157,7 +157,11 @@ after the run, for example `SET search_path TO app`.
 
 This applies to a client that is outside a transaction when it is passed in. Inside
 a transaction of the caller nothing changes: the runner sets the path and does not
-restore it, so a rollback undoes it and a commit keeps it.
+restore it. On PostgreSQL, a rollback undoes the path change and a commit keeps it.
+On CockroachDB, a session `SET` can survive `ROLLBACK` (see its
+[`SET`/`ROLLBACK` limitation](https://www.cockroachlabs.com/docs/v25.3/known-limitations#set-does-not-rollback-in-a-transaction)).
+Save the original `search_path` before the transaction and restore it explicitly
+after the transaction ends, before reusing or releasing the client.
 
 #### The programmatic API validates migrationsTable
 
