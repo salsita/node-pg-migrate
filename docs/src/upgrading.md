@@ -416,9 +416,11 @@ See [Grant Operations](migrations/grants) for examples.
 #### Sequence options keep `0`
 
 `minvalue`, `maxvalue` and `start` in `createSequence`, `alterSequence` and
-identity columns (`sequenceGenerated`), and `restart` in `alterSequence`, used
-to be dropped when set to `0`, so PostgreSQL applied its defaults instead (for
-example `MINVALUE 1`). They are now emitted. A migration that passed `0` and was
+identity columns (`sequenceGenerated`) used to be dropped when set to `0`, so
+PostgreSQL applied its defaults instead (for example `MINVALUE 1`). In
+`alterSequence`, `restart: 0` was omitted when other options produced SQL; on its
+own, it threw `No sequence options provided for alterSequence`. These zero values
+are now emitted, including `RESTART WITH 0`. A migration that passed `0` and was
 applied with v9 created a sequence with the defaults; replaying it on a new
 database now creates the sequence as written. `start: 0` without
 `minvalue: 0` now fails with `START value (0) cannot be less than MINVALUE (1)`
