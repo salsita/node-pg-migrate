@@ -160,6 +160,157 @@ describe('sqlMigration', () => {
       expect(sql).toHaveBeenLastCalledWith(downMigration);
     });
 
+    it.each([
+      [
+        'single-quoted string',
+        "SELECT '\n-- Down Migration\n-- Up Migration\n';\n",
+      ],
+      ['doubled single quote', "SELECT 'it''s\n-- Down Migration\n';\n"],
+      [
+        'escape string',
+        String.raw`SELECT E'it\'s
+-- Down Migration
+-- Up Migration
+';
+`,
+      ],
+      [
+        'continued escape string',
+        String.raw`SELECT E'first'
+  'it\'s
+-- Down Migration
+-- Up Migration
+';
+`,
+      ],
+      [
+        'quoted identifier',
+        'CREATE TABLE "table\n-- Down Migration\n-- Up Migration\n" (id integer);\n',
+      ],
+      [
+        'doubled identifier quote',
+        'CREATE TABLE "table""name\n-- Down Migration\n" (id integer);\n',
+      ],
+      [
+        'untagged dollar string',
+        'SELECT $$\n-- Down Migration\n-- Up Migration\n$$;\n',
+      ],
+      [
+        'tagged dollar string',
+        'SELECT $body$\n-- Down Migration\n-- Up Migration\n$body$;\n',
+      ],
+      [
+        'Unicode dollar tag',
+        'SELECT $表_1$\n-- Down Migration\n-- Up Migration\n$表_1$;\n',
+      ],
+      [
+        'case-sensitive dollar tag',
+        'SELECT $body$\n$BODY$\n-- Down Migration\n$body$;\n',
+      ],
+      [
+        'block comment',
+        '/*\n-- Down Migration\n-- Up Migration\n*/\nSELECT 1;\n',
+      ],
+      [
+        'nested block comment',
+        '/* outer /* inner */\n-- Down Migration\n-- Up Migration\n*/\nSELECT 1;\n',
+      ],
+      ['line comment containing quotes', '-- \' $$ /* "\nSELECT 1;\n'],
+      [
+        'line comment containing a Unicode line separator',
+        '-- ordinary\u2028-- Down Migration\nSELECT 1;\n',
+      ],
+      [
+        'line comment containing a Unicode paragraph separator',
+        '-- ordinary\u2029-- Up Migration\nSELECT 1;\n',
+      ],
+      [
+        'comment whose marker words cross a newline',
+        'CREATE TABLE\n-- Down\nmigration (id integer);\n',
+      ],
+      [
+        'comment whose marker starts on another line',
+        'CREATE TABLE\n--\nup migration (id integer);\n',
+      ],
+      ['unterminated dollar string', 'SELECT $body$\n-- Down Migration\n'],
+      ['unterminated block comment', '/*\n-- Down Migration\n'],
+      ['unterminated escape string', "SELECT E'trailing\\"],
+    ])('ignores markers inside a %s', async (_label, content) => {
+      const { up, down } = getActions(content);
+      const sql = vi.fn();
+      expect(up).toBeTypeOf('function');
+      if (up) {
+        await up({ sql } as unknown as MigrationBuilder);
+      }
+      expect(sql).toHaveBeenCalledExactlyOnceWith(content);
+      expect(down).toBe(false);
+    });
+
+    it.each([false, true])(
+      'finds real boundaries after quoted SQL (down first: %s)',
+      async (downFirst) => {
+        const upSection =
+          '\n-- Up Migration\nSELECT $body$\n-- Down Migration\n$body$;\n';
+        const downSection =
+          "\n-- Down Migration\nSELECT '\n-- Up Migration\n';\n";
+        const { up, down } = getActions(
+          downFirst ? downSection + upSection : upSection + downSection
+        );
+        for (const [action, expected] of [
+          [up, upSection],
+          [down, downSection],
+        ] as const) {
+          const sql = vi.fn();
+          expect(action).toBeTypeOf('function');
+          if (action) {
+            await action({ sql } as unknown as MigrationBuilder);
+          }
+          expect(sql).toHaveBeenCalledExactlyOnceWith(expected);
+        }
+      }
+    );
+
+    it.each([
+      'SELECT name$tag$ FROM source;\n',
+      'SELECT 表$tag$ FROM source;\n',
+      'SELECT $1;\n',
+      "SELECT 'backslash\\';\n",
+      String.raw`SELECT E'backslash\\';
+`,
+      '/* outer /* inner */ remaining */\nSELECT 1;\n',
+      'SELECT $body$some text$body$;\n',
+      '-- unmatched \' " $body$ /*\r\nSELECT 1;\n',
+    ])('finds a real down marker after %j', async (prefix) => {
+      const downSection = '-- Down Migration\nSELECT 2;';
+      const { up, down } = getActions(prefix + downSection);
+      const sql = vi.fn();
+      if (up) {
+        await up({ sql } as unknown as MigrationBuilder);
+      }
+      expect(sql).toHaveBeenCalledExactlyOnceWith(prefix);
+      expect(down).toBeTypeOf('function');
+      if (down) {
+        await down({ sql } as unknown as MigrationBuilder);
+      }
+      expect(sql).toHaveBeenLastCalledWith(downSection);
+    });
+
+    it('preserves Unicode whitespace inside a genuine marker comment', async () => {
+      const upSection = 'SELECT 1;\n';
+      const downSection = '--\u00A0- down\u2003migration\nSELECT 2;';
+      const { up, down } = getActions(upSection + downSection);
+      const sql = vi.fn();
+      if (up) {
+        await up({ sql } as unknown as MigrationBuilder);
+      }
+      expect(sql).toHaveBeenCalledExactlyOnceWith(upSection);
+      expect(down).toBeTypeOf('function');
+      if (down) {
+        await down({ sql } as unknown as MigrationBuilder);
+      }
+      expect(sql).toHaveBeenLastCalledWith(downSection);
+    });
+
     it('should migrate with up comment', () => {
       const content = `
 -- Up Migration
